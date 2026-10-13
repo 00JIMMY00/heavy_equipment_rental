@@ -1,0 +1,189 @@
+{
+ "doctype": "DocType",
+ "name": "Crane Timesheet",
+ "module": "Jimmy Cranes",
+ "engine": "InnoDB",
+ "creation": "2026-10-13 00:00:00.000000",
+ "modified": "2026-10-13 12:54:00.772613",
+ "modified_by": "Administrator",
+ "owner": "Administrator",
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "TS-.#####",
+   "default": "TS-.#####",
+   "reqd": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Project",
+   "options": "Crane Project",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "crane",
+   "fieldtype": "Link",
+   "label": "Crane",
+   "options": "Crane",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "period_start",
+   "fieldtype": "Date",
+   "label": "Period Start",
+   "reqd": 1
+  },
+  {
+   "fieldname": "period_end",
+   "fieldtype": "Date",
+   "label": "Period End",
+   "reqd": 1
+  },
+  {
+   "fieldname": "signed_timesheet",
+   "fieldtype": "Attach",
+   "label": "Signed Timesheet"
+  },
+  {
+   "fieldname": "timesheet_entries",
+   "fieldtype": "Table",
+   "label": "Entries",
+   "options": "Timesheet Entry"
+  },
+  {
+   "fieldname": "total_operator_hours",
+   "fieldtype": "Float",
+   "label": "Total Operator Hours",
+   "read_only": 1,
+   "precision": "6"
+  },
+  {
+   "fieldname": "total_crane_billable_hours",
+   "fieldtype": "Float",
+   "label": "Total Crane Billable Hours",
+   "read_only": 1,
+   "precision": "6"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Crane Timesheet",
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1
+  },
+  {
+   "fieldname": "legacy_section",
+   "fieldtype": "Section Break",
+   "label": "Original Timesheet History",
+   "collapsible": 1,
+   "depends_on": "eval:doc.legacy_snapshot",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "legacy_needs_review",
+   "fieldtype": "Check",
+   "label": "Enter and Verify Shift Times Before Submission",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "legacy_source_status",
+   "fieldtype": "Data",
+   "label": "Original Status",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "legacy_snapshot",
+   "fieldtype": "Code",
+   "label": "Original Record (Preserved)",
+   "read_only": 1,
+   "options": "JSON",
+   "no_copy": 1
+  }
+ ],
+ "field_order": [
+  "naming_series",
+  "project",
+  "crane",
+  "period_start",
+  "period_end",
+  "signed_timesheet",
+  "timesheet_entries",
+  "total_operator_hours",
+  "total_crane_billable_hours",
+  "total_amount",
+  "amended_from",
+  "legacy_section",
+  "legacy_needs_review",
+  "legacy_source_status",
+  "legacy_snapshot"
+ ],
+ "istable": 0,
+ "is_submittable": 1,
+ "editable_grid": 1,
+ "grid_page_length": 100,
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "Projects Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "Projects User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "submit": 1,
+   "cancel": 0,
+   "amend": 1
+  }
+ ],
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field"
+}

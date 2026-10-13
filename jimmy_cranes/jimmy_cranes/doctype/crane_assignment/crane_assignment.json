@@ -1,0 +1,103 @@
+{
+ "doctype": "DocType",
+ "name": "Crane Assignment",
+ "module": "Jimmy Cranes",
+ "engine": "InnoDB",
+ "creation": "2026-10-13 00:00:00.000000",
+ "modified": "2026-10-13 12:54:00.773630",
+ "modified_by": "Administrator",
+ "owner": "Administrator",
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "ASG-.#####",
+   "default": "ASG-.#####",
+   "reqd": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Project",
+   "options": "Crane Project",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nReserved\nIn Progress\nComplete\nCancelled",
+   "default": "Draft",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "assigned_cranes",
+   "fieldtype": "Table",
+   "label": "Assigned Cranes",
+   "options": "Assigned Crane"
+  },
+  {
+   "fieldname": "legacy_snapshot",
+   "fieldtype": "Code",
+   "label": "Legacy Snapshot",
+   "read_only": 1,
+   "hidden": 1,
+   "options": "JSON",
+   "no_copy": 1
+  }
+ ],
+ "field_order": [
+  "naming_series",
+  "project",
+  "status",
+  "assigned_cranes",
+  "legacy_snapshot"
+ ],
+ "istable": 0,
+ "is_submittable": 0,
+ "editable_grid": 1,
+ "grid_page_length": 100,
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "Projects Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "Projects User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field"
+}

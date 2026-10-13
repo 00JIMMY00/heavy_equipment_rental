@@ -1,0 +1,72 @@
+{
+ "doctype": "Workspace",
+ "name": "Jimmy Cranes",
+ "title": "Jimmy Cranes",
+ "label": "Jimmy Cranes",
+ "module": "Jimmy Cranes",
+ "public": 1,
+ "is_hidden": 0,
+ "icon": "project",
+ "sequence_id": 12,
+ "content": "[{\"id\": \"rental-title\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Crane Rentals</b></span>\", \"col\": 12}}, {\"id\": \"crane-link-0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Project\", \"col\": 3}}, {\"id\": \"crane-link-1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Assignment\", \"col\": 3}}, {\"id\": \"crane-link-2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Timesheet\", \"col\": 3}}, {\"id\": \"crane-link-3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane\", \"col\": 3}}, {\"id\": \"crane-link-4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Operator\", \"col\": 3}}, {\"id\": \"crane-link-5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customer\", \"col\": 3}}, {\"id\": \"crane-link-6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Fleet Reservations\", \"col\": 3}}]",
+ "shortcuts": [
+  {
+   "label": "Crane Project",
+   "link_to": "Crane Project",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "Crane Assignment",
+   "link_to": "Crane Assignment",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "Crane Timesheet",
+   "link_to": "Crane Timesheet",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "Crane",
+   "link_to": "Crane",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "Crane Operator",
+   "link_to": "Crane Operator",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "Customer",
+   "link_to": "Customer",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "Fleet Reservations",
+   "link_to": "crane-project-gantt",
+   "type": "Page"
+  }
+ ],
+ "links": [],
+ "charts": [],
+ "number_cards": [],
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Projects Manager"
+  },
+  {
+   "role": "Projects User"
+  }
+ ],
+ "owner": "Administrator",
+ "modified_by": "Administrator",
+ "modified": "2026-10-13 12:54:00.771580"
+}

@@ -1,0 +1,86 @@
+{
+ "doctype": "DocType",
+ "name": "Timesheet Entry",
+ "module": "Jimmy Cranes",
+ "engine": "InnoDB",
+ "creation": "2026-10-13 00:00:00.000000",
+ "modified": "2026-10-13 12:54:00.772341",
+ "modified_by": "Administrator",
+ "owner": "Administrator",
+ "fields": [
+  {
+   "fieldname": "work_date",
+   "fieldtype": "Date",
+   "label": "Work Date",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "start_time",
+   "fieldtype": "Time",
+   "label": "Start Time",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "end_time",
+   "fieldtype": "Time",
+   "label": "End Time",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "ends_next_day",
+   "fieldtype": "Check",
+   "label": "Ends Next Day",
+   "default": 0,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "crane_operator",
+   "fieldtype": "Link",
+   "label": "Crane Operator",
+   "options": "Crane Operator",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "price_per_hour",
+   "fieldtype": "Currency",
+   "label": "Price / Hour",
+   "non_negative": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "worked_hours",
+   "fieldtype": "Float",
+   "label": "Worked Hours",
+   "read_only": 1,
+   "precision": "6",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "line_amount",
+   "fieldtype": "Currency",
+   "label": "Operator Amount (Informational)",
+   "read_only": 1
+  }
+ ],
+ "field_order": [
+  "work_date",
+  "start_time",
+  "end_time",
+  "ends_next_day",
+  "crane_operator",
+  "price_per_hour",
+  "worked_hours",
+  "line_amount"
+ ],
+ "istable": 1,
+ "is_submittable": 0,
+ "editable_grid": 1,
+ "grid_page_length": 100,
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 0,
+ "permissions": []
+}
