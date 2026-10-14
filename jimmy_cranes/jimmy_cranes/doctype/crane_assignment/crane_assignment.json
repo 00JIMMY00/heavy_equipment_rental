@@ -21,7 +21,7 @@
    "fieldname": "project",
    "fieldtype": "Link",
    "label": "Project",
-   "options": "Crane Project",
+   "options": "Project",
    "reqd": 1,
    "in_list_view": 1,
    "in_standard_filter": 1
@@ -43,15 +43,6 @@
    "no_copy": 1
   },
   {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "Draft\nReserved\nIn Progress\nComplete\nCancelled",
-   "default": "Draft",
-   "read_only": 1,
-   "in_list_view": 1
-  },
-  {
    "fieldname": "assigned_cranes",
    "fieldtype": "Table",
    "label": "Assigned Cranes",
@@ -68,14 +59,6 @@
    "label": "Completion Progress"
   },
   {
-   "fieldname": "completed_cranes",
-   "fieldtype": "Int",
-   "label": "Completed Cranes",
-   "read_only": 1,
-   "hidden": 1,
-   "no_copy": 1
-  },
-  {
    "fieldname": "total_cranes",
    "fieldtype": "Int",
    "label": "Total Cranes",
@@ -89,15 +72,35 @@
    "label": "Completion Percentage",
    "read_only": 1,
    "hidden": 1,
+   "no_copy": 1,
+   "precision": "1"
+  },
+  {
+   "fieldname": "draft_cranes",
+   "fieldtype": "Int",
+   "label": "Draft Cranes",
+   "read_only": 1,
    "no_copy": 1
   },
   {
-   "fieldname": "legacy_snapshot",
-   "fieldtype": "Code",
-   "label": "Legacy Snapshot",
+   "fieldname": "reserved_cranes",
+   "fieldtype": "Int",
+   "label": "Reserved Cranes",
    "read_only": 1,
-   "hidden": 1,
-   "options": "JSON",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "released_cranes",
+   "fieldtype": "Int",
+   "label": "Released Cranes",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "cancelled_cranes",
+   "fieldtype": "Int",
+   "label": "Cancelled Cranes",
+   "read_only": 1,
    "no_copy": 1
   }
  ],
@@ -106,14 +109,15 @@
   "project",
   "project_start_date",
   "project_end_date",
-  "status",
   "assigned_cranes",
   "completion_section",
   "completion_progress",
-  "completed_cranes",
   "total_cranes",
   "completion_percentage",
-  "legacy_snapshot"
+  "draft_cranes",
+  "reserved_cranes",
+  "released_cranes",
+  "cancelled_cranes"
  ],
  "istable": 0,
  "is_submittable": 0,

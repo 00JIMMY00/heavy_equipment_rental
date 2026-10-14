@@ -20,7 +20,7 @@ class TestRentalConcurrency(FrappeTestCase):
 		site, sites_path = frappe.local.site, frappe.local.sites_path
 		all_docs = {
 			"Crane Assignment": [first.name, second.name],
-			"Crane Project": [sample.project.name, sample.other_project.name],
+			"Project": [sample.project.name, sample.other_project.name],
 			"Crane": [r.name for r in sample.cranes],
 			"Crane Operator": [r.name for r in sample.operators],
 			"Customer": [sample.customer.name],
@@ -61,9 +61,9 @@ class TestRentalConcurrency(FrappeTestCase):
 			self.assertEqual(sorted(run_concurrent("booking", [first, second])), ["rejected", "saved"])
 			frappe.db.rollback()
 			booked = frappe.get_all(
-				"Crane Assignment",
-				filters={"name": ["in", [first.name, second.name]], "status": "Reserved"},
-				pluck="name",
+				"Assigned Crane",
+				filters={"parent": ["in", [first.name, second.name]], "status": "Reserved"},
+				pluck="parent",
 			)
 			self.assertEqual(len(booked), 1)
 			project = frappe.db.get_value("Crane Assignment", booked[0], "project")

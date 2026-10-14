@@ -19,7 +19,7 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 		fieldname: "project",
 		label: __("Project"),
 		fieldtype: "Link",
-		options: "Crane Project",
+		options: "Project",
 		change: () => {
 			state.project = fields.project.get_value();
 			load();
@@ -39,7 +39,7 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 		fieldname: "status",
 		label: __("Allocation Status"),
 		fieldtype: "Select",
-		options: "\nDraft\nReserved\nIn Progress\nComplete\nCancelled",
+		options: "\nDraft\nReserved\nReleased\nCancelled",
 		change: () => {
 			state.status = fields.status.get_value();
 			load();
@@ -83,7 +83,7 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 		.crane-gantt-bar {position:absolute;height:12px;border-radius:4px;cursor:pointer;min-width:3px}
 		.crane-gantt-bar.planned {top:10px;background:#5b8def;opacity:.8}
 		.crane-gantt-bar.actual {top:28px;background:#2eab72}
-		.crane-gantt-bar.draft {opacity:.35} .crane-gantt-bar.reserved {background:#5b8def} .crane-gantt-bar.in-progress {background:#dd9a21} .crane-gantt-bar.complete {background:#2eab72} .crane-gantt-bar.cancelled {background:#9ba1a6;opacity:.4;text-decoration:line-through} .crane-gantt-unknown {position:absolute;font-size:10px;color:var(--text-muted)}
+		.crane-gantt-bar.draft {opacity:.35} .crane-gantt-bar.reserved {background:#5b8def} .crane-gantt-bar.released {background:#2eab72} .crane-gantt-bar.cancelled {background:#9ba1a6;opacity:.4;text-decoration:line-through} .crane-gantt-unknown {position:absolute;font-size:10px;color:var(--text-muted)}
 		.crane-gantt-dot {position:absolute;top:44px;width:10px;height:10px;border:0;border-radius:50%;background:#9656b7;cursor:pointer;transform:translateX(-50%);padding:0}
 		.crane-gantt-dot.draft {background:#e59b3b}
 		.crane-gantt-empty {padding:24px;color:var(--text-muted)}
@@ -94,17 +94,13 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 	$controls.html(`<label>${__("Zoom")}
 		<select class="form-control input-sm crane-gantt-zoom">
 			<option>Day</option><option>Week</option><option>Month</option>
-		</select></label><input class="form-control input-sm crane-gantt-search" placeholder="${__(
-			"Find crane"
-		)}">`);
+		</select></label><input class="form-control input-sm crane-gantt-search" placeholder="${__("Find crane")}">`);
 	$legend.html(`<span><i style="background:#5b8def"></i>${__("Reserved / planned")}</span>
-		<span><i style="background:#2eab72"></i>${__("Complete / actual contract")}</span>
+		<span><i style="background:#2eab72"></i>${__("Released / occupied period")}</span>
 		<span><i style="background:#9656b7"></i>${__("Worked day")}</span>
 		<span><i style="background:#e59b3b"></i>${__(
-			"In Progress / Draft work"
-		)}</span><span><i style="background:#9ba1a6"></i>${__(
-		"Cancelled / provisional Draft"
-	)}</span>`);
+			"Draft work"
+		)}</span><span><i style="background:#9ba1a6"></i>${__("Cancelled / provisional Draft")}</span>`);
 	$controls.on("change", ".crane-gantt-zoom", (event) => {
 		state.zoom = event.currentTarget.value;
 		render();
@@ -127,10 +123,7 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 		} else {
 			const links = marker.timesheets
 				.map(
-					(name) =>
-						`<a href="/app/crane-timesheet/${encodeURIComponent(name)}">${escape(
-							name
-						)}</a>`
+					(name) => `<a href="/app/crane-timesheet/${encodeURIComponent(name)}">${escape(name)}</a>`
 				)
 				.join("<br>");
 			frappe.msgprint({ title: __("Timesheets on {0}", [date]), message: links });
@@ -191,9 +184,7 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 		);
 		if (!lanes.length) {
 			$scroll.html(
-				`<div class="crane-gantt-empty">${__(
-					"No crane activity in this date range."
-				)}</div>`
+				`<div class="crane-gantt-empty">${__("No crane activity in this date range.")}</div>`
 			);
 			return;
 		}
@@ -214,9 +205,7 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 			}
 			if (i % (state.zoom === "Day" ? 7 : state.zoom === "Week" ? 14 : 30) === 0) {
 				header.push(
-					`<span class="crane-gantt-tick" style="left:${i * width}px">${escape(
-						date
-					)}</span>`
+					`<span class="crane-gantt-tick" style="left:${i * width}px">${escape(date)}</span>`
 				);
 			}
 		}
@@ -253,63 +242,38 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 					segment,
 					`${id} | ${__("Planned")}: ${segment.start_date} – ${segment.end_date}`
 				);
-				if (
-					segment.actual_start_date &&
-					(segment.actual_end_date || segment.row_status === "In Progress")
-				) {
-					const actual_end = segment.actual_end_date || frappe.datetime.get_today();
+				if (segment.row_status === "Released" && segment.actual_end_date) {
 					bar(
-						segment.actual_start_date,
-						actual_end,
+						segment.start_date,
+						segment.actual_end_date,
 						"actual",
 						segment,
-						`${id} | ${__("Actual")}: ${segment.actual_start_date} – ${actual_end}`
+						`${id} | ${__("Occupied period")}: ${segment.start_date} – ${segment.actual_end_date}`
 					);
 				}
-				if (segment.unknown_actual_dates)
+				if (segment.overdue)
 					parts.push(
-						`<span class="crane-gantt-unknown" style="top:${
-							segment_index * 40 + 23
-						}px;left:${
+						`<span class="crane-gantt-unknown" style="top:${segment_index * 40 + 23}px;left:${
 							Math.max(0, days_between(from_date, segment.start_date)) * width
-						}px">${__("Actual dates unknown — review legacy record")}</span>`
+						}px">${__("Overdue / release confirmation needed")}</span>`
 					);
 				segment_index++;
 			}
 			for (const marker of lane.work) {
 				const offset = days_between(from_date, marker.date);
 				const draft = marker.statuses.includes("Draft");
-				const title = `${marker.date} | ${__("Operator Hours")}: ${
-					marker.operator_hours
-				} ${
-					marker.legacy_unknown_hours
-						? " · " +
-						  __("Legacy reported hours") +
-						  ": " +
-						  marker.legacy_reported_hours +
-						  " (" +
-						  __("shift times unknown") +
-						  ")"
-						: ""
-				} | ${marker.statuses.join(", ")} | ${marker.timesheets.join(", ")}`;
+				const title = `${marker.date} | ${__("Work recorded")}: ${marker.operator_hours} ${__(
+					"Operator Hours"
+				)} | ${marker.statuses.join(", ")} | ${marker.timesheets.join(", ")}`;
 				parts.push(`<button type="button" class="crane-gantt-dot${
 					draft ? " draft" : ""
 				}" style="left:${(offset + 0.5) * width}px;top:${work_top}px"
-					title="${escape(title)}" data-crane="${escape(lane.crane)}" data-date="${escape(
-					marker.date
-				)}"></button>`);
+					title="${escape(title)}" data-crane="${escape(lane.crane)}" data-date="${escape(marker.date)}"></button>`);
 			}
 			html.push(`<div class="crane-gantt-row"><div class="crane-gantt-label">${escape(
 				lane.crane_name
-			)}${[
-				...new Set(lane.segments.map((s) => s.project)),
-			]
-				.map(
-					(p) =>
-						`<small><a href="/app/crane-project/${encodeURIComponent(p)}">${escape(
-							p
-						)}</a></small>`
-				)
+			)}${[...new Set(lane.segments.map((s) => s.project))]
+				.map((p) => `<small><a href="/app/project/${encodeURIComponent(p)}">${escape(p)}</a></small>`)
 				.join("")}</div>
 				<div class="crane-gantt-track" style="width:${track_width}px;min-height:${Math.max(
 				62,

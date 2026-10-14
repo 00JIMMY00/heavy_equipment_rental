@@ -15,7 +15,6 @@ from jimmy_cranes.rental_validation import (
 	interval,
 	lock_cranes,
 	project_doc,
-	protect_legacy,
 	work_days,
 )
 
@@ -48,43 +47,24 @@ class CraneTimesheet(Document):
 		project = project_doc(self.project, "write", lock=True)
 		lock_cranes([self.crane])
 		crane_name = crane_display_name(self.crane)
-		if self.is_new() and self.amended_from:
+		check_date_order(self.period_start, self.period_end, _("Timesheet period"))
+		if self.amended_from:
 			source = frappe.get_doc("Crane Timesheet", self.amended_from, for_update=True)
 			source.check_permission("amend")
-			if source.docstatus != 2:
-				frappe.throw(_("Only a cancelled timesheet can be amended."))
-			# Frappe's Amend copies even no_copy fields. Keep the immutable source
-			# on the original (linked by amended_from), never on the new report.
-			for field in ("legacy_snapshot", "legacy_source_status", "legacy_needs_review"):
-				if self.get(field) and self.get(field) != source.get(field):
-					frappe.throw(_("Amendment migration history does not match its source."))
-				self.set(field, 0 if field == "legacy_needs_review" else None)
-		protect_legacy(self, ("legacy_snapshot", "legacy_source_status", "legacy_needs_review"))
-		check_date_order(self.period_start, self.period_end, _("Timesheet period"))
-		before = self.get_doc_before_save()
-		if before and before.legacy_source_status == "Approved" and self.docstatus < 2:
+			if source.docstatus != 2 or source.project != self.project or source.crane != self.crane:
+				frappe.throw(_("Amend a cancelled Timesheet for this same Project and crane."))
+		if project.status != "Open":
 			frappe.only_for(("System Manager", "Projects Manager"))
-		incomplete = any(
-			r.start_time in (None, "") or r.end_time in (None, "") for r in self.timesheet_entries
-		)
-		if before and before.legacy_needs_review and incomplete and self.docstatus == 0:
-			if self.project != before.project or self.crane != before.crane:
-				frappe.throw(
-					_("Enter all verified shift times before changing a legacy sheet's Project or crane.")
-				)
-			previous = {r.name: r for r in before.timesheet_entries}
-			for row in self.timesheet_entries:
-				check_non_negative(row.price_per_hour, _("Row {0} hourly price").format(row.idx))
-				if row.name not in previous or getdate(row.work_date) != getdate(
-					previous[row.name].work_date
-				):
-					frappe.throw(
-						_("Enter all verified shift times before changing legacy work dates or adding rows.")
-					)
-			# Keep original hours in the immutable snapshot. No shift boundaries
-			# or invoice totals can be reconstructed safely from old hour totals.
-			self.total_operator_hours = self.total_crane_billable_hours = self.total_amount = 0
-			return
+			if not self.amended_from:
+				frappe.throw(_("Closed Projects accept only authorized amendments of cancelled Timesheets."))
+			# A correction cannot introduce work dates that were not in the original record.
+			original_days = {day for row in source.timesheet_entries for day in work_days(*interval(row))}
+			if any(
+				day not in original_days
+				for row in self.timesheet_entries
+				for day in work_days(*interval(row))
+			):
+				frappe.throw(_("An amendment on a closed Project cannot add new work dates."))
 		if not self.timesheet_entries and self.docstatus == 1:
 			frappe.throw(_("Add at least one shift before submitting the timesheet."))
 		windows = [
@@ -102,30 +82,14 @@ class CraneTimesheet(Document):
 					frappe.throw(_("{0}: future work cannot be recorded.").format(label))
 				if not getdate(self.period_start) <= day <= getdate(self.period_end):
 					frappe.throw(_("{0}: shift is outside the timesheet period.").format(label))
-				if project.status == "Complete" and (
-					not project.completion_date or day > getdate(project.completion_date)
-				):
-					frappe.throw(
-						_(
-							"{0}: work after Project completion is not allowed. A missing legacy completion date needs review."
-						).format(label)
-					)
 				if not any(first <= day <= last for first, last in windows):
-					frappe.throw(
-						_(
-							"{0}: no reserved, active or historical completed allocation covers this work."
-						).format(label)
-					)
+					frappe.throw(_("{0}: no Reserved or Released allocation covers this work.").format(label))
 			row.worked_hours = (end - start).total_seconds() / 3600
 			row.line_amount = row.worked_hours * flt(row.price_per_hour)
 			operator_hours += row.worked_hours
 			intervals.append((start, end, flt(row.price_per_hour)))
 		self.total_operator_hours = operator_hours
 		self.total_crane_billable_hours, self.total_amount = billable_totals(intervals)
-		if before and before.legacy_needs_review:
-			if not self.timesheet_entries:
-				frappe.throw(_("Enter the verified shifts before resolving legacy review."))
-			self.legacy_needs_review = 0
 		if intervals:
 			existing = frappe.db.sql(
 				"""SELECT e.*, s.name AS timesheet FROM `tabTimesheet Entry` e
@@ -149,17 +113,9 @@ class CraneTimesheet(Document):
 						).format(crane_name, other.timesheet)
 					)
 
-	def before_submit(self):
-		if self.legacy_needs_review:
-			frappe.throw(
-				_("Verify and enter the original shift times before submitting this legacy timesheet.")
-			)
-
 	def before_cancel(self):
 		project_doc(self.project, "write", lock=True)
 		lock_cranes([self.crane])
 
 	def on_trash(self):
 		project_doc(self.project, "write", lock=True)
-		if self.legacy_snapshot:
-			frappe.throw(_("Keep migrated timesheet history. Cancel it instead of deleting it."))

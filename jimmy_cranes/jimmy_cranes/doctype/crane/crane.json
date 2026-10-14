@@ -73,14 +73,6 @@
    "fieldname": "availability_overview",
    "fieldtype": "HTML",
    "label": "Availability Overview"
-  },
-  {
-   "fieldname": "legacy_status",
-   "fieldtype": "Data",
-   "label": "Legacy Status",
-   "read_only": 1,
-   "hidden": 1,
-   "no_copy": 1
   }
  ],
  "field_order": [
@@ -93,8 +85,7 @@
   "period_prices",
   "availability_section",
   "availability_date",
-  "availability_overview",
-  "legacy_status"
+  "availability_overview"
  ],
  "istable": 0,
  "is_submittable": 0,

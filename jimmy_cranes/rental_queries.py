@@ -8,10 +8,13 @@ from frappe.utils import flt, getdate, today
 
 from jimmy_cranes.rental_validation import (
 	allocation_window,
+	assignment_progress,
 	check_date_order,
 	entry_days,
 	interval,
+	overdue_reservation,
 	project_doc,
+	ranges_overlap,
 )
 
 
@@ -19,7 +22,7 @@ def visible_allocations(project=None, crane=None, status=None):
 	if project:
 		project_doc(project)
 	projects = frappe.get_list(
-		"Crane Project", filters={"name": project} if project else {}, pluck="name", limit_page_length=0
+		"Project", filters={"name": project} if project else {}, pluck="name", limit_page_length=0
 	)
 	if not projects:
 		return []
@@ -32,7 +35,11 @@ def visible_allocations(project=None, crane=None, status=None):
 	crane_names = {row.name: row.crane_name for row in cranes}
 	if not parents or not crane_names:
 		return []
-	filters = {"parent": ["in", parents], "parenttype": "Crane Assignment", "crane": ["in", list(crane_names)]}
+	filters = {
+		"parent": ["in", parents],
+		"parenttype": "Crane Assignment",
+		"crane": ["in", list(crane_names)],
+	}
 	if status:
 		filters["status"] = status
 	rows = frappe.get_all("Assigned Crane", filters=filters, fields=["*"], order_by="crane,start_date,idx")
@@ -78,43 +85,60 @@ def assigned_crane_query(doctype, txt, searchfield, start, page_len, filters):
 
 
 @frappe.whitelist()
-def crane_availability(crane, date=None):
+def assignment_summary(assignment):
+	doc = frappe.get_doc("Crane Assignment", assignment)
+	doc.check_permission("read")
+	return assignment_progress(doc.assigned_cranes)
+
+
+@frappe.whitelist()
+def crane_availability(crane, date=None, to_date=None):
 	doc = frappe.get_doc("Crane", crane)
 	doc.check_permission("read")
-	day = getdate(date or today())
-	# The availability boolean must consider hidden bookings too. Only expose
-	# links/details to assignments the caller can read.
+	start, end = getdate(date or today()), getdate(to_date or date or today())
+	check_date_order(start, end, _("Availability period"))
 	from jimmy_cranes.rental_validation import allocations
 
 	all_rows = allocations([crane], lock=False)
 	current = [
-		r
-		for r in all_rows
-		if allocation_window(r) and allocation_window(r)[0] <= day <= allocation_window(r)[1]
+		r for r in all_rows if allocation_window(r) and ranges_overlap(start, end, *allocation_window(r))
 	]
-	future = [r for r in all_rows if allocation_window(r) and allocation_window(r)[0] > day]
-	activity = (
-		"Working"
-		if any(
-			(r.status == "In Progress" and (not r.actual_start_date or getdate(r.actual_start_date) <= day))
-			or (r.status == "Complete" and r.actual_start_date and getdate(r.actual_start_date) <= day)
-			for r in current
-		)
-		else "Reserved"
-		if current
-		else "Idle"
+	future = [r for r in all_rows if r.status == "Reserved" and getdate(r.start_date) > end]
+	overdue = [r for r in all_rows if overdue_reservation(r) and end >= getdate(today())]
+	work = frappe.db.sql(
+		"""SELECT e.* FROM `tabTimesheet Entry` e JOIN `tabCrane Timesheet` s ON s.name=e.parent
+		WHERE e.parenttype='Crane Timesheet' AND s.crane=%s AND s.docstatus<2
+		AND e.work_date BETWEEN %s AND %s""",
+		(crane, start - timedelta(days=1), end),
+		as_dict=True,
 	)
+	has_work = any(start <= day <= end for row in work for day in entry_days(row))
+	available = not current and not overdue and doc.operational_condition == "Operational"
+	indicators = []
+	if overdue:
+		indicators.append("Overdue / release confirmation needed")
+	if any(r.status == "Reserved" for r in current):
+		indicators.append("Reserved for selected date")
+	if any(r.status == "Released" for r in current):
+		indicators.append("Historical occupied period")
+	if has_work:
+		indicators.append("Work recorded")
+	if future:
+		indicators.append("Upcoming reservation")
+	if available:
+		indicators.append("Available for selected dates")
+	if doc.operational_condition != "Operational":
+		indicators.append(doc.operational_condition)
 	visible = {r.name for r in visible_allocations(crane=crane)}
 	return {
-		"date": day,
+		"date": start,
+		"to_date": end,
 		"operational_condition": doc.operational_condition,
-		"activity": activity,
-		"available": not current and doc.operational_condition == "Operational",
-		"explanation": doc.operational_condition
-		if doc.operational_condition != "Operational"
-		else "Allocated on this date"
-		if current
-		else "No allocation on this date",
+		"available": available,
+		"indicators": indicators,
+		"work_recorded": has_work,
+		"overdue": bool(overdue),
+		"overdue_reservations": [r for r in overdue if r.name in visible],
 		"future_reservations": [r for r in future if r.name in visible],
 		"has_future_reservations": bool(future),
 	}
@@ -152,14 +176,13 @@ def get_project_timeline(project=None, from_date=None, to_date=None, crane=None,
 				"start_date": row.start_date,
 				"end_date": row.expected_end_date,
 				"effective_end_date": (allocation_window(row) or (None, None))[1],
-				"actual_start_date": row.actual_start_date,
 				"actual_end_date": row.actual_end_date,
 				"row_status": row.status,
-				"unknown_actual_dates": bool(row.legacy_needs_review),
+				"overdue": overdue_reservation(row),
 			}
 		)
 	visible_projects = frappe.get_list(
-		"Crane Project", filters={"name": project} if project else {}, pluck="name", limit_page_length=0
+		"Project", filters={"name": project} if project else {}, pluck="name", limit_page_length=0
 	)
 	sheets = []
 	if visible_projects:
@@ -174,7 +197,7 @@ def get_project_timeline(project=None, from_date=None, to_date=None, crane=None,
 		sheets = frappe.get_list(
 			"Crane Timesheet",
 			filters=filters,
-			fields=["name", "crane", "project", "docstatus", "legacy_needs_review", "legacy_source_status"],
+			fields=["name", "crane", "project", "docstatus"],
 			limit_page_length=0,
 		)
 	sheets = {s.name: s for s in sheets if s.crane in crane_names and (not status or s.crane in lanes)}
@@ -201,26 +224,16 @@ def get_project_timeline(project=None, from_date=None, to_date=None, crane=None,
 					"operator_hours": 0,
 					"statuses": set(),
 					"timesheets": set(),
-					"legacy_unknown_hours": False,
-					"legacy_reported_hours": 0,
 				},
 			)
 			marker["statuses"].add("Submitted" if sheet.docstatus == 1 else "Draft")
-			if sheet.legacy_source_status:
-				marker["statuses"].add("Legacy " + sheet.legacy_source_status)
 			marker["timesheets"].add(sheet.name)
-			if row.start_time is None or row.end_time is None:
-				marker["legacy_unknown_hours"] = True
-				marker["legacy_reported_hours"] += flt(row.get("working_hours")) + flt(
-					row.get("overtime_hours")
-				)
-			else:
-				first, last = interval(row)
-				seconds = (
-					min(last, datetime.combine(day + timedelta(days=1), time.min))
-					- max(first, datetime.combine(day, time.min))
-				).total_seconds()
-				marker["operator_hours"] += seconds / 3600
+			first, last = interval(row)
+			seconds = (
+				min(last, datetime.combine(day + timedelta(days=1), time.min))
+				- max(first, datetime.combine(day, time.min))
+			).total_seconds()
+			marker["operator_hours"] += seconds / 3600
 	for (name, day), marker in markers.items():
 		marker["date"] = str(day)
 		marker["statuses"] = sorted(marker["statuses"])

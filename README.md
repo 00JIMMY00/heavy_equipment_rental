@@ -1,136 +1,94 @@
 # Jimmy Cranes
 
-Crane rental management for Frappe/ERPNext v15. Open **Jimmy Cranes** in Desk for the
-rental workspace. **Crane Project is an independent DocType**; new rental records
-never use ERPNext Project or Task. ERPNext Customer remains the customer master.
-
-## Records
-
-| DocType | Purpose |
-| --- | --- |
-| Crane Project | Customer, planned dates, project lifecycle and read-only crane overview |
-| Crane Assignment | Non-submittable batch of 100+ crane periods; derived parent status |
-| Assigned Crane | Child allocation, planned and actual dates, independent lifecycle |
-| Crane | Fleet identity and independent operational condition |
-| Crane Period Price | Exactly Day, Month and Year reference prices |
-| Crane Operator | Operator master |
-| Crane Timesheet | Submittable report for one Project and one header crane |
-| Timesheet Entry | One operator's shift and explicit hourly price |
+Crane rental management for Frappe/ERPNext. The Jimmy Cranes workspace uses native
+ERPNext **Project** and the existing crane, assignment and timesheet DocTypes.
 
 ## Workflow
 
-1. Create a **Crane Project** with a Customer and planned dates. Its normal states
-   are **Draft → Reserved → In Progress → Complete**, with direct **Draft → In
-   Progress** also supported. Use **Actions → Reserve / Start / Complete**.
-2. Create one or more Crane Assignments. Add cranes, planned start, expected end,
-   and the agreed rental rate snapshot. New rows are Draft and do not block dates.
-3. In the assignment's **Actions**, use **Reserve Cranes** or **Start Cranes** and
-   select the relevant rows. Starting rows requires an In Progress Project. Project
-   actions do not automatically start or reserve every row; booking decisions are
-   made with the selected-row actions.
-4. Use **Complete Cranes** to release participating cranes, or **Cancel Cranes** for
-   cranes that never participated. Cancellation needs a date and reason and is
-   refused if any non-cancelled timesheet records work in that allocation.
-5. Completing selected rows records their actual end, retains their expected end,
-   and recomputes the batch status. Other rows remain in their existing states.
-   Project completion is a separate action after every row is Complete/Cancelled.
-6. Optional **Automatically Start on Planned Date** on Crane Project defaults off.
-   When enabled, the daily scheduler uses the same Start validation as the manual
-   action. It starts the Project only. The site's scheduler must be enabled.
+1. Create an **Open Project** and one or more **Crane Assignments**. Each assignment
+   is a non-submittable batch containing 100+ **Assigned Crane** child rows.
+2. Add proposed cranes and planned dates as **Draft** rows. Drafts do not reserve
+   availability. Use **Reserve Selected** to commit the selected cranes.
+3. Record actual work in **Crane Timesheet**. Reserved is sufficient: there is no
+   Start action or In Progress booking status. Each timesheet has one header crane
+   and multiple operator shifts, with native Draft/Submit/Cancel behavior.
+4. Use **Release Selected** to record the actual release date. The expected end
+   remains unchanged. Use **Cancel Selected** with a date and reason only when no
+   work has been recorded, including draft timesheets.
+5. Explicitly mark the native Project **Completed** or **Cancelled** after all Draft
+   and Reserved allocations are resolved and all draft timesheets are submitted
+   or removed. Releasing the last crane never closes the Project automatically.
 
-The parent assignment status is calculated from all rows: all cancelled →
-Cancelled; all terminal with at least one Complete → Complete; any In Progress or
-Complete mixed with pending rows → In Progress; otherwise any Reserved → Reserved;
-otherwise Draft. It cannot be set independently.
+Only child rows have a booking status: **Draft → Reserved → Released**, or
+**Draft/Reserved → Cancelled**. Released and Cancelled rows are terminal. Crane
+Assignment has no parent status: it shows counts and a server-calculated release
+progress bar. Cancelled rows are excluded from its denominator; Draft rows remain
+included. Three Released, five Reserved and two Cancelled rows give **3 / 8 Released
+(37.5%)**. An empty or fully cancelled batch shows 0% and “No active crane allocations”.
 
-## Dates, availability and maintenance
+Projects with crane allocations use native Manual percent completion so ERPNext
+Task updates cannot silently finish them. App hooks enforce closing checks. Native
+Project behavior for unrelated projects is not overridden, and ERPNext core files
+are not modified. Project has a read-only crane overview; allocations are edited
+only through their Assignment.
 
-- Booking dates are inclusive, including across batches in the same Project.
-  Completing on October 18 releases October 19 onward. October 18 still conflicts.
-- Reserved/In Progress rows use their planned start through expected end. Complete
-  rows use actual end; Draft/Cancelled rows do not reserve dates. Extend the plan
-  explicitly when continuing beyond the expected end. Late completion requires a
-  reason and passes the same overlap checks; the Project dates must also cover it.
-- Operational/Maintenance/Inactive is a physical condition. It is never rewritten
-  by rental actions. Maintenance/Inactive blocks reservation and activation;
-  recording maintenance does not silently cancel an existing contract.
-- Crane **Activity and Reservations** displays chosen-date Working/Reserved/Idle,
-  availability and future reservations separately.
-- **View → Gantt Chart** on Crane Project, or **Fleet Reservations** in the workspace,
-  shows planned periods, known actual periods and work markers. Filter by dates,
-  crane, Project and row status; scroll or change zoom for large fleets. Click bars
-  for assignments, project links for Projects, and work markers for timesheets.
-- Unknown migrated actual dates are labelled unknown. No dates are inferred from
-  planned periods or hour totals. Their planned period stays blocked conservatively
-  until an authorized manager reviews the actual release.
+## Dates and availability
 
-## Timesheets and billing
+- Booking dates are inclusive across all Projects and batches. Release on October
+  18 makes the crane available from October 19, subject to other bookings and its
+  physical condition.
+- Reserved rows occupy start through expected end; Released rows occupy start
+  through actual release. Early and late releases retain the original planned end.
+  Late releases undergo conflict checks and cannot invalidate recorded work.
+- An overdue Reserved row remains Reserved and requires explicit release
+  confirmation. Availability flags it and blocks new current/future commitments
+  until resolved. Historical occupied ranges still use the documented dates.
+- Draft and Cancelled rows do not block dates. Maintenance or Inactive physical
+  condition blocks new reservations, independently of booking state.
+- The crane view and Fleet Reservations Gantt derive reservation, overdue, release
+  and recorded-work indicators. No job changes business statuses as dates pass.
+- Bulk actions check Project and Assignment permissions, validate selected child
+  IDs, lock cranes in a stable order, and save atomically. Concurrent conflicting
+  requests cannot both succeed; MariaDB may reject one with a retryable deadlock.
 
-Select **one crane on the header**; its picker uses the Project and the first work
-row's date (or period start). Each row has a date, start/end times, overnight flag,
-operator and explicit hourly price. Every touched work day must have an eligible
-allocation and be inside the timesheet period; future work is rejected. Completed
-allocations remain eligible for historical work through actual release. Complete
-Projects allow historical corrections within their verified completion date.
+## Timesheets and defaults
 
-Shifts are longer than zero and at most 24 hours. **Ends Next Day** is explicit.
-A shift ending exactly at midnight uses a half-open interval: 20:00–00:00 covers
-only the first day; 20:00–02:00 covers both days. Operator hours and informational
-line amounts are calculated per row. Crane hours and total amount use the union
-of intervals: 08:00–12:00 plus 10:00–14:00 at 100/hour produces 8 operator hours,
-6 crane hours and 600 total. Different prices on overlapping time are rejected.
-Day/Month/Year prices are reference rates; they never imply an hourly rate.
+Jimmy Cranes Settings remains the single settings DocType. Choosing a timesheet
+period fills missing dates with its default day shift times, preserving existing
+rows. There is no manual “Fill Missing Dates” button. Assign operators and hourly
+rates before saving.
 
-Submit/Cancel/Amend uses Frappe's standard lifecycle. Submitted records cannot be
-edited, and overlapping work cannot be submitted twice for the same crane, even
-across Projects. Allocation changes cannot invalidate recorded work. Bulk actions
-are atomic and permission checked. Database locks and current reads protect
-booking and submission checks under MariaDB repeatable-read isolation; a competing
-transaction may receive a retryable Frappe deadlock error instead of a conflict.
+A shift must last more than zero and at most 24 hours. **Ends Next Day** handles
+22:00–02:00 and a full 24-hour shift. Midnight ends are exclusive: 20:00–00:00 uses
+only the starting day, while 20:00–02:00 requires coverage on both days.
 
-System Manager and Projects Manager can submit/cancel/amend. Projects User can
-submit/amend but cannot cancel; Project write permission is also checked on rental
-writes. Read APIs respect Project, Assignment, Crane and Timesheet permissions.
+Work must fit a Reserved or Released allocation for the same Project and crane.
+Retrospective work is accepted after release while the Project is Open; work after
+the actual release is rejected. Closed Projects reject new timesheets. System
+Manager or Projects Manager may amend a cancelled timesheet for that same Project
+and crane on its original work dates. Submission and cancellation do not change
+Project or booking statuses.
 
-## Upgrade and preserved history
+Operator hours sum individual intervals. Crane billable hours use their union,
+so 08:00–12:00 plus 10:00–14:00 at 100/hour produces 8 operator hours, 6 crane hours
+and 600 total. Conflicting hourly rates on overlapping intervals and overlaps with
+another submitted crane timesheet are rejected. Submitted documents retain native
+Frappe edit protection.
 
-```bash
-bench --site YOUR_SITE backup
-bench --site YOUR_SITE migrate
-bench build --app jimmy_cranes
-```
+## Local development
 
-The versioned patch and idempotent install/migrate hooks:
+The custom Crane Project implementation, old status synchronization, scheduled
+start job, and legacy conversion patches have been retired. There are **no data
+conversion scripts**. Existing local rows using old statuses or custom-only Project
+IDs are intentionally not converted or deleted. Use fresh native Projects and
+fresh allocation/timesheet fixtures to exercise this workflow. Do not reset the
+site to run the tests. Removed fields may remain as unused physical database
+columns after Frappe schema synchronization; they are absent from the app model.
 
-- Copy only ERPNext Projects referenced by rental documents into Crane Project,
-  retaining the same IDs in the separate DocType and preserving the full source
-  record in read-only migration history. Existing ERPNext records are retained.
-- Move rental Link metadata to Crane Project; remove native Project event hooks,
-  JavaScript and dashboard overrides; hide the old rental custom field.
-- Copy old `end_date` into `expected_end_date`, map row Working/Completed to In
-  Progress/Complete, and derive parent status. Original parent/child records are
-  preserved in snapshots; removed metadata columns are not dropped from the DB.
-- Preserve old Crane status and map Maintenance/Inactive to physical condition;
-  Assigned/Available become Operational. Add missing period price rows without
-  replacing existing prices.
-- Move a single legacy child crane to the timesheet header. Original approval
-  labels and hours remain in a read-only snapshot. Missing shift times require
-  review before submission; old Approved records are **not** automatically submitted.
-- Stop before model migration if a legacy sheet has multiple/unknown cranes or is
-  already submitted and requires an explicit split/history migration policy.
+See [REFACTOR_NOTES.md](REFACTOR_NOTES.md) for the local verification results,
+remaining obsolete examples, assumptions, and the exact changed-file list.
 
-For unknown actual dates use **Actions → Review Legacy Dates** on assignments, then
-**Review Completion Date** on migrated completed Projects. Managers must supply
-verified dates. Existing conflicting historical records require business review;
-upgrading does not cancel, delete or guess corrections for them.
-
-The initial preflight also saves a private source snapshot at
-`private/files/jimmy_rental_v2_source.json` when upgrading legacy timesheets.
-See [MIGRATION_NOTES.md](MIGRATION_NOTES.md) for the development site's review items.
-
-## Verification
-
-On a development site with `allow_tests` enabled:
+With tests enabled on a development site:
 
 ```bash
 bench --site YOUR_SITE run-tests --module jimmy_cranes.jimmy_cranes.doctype.crane_assignment.test_crane_assignment
@@ -138,15 +96,8 @@ bench --site YOUR_SITE run-tests --module jimmy_cranes.jimmy_cranes.doctype.cran
 bench --site YOUR_SITE run-tests --module jimmy_cranes.jimmy_cranes.doctype.crane_assignment.test_rental_concurrency
 ```
 
-The concurrency test uses two independent connections and removes its explicitly
-created committed fixtures. Tests cover project/row lifecycles, bulk atomicity,
-100-crane batches, inclusive overlaps, prices, maintenance, overnight coverage,
-union billing, immutable submissions, permissions, history, migrations and races.
-
-Manual smoke check: create an unsaved Crane (three prices should already appear),
-reserve/start a batch, complete two selected cranes early, try reserving the same
-day versus the next day, submit two overlapping operator shifts at one rate, and
-open the Project overview and filtered fleet timeline.
+The concurrency test opens independent connections and deletes only its own
+explicitly created, committed fixtures. It tests booking and submission races.
 
 ## License
 

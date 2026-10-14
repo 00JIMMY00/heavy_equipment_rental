@@ -6,8 +6,12 @@ app_email = "j@gmail.com"
 app_license = "mit"
 required_apps = ["erpnext"]
 
-# Rental Projects are independent. No ERPNext Project/Timesheet overrides.
-before_migrate = "jimmy_cranes.migration.preflight"
-after_install = "jimmy_cranes.migration.migrate_existing"
-after_migrate = "jimmy_cranes.migration.migrate_existing"
-scheduler_events = {"daily": ["jimmy_cranes.rental_operations.start_scheduled_projects"]}
+# Extend native Project with booking guards; no status cascades or scheduled transitions.
+doc_events = {
+	"Project": {
+		"before_validate": "jimmy_cranes.project_events.before_validate",
+		"validate": "jimmy_cranes.project_events.validate",
+		"on_update": "jimmy_cranes.project_events.on_update",
+	}
+}
+doctype_js = {"Project": "public/js/project.js"}

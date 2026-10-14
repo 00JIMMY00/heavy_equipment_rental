@@ -10,7 +10,7 @@ from frappe.utils import cint, escape_html, flt, get_time, getdate, today
 
 RENTAL_ACTION = object()  # Cannot be supplied through JSON/import fields.
 
-ROW_STATUSES = ("Draft", "Reserved", "In Progress", "Complete", "Cancelled")
+ROW_STATUSES = ("Draft", "Reserved", "Released", "Cancelled")
 
 
 def check_date_order(start, end, label):
@@ -25,8 +25,8 @@ def check_non_negative(value, label):
 
 def project_doc(name, permission="read", lock=False):
 	if lock:
-		frappe.db.sql("SELECT name FROM `tabCrane Project` WHERE name=%s FOR UPDATE", name)
-	doc = frappe.get_doc("Crane Project", name, for_update=lock)
+		frappe.db.sql("SELECT name FROM `tabProject` WHERE name=%s FOR UPDATE", name)
+	doc = frappe.get_doc("Project", name, for_update=lock)
 	doc.check_permission(permission)
 	return doc
 
@@ -39,7 +39,9 @@ def lock_cranes(names):
 
 def crane_display_name(code, names=None):
 	"""Use the human-readable crane name in messages; retain codes as database keys."""
-	name = (names.get(code) if names is not None else frappe.db.get_value("Crane", code, "crane_name")) or code
+	name = (
+		names.get(code) if names is not None else frappe.db.get_value("Crane", code, "crane_name")
+	) or code
 	return escape_html(str(name))
 
 
@@ -50,26 +52,35 @@ def action_date(value):
 	return date
 
 
-def derived_status(rows):
-	states = {r.status for r in rows}
-	if not states or states == {"Draft"}:
-		return "Draft"
-	if states == {"Cancelled"}:
-		return "Cancelled"
-	if states <= {"Complete", "Cancelled"}:
-		return "Complete"
-	if "In Progress" in states or "Complete" in states:
-		return "In Progress"
-	return "Reserved" if "Reserved" in states else "Draft"
+def assignment_progress(rows):
+	counts = {status: sum(row.status == status for row in rows) for status in ROW_STATUSES}
+	total = len(rows) - counts["Cancelled"]
+	return {
+		**{status.lower() + "_cranes": count for status, count in counts.items()},
+		"total_cranes": total,
+		"completion_percentage": round(100 * counts["Released"] / total, 1) if total else 0,
+	}
 
 
 def allocation_window(row):
-	if row.status in ("Draft", "Cancelled") or not row.start_date or not row.expected_end_date:
+	if row.status not in ("Reserved", "Released") or not row.start_date:
 		return None
-	# Legacy completed rows with unknown release keep the planned reservation
-	# until reviewed. We never invent an actual release date.
-	end = row.actual_end_date if row.status == "Complete" else row.expected_end_date
-	return getdate(row.start_date), getdate(end or row.expected_end_date)
+	end = row.actual_end_date if row.status == "Released" else row.expected_end_date
+	return (getdate(row.start_date), getdate(end)) if end else None
+
+
+def overdue_reservation(row):
+	return row.status == "Reserved" and getdate(row.expected_end_date) < getdate(today())
+
+
+def booking_conflict(row, other):
+	window, other_window = allocation_window(row), allocation_window(other)
+	if not window or not other_window or row.crane != other.crane:
+		return False
+	if ranges_overlap(*window, *other_window):
+		return True
+	# An unconfirmed release must be resolved before committing the crane again.
+	return overdue_reservation(other) and window[1] >= getdate(today()) and window[0] > other_window[1]
 
 
 def ranges_overlap(start, end, other_start, other_end):
@@ -164,10 +175,9 @@ def billable_totals(intervals):
 def recorded_work(project, cranes):
 	if not cranes:
 		return []
-	# Legacy approval remains in the snapshot; docstatus is authoritative for new sheets.
 	return frappe.db.sql(
 		"""SELECT e.*, s.name AS timesheet, s.crane AS header_crane,
-        s.docstatus AS sheet_docstatus, s.legacy_needs_review
+        s.docstatus AS sheet_docstatus
         FROM `tabTimesheet Entry` e JOIN `tabCrane Timesheet` s ON s.name=e.parent
         WHERE e.parenttype='Crane Timesheet' AND s.project=%s AND s.crane IN %s
         AND s.docstatus<2 FOR UPDATE""",
@@ -177,13 +187,4 @@ def recorded_work(project, cranes):
 
 
 def entry_days(row):
-	if row.start_time is None or row.end_time is None or row.start_time == "" or row.end_time == "":
-		return [getdate(row.work_date)] if row.work_date else []
 	return list(work_days(*interval(row)))
-
-
-def protect_legacy(doc, fields):
-	before = doc.get_doc_before_save()
-	for name in fields:
-		if (doc.get(name) or "") != ((before.get(name) if before else None) or ""):
-			frappe.throw(_("Migration history is read-only ({0}).").format(name))

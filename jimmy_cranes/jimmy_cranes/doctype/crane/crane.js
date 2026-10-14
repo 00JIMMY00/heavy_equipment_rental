@@ -37,27 +37,21 @@ frappe.ui.form.on("Crane", {
 				const rows = data.future_reservations
 					.map(
 						(row) =>
-							`<tr><td><a href="/app/crane-project/${encodeURIComponent(
-								row.project
-							)}">${esc(
+							`<tr><td><a href="/app/project/${encodeURIComponent(row.project)}">${esc(
 								row.project
 							)}</a></td><td><a href="/app/crane-assignment/${encodeURIComponent(
 								row.assignment
-							)}">${esc(row.assignment)}</a></td><td>${esc(
-								row.start_date
-							)}</td><td>${esc(row.expected_end_date)}</td><td>${esc(
-								row.status
-							)}</td></tr>`
+							)}">${esc(row.assignment)}</a></td><td>${esc(row.start_date)}</td><td>${esc(
+								row.expected_end_date
+							)}</td><td>${esc(row.status)}</td></tr>`
 					)
 					.join("");
 				frm.fields_dict.availability_overview.$wrapper.html(
-					`<p><b>${__("Activity")}:</b> ${__(data.activity)} · <b>${__(
-						"Available"
-					)}:</b> ${data.available ? __("Yes") : __("No")} · ${__(
-						data.explanation
-					)}</p><p>${__("Future reservations")}: ${
-						data.has_future_reservations ? __("Yes") : __("None")
-					}</p>${
+					`<p><b>${__("Availability")}:</b> ${
+						data.available ? __("Available") : __("Unavailable")
+					} · ${data.indicators.map((value) => esc(__(value))).join(" · ")}</p><p>${__(
+						"Future reservations"
+					)}: ${data.has_future_reservations ? __("Yes") : __("None")}</p>${
 						rows
 							? `<div class="table-responsive"><table class="table table-bordered"><thead><tr>${[
 									"Project",

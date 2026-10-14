@@ -1,44 +1,55 @@
-async function crane_names_for_rows(rows) {
-	const codes = [...new Set(rows.map((row) => row.crane).filter(Boolean))];
-	if (!codes.length) return {};
-	const cranes = await frappe.db.get_list("Crane", {
-		fields: ["name", "crane_name"],
-		filters: { name: ["in", codes] },
-		limit: codes.length,
-	});
-	return Object.fromEntries(cranes.map((crane) => [crane.name, crane.crane_name]));
+function render_crane_progress(frm) {
+	const released = Number(frm.doc.released_cranes || 0);
+	const total = Number(frm.doc.total_cranes || 0);
+	const percent = Number(frm.doc.completion_percentage || 0);
+	const caption = total ? __("{0} / {1} Released", [released, total]) : __("No active crane allocations");
+	frm.get_field("completion_progress").$wrapper.html(`
+		<div class="mb-2"><strong>${percent.toFixed(1)}%</strong> · ${caption}</div>
+		<div class="progress" role="progressbar" aria-label="${__(
+			"Crane releases"
+		)}" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">
+			<div class="progress-bar" style="width:${percent}%"></div>
+		</div>`);
 }
 
 frappe.ui.form.on("Crane Assignment", {
 	refresh(frm) {
-		frm.set_query("project", () => ({ filters: { status: ["!=", "Complete"] } }));
-		const completed = Number(frm.doc.completed_cranes || 0);
-		const total = Number(frm.doc.total_cranes || 0);
-		const percentage = Math.max(0, Math.min(100, Number(frm.doc.completion_percentage || 0)));
-		frm.get_field("completion_progress").$wrapper.html(`
-			<div class="mb-2"><strong>${percentage.toFixed(1)}%</strong> · ${completed} / ${total} ${__("Cranes Completed")}</div>
-			<div class="progress" role="progressbar" aria-label="${__("Crane completion")}" aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">
-				<div class="progress-bar" style="width: ${percentage}%"></div>
-			</div>
-		`);
-		if (frm.is_new() || frm.is_dirty() || !frm.perm[0]?.write) return;
-		const eligible = {
-			Reserve: ["Draft"],
-			Start: ["Draft", "Reserved"],
-			Complete: ["In Progress"],
-			Cancel: ["Draft", "Reserved", "In Progress"],
-		};
-		for (const action of Object.keys(eligible)) {
-			const rows = (frm.doc.assigned_cranes || []).filter((row) =>
-				eligible[action].includes(row.status)
-			);
+		frm.set_query("project", () => ({ filters: { status: "Open" } }));
+		render_crane_progress(frm);
+		if (frm.is_new() || frm.is_dirty()) return;
+		frappe
+			.call({
+				method: "jimmy_cranes.rental_queries.assignment_summary",
+				args: { assignment: frm.doc.name },
+			})
+			.then(({ message }) => {
+				if (frm.is_dirty()) return;
+				Object.assign(frm.doc, message);
+				for (const field of Object.keys(message)) frm.refresh_field(field);
+				render_crane_progress(frm);
+			});
+		frm.add_custom_button(
+			__("Gantt Chart"),
+			() => frappe.set_route("crane-project-gantt", frm.doc.project),
+			__("View")
+		);
+		if (!frm.perm[0]?.write) return;
+		const eligible = { Reserve: ["Draft"], Release: ["Reserved"], Cancel: ["Draft", "Reserved"] };
+		for (const [action, states] of Object.entries(eligible)) {
+			const rows = (frm.doc.assigned_cranes || []).filter((row) => states.includes(row.status));
 			if (!rows.length) continue;
 			frm.add_custom_button(
-				__(`${action} Cranes`),
+				__(`${action} Selected`),
 				async () => {
-					const crane_names = await crane_names_for_rows(rows);
+					const codes = [...new Set(rows.map((r) => r.crane))];
+					const cranes = await frappe.db.get_list("Crane", {
+						fields: ["name", "crane_name"],
+						filters: { name: ["in", codes] },
+						limit: codes.length,
+					});
+					const names = Object.fromEntries(cranes.map((r) => [r.name, r.crane_name]));
 					const dialog = new frappe.ui.Dialog({
-						title: __(`${action} Cranes`),
+						title: __(`${action} Selected`),
 						size: "extra-large",
 						fields: [
 							{
@@ -79,12 +90,12 @@ frappe.ui.form.on("Crane Assignment", {
 										read_only: 1,
 									},
 								],
-								data: rows.map((row) => ({
-									row_name: row.name,
-									crane_name: crane_names[row.crane] || row.crane,
-									start_date: row.start_date,
-									expected_end_date: row.expected_end_date,
-									status: row.status,
+								data: rows.map((r) => ({
+									row_name: r.name,
+									crane_name: names[r.crane] || r.crane,
+									start_date: r.start_date,
+									expected_end_date: r.expected_end_date,
+									status: r.status,
 								})),
 							},
 							...(action === "Reserve"
@@ -93,41 +104,31 @@ frappe.ui.form.on("Crane Assignment", {
 										{
 											fieldname: "date",
 											fieldtype: "Date",
-											label: __(
-												action === "Complete"
-													? "Actual Completion Date"
-													: `${action} Date`
-											),
+											label:
+												action === "Release"
+													? __("Actual Release Date")
+													: __("Cancellation Date"),
 											default: frappe.datetime.get_today(),
 											reqd: 1,
 										},
 								  ]),
-							...(["Complete", "Cancel"].includes(action)
+							...(action === "Cancel"
 								? [
 										{
 											fieldname: "reason",
 											fieldtype: "Small Text",
-											label: __(
-												action === "Cancel"
-													? "Cancellation Reason"
-													: "Reason for Late Completion (if applicable)"
-											),
-											reqd: action === "Cancel",
-											description:
-												action === "Cancel"
-													? __(
-															"Cancellation is only for cranes with no recorded work. Complete cranes that participated."
-													  )
-													: __("Expected end dates remain unchanged."),
+											label: __("Cancellation Reason"),
+											reqd: 1,
+											description: __("If work is recorded, use Release instead."),
 										},
 								  ]
 								: []),
 						],
-						primary_action_label: __(`${action} Selected Cranes`),
+						primary_action_label: __(`${action} Selected`),
 						primary_action(values) {
 							const row_names = dialog.fields_dict.rows.grid
 								.get_selected_children()
-								.map((row) => row.row_name);
+								.map((r) => r.row_name);
 							if (!row_names.length)
 								return frappe.msgprint(
 									__("Select at least one crane row using the checkboxes.")
@@ -156,67 +157,5 @@ frappe.ui.form.on("Crane Assignment", {
 				__("Actions")
 			);
 		}
-		const legacy = (frm.doc.assigned_cranes || []).filter(
-			(row) => row.legacy_needs_review && row.status !== "Cancelled"
-		);
-		if (
-			legacy.length &&
-			(frappe.user.has_role("System Manager") || frappe.user.has_role("Projects Manager"))
-		)
-			frm.add_custom_button(
-				__("Review Legacy Dates"),
-				async () => {
-					const crane_names = await crane_names_for_rows(legacy);
-					frappe.prompt(
-						[
-							{
-								fieldname: "row_name",
-								fieldtype: "Select",
-								label: __("Allocation"),
-								options: legacy.map((r) => ({
-									value: r.name,
-									label: `${crane_names[r.crane] || r.crane} · ${r.start_date} — ${r.expected_end_date}`,
-								})),
-								reqd: 1,
-							},
-							{
-								fieldname: "actual_start_date",
-								fieldtype: "Date",
-								label: __("Verified Actual Start"),
-								reqd: 1,
-							},
-							{
-								fieldname: "actual_end_date",
-								fieldtype: "Date",
-								label: __("Verified Actual End (completed rows)"),
-							},
-							{
-								fieldname: "reason",
-								fieldtype: "Small Text",
-								label: __("Late Completion Reason"),
-							},
-						],
-						(values) =>
-							frappe
-								.call({
-									method: "jimmy_cranes.rental_operations.review_legacy_dates",
-									args: {
-										assignment: frm.doc.name,
-										project: frm.doc.project,
-										...values,
-									},
-									freeze: true,
-								})
-								.then(() => frm.reload_doc()),
-						__("Review Legacy Dates")
-					);
-				},
-				__("Actions")
-			);
-		frm.add_custom_button(
-			__("Gantt Chart"),
-			() => frappe.set_route("crane-project-gantt", frm.doc.project),
-			__("View")
-		);
 	},
 });

@@ -2,13 +2,12 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
-from jimmy_cranes.rental_validation import check_non_negative, lock_cranes, protect_legacy
+from jimmy_cranes.rental_validation import check_non_negative, lock_cranes
 
 
 class Crane(Document):
 	def validate(self):
 		check_non_negative(self.capacity_tons, _("Capacity"))
-		protect_legacy(self, ("legacy_status",))
 		if not self.is_new():
 			lock_cranes([self.name])
 		periods = set()
