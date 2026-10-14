@@ -11,6 +11,7 @@ from jimmy_cranes.rental_validation import (
 	allocations,
 	check_date_order,
 	check_non_negative,
+	crane_display_name,
 	derived_status,
 	entry_days,
 	lock_cranes,
@@ -34,31 +35,34 @@ class CraneAssignment(Document):
 		):
 			frappe.throw(_("An assignment with rental history cannot move to another Project."))
 		current = {r.name for r in self.assigned_cranes}
+		cranes = {r.crane for r in self.assigned_cranes} | {r.crane for r in old.values()}
+		lock_cranes(cranes)
+		crane_details = (
+			frappe.db.sql(
+				"SELECT name, crane_name, operational_condition FROM `tabCrane` WHERE name IN %s FOR UPDATE",
+				(tuple(cranes),),
+				as_dict=True,
+			)
+			if cranes
+			else []
+		)
+		conditions = {row.name: row.operational_condition for row in crane_details}
+		names = {row.name: row.crane_name for row in crane_details}
 		for previous in old.values():
 			if previous.name not in current and previous.status != "Draft":
 				frappe.throw(
 					_(
 						"Keep allocation history. Cancel or complete crane {0} instead of deleting its row."
-					).format(previous.crane)
+					).format(crane_display_name(previous.crane, names))
 				)
-		cranes = {r.crane for r in self.assigned_cranes} | {r.crane for r in old.values()}
-		lock_cranes(cranes)
-		conditions = (
-			dict(
-				frappe.db.sql(
-					"SELECT name, operational_condition FROM `tabCrane` WHERE name IN %s FOR UPDATE",
-					(tuple(cranes),),
-				)
-			)
-			if cranes
-			else {}
-		)
 		others = allocations(cranes, exclude=self.name) if cranes else []
 		work = recorded_work(before.project if before else self.project, cranes)
 		changed = []
 		for row in self.assigned_cranes:
 			previous = old.get(row.name)
-			label = _("Assignment {0}, row {1}, crane {2}").format(self.name, row.idx, row.crane)
+			label = _("Assignment {0}, row {1}, crane {2}").format(
+				self.name, row.idx, crane_display_name(row.crane, names)
+			)
 			check_date_order(row.start_date, row.expected_end_date, label)
 			check_non_negative(row.rental_rate, label + " rental rate")
 			if row.status not in ROW_STATUSES:
@@ -178,7 +182,7 @@ class CraneAssignment(Document):
 				if row.crane == other.crane and other_window and ranges_overlap(*window, *other_window):
 					frappe.throw(
 						_("Crane {0}, {1} to {2}, overlaps assignment {3}, Project {4} ({5} to {6}).").format(
-							row.crane,
+							crane_display_name(row.crane, names),
 							*window,
 							other.get("assignment") or self.name,
 							other.get("project") or self.project,
@@ -208,9 +212,16 @@ class CraneAssignment(Document):
 						frappe.throw(
 							_(
 								"Crane {0}: change would invalidate timesheet {1} on {2}. Correct/cancel that timesheet first."
-							).format(work_row.header_crane, work_row.timesheet, date)
+							).format(crane_display_name(work_row.header_crane, names), work_row.timesheet, date)
 						)
 		self.status = derived_status(self.assigned_cranes)
+		self.project_start_date = project.expected_start_date
+		self.project_end_date = project.expected_end_date
+		self.completed_cranes = sum(row.status == "Complete" for row in self.assigned_cranes)
+		self.total_cranes = sum(row.status != "Cancelled" for row in self.assigned_cranes)
+		self.completion_percentage = (
+			100 * self.completed_cranes / self.total_cranes if self.total_cranes else 0
+		)
 
 	def on_trash(self):
 		project_doc(self.project, "write", lock=True)

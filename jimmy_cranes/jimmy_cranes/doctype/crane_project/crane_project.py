@@ -3,10 +3,25 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import getdate
 
-from jimmy_cranes.rental_validation import RENTAL_ACTION, action_date, check_date_order, protect_legacy
+from jimmy_cranes.rental_validation import (
+	RENTAL_ACTION,
+	action_date,
+	check_date_order,
+	crane_display_name,
+	protect_legacy,
+)
 
 
 class CraneProject(Document):
+	def on_update(self):
+		if self.has_value_changed("expected_start_date") or self.has_value_changed("expected_end_date"):
+			frappe.db.sql(
+				"""UPDATE `tabCrane Assignment`
+				SET project_start_date=%s, project_end_date=%s
+				WHERE project=%s""",
+				(self.expected_start_date, self.expected_end_date, self.name),
+			)
+
 	def validate(self):
 		check_date_order(self.expected_start_date, self.expected_end_date, _("Crane Project"))
 		protect_legacy(self, ("legacy_erpnext_project", "legacy_snapshot"))
@@ -46,12 +61,14 @@ class CraneProject(Document):
 			frappe.throw(_("A Complete Project cannot be extended."))
 		if self.has_value_changed("expected_start_date") or self.has_value_changed("expected_end_date"):
 			outside = frappe.db.sql(
-				"""SELECT a.parent FROM `tabAssigned Crane` a JOIN `tabCrane Assignment` p ON p.name=a.parent
+				"""SELECT a.parent, a.crane FROM `tabAssigned Crane` a JOIN `tabCrane Assignment` p ON p.name=a.parent
                 WHERE p.project=%s AND a.status!='Cancelled' AND (a.start_date<%s OR COALESCE(a.actual_end_date,a.expected_end_date)>%s) LIMIT 1 FOR UPDATE""",
 				(self.name, self.expected_start_date, self.expected_end_date),
 			)
 			if outside:
-				frappe.throw(_("Project dates must cover assignment {0}.").format(outside[0][0]))
+				frappe.throw(_("Project dates must cover crane {0} in assignment {1}.").format(
+					crane_display_name(outside[0][1]), outside[0][0]
+				))
 
 	def validate_completion(self):
 		from jimmy_cranes.rental_validation import allocations, entry_days, recorded_work
@@ -64,8 +81,8 @@ class CraneProject(Document):
 		if pending:
 			frappe.throw(
 				_(
-					"Complete or cancel every crane row before completing this Project. Assignment {0} still has pending cranes."
-				).format(pending.assignment)
+					"Complete or cancel every crane row before completing this Project. Crane {0} in assignment {1} is still pending."
+				).format(crane_display_name(pending.crane), pending.assignment)
 			)
 		if any(r.status == "Complete" and not r.actual_end_date for r in rows):
 			frappe.throw(_("Review the missing actual completion dates on legacy crane rows first."))

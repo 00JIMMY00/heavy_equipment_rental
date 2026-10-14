@@ -103,7 +103,7 @@ frappe.ui.form.on("Crane Project", {
 					.map(
 						(row) =>
 							`<tr><td>${esc(
-								row.crane
+				row.crane_name || row.crane
 							)}</td><td><a href="/app/crane-assignment/${encodeURIComponent(
 								row.assignment
 							)}">${esc(row.assignment)}</a></td><td>${esc(

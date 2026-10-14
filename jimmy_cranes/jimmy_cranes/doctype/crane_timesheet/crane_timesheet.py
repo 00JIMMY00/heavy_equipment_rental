@@ -11,6 +11,7 @@ from jimmy_cranes.rental_validation import (
 	billable_totals,
 	check_date_order,
 	check_non_negative,
+	crane_display_name,
 	interval,
 	lock_cranes,
 	project_doc,
@@ -19,10 +20,34 @@ from jimmy_cranes.rental_validation import (
 )
 
 
+@frappe.whitelist()
+def default_timesheet_entries(period_start, period_end):
+	if not frappe.has_permission("Crane Timesheet", "create"):
+		frappe.throw(_("You cannot create Crane Timesheets."), frappe.PermissionError)
+	check_date_order(period_start, period_end, _("Timesheet period"))
+	start, end = getdate(period_start), getdate(period_end)
+	if (end - start).days > 366:
+		frappe.throw(_("Choose a timesheet period of at most 367 days."))
+	settings = frappe.get_single("Jimmy Cranes Settings")
+	settings.check_permission("read")
+	start_time = str(settings.day_shift_start_time or "08:00:00")
+	end_time = str(settings.day_shift_end_time or "16:00:00")
+	return [
+		{
+			"work_date": str(start + timedelta(days=offset)),
+			"start_time": start_time,
+			"end_time": end_time,
+			"ends_next_day": 0,
+		}
+		for offset in range((end - start).days + 1)
+	]
+
+
 class CraneTimesheet(Document):
 	def validate(self):
 		project = project_doc(self.project, "write", lock=True)
 		lock_cranes([self.crane])
+		crane_name = crane_display_name(self.crane)
 		if self.is_new() and self.amended_from:
 			source = frappe.get_doc("Crane Timesheet", self.amended_from, for_update=True)
 			source.check_permission("amend")
@@ -71,7 +96,7 @@ class CraneTimesheet(Document):
 			start, end = interval(row)
 			for day in work_days(start, end):
 				label = _("Row {0}, crane {1}, Project {2}, date {3}").format(
-					row.idx, self.crane, self.project, day
+					row.idx, crane_name, self.project, day
 				)
 				if day > getdate(today()):
 					frappe.throw(_("{0}: future work cannot be recorded.").format(label))
@@ -121,7 +146,7 @@ class CraneTimesheet(Document):
 					frappe.throw(
 						_(
 							"Crane {0}: shift overlaps submitted timesheet {1}. Cancel/amend that sheet before billing the same crane time again."
-						).format(self.crane, other.timesheet)
+						).format(crane_name, other.timesheet)
 					)
 
 	def before_submit(self):

@@ -27,6 +27,22 @@
    "in_standard_filter": 1
   },
   {
+   "fieldname": "project_start_date",
+   "fieldtype": "Date",
+   "label": "Project Start Date",
+   "fetch_from": "project.expected_start_date",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "project_end_date",
+   "fieldtype": "Date",
+   "label": "Project End Date",
+   "fetch_from": "project.expected_end_date",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
@@ -42,6 +58,40 @@
    "options": "Assigned Crane"
   },
   {
+   "fieldname": "completion_section",
+   "fieldtype": "Section Break",
+   "label": "Completion Progress"
+  },
+  {
+   "fieldname": "completion_progress",
+   "fieldtype": "HTML",
+   "label": "Completion Progress"
+  },
+  {
+   "fieldname": "completed_cranes",
+   "fieldtype": "Int",
+   "label": "Completed Cranes",
+   "read_only": 1,
+   "hidden": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "total_cranes",
+   "fieldtype": "Int",
+   "label": "Total Cranes",
+   "read_only": 1,
+   "hidden": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "completion_percentage",
+   "fieldtype": "Percent",
+   "label": "Completion Percentage",
+   "read_only": 1,
+   "hidden": 1,
+   "no_copy": 1
+  },
+  {
    "fieldname": "legacy_snapshot",
    "fieldtype": "Code",
    "label": "Legacy Snapshot",
@@ -54,8 +104,15 @@
  "field_order": [
   "naming_series",
   "project",
+  "project_start_date",
+  "project_end_date",
   "status",
   "assigned_cranes",
+  "completion_section",
+  "completion_progress",
+  "completed_cranes",
+  "total_cranes",
+  "completion_percentage",
   "legacy_snapshot"
  ],
  "istable": 0,

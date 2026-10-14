@@ -27,11 +27,12 @@ def visible_allocations(project=None, crane=None, status=None):
 		"Crane Assignment", filters={"project": ["in", projects]}, pluck="name", limit_page_length=0
 	)
 	cranes = frappe.get_list(
-		"Crane", filters={"name": crane} if crane else {}, pluck="name", limit_page_length=0
+		"Crane", filters={"name": crane} if crane else {}, fields=["name", "crane_name"], limit_page_length=0
 	)
-	if not parents or not cranes:
+	crane_names = {row.name: row.crane_name for row in cranes}
+	if not parents or not crane_names:
 		return []
-	filters = {"parent": ["in", parents], "parenttype": "Crane Assignment", "crane": ["in", cranes]}
+	filters = {"parent": ["in", parents], "parenttype": "Crane Assignment", "crane": ["in", list(crane_names)]}
 	if status:
 		filters["status"] = status
 	rows = frappe.get_all("Assigned Crane", filters=filters, fields=["*"], order_by="crane,start_date,idx")
@@ -42,6 +43,7 @@ def visible_allocations(project=None, crane=None, status=None):
 	)
 	for row in rows:
 		row.assignment, row.project = row.parent, mapping[row.parent]
+		row.crane_name = crane_names.get(row.crane, row.crane)
 	return rows
 
 

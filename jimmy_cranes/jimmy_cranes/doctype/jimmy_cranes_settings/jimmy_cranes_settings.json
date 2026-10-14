@@ -1,0 +1,54 @@
+{
+ "doctype": "DocType",
+ "name": "Jimmy Cranes Settings",
+ "module": "Jimmy Cranes",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "istable": 0,
+ "fields": [
+  {
+   "fieldname": "day_shift_start_time",
+   "fieldtype": "Time",
+   "label": "Default Day Shift Start",
+   "default": "08:00:00",
+   "reqd": 1
+  },
+  {
+   "fieldname": "day_shift_end_time",
+   "fieldtype": "Time",
+   "label": "Default Day Shift End",
+   "default": "16:00:00",
+   "reqd": 1
+  },
+  {
+   "fieldname": "day_shift_hours",
+   "fieldtype": "Float",
+   "label": "Default Day Shift Hours",
+   "read_only": 1,
+   "default": 8,
+   "precision": "2",
+   "description": "Calculated from the default start and end times."
+  }
+ ],
+ "field_order": [
+  "day_shift_start_time",
+  "day_shift_end_time",
+  "day_shift_hours"
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1
+  },
+  {
+   "role": "Projects Manager",
+   "read": 1,
+   "write": 1
+  },
+  {
+   "role": "Projects User",
+   "read": 1
+  }
+ ]
+}

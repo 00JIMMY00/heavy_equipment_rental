@@ -4,6 +4,7 @@ import frappe
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import getdate, today
 
+from jimmy_cranes.jimmy_cranes.doctype.crane_timesheet.crane_timesheet import default_timesheet_entries
 from jimmy_cranes.rental_operations import crane_action, project_action, start_scheduled_projects
 from jimmy_cranes.rental_queries import (
 	assigned_crane_query,
@@ -104,13 +105,16 @@ class TestCraneRental(FrappeTestCase):
 	def test_independent_project_and_row_lifecycles(self):
 		assignment = self.assignment(self.cranes)
 		project_action(self.project.name, "Reserve")
-		self.assertEqual(assignment.reload().status, "Draft")
-		self.action(assignment, "Reserve")
+		self.assertEqual(assignment.reload().status, "Reserved")
+		self.assertTrue(all(row.status == "Reserved" for row in assignment.assigned_cranes))
 		project_action(self.project.name, "Start")
 		self.assertEqual(assignment.reload().status, "Reserved")
 		self.action(assignment, "Start", [assignment.assigned_cranes[0].name])
 		self.action(assignment, "Complete", [assignment.assigned_cranes[0].name], day=10)
 		self.assertEqual(assignment.status, "In Progress")
+		self.assertEqual(assignment.completed_cranes, 1)
+		self.assertEqual(assignment.total_cranes, 3)
+		self.assertAlmostEqual(assignment.completion_percentage, 100 / 3)
 		self.assertEqual(assignment.assigned_cranes[1].status, "Reserved")
 		with self.assertRaises(frappe.ValidationError):
 			project_action(self.project.name, "Complete", self.d(10))
@@ -122,6 +126,9 @@ class TestCraneRental(FrappeTestCase):
 			reason="Not needed",
 		)
 		self.assertEqual(assignment.status, "Complete")
+		self.assertEqual(assignment.completed_cranes, 1)
+		self.assertEqual(assignment.total_cranes, 1)
+		self.assertEqual(assignment.completion_percentage, 100)
 		self.assertEqual(self.project.reload().status, "In Progress")
 		project_action(self.project.name, "Complete", self.d(10))
 		self.assertEqual(self.project.reload().status, "Complete")
@@ -129,6 +136,56 @@ class TestCraneRental(FrappeTestCase):
 			self.assignment(cranes=[self.cranes[2]], start=12)
 		with self.assertRaises(frappe.ValidationError):
 			project_action(self.project.name, "Start")
+
+	def test_day_shift_settings_fill_period(self):
+		settings = frappe.get_single("Jimmy Cranes Settings")
+		settings.day_shift_start_time = "07:30:00"
+		settings.day_shift_end_time = "15:30:00"
+		settings.save()
+		self.assertEqual(settings.day_shift_hours, 8)
+		rows = default_timesheet_entries(self.d(1), self.d(3))
+		self.assertEqual([row["work_date"] for row in rows], [self.d(1), self.d(2), self.d(3)])
+		self.assertTrue(all(row["start_time"] == "07:30:00" for row in rows))
+		self.assertTrue(all(row["end_time"] == "15:30:00" for row in rows))
+		self.assertTrue(all(row["ends_next_day"] == 0 for row in rows))
+		settings.day_shift_end_time = "06:00:00"
+		with self.assertRaises(frappe.ValidationError):
+			settings.save()
+
+	def test_project_reservation_conflict_is_atomic(self):
+		first = self.assignment(cranes=[self.cranes[0]])
+		second = self.assignment(cranes=[self.cranes[1]])
+		conflicting = self.assignment(cranes=[self.cranes[1]], project=self.other_project)
+		self.action(conflicting, "Reserve")
+		with self.assertRaisesRegex(frappe.ValidationError, self.cranes[1].crane_name):
+			project_action(self.project.name, "Reserve")
+		self.assertEqual(self.project.reload().status, "Draft")
+		self.assertEqual(first.reload().status, "Draft")
+		self.assertEqual(second.reload().status, "Draft")
+		self.assertEqual(first.assigned_cranes[0].status, "Draft")
+		self.assertEqual(second.assigned_cranes[0].status, "Draft")
+
+	def test_project_start_today_starts_reserved_rows(self):
+		self.project.expected_start_date = self.d(20)
+		self.project.save()
+		assignment = frappe.get_doc({
+			"doctype": "Crane Assignment",
+			"project": self.project.name,
+			"assigned_cranes": [{
+				"crane": self.cranes[0].name,
+				"start_date": self.d(20),
+				"expected_end_date": self.d(30),
+			}],
+		}).insert()
+		self.assertEqual(str(assignment.project_start_date), self.d(20))
+		self.assertEqual(str(assignment.project_end_date), self.d(70))
+		self.project.expected_end_date = self.d(71)
+		self.project.save()
+		self.assertEqual(str(assignment.reload().project_end_date), self.d(71))
+		project_action(self.project.name, "Reserve")
+		project_action(self.project.name, "Start")
+		self.assertEqual(assignment.reload().status, "In Progress")
+		self.assertEqual(assignment.assigned_cranes[0].status, "In Progress")
 
 	def test_early_release_inclusive_and_same_project_conflict(self):
 		assignment = self.active()
@@ -303,6 +360,7 @@ class TestCraneRental(FrappeTestCase):
 		self.assertEqual(lane["work"][0]["operator_hours"], 4)
 		self.assertEqual(lane["work"][0]["statuses"], ["Draft"])
 		self.assertEqual(project_overview(self.project.name)[0].assignment, assignment.name)
+		self.assertEqual(project_overview(self.project.name)[0].crane_name, self.cranes[0].crane_name)
 
 	def test_permission_checks(self):
 		assignment = self.assignment()

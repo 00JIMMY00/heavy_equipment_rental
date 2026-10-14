@@ -6,7 +6,7 @@ from decimal import Decimal
 
 import frappe
 from frappe import _
-from frappe.utils import cint, flt, get_time, getdate, today
+from frappe.utils import cint, escape_html, flt, get_time, getdate, today
 
 RENTAL_ACTION = object()  # Cannot be supplied through JSON/import fields.
 
@@ -35,6 +35,12 @@ def lock_cranes(names):
 	names = tuple(sorted(set(filter(None, names))))
 	if names:
 		frappe.db.sql("SELECT name FROM `tabCrane` WHERE name IN %s ORDER BY name FOR UPDATE", (names,))
+
+
+def crane_display_name(code, names=None):
+	"""Use the human-readable crane name in messages; retain codes as database keys."""
+	name = (names.get(code) if names is not None else frappe.db.get_value("Crane", code, "crane_name")) or code
+	return escape_html(str(name))
 
 
 def action_date(value):

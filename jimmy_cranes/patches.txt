@@ -2,3 +2,4 @@
 
 [post_model_sync]
 jimmy_cranes.patches.v2_independent_projects
+jimmy_cranes.patches.v3_assignment_progress

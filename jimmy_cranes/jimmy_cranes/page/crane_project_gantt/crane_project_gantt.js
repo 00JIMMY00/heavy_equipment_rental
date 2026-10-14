@@ -301,7 +301,7 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 			}
 			html.push(`<div class="crane-gantt-row"><div class="crane-gantt-label">${escape(
 				lane.crane_name
-			)}<small>${escape(lane.crane)}</small>${[
+			)}${[
 				...new Set(lane.segments.map((s) => s.project)),
 			]
 				.map(
