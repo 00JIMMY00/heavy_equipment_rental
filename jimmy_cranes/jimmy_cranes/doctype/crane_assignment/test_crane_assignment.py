@@ -5,7 +5,7 @@ from frappe.tests.utils import FrappeTestCase
 from frappe.utils import getdate, today
 
 from jimmy_cranes.jimmy_cranes.doctype.crane_timesheet.crane_timesheet import default_timesheet_entries
-from jimmy_cranes.rental_operations import crane_action
+from jimmy_cranes.rental_operations import crane_action, project_action
 from jimmy_cranes.rental_queries import (
 	assigned_crane_query,
 	crane_availability,
@@ -44,9 +44,7 @@ class TestCraneRental(FrappeTestCase):
 	def new_project(self):
 		return frappe.get_doc(
 			{
-				"doctype": "Project",
-				"company": frappe.get_all("Company", pluck="name", limit=1)[0],
-				"percent_complete_method": "Manual",
+				"doctype": "Crane Project",
 				"status": "Open",
 				"project_name": "Project " + frappe.generate_hash(length=8),
 				"customer": self.customer.name,
@@ -275,8 +273,8 @@ class TestCraneRental(FrappeTestCase):
 
 	def close_project(self, status="Completed"):
 		self.project.reload()
-		self.project.status = status
-		self.project.save()
+		project_action(self.project.name, {"Completed": "Complete", "Cancelled": "Cancel"}[status])
+		self.project.reload()
 
 	def test_future_booking_and_no_automatic_transitions(self):
 		assignment = self.assignment(cranes=self.cranes[:2], start=30, end=60)
@@ -463,18 +461,6 @@ class TestCraneRental(FrappeTestCase):
 		self.assertEqual(assignment.completion_percentage, 100)
 		self.assertEqual(self.project.reload().status, "Open")
 
-	def test_native_task_completion_does_not_close_rental_project(self):
-		self.project.percent_complete_method = "Task Completion"
-		self.project.save()
-		self.active()
-		self.assertEqual(self.project.reload().percent_complete_method, "Manual")
-		task = frappe.get_doc(
-			{"doctype": "Task", "subject": "Rental task " + self.key, "project": self.project.name}
-		).insert()
-		task.status = "Completed"
-		task.save()
-		self.assertEqual(self.project.reload().status, "Open")
-
 	def test_late_release_checks_other_bookings(self):
 		assignment = self.active(end=5)
 		following = self.assignment(project=self.other_project, start=6, end=15)
@@ -502,16 +488,3 @@ class TestCraneRental(FrappeTestCase):
 		self.assertFalse(crane_availability(self.cranes[0].name, self.d(9), self.d(12))["available"])
 		self.assertTrue(crane_availability(self.cranes[0].name, self.d(11), self.d(12))["available"])
 
-	def test_unrelated_native_project_keeps_task_completion_behavior(self):
-		self.other_project.percent_complete_method = "Task Completion"
-		self.other_project.save()
-		task = frappe.get_doc(
-			{
-				"doctype": "Task",
-				"subject": "Native task " + self.key,
-				"project": self.other_project.name,
-			}
-		).insert()
-		task.status = "Completed"
-		task.save()
-		self.assertEqual(self.other_project.reload().status, "Completed")

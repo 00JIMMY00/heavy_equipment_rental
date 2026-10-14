@@ -22,7 +22,7 @@ def visible_allocations(project=None, crane=None, status=None):
 	if project:
 		project_doc(project)
 	projects = frappe.get_list(
-		"Project", filters={"name": project} if project else {}, pluck="name", limit_page_length=0
+		"Crane Project", filters={"name": project} if project else {}, pluck="name", limit_page_length=0
 	)
 	if not projects:
 		return []
@@ -182,7 +182,7 @@ def get_project_timeline(project=None, from_date=None, to_date=None, crane=None,
 			}
 		)
 	visible_projects = frappe.get_list(
-		"Project", filters={"name": project} if project else {}, pluck="name", limit_page_length=0
+		"Crane Project", filters={"name": project} if project else {}, pluck="name", limit_page_length=0
 	)
 	sheets = []
 	if visible_projects:

@@ -1,11 +1,10 @@
 # Jimmy Cranes
 
-Crane rental management for Frappe/ERPNext. The Jimmy Cranes workspace uses native
-ERPNext **Project** and the existing crane, assignment and timesheet DocTypes.
+Crane rental management for Frappe/ERPNext. The Jimmy Cranes workspace uses its own **Crane Project** DocType alongside crane, assignment and timesheet DocTypes. ERPNext Project is independent.
 
 ## Workflow
 
-1. Create an **Open Project** and one or more **Crane Assignments**. Each assignment
+1. Create an **Open Crane Project** and one or more **Crane Assignments**. Each assignment
    is a non-submittable batch containing 100+ **Assigned Crane** child rows.
 2. Add proposed cranes and planned dates as **Draft** rows. Drafts do not reserve
    availability. Use **Reserve Selected** to commit the selected cranes.
@@ -15,7 +14,7 @@ ERPNext **Project** and the existing crane, assignment and timesheet DocTypes.
 4. Use **Release Selected** to record the actual release date. The expected end
    remains unchanged. Use **Cancel Selected** with a date and reason only when no
    work has been recorded, including draft timesheets.
-5. Explicitly mark the native Project **Completed** or **Cancelled** after all Draft
+5. Explicitly mark the Crane Project **Completed** or **Cancelled** after all Draft
    and Reserved allocations are resolved and all draft timesheets are submitted
    or removed. Releasing the last crane never closes the Project automatically.
 
@@ -26,11 +25,9 @@ progress bar. Cancelled rows are excluded from its denominator; Draft rows remai
 included. Three Released, five Reserved and two Cancelled rows give **3 / 8 Released
 (37.5%)**. An empty or fully cancelled batch shows 0% and “No active crane allocations”.
 
-Projects with crane allocations use native Manual percent completion so ERPNext
-Task updates cannot silently finish them. App hooks enforce closing checks. Native
-Project behavior for unrelated projects is not overridden, and ERPNext core files
-are not modified. Project has a read-only crane overview; allocations are edited
-only through their Assignment.
+Crane Project has a read-only crane overview and explicit Complete/Cancel actions.
+Its controller checks that crane rows and draft timesheets are resolved before closure.
+ERPNext Project has no Jimmy Cranes hooks or form script.
 
 ## Dates and availability
 
@@ -77,13 +74,9 @@ Frappe edit protection.
 
 ## Local development
 
-The custom Crane Project implementation, old status synchronization, scheduled
-start job, and legacy conversion patches have been retired. There are **no data
-conversion scripts**. Existing local rows using old statuses or custom-only Project
-IDs are intentionally not converted or deleted. Use fresh native Projects and
-fresh allocation/timesheet fixtures to exercise this workflow. Do not reset the
-site to run the tests. Removed fields may remain as unused physical database
-columns after Frappe schema synchronization; they are absent from the app model.
+Crane Project is a separate DocType. No data conversion scripts or database reset
+were run. Older local records with retired statuses were left untouched; create
+fresh allocations for this workflow.
 
 See [REFACTOR_NOTES.md](REFACTOR_NOTES.md) for the local verification results,
 remaining obsolete examples, assumptions, and the exact changed-file list.

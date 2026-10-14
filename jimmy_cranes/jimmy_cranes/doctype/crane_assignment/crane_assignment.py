@@ -39,10 +39,6 @@ class CraneAssignment(Document):
 			frappe.throw(_("An assignment with booking history cannot move to another Project."))
 		if project.status != "Open":
 			frappe.throw(_("Crane allocations can only be changed on an Open Project."))
-		# Native task progress must not close a rental Project automatically.
-		if project.percent_complete_method != "Manual":
-			project.percent_complete_method = "Manual"
-			project.save()
 		cranes = {r.crane for r in self.assigned_cranes} | {r.crane for r in old.values()}
 		lock_cranes(cranes)
 		details = (

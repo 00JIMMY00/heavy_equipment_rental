@@ -8,6 +8,28 @@ from jimmy_cranes.rental_validation import RENTAL_ACTION, action_date, project_d
 
 
 @frappe.whitelist()
+def project_action(project, action):
+	if action not in ("Complete", "Cancel"):
+		frappe.throw(_("Unknown Crane Project action."))
+	doc = project_doc(project, "write", lock=True)
+	if doc.status != "Open":
+		frappe.throw(_("Only an Open Crane Project can be closed."))
+	doc.status = {"Complete": "Completed", "Cancel": "Cancelled"}[action]
+	if action == "Complete":
+		doc.completion_date = action_date(None)
+	doc.flags.rental_action = RENTAL_ACTION
+	frappe.db.savepoint("crane_project_action")
+	try:
+		doc.save()
+	except frappe.QueryDeadlockError:
+		raise
+	except Exception:
+		frappe.db.rollback(save_point="crane_project_action")
+		raise
+	return doc.as_dict()
+
+
+@frappe.whitelist()
 def crane_action(assignment, project, row_names, action, date=None, reason=None):
 	project_doc(project, "write", lock=True)
 	doc = frappe.get_doc("Crane Assignment", assignment, for_update=True)

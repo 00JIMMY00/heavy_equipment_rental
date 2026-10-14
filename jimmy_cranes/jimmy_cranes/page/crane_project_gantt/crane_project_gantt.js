@@ -17,9 +17,9 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 	const fields = {};
 	fields.project = page.add_field({
 		fieldname: "project",
-		label: __("Project"),
+		label: __("Crane Project"),
 		fieldtype: "Link",
-		options: "Project",
+		options: "Crane Project",
 		change: () => {
 			state.project = fields.project.get_value();
 			load();
@@ -273,7 +273,7 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 			html.push(`<div class="crane-gantt-row"><div class="crane-gantt-label">${escape(
 				lane.crane_name
 			)}${[...new Set(lane.segments.map((s) => s.project))]
-				.map((p) => `<small><a href="/app/project/${encodeURIComponent(p)}">${escape(p)}</a></small>`)
+				.map((p) => `<small><a href="/app/crane-project/${encodeURIComponent(p)}">${escape(p)}</a></small>`)
 				.join("")}</div>
 				<div class="crane-gantt-track" style="width:${track_width}px;min-height:${Math.max(
 				62,

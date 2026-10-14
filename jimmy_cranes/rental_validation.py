@@ -25,8 +25,8 @@ def check_non_negative(value, label):
 
 def project_doc(name, permission="read", lock=False):
 	if lock:
-		frappe.db.sql("SELECT name FROM `tabProject` WHERE name=%s FOR UPDATE", name)
-	doc = frappe.get_doc("Project", name, for_update=lock)
+		frappe.db.sql("SELECT name FROM `tabCrane Project` WHERE name=%s FOR UPDATE", name)
+	doc = frappe.get_doc("Crane Project", name, for_update=lock)
 	doc.check_permission(permission)
 	return doc
 

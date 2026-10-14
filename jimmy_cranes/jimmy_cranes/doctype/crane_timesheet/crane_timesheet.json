@@ -20,8 +20,8 @@
   {
    "fieldname": "project",
    "fieldtype": "Link",
-   "label": "Project",
-   "options": "Project",
+   "label": "Crane Project",
+   "options": "Crane Project",
    "reqd": 1,
    "in_list_view": 1,
    "in_standard_filter": 1

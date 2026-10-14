@@ -20,7 +20,7 @@ class TestRentalConcurrency(FrappeTestCase):
 		site, sites_path = frappe.local.site, frappe.local.sites_path
 		all_docs = {
 			"Crane Assignment": [first.name, second.name],
-			"Project": [sample.project.name, sample.other_project.name],
+			"Crane Project": [sample.project.name, sample.other_project.name],
 			"Crane": [r.name for r in sample.cranes],
 			"Crane Operator": [r.name for r in sample.operators],
 			"Customer": [sample.customer.name],

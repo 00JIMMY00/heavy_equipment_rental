@@ -37,7 +37,7 @@ frappe.ui.form.on("Crane", {
 				const rows = data.future_reservations
 					.map(
 						(row) =>
-							`<tr><td><a href="/app/project/${encodeURIComponent(row.project)}">${esc(
+							`<tr><td><a href="/app/crane-project/${encodeURIComponent(row.project)}">${esc(
 								row.project
 							)}</a></td><td><a href="/app/crane-assignment/${encodeURIComponent(
 								row.assignment
