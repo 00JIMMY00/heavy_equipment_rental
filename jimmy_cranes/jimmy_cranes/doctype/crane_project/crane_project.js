@@ -59,7 +59,13 @@ frappe.ui.form.on("Crane Project", {
 			if (frappe.model.can_read(doctype))
 				frm.add_custom_button(__(label), () => frappe.set_route("List", doctype, { project: frm.doc.name }), __("View"));
 		});
-		frm.add_custom_button(__("Fleet Reservations"), () => frappe.set_route("crane-project-gantt", frm.doc.name), __("View"));
+		frm.add_custom_button(__("Fleet Reservations"), () => {
+			frappe.route_options = {
+				from_date: frm.doc.expected_start_date,
+				to_date: frm.doc.expected_end_date,
+			};
+			frappe.set_route("crane-project-gantt", frm.doc.name);
+		}, __("View"));
 		if (frappe.model.can_read("Sales Invoice") && frappe.model.can_read("Crane Timesheet"))
 			frm.add_custom_button(__("Sales Invoices"), () => frappe.call({
 				method: "jimmy_cranes.billing.project_invoice_summary",

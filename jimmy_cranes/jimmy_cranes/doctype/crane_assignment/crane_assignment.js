@@ -30,7 +30,15 @@ frappe.ui.form.on("Crane Assignment", {
 			});
 		frm.add_custom_button(
 			__("Gantt Chart"),
-			() => frappe.set_route("crane-project-gantt", frm.doc.project),
+			() => {
+				const rows = frm.doc.assigned_cranes || [];
+				frappe.route_options = {
+					assignment: frm.doc.name,
+					from_date: rows.length ? rows.map((r) => r.start_date).sort()[0] : frm.doc.project_start_date,
+					to_date: rows.length ? rows.map((r) => r.expected_end_date).sort().at(-1) : frm.doc.project_end_date,
+				};
+				frappe.set_route("crane-project-gantt", frm.doc.project);
+			},
 			__("View")
 		);
 		if (!frm.perm[0]?.write) return;

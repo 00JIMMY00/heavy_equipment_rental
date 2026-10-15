@@ -231,6 +231,9 @@ class TestCraneRental(FrappeTestCase):
 		self.assertEqual(sheet.total_crane_billable_hours, 6)
 		self.assertEqual(sheet.total_amount, 600)
 		self.assertEqual(sum(r.line_amount for r in sheet.timesheet_entries), 800)
+		marker = get_project_timeline(self.project.name, self.d(5), self.d(5))["cranes"][0]["work"][0]
+		self.assertEqual(marker["crane_hours"], 6)
+		self.assertEqual(marker["operator_hours"], 8)
 		with self.assertRaises(frappe.ValidationError):
 			self.sheet().insert()
 
@@ -288,8 +291,13 @@ class TestCraneRental(FrappeTestCase):
 
 	def test_timeline_layers_and_readonly_overview(self):
 		assignment = self.active()
+		other_assignment = self.assignment(cranes=[self.cranes[1]])
 		self.sheet().insert()
-		data = get_project_timeline(self.project.name, self.d(0), self.d(30))
+		data = get_project_timeline(self.project.name, self.d(0), self.d(30), assignment=assignment.name)
+		self.assertEqual(len(data["cranes"]), 1)
+		self.assertNotEqual(data["cranes"][0]["crane"], other_assignment.assigned_cranes[0].crane)
+		with self.assertRaises(frappe.ValidationError):
+			get_project_timeline(self.other_project.name, self.d(0), self.d(30), assignment=assignment.name)
 		lane = data["cranes"][0]
 		self.assertEqual(str(lane["segments"][0]["end_date"]), self.d(30))
 		self.assertEqual(lane["work"][0]["operator_hours"], 4)

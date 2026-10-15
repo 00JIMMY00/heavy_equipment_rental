@@ -145,12 +145,20 @@ def crane_availability(crane, date=None, to_date=None):
 
 
 @frappe.whitelist()
-def get_project_timeline(project=None, from_date=None, to_date=None, crane=None, status=None):
+def get_project_timeline(project=None, from_date=None, to_date=None, crane=None, status=None, assignment=None):
 	start, end = getdate(from_date or today()), getdate(to_date or today())
 	check_date_order(start, end, _("Timeline"))
 	if (end - start).days > 1096:
 		frappe.throw(_("Choose a timeline range of at most three years."))
+	if assignment:
+		assignment_doc = frappe.get_doc("Crane Assignment", assignment)
+		assignment_doc.check_permission("read")
+		if project and assignment_doc.project != project:
+			frappe.throw(_("Assignment does not belong to the selected Project."))
+		project = assignment_doc.project
 	rows = visible_allocations(project, crane, status)
+	if assignment:
+		rows = [row for row in rows if row.parent == assignment]
 	lanes = {}
 	crane_names = dict(
 		frappe.get_list("Crane", fields=["name", "crane_name"], limit_page_length=0, as_list=True)
@@ -216,12 +224,20 @@ def get_project_timeline(project=None, from_date=None, to_date=None, crane=None,
 		for day in entry_days(row):
 			if not start <= day <= end:
 				continue
+			if assignment and not any(
+				booking.crane == sheet.crane
+				and (window := allocation_window(booking))
+				and window[0] <= day <= window[1]
+				for booking in rows
+			):
+				continue
 			key = sheet.crane, day
 			marker = markers.setdefault(
 				key,
 				{
 					"date": day,
 					"operator_hours": 0,
+					"intervals": [],
 					"statuses": set(),
 					"timesheets": set(),
 				},
@@ -234,7 +250,19 @@ def get_project_timeline(project=None, from_date=None, to_date=None, crane=None,
 				- max(first, datetime.combine(day, time.min))
 			).total_seconds()
 			marker["operator_hours"] += seconds / 3600
+			if seconds > 0:
+				marker["intervals"].append((
+					max(first, datetime.combine(day, time.min)),
+					min(last, datetime.combine(day + timedelta(days=1), time.min)),
+				))
 	for (name, day), marker in markers.items():
+		merged = []
+		for first, last in sorted(marker.pop("intervals")):
+			if merged and first <= merged[-1][1]:
+				merged[-1] = (merged[-1][0], max(last, merged[-1][1]))
+			else:
+				merged.append((first, last))
+		marker["crane_hours"] = sum((last - first).total_seconds() / 3600 for first, last in merged)
 		marker["date"] = str(day)
 		marker["statuses"] = sorted(marker["statuses"])
 		marker["timesheets"] = sorted(marker["timesheets"])
