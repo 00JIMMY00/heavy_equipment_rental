@@ -45,5 +45,14 @@ frappe.ui.form.on("Crane Timesheet", {
 	period_end: fill_default_days,
 	refresh(frm) {
 		if (frm.doc.docstatus === 0 && !(frm.doc.timesheet_entries || []).length) fill_default_days(frm);
+		if (frm.doc.docstatus === 1 && frappe.model.can_create("Sales Invoice"))
+			frm.add_custom_button(__("Generate Sales Invoice"), () => frappe.call({
+				method: "jimmy_cranes.billing.generate_sales_invoice",
+				args: { timesheet: frm.doc.name },
+				freeze: true,
+				callback: ({ message }) => {
+					if (message?.name) frappe.set_route("Form", "Sales Invoice", message.name);
+				},
+			}), __("Create"));
 	},
 });

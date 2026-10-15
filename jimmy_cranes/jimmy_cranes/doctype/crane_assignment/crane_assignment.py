@@ -67,12 +67,13 @@ class CraneAssignment(Document):
 		guarded = (
 			"status",
 			"actual_end_date",
+			"status_before_cancel",
 			"cancellation_date",
 			"cancellation_reason",
 			"last_action_by",
 			"last_action_at",
 		)
-		business_fields = ("crane", "start_date", "expected_end_date", "rental_rate", *guarded)
+		business_fields = ("crane", "start_date", "expected_end_date", "rental_rate", "rental_rate_unit", *guarded)
 		for row in self.assigned_cranes:
 			previous = old.get(row.name)
 			label = _("Assignment {0}, row {1}, crane {2}").format(
@@ -80,6 +81,8 @@ class CraneAssignment(Document):
 			)
 			check_date_order(row.start_date, row.expected_end_date, label)
 			check_non_negative(row.rental_rate, label + " rental rate")
+			if row.rental_rate_unit not in ("Hour", "Day", "Month"):
+				frappe.throw(_("{0}: choose Hour, Day or Month for the rental rate.").format(label))
 			if row.status not in ROW_STATUSES:
 				frappe.throw(_("{0}: invalid booking status.").format(label))
 			if not previous:
@@ -90,9 +93,14 @@ class CraneAssignment(Document):
 			elif self.flags.rental_action is not RENTAL_ACTION and any(
 				str(row.get(f) or "") != str(previous.get(f) or "") for f in guarded
 			):
-				frappe.throw(_("{0}: use Reserve, Release or Cancel to change booking state.").format(label))
+				frappe.throw(_("{0}: use an Actions button to change booking state.").format(label))
 			if previous and row.status != previous.status:
-				allowed = {"Draft": ("Reserved", "Cancelled"), "Reserved": ("Released", "Cancelled")}
+				allowed = {
+					"Draft": ("Reserved", "Cancelled"),
+					"Reserved": ("Draft", "Released", "Cancelled"),
+					"Released": ("Reserved",),
+					"Cancelled": (previous.status_before_cancel,) if previous.status_before_cancel else ("Draft", "Reserved"),
+				}
 				if row.status not in allowed.get(previous.status, ()):
 					frappe.throw(
 						_("{0}: invalid transition from {1} to {2}.").format(
@@ -104,7 +112,9 @@ class CraneAssignment(Document):
 				or before.project != self.project
 				or any(str(row.get(f) or "") != str(previous.get(f) or "") for f in business_fields)
 			)
-			if previous and previous.status in ("Released", "Cancelled") and altered:
+			if previous and previous.status in ("Released", "Cancelled") and altered and (
+				self.flags.rental_action is not RENTAL_ACTION or row.status == previous.status
+			):
 				frappe.throw(_("{0}: terminal booking history cannot be rewritten.").format(label))
 			if previous and previous.status != "Draft" and previous.crane != row.crane:
 				frappe.throw(
@@ -120,6 +130,8 @@ class CraneAssignment(Document):
 			elif row.actual_end_date:
 				frappe.throw(_("{0}: only a Released row can have an actual release date.").format(label))
 			if row.status == "Cancelled":
+				if row.status_before_cancel and row.status_before_cancel not in ("Draft", "Reserved"):
+					frappe.throw(_("{0}: invalid status before cancellation.").format(label))
 				if not row.cancellation_date or not (row.cancellation_reason or "").strip():
 					frappe.throw(_("{0}: cancellation date and reason are required.").format(label))
 				action_date(row.cancellation_date)
@@ -131,7 +143,7 @@ class CraneAssignment(Document):
 								"{0}: recorded work exists, including draft Timesheets. Use Release instead of Cancel."
 							).format(label)
 						)
-			elif row.cancellation_date or row.cancellation_reason:
+			elif row.status_before_cancel or row.cancellation_date or row.cancellation_reason:
 				frappe.throw(_("{0}: cancellation details require Cancelled status.").format(label))
 			if altered:
 				changed.append(row)

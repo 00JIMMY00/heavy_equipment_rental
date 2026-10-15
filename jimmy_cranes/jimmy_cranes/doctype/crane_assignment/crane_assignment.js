@@ -34,7 +34,10 @@ frappe.ui.form.on("Crane Assignment", {
 			__("View")
 		);
 		if (!frm.perm[0]?.write) return;
-		const eligible = { Reserve: ["Draft"], Release: ["Reserved"], Cancel: ["Draft", "Reserved"] };
+		const eligible = {
+			Reserve: ["Draft"], Release: ["Reserved"], Cancel: ["Draft", "Reserved"],
+			"Undo Reserve": ["Reserved"], "Undo Release": ["Released"], "Undo Cancel": ["Cancelled"],
+		};
 		for (const [action, states] of Object.entries(eligible)) {
 			const rows = (frm.doc.assigned_cranes || []).filter((row) => states.includes(row.status));
 			if (!rows.length) continue;
@@ -98,9 +101,8 @@ frappe.ui.form.on("Crane Assignment", {
 									status: r.status,
 								})),
 							},
-							...(action === "Reserve"
-								? []
-								: [
+							...(["Release", "Cancel"].includes(action)
+								? [
 										{
 											fieldname: "date",
 											fieldtype: "Date",
@@ -111,17 +113,27 @@ frappe.ui.form.on("Crane Assignment", {
 											default: frappe.datetime.get_today(),
 											reqd: 1,
 										},
-								  ]),
-							...(action === "Cancel"
+								  ]
+								: []),
+							...(["Cancel", "Undo Reserve", "Undo Release", "Undo Cancel"].includes(action)
 								? [
 										{
 											fieldname: "reason",
 											fieldtype: "Small Text",
-											label: __("Cancellation Reason"),
+											label: action === "Cancel" ? __("Cancellation Reason") : __("Correction Reason"),
 											reqd: 1,
-											description: __("If work is recorded, use Release instead."),
+											description: action === "Cancel" ? __("If work is recorded, use Release instead.") : __("Saved in the assignment timeline."),
 										},
 								  ]
+								: []),
+							...(action === "Undo Cancel"
+								? [{
+									fieldname: "restore_status",
+									fieldtype: "Select",
+									label: __("Restore Status For Legacy Rows"),
+									options: ["", "Draft", "Reserved"],
+									description: __("Leave blank when the original status was recorded. Older cancelled rows need a choice."),
+								}]
 								: []),
 						],
 						primary_action_label: __(`${action} Selected`),
@@ -143,6 +155,7 @@ frappe.ui.form.on("Crane Assignment", {
 										action,
 										date: values.date,
 										reason: values.reason,
+										restore_status: values.restore_status,
 									},
 									freeze: true,
 								})

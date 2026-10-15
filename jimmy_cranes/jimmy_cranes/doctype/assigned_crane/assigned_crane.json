@@ -55,6 +55,23 @@
    "non_negative": 1
   },
   {
+   "fieldname": "rental_rate_unit",
+   "fieldtype": "Select",
+   "label": "Rental Rate Unit",
+   "options": "Hour\nDay\nMonth",
+   "default": "Hour",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status_before_cancel",
+   "fieldtype": "Select",
+   "label": "Status Before Cancel",
+   "options": "\nDraft\nReserved",
+   "read_only": 1,
+   "no_copy": 1,
+   "hidden": 1
+  },
+  {
    "fieldname": "cancellation_date",
    "fieldtype": "Date",
    "label": "Cancellation Date",
@@ -91,6 +108,8 @@
   "actual_end_date",
   "status",
   "rental_rate",
+  "rental_rate_unit",
+  "status_before_cancel",
   "cancellation_date",
   "cancellation_reason",
   "last_action_by",

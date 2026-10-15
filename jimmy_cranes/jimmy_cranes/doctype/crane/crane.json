@@ -25,6 +25,14 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "label": "Sales Item",
+   "options": "Item",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
    "fieldname": "model",
    "fieldtype": "Data",
    "label": "Model",
@@ -78,6 +86,7 @@
  "field_order": [
   "naming_series",
   "crane_name",
+  "item",
   "model",
   "capacity_tons",
   "ownership_type",

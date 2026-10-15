@@ -17,9 +17,15 @@ class CraneProject(Document):
 				frappe.throw(_("New Crane Projects must be Open."))
 			return
 		if self.status != before.status:
-			if self.flags.rental_action is not RENTAL_ACTION or before.status != "Open" or self.status not in ("Completed", "Cancelled"):
-				frappe.throw(_("Use Complete Project or Cancel Project to close a Crane Project."))
-			self.validate_closure()
+			allowed = {
+				"Open": ("Completed", "Cancelled"),
+				"Completed": ("Open",),
+				"Cancelled": ("Open",),
+			}
+			if self.flags.rental_action is not RENTAL_ACTION or self.status not in allowed.get(before.status, ()):
+				frappe.throw(_("Use the Crane Project Actions to change its status."))
+			if self.status in ("Completed", "Cancelled"):
+				self.validate_closure()
 		elif self.status not in ("Open", "Completed", "Cancelled"):
 			frappe.throw(_("Invalid Crane Project status."))
 

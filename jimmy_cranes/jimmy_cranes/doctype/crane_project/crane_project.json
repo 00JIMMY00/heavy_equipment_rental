@@ -31,6 +31,12 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
@@ -69,6 +75,7 @@
   "naming_series",
   "project_name",
   "customer",
+  "company",
   "status",
   "expected_start_date",
   "expected_end_date",

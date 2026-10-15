@@ -19,15 +19,25 @@ Crane rental management for Frappe/ERPNext. The Jimmy Cranes workspace uses its 
    or removed. Releasing the last crane never closes the Project automatically.
 
 Only child rows have a booking status: **Draft → Reserved → Released**, or
-**Draft/Reserved → Cancelled**. Released and Cancelled rows are terminal. Crane
+**Draft/Reserved → Cancelled**. Explicit **Undo Reserve**, **Undo Release**, and
+**Undo Cancel** actions restore a mistaken action; a correction reason is required.
+Undo Cancel restores the recorded previous status. Older cancelled rows without
+that history require a choice of Draft or Reserved. Crane
 Assignment has no parent status: it shows counts and a server-calculated release
 progress bar. Cancelled rows are excluded from its denominator; Draft rows remain
 included. Three Released, five Reserved and two Cancelled rows give **3 / 8 Released
 (37.5%)**. An empty or fully cancelled batch shows 0% and “No active crane allocations”.
 
-Crane Project has a read-only crane overview and explicit Complete/Cancel actions.
+Crane Project has a read-only crane overview and explicit Complete, Cancel, and
+Reopen actions. Reopening requires a correction reason.
 Its controller checks that crane rows and draft timesheets are resolved before closure.
 ERPNext Project has no Jimmy Cranes hooks or form script.
+
+All booking actions and corrections are recorded in the Assignment or Crane
+Project timeline with the user, status change, and reason. Frappe change tracking
+remains enabled on the parent documents. Corrections run through the same availability
+and work-coverage checks: Undo Release can be blocked if the restored planned
+window overlaps another reservation or would leave recorded work uncovered.
 
 ## Dates and availability
 
@@ -71,6 +81,37 @@ so 08:00–12:00 plus 10:00–14:00 at 100/hour produces 8 operator hours, 6 cra
 and 600 total. Conflicting hourly rates on overlapping intervals and overlaps with
 another submitted crane timesheet are rejected. Submitted documents retain native
 Frappe edit protection.
+
+## Sales Items and invoicing
+
+Saving a Crane creates a linked, sellable non-stock ERPNext Item with **Hour** as
+its stock UOM. Existing cranes receive an Item when next saved or invoiced.
+Each Assigned Crane row has an agreed rental rate and **Hour**, **Day**, or
+**Month** rate unit. The timesheet entry's hourly price remains informational
+for operator/work calculations; invoices use the assignment's rental rate.
+
+**Generate Sales Invoice** on a submitted Crane Timesheet creates a draft invoice
+for that sheet. The same action on Crane Project groups its unbilled submitted
+timesheets into one draft invoice. The invoice links back to its source sheets;
+repeating the timesheet action opens the existing invoice, and project invoicing
+skips sheets already linked to an active invoice. Users review and submit the
+draft in ERPNext.
+
+When every submitted timesheet already has an invoice link, the Project action
+shows the existing Sales Invoices instead of reporting that none can be created.
+The **Sales Invoices** view lists each invoice, its source timesheets, status,
+total, and warnings for zero totals or missing crane Item lines. A flagged draft
+offers **Rebuild Draft Items**: after a reason is entered, it replaces that
+draft's items with charges recalculated from its linked submitted timesheets.
+Submitted invoices cannot be rebuilt this way. Existing invoices are never
+changed merely by opening the Project overview.
+
+Hourly billing uses distinct billable crane hours. Daily billing counts each
+crane's worked calendar day once across submitted timesheets in its project.
+Monthly billing prorates those distinct worked days by the number of days in
+each calendar month. A timesheet must fit one allocation row
+with a positive agreed rate. Invoice descriptions show the rate basis; daily
+and monthly charges use one service line to preserve currency precision.
 
 ## Local development
 

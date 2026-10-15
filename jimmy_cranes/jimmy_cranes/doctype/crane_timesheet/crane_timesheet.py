@@ -43,6 +43,11 @@ def default_timesheet_entries(period_start, period_end):
 
 
 class CraneTimesheet(Document):
+	def before_update_after_submit(self):
+		before = self.get_doc_before_save()
+		if before and self.sales_invoice != before.sales_invoice:
+			frappe.throw(_("The Sales Invoice link is managed by Generate Sales Invoice."))
+
 	def validate(self):
 		project = project_doc(self.project, "write", lock=True)
 		lock_cranes([self.crane])
@@ -116,6 +121,10 @@ class CraneTimesheet(Document):
 	def before_cancel(self):
 		project_doc(self.project, "write", lock=True)
 		lock_cranes([self.crane])
+		invoice = frappe.db.get_value("Crane Timesheet", self.name, "sales_invoice")
+		if invoice and frappe.db.exists("Sales Invoice", invoice):
+			if frappe.db.get_value("Sales Invoice", invoice, "docstatus") != 2:
+				frappe.throw(_("Cancel or remove Sales Invoice {0} before cancelling this Crane Timesheet.").format(invoice))
 
 	def on_trash(self):
 		project_doc(self.project, "write", lock=True)

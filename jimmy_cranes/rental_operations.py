@@ -1,26 +1,43 @@
-"""Permission-checked booking actions. Each bulk operation saves one parent atomically."""
+"""Permission-checked and audited crane booking actions."""
 
 import frappe
 from frappe import _
-from frappe.utils import now_datetime
+from frappe.utils import escape_html, now_datetime
 
-from jimmy_cranes.rental_validation import RENTAL_ACTION, action_date, project_doc
+from jimmy_cranes.rental_validation import RENTAL_ACTION, action_date, crane_display_name, project_doc
 
 
 @frappe.whitelist()
-def project_action(project, action):
-	if action not in ("Complete", "Cancel"):
+def project_action(project, action, reason=None):
+	if action not in ("Complete", "Cancel", "Reopen"):
 		frappe.throw(_("Unknown Crane Project action."))
 	doc = project_doc(project, "write", lock=True)
-	if doc.status != "Open":
+	if action == "Reopen":
+		if doc.status not in ("Completed", "Cancelled"):
+			frappe.throw(_("Only a Completed or Cancelled Crane Project can be reopened."))
+		if not (reason or "").strip():
+			frappe.throw(_("A reason is required to reopen a Crane Project."))
+	elif doc.status != "Open":
 		frappe.throw(_("Only an Open Crane Project can be closed."))
-	doc.status = {"Complete": "Completed", "Cancel": "Cancelled"}[action]
+	if action == "Cancel" and not (reason or "").strip():
+		frappe.throw(_("A reason is required to cancel a Crane Project."))
+	old_status = doc.status
+	doc.status = {"Complete": "Completed", "Cancel": "Cancelled", "Reopen": "Open"}[action]
 	if action == "Complete":
 		doc.completion_date = action_date(None)
+	elif action == "Reopen":
+		doc.completion_date = None
 	doc.flags.rental_action = RENTAL_ACTION
 	frappe.db.savepoint("crane_project_action")
 	try:
 		doc.save()
+		doc.add_comment(
+			"Info",
+			_("Project status changed from {0} to {1} by {2}. Reason: {3}").format(
+				escape_html(old_status), escape_html(doc.status), escape_html(frappe.session.user),
+				escape_html((reason or "").strip() or "—"),
+			),
+		)
 	except frappe.QueryDeadlockError:
 		raise
 	except Exception:
@@ -30,7 +47,7 @@ def project_action(project, action):
 
 
 @frappe.whitelist()
-def crane_action(assignment, project, row_names, action, date=None, reason=None):
+def crane_action(assignment, project, row_names, action, date=None, reason=None, restore_status=None):
 	project_doc(project, "write", lock=True)
 	doc = frappe.get_doc("Crane Assignment", assignment, for_update=True)
 	doc.check_permission("write")
@@ -40,33 +57,79 @@ def crane_action(assignment, project, row_names, action, date=None, reason=None)
 	if (
 		not isinstance(names, list)
 		or not names
-		or any(not isinstance(n, str) for n in names)
+		or any(not isinstance(name, str) for name in names)
 		or len(names) != len(set(names))
 	):
 		frappe.throw(_("Select one or more distinct crane rows."))
 	rows = {row.name: row for row in doc.assigned_cranes}
 	if set(names) - rows.keys():
 		frappe.throw(_("Selected crane rows must belong to this assignment."))
-	eligible = {"Reserve": ("Draft",), "Release": ("Reserved",), "Cancel": ("Draft", "Reserved")}
+	eligible = {
+		"Reserve": ("Draft",),
+		"Release": ("Reserved",),
+		"Cancel": ("Draft", "Reserved"),
+		"Undo Reserve": ("Reserved",),
+		"Undo Release": ("Released",),
+		"Undo Cancel": ("Cancelled",),
+	}
 	if action not in eligible:
 		frappe.throw(_("Unknown crane action."))
 	if any(rows[name].status not in eligible[action] for name in names):
 		frappe.throw(_("Select only {0} rows for {1}.").format(" / ".join(eligible[action]), action))
-	effective = action_date(date) if action != "Reserve" else None
-	if action == "Cancel" and not (reason or "").strip():
-		frappe.throw(_("A cancellation reason is required."))
+	effective = action_date(date) if action in ("Release", "Cancel") else None
+	if action in ("Cancel", "Undo Reserve", "Undo Release", "Undo Cancel") and not (reason or "").strip():
+		frappe.throw(_("A reason is required for cancellation or correction."))
+	if action == "Undo Cancel":
+		for name in names:
+			prior = rows[name].status_before_cancel
+			if prior and restore_status and prior != restore_status:
+				frappe.throw(_("Row {0} was {1} before cancellation; restore it to that status.").format(rows[name].idx, prior))
+			if not prior and restore_status not in ("Draft", "Reserved"):
+				frappe.throw(_("Choose Draft or Reserved for a legacy cancelled row with no prior status."))
+	audit = []
 	for name in names:
 		row = rows[name]
-		row.status = {"Reserve": "Reserved", "Release": "Released", "Cancel": "Cancelled"}[action]
+		old_status = row.status
+		old_release = row.actual_end_date
+		old_cancellation = row.cancellation_date
+		row.status = {
+			"Reserve": "Reserved",
+			"Release": "Released",
+			"Cancel": "Cancelled",
+			"Undo Reserve": "Draft",
+			"Undo Release": "Reserved",
+			"Undo Cancel": row.status_before_cancel or restore_status,
+		}[action]
 		if action == "Release":
 			row.actual_end_date = effective
 		elif action == "Cancel":
+			row.status_before_cancel = old_status
 			row.cancellation_date, row.cancellation_reason = effective, reason
+		elif action == "Undo Release":
+			row.actual_end_date = None
+		elif action == "Undo Cancel":
+			row.status_before_cancel = None
+			row.cancellation_date = None
+			row.cancellation_reason = None
 		row.last_action_by, row.last_action_at = frappe.session.user, now_datetime()
+		audit.append((
+			row.idx, row.crane, old_status, row.status,
+			old_release, row.actual_end_date, old_cancellation, row.cancellation_date,
+		))
 	doc.flags.rental_action = RENTAL_ACTION
 	frappe.db.savepoint("crane_bulk_action")
 	try:
 		doc.save()
+		for idx, crane, old_status, new_status, old_release, new_release, old_cancellation, new_cancellation in audit:
+			doc.add_comment(
+				"Info",
+				_("Crane {0}, row {1}: {2} → {3} by {4}. Release date: {5} → {6}; cancellation date: {7} → {8}. Reason: {9}").format(
+					crane_display_name(crane), idx, escape_html(old_status), escape_html(new_status),
+					escape_html(frappe.session.user), escape_html(str(old_release or "—")),
+					escape_html(str(new_release or "—")), escape_html(str(old_cancellation or "—")),
+					escape_html(str(new_cancellation or "—")), escape_html((reason or "").strip() or "—"),
+				),
+			)
 	except frappe.QueryDeadlockError:
 		# MariaDB already rolled back the transaction, including its savepoints.
 		raise
