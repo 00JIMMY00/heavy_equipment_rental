@@ -69,6 +69,17 @@
    "fieldname": "notes",
    "fieldtype": "Small Text",
    "label": "Notes"
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
+  },
+  {
+   "fieldname": "connections_invoice_html",
+   "fieldtype": "HTML",
+   "label": "Sales Invoices"
   }
  ],
  "field_order": [
@@ -80,7 +91,9 @@
   "expected_start_date",
   "expected_end_date",
   "completion_date",
-  "notes"
+  "notes",
+  "connections_tab",
+  "connections_invoice_html"
  ],
  "permissions": [
   {

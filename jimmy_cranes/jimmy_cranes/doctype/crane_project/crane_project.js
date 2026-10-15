@@ -48,18 +48,25 @@ function show_crane_project_invoices(project, rows, submitted_without_invoice = 
 	});
 }
 
+function show_project_invoice_connection(frm) {
+	const wrapper = frm.fields_dict.connections_invoice_html?.$wrapper;
+	if (!wrapper) return;
+	wrapper.empty();
+	if (frm.is_new() || !frappe.model.can_read("Sales Invoice") || !frappe.model.can_read("Crane Timesheet")) return;
+	const button = $('<button type="button" class="btn btn-default btn-sm">')
+		.text(__("Sales Invoices"))
+		.appendTo(wrapper);
+	button.on("click", () => frappe.call({
+		method: "jimmy_cranes.billing.project_invoice_summary",
+		args: { project: frm.doc.name },
+		callback: ({ message }) => show_crane_project_invoices(frm.doc.name, message?.invoices, message?.submitted_without_invoice),
+	}));
+}
+
 frappe.ui.form.on("Crane Project", {
 	refresh(frm) {
+		show_project_invoice_connection(frm);
 		if (frm.is_new()) return;
-		const links = [
-			["Crane Assignments", "Crane Assignment"],
-			["Crane Timesheets", "Crane Timesheet"],
-			["Expenses", "Expense Entry"],
-		];
-		links.forEach(([label, doctype]) => {
-			if (frappe.model.can_read(doctype))
-				frm.add_custom_button(__(label), () => frappe.set_route("List", doctype, { project: frm.doc.name }), __("View"));
-		});
 		frm.add_custom_button(__("Gantt Chart"), () => {
 			frappe.route_options = {
 				project: frm.doc.name,
@@ -67,13 +74,7 @@ frappe.ui.form.on("Crane Project", {
 				to_date: frm.doc.expected_end_date,
 			};
 			frappe.set_route("crane-project-gantt");
-		}, __("View"));
-		if (frappe.model.can_read("Sales Invoice") && frappe.model.can_read("Crane Timesheet"))
-			frm.add_custom_button(__("Sales Invoices"), () => frappe.call({
-				method: "jimmy_cranes.billing.project_invoice_summary",
-				args: { project: frm.doc.name },
-				callback: ({ message }) => show_crane_project_invoices(frm.doc.name, message?.invoices, message?.submitted_without_invoice),
-			}), __("View"));
+		});
 		if (frappe.model.can_create("Sales Invoice"))
 			frm.add_custom_button(__("Generate Sales Invoice"), () => frappe.call({
 				method: "jimmy_cranes.billing.generate_sales_invoice",
