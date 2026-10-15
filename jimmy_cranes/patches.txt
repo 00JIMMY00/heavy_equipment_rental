@@ -1,3 +1,4 @@
 [pre_model_sync]
 
 [post_model_sync]
+jimmy_cranes.patches.add_hour_crane_price

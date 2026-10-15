@@ -3,7 +3,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import escape_html
+from frappe.utils import escape_html, getdate
 
 from jimmy_cranes.rental_validation import RENTAL_ACTION, allocations, check_date_order, crane_display_name
 
@@ -12,6 +12,19 @@ class CraneProject(Document):
 	def validate(self):
 		check_date_order(self.expected_start_date, self.expected_end_date, _("Crane Project"))
 		before = self.get_doc_before_save()
+		if before and (
+			self.expected_start_date != before.expected_start_date
+			or self.expected_end_date != before.expected_end_date
+		):
+			for row in allocations(project=self.name):
+				if (
+					getdate(row.start_date) < getdate(self.expected_start_date)
+					or getdate(row.expected_end_date) > getdate(self.expected_end_date)
+					or (row.actual_end_date and getdate(row.actual_end_date) > getdate(self.expected_end_date))
+				):
+					frappe.throw(_("Project dates must cover assignment {0}, row {1} ({2} to {3}).").format(
+						row.assignment, row.idx, row.start_date, row.expected_end_date
+					))
 		if not before:
 			if self.status != "Open":
 				frappe.throw(_("New Crane Projects must be Open."))

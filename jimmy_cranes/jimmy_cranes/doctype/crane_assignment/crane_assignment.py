@@ -80,6 +80,13 @@ class CraneAssignment(Document):
 				self.name, row.idx, crane_display_name(row.crane, names)
 			)
 			check_date_order(row.start_date, row.expected_end_date, label)
+			if (
+				getdate(row.start_date) < getdate(project.expected_start_date)
+				or getdate(row.expected_end_date) > getdate(project.expected_end_date)
+			):
+				frappe.throw(_("{0}: assignment dates must be within the Project dates ({1} to {2}).").format(
+					label, project.expected_start_date, project.expected_end_date
+				))
 			check_non_negative(row.rental_rate, label + " rental rate")
 			if row.rental_rate_unit not in ("Hour", "Day", "Month"):
 				frappe.throw(_("{0}: choose Hour, Day or Month for the rental rate.").format(label))
@@ -127,6 +134,8 @@ class CraneAssignment(Document):
 					frappe.throw(_("{0}: actual release date is required.").format(label))
 				if action_date(row.actual_end_date) < getdate(row.start_date):
 					frappe.throw(_("{0}: release cannot precede the booking start.").format(label))
+				if getdate(row.actual_end_date) > getdate(project.expected_end_date):
+					frappe.throw(_("{0}: release cannot be after the Project end date.").format(label))
 			elif row.actual_end_date:
 				frappe.throw(_("{0}: only a Released row can have an actual release date.").format(label))
 			if row.status == "Cancelled":

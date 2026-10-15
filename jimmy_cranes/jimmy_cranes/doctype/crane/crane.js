@@ -1,7 +1,7 @@
 frappe.ui.form.on("Crane", {
 	onload(frm) {
 		if (frm.is_new()) {
-			for (const period of ["Day", "Month", "Year"]) {
+			for (const period of ["Hour", "Day", "Month", "Year"]) {
 				if (!(frm.doc.period_prices || []).some((row) => row.period === period))
 					frm.add_child("period_prices", { period, price: 0 });
 			}

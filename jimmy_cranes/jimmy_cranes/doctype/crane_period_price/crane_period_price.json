@@ -12,7 +12,7 @@
    "fieldname": "period",
    "fieldtype": "Select",
    "label": "Period",
-   "options": "Day\nMonth\nYear",
+   "options": "Hour\nDay\nMonth\nYear",
    "reqd": 1,
    "read_only": 1,
    "in_list_view": 1

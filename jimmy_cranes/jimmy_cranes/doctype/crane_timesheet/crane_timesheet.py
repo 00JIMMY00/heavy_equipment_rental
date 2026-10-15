@@ -72,14 +72,18 @@ class CraneTimesheet(Document):
 				frappe.throw(_("An amendment on a closed Project cannot add new work dates."))
 		if not self.timesheet_entries and self.docstatus == 1:
 			frappe.throw(_("Add at least one shift before submitting the timesheet."))
-		windows = [
-			allocation_window(r) for r in allocations([self.crane], self.project) if allocation_window(r)
+		bookings = [
+			(r, allocation_window(r))
+			for r in allocations([self.crane], self.project)
+			if allocation_window(r)
 		]
+		crane_hour_price = None
 		intervals, operator_hours = [], 0
 		for row in self.timesheet_entries:
 			check_non_negative(row.price_per_hour, _("Row {0} hourly price").format(row.idx))
 			start, end = interval(row)
-			for day in work_days(start, end):
+			days = list(work_days(start, end))
+			for day in days:
 				label = _("Row {0}, crane {1}, Project {2}, date {3}").format(
 					row.idx, crane_name, self.project, day
 				)
@@ -87,8 +91,21 @@ class CraneTimesheet(Document):
 					frappe.throw(_("{0}: future work cannot be recorded.").format(label))
 				if not getdate(self.period_start) <= day <= getdate(self.period_end):
 					frappe.throw(_("{0}: shift is outside the timesheet period.").format(label))
-				if not any(first <= day <= last for first, last in windows):
+				if not any(first <= day <= last for _, (first, last) in bookings):
 					frappe.throw(_("{0}: no Reserved or Released allocation covers this work.").format(label))
+			if not flt(row.price_per_hour):
+				matching = [booking for booking, (first, last) in bookings if all(first <= day <= last for day in days)]
+				if len(matching) != 1:
+					frappe.throw(_("Row {0}: a shift with no hourly price must fit one crane assignment. Split the shift at the assignment boundary.").format(row.idx))
+				booking = matching[0]
+				if booking.rental_rate_unit == "Hour" and flt(booking.rental_rate):
+					row.price_per_hour = booking.rental_rate
+				else:
+					if crane_hour_price is None:
+						crane_hour_price = frappe.db.get_value(
+							"Crane Period Price", {"parent": self.crane, "parenttype": "Crane", "period": "Hour"}, "price"
+						) or 0
+					row.price_per_hour = crane_hour_price
 			row.worked_hours = (end - start).total_seconds() / 3600
 			row.line_amount = row.worked_hours * flt(row.price_per_hour)
 			operator_hours += row.worked_hours

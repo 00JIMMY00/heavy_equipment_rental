@@ -63,9 +63,9 @@ def _billing_lines(selected, all_sheets, active_invoices):
 	for group in groups.values():
 		row = group[0][1]
 		if row.rental_rate_unit == "Hour":
-			sheets = [sheet for sheet, allocation_row, days in group]
-			lines.append(_invoice_line(sheets, row, set()))
-			invoice_sheets.extend(sheets)
+			for sheet, allocation_row, days in group:
+				lines.append(_invoice_line([sheet], row, set()))
+				invoice_sheets.append(sheet)
 			continue
 		new_days = set().union(*(days for sheet, allocation_row, days in group)) - {
 			day for (crane, day) in charged_by_day if crane == group[0][0].crane
@@ -177,14 +177,18 @@ def _rental_allocation(sheet, days):
 			_("Timesheet {0}: work must fit one Reserved or Released crane allocation with an agreed rental rate.").format(sheet.name)
 		)
 	row = matching[0]
-	if not flt(row.rental_rate) or row.rental_rate_unit not in ("Hour", "Day", "Month"):
+	if row.rental_rate_unit not in ("Hour", "Day", "Month") or (
+		row.rental_rate_unit != "Hour" and not flt(row.rental_rate)
+	):
 		frappe.throw(
-			_("Timesheet {0}: set a positive Hour, Day or Month rental rate on assignment {1}, row {2}.").format(
+			_("Timesheet {0}: set a positive Day or Month rental rate on assignment {1}, row {2}.").format(
 				sheet.name, row.assignment, row.idx
 			)
 		)
 	if flt(sheet.total_crane_billable_hours) <= 0:
 		frappe.throw(_("Timesheet {0} has no billable crane hours.").format(sheet.name))
+	if row.rental_rate_unit == "Hour" and flt(sheet.total_amount) <= 0:
+		frappe.throw(_("Timesheet {0} has no positive hourly price.").format(sheet.name))
 	return row
 
 
@@ -201,7 +205,9 @@ def _invoice_line(sheets, allocation, charged_days):
 			Decimal(0),
 		)
 	)
-	amount = quantity * Decimal(str(allocation.rental_rate))
+	amount = Decimal(str(sheets[0].total_amount)) if unit == "Hour" else quantity * Decimal(str(allocation.rental_rate))
+	hourly_rates = {Decimal(str(entry.price_per_hour)) for entry in sheets[0].timesheet_entries} if unit == "Hour" else set()
+	hourly_rate = next(iter(hourly_rates)) if len(hourly_rates) == 1 else None
 	crane = frappe.get_doc("Crane", sheets[0].crane, for_update=True)
 	if not crane.item:
 		crane.ensure_sales_item()
@@ -214,19 +220,25 @@ def _invoice_line(sheets, allocation, charged_days):
 		"item_code": crane.item,
 		"item_name": crane.crane_name,
 		"uom": "Hour",
-		# ERPNext rounds a line's rate before multiplying. One service charge
-		# retains cents for daily and prorated monthly amounts.
-		"qty": float(hours) if unit == "Hour" else 1,
-		"rate": float(allocation.rental_rate) if unit == "Hour" else float(amount),
-		"description": _("Crane {0}; Timesheets {1}; assignment {2}, row {3}; {4} {5} at {6} per {7}").format(
-			crane.crane_name,
-			", ".join(sheet.name for sheet in sheets),
-			allocation.assignment,
-			allocation.idx,
-			float(quantity),
-			unit if quantity == 1 else unit + "s",
-			allocation.rental_rate,
-			unit,
+		# ERPNext rounds a line's rate before multiplying. Use one service
+		# charge when hourly rates vary, or for daily and monthly amounts.
+		"qty": float(hours) if unit == "Hour" and hourly_rate is not None else 1,
+		"rate": float(hourly_rate) if unit == "Hour" and hourly_rate is not None else float(amount),
+		"description": (
+			_("Crane {0}; Timesheet {1}; assignment {2}, row {3}; {4} billable hours at varying hourly prices").format(
+				crane.crane_name, sheets[0].name, allocation.assignment, allocation.idx, float(hours)
+			)
+			if unit == "Hour" and hourly_rate is None
+			else _("Crane {0}; Timesheets {1}; assignment {2}, row {3}; {4} {5} at {6} per {7}").format(
+				crane.crane_name,
+				", ".join(sheet.name for sheet in sheets),
+				allocation.assignment,
+				allocation.idx,
+				float(quantity),
+				unit if quantity == 1 else unit + "s",
+				hourly_rate if unit == "Hour" else allocation.rental_rate,
+				unit,
+			)
 		),
 	}
 

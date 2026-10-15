@@ -87,8 +87,10 @@ Frappe edit protection.
 Saving a Crane creates a linked, sellable non-stock ERPNext Item with **Hour** as
 its stock UOM. Existing cranes receive an Item when next saved or invoiced.
 Each Assigned Crane row has an agreed rental rate and **Hour**, **Day**, or
-**Month** rate unit. The timesheet entry's hourly price remains informational
-for operator/work calculations; invoices use the assignment's rental rate.
+**Month** rate unit. Each timesheet entry uses its own positive hourly price,
+then the assignment's positive **Hour** rate, then the Crane's **Hour** period
+price. Hourly invoices use the resulting timesheet amount. Day and Month
+invoices use the assignment's rental rate.
 
 **Generate Sales Invoice** on a submitted Crane Timesheet creates a draft invoice
 for that sheet. The same action on Crane Project groups its unbilled submitted

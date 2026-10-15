@@ -154,7 +154,7 @@ class TestCraneRental(FrappeTestCase):
 
 	def test_prices_default_and_preserved(self):
 		crane = self.cranes[0]
-		self.assertEqual([r.period for r in crane.period_prices], ["Day", "Month", "Year"])
+		self.assertEqual([r.period for r in crane.period_prices], ["Hour", "Day", "Month", "Year"])
 		crane.period_prices[0].price = 150
 		crane.save().reload()
 		self.assertEqual(crane.period_prices[0].price, 150)
@@ -164,6 +164,45 @@ class TestCraneRental(FrappeTestCase):
 		crane.reload().period_prices[0].price = -1
 		with self.assertRaises(frappe.ValidationError):
 			crane.save()
+
+	def test_assignment_dates_remain_within_project_dates(self):
+		for start, end in ((-1, 5), (5, 71)):
+			with self.assertRaisesRegex(frappe.ValidationError, "within the Project dates"):
+				self.assignment(start=start, end=end)
+		assignment = self.assignment(start=5, end=30)
+		assignment.assigned_cranes[0].start_date = self.d(-1)
+		with self.assertRaisesRegex(frappe.ValidationError, "within the Project dates"):
+			assignment.save()
+		assignment.reload()
+		self.project.expected_end_date = self.d(29)
+		with self.assertRaisesRegex(frappe.ValidationError, "must cover assignment"):
+			self.project.save()
+		self.project.reload()
+		self.project.expected_start_date = self.d(6)
+		with self.assertRaisesRegex(frappe.ValidationError, "must cover assignment"):
+			self.project.save()
+
+	def test_timesheet_hourly_price_priority(self):
+		crane = self.cranes[0]
+		next(row for row in crane.period_prices if row.period == "Hour").price = 40
+		crane.save()
+		assignment = self.assignment()
+		self.action(assignment, "Reserve")
+		explicit = self.sheet(entries=[self.shift(day=5, rate=120)]).insert()
+		self.assertEqual(explicit.timesheet_entries[0].price_per_hour, 120)
+		self.assertEqual(explicit.total_amount, 480)
+		fallback = self.sheet(entries=[self.shift(day=6, rate=0)]).insert()
+		self.assertEqual(fallback.timesheet_entries[0].price_per_hour, 40)
+		self.assertEqual(fallback.total_amount, 160)
+		assignment.assigned_cranes[0].rental_rate = 80
+		assignment.save()
+		from_assignment = self.sheet(entries=[self.shift(day=7, rate=0)]).insert()
+		self.assertEqual(from_assignment.timesheet_entries[0].price_per_hour, 80)
+		self.assertEqual(from_assignment.total_amount, 320)
+		assignment.assigned_cranes[0].rental_rate_unit = "Day"
+		assignment.save()
+		from_crane = self.sheet(entries=[self.shift(day=8, rate=0)]).insert()
+		self.assertEqual(from_crane.timesheet_entries[0].price_per_hour, 40)
 
 	def test_condition_and_future_reservations(self):
 		assignment = self.active(end=25)
@@ -553,7 +592,7 @@ class TestCraneRental(FrappeTestCase):
 		with self.assertRaisesRegex(frappe.ValidationError, "reason"):
 			rebuild_draft_invoice(self.project.name, invoice_name, "")
 		rebuild_draft_invoice(self.project.name, invoice_name, "Restore agreed crane rate")
-		self.assertEqual(frappe.get_doc("Sales Invoice", invoice_name).grand_total, 320)
+		self.assertEqual(frappe.get_doc("Sales Invoice", invoice_name).grand_total, 400)
 		self.assertFalse(project_invoice_summary(self.project.name)["invoices"][0]["zero_total"])
 
 	def test_hourly_invoice_and_timesheet_cancellation_guard(self):
@@ -568,8 +607,8 @@ class TestCraneRental(FrappeTestCase):
 		invoice_name = generate_sales_invoice(timesheet=sheet.name)["name"]
 		invoice = frappe.get_doc("Sales Invoice", invoice_name)
 		self.assertEqual(invoice.items[0].qty, 4)
-		self.assertEqual(invoice.items[0].rate, 75)
-		self.assertEqual(invoice.grand_total, 300)
+		self.assertEqual(invoice.items[0].rate, 100)
+		self.assertEqual(invoice.grand_total, 400)
 		sheet.reload()
 		sheet.sales_invoice = None
 		with self.assertRaisesRegex(frappe.ValidationError, "Sales Invoice link"):
