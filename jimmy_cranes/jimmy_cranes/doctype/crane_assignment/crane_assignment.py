@@ -9,7 +9,6 @@ from jimmy_cranes.rental_validation import (
 	action_date,
 	allocation_window,
 	allocations,
-	assignment_progress,
 	booking_conflict,
 	check_date_order,
 	check_non_negative,
@@ -23,13 +22,9 @@ from jimmy_cranes.rental_validation import (
 
 class CraneAssignment(Document):
 	def onload(self):
-		self.update_progress()
 		project = project_doc(self.project)
 		self.project_start_date = project.expected_start_date
 		self.project_end_date = project.expected_end_date
-
-	def update_progress(self):
-		self.update(assignment_progress(self.assigned_cranes))
 
 	def validate(self):
 		project = project_doc(self.project, "write", lock=True)
@@ -57,7 +52,7 @@ class CraneAssignment(Document):
 			if previous.name not in current and previous.status != "Draft":
 				frappe.throw(
 					_(
-						"Keep booking history for crane {0}. Use Release or Cancel instead of deleting it."
+						"Keep booking history for crane {0}. Cancel an unused booking instead of deleting it."
 					).format(crane_display_name(previous.crane, names))
 				)
 		others = allocations(cranes, exclude=self.name) if cranes else []
@@ -66,7 +61,6 @@ class CraneAssignment(Document):
 		changed = []
 		guarded = (
 			"status",
-			"actual_end_date",
 			"status_before_cancel",
 			"cancellation_date",
 			"cancellation_reason",
@@ -104,8 +98,7 @@ class CraneAssignment(Document):
 			if previous and row.status != previous.status:
 				allowed = {
 					"Draft": ("Reserved", "Cancelled"),
-					"Reserved": ("Draft", "Released", "Cancelled"),
-					"Released": ("Reserved",),
+					"Reserved": ("Draft", "Cancelled"),
 					"Cancelled": (previous.status_before_cancel,) if previous.status_before_cancel else ("Draft", "Reserved"),
 				}
 				if row.status not in allowed.get(previous.status, ()):
@@ -119,7 +112,7 @@ class CraneAssignment(Document):
 				or before.project != self.project
 				or any(str(row.get(f) or "") != str(previous.get(f) or "") for f in business_fields)
 			)
-			if previous and previous.status in ("Released", "Cancelled") and altered and (
+			if previous and previous.status == "Cancelled" and altered and (
 				self.flags.rental_action is not RENTAL_ACTION or row.status == previous.status
 			):
 				frappe.throw(_("{0}: terminal booking history cannot be rewritten.").format(label))
@@ -129,15 +122,6 @@ class CraneAssignment(Document):
 				)
 			if altered and row.status == "Reserved" and conditions.get(row.crane) != "Operational":
 				frappe.throw(_("{0}: crane is in Maintenance or Inactive.").format(label))
-			if row.status == "Released":
-				if not row.actual_end_date:
-					frappe.throw(_("{0}: actual release date is required.").format(label))
-				if action_date(row.actual_end_date) < getdate(row.start_date):
-					frappe.throw(_("{0}: release cannot precede the booking start.").format(label))
-				if getdate(row.actual_end_date) > getdate(project.expected_end_date):
-					frappe.throw(_("{0}: release cannot be after the Project end date.").format(label))
-			elif row.actual_end_date:
-				frappe.throw(_("{0}: only a Released row can have an actual release date.").format(label))
 			if row.status == "Cancelled":
 				if row.status_before_cancel and row.status_before_cancel not in ("Draft", "Reserved"):
 					frappe.throw(_("{0}: invalid status before cancellation.").format(label))
@@ -149,7 +133,7 @@ class CraneAssignment(Document):
 					if any(w.header_crane == previous.crane and start <= day <= end for w, day in work_days):
 						frappe.throw(
 							_(
-								"{0}: recorded work exists, including draft Timesheets. Use Release instead of Cancel."
+								"{0}: recorded work exists, including draft Timesheets. Keep the booking Reserved."
 							).format(label)
 						)
 			elif row.status_before_cancel or row.cancellation_date or row.cancellation_reason:
@@ -164,7 +148,7 @@ class CraneAssignment(Document):
 				if booking_conflict(row, other):
 					conflicts.append(
 						_(
-							"Crane {0}: row {1} conflicts with assignment {2}, row {3}, Project {4} ({5} to {6}). Resolve any overdue reservation with Release first."
+							"Crane {0}: row {1} conflicts with assignment {2}, row {3}, Project {4} ({5} to {6})."
 						).format(
 							crane_display_name(row.crane, names),
 							row.idx,
@@ -189,16 +173,15 @@ class CraneAssignment(Document):
 				if any(covers(r) for r in old.values()) and not any(covers(r) for r in coverage):
 					frappe.throw(
 						_(
-							"Crane {0}: change would invalidate Timesheet {1} on {2}. Release cannot precede recorded work."
+							"Crane {0}: change would invalidate Timesheet {1} on {2}. Keep recorded work within the booking dates."
 						).format(crane_display_name(work_row.header_crane, names), work_row.timesheet, day)
 					)
 		self.project_start_date = project.expected_start_date
 		self.project_end_date = project.expected_end_date
-		self.update_progress()
 
 	def on_trash(self):
 		project_doc(self.project, "write", lock=True)
 		if any(row.status != "Draft" for row in self.assigned_cranes):
 			frappe.throw(
-				_("Assignments with booking history cannot be deleted. Use Release or Cancel Selected.")
+				_("Assignments with booking history cannot be deleted. Cancel unused bookings instead.")
 			)

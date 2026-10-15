@@ -10,7 +10,7 @@ from frappe.utils import cint, escape_html, flt, get_time, getdate, today
 
 RENTAL_ACTION = object()  # Cannot be supplied through JSON/import fields.
 
-ROW_STATUSES = ("Draft", "Reserved", "Released", "Cancelled")
+ROW_STATUSES = ("Draft", "Reserved", "Cancelled")
 
 
 def check_date_order(start, end, label):
@@ -52,35 +52,17 @@ def action_date(value):
 	return date
 
 
-def assignment_progress(rows):
-	counts = {status: sum(row.status == status for row in rows) for status in ROW_STATUSES}
-	total = len(rows) - counts["Cancelled"]
-	return {
-		**{status.lower() + "_cranes": count for status, count in counts.items()},
-		"total_cranes": total,
-		"completion_percentage": round(100 * counts["Released"] / total, 1) if total else 0,
-	}
-
-
 def allocation_window(row):
-	if row.status not in ("Reserved", "Released") or not row.start_date:
+	if row.status != "Reserved" or not row.start_date:
 		return None
-	end = row.actual_end_date if row.status == "Released" else row.expected_end_date
-	return (getdate(row.start_date), getdate(end)) if end else None
-
-
-def overdue_reservation(row):
-	return row.status == "Reserved" and getdate(row.expected_end_date) < getdate(today())
+	return (getdate(row.start_date), getdate(row.expected_end_date)) if row.expected_end_date else None
 
 
 def booking_conflict(row, other):
 	window, other_window = allocation_window(row), allocation_window(other)
 	if not window or not other_window or row.crane != other.crane:
 		return False
-	if ranges_overlap(*window, *other_window):
-		return True
-	# An unconfirmed release must be resolved before committing the crane again.
-	return overdue_reservation(other) and window[1] >= getdate(today()) and window[0] > other_window[1]
+	return ranges_overlap(*window, *other_window)
 
 
 def ranges_overlap(start, end, other_start, other_end):

@@ -26,23 +26,15 @@
   {
    "fieldname": "expected_end_date",
    "fieldtype": "Date",
-   "label": "Expected End Date",
+   "label": "End Date",
    "reqd": 1,
    "in_list_view": 1
-  },
-  {
-   "fieldname": "actual_end_date",
-   "fieldtype": "Date",
-   "label": "Actual Release Date",
-   "read_only": 1,
-   "in_list_view": 1,
-   "no_copy": 1
   },
   {
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "Draft\nReserved\nReleased\nCancelled",
+   "options": "Draft\nReserved\nCancelled",
    "default": "Draft",
    "read_only": 1,
    "in_list_view": 1,
@@ -105,7 +97,6 @@
   "crane",
   "start_date",
   "expected_end_date",
-  "actual_end_date",
   "status",
   "rental_rate",
   "rental_rate_unit",

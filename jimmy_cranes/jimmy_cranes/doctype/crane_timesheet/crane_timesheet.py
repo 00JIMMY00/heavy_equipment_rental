@@ -92,7 +92,7 @@ class CraneTimesheet(Document):
 				if not getdate(self.period_start) <= day <= getdate(self.period_end):
 					frappe.throw(_("{0}: shift is outside the timesheet period.").format(label))
 				if not any(first <= day <= last for _, (first, last) in bookings):
-					frappe.throw(_("{0}: no Reserved or Released allocation covers this work.").format(label))
+					frappe.throw(_("{0}: no Reserved allocation covers this work.").format(label))
 			if not flt(row.price_per_hour):
 				matching = [booking for booking, (first, last) in bookings if all(first <= day <= last for day in days)]
 				if len(matching) != 1:

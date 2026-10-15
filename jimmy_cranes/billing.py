@@ -174,7 +174,7 @@ def _rental_allocation(sheet, days):
 	]
 	if len(matching) != 1:
 		frappe.throw(
-			_("Timesheet {0}: work must fit one Reserved or Released crane allocation with an agreed rental rate.").format(sheet.name)
+			_("Timesheet {0}: work must fit one Reserved crane allocation with an agreed rental rate.").format(sheet.name)
 		)
 	row = matching[0]
 	if row.rental_rate_unit not in ("Hour", "Day", "Month") or (

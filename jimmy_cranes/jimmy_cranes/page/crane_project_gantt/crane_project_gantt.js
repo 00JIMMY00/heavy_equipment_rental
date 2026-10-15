@@ -50,7 +50,7 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 		fieldname: "status",
 		label: __("Allocation Status"),
 		fieldtype: "Select",
-		options: "\nDraft\nReserved\nReleased\nCancelled",
+		options: "\nDraft\nReserved\nCancelled",
 		change: () => {
 			if (state.updating_fields) return;
 			state.status = fields.status.get_value();
@@ -101,7 +101,7 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 		.crane-gantt-bar {position:absolute;height:12px;border-radius:4px;cursor:pointer;min-width:3px}
 		.crane-gantt-bar.planned {top:10px;background:#5b8def;opacity:.8}
 		.crane-gantt-bar.actual {top:28px;background:#2eab72}
-		.crane-gantt-bar.draft {opacity:.35} .crane-gantt-bar.reserved {background:#5b8def} .crane-gantt-bar.released {background:#2eab72} .crane-gantt-bar.cancelled {background:#9ba1a6;opacity:.4;text-decoration:line-through} .crane-gantt-unknown {position:absolute;font-size:10px;color:var(--text-muted)}
+		.crane-gantt-bar.draft {opacity:.35} .crane-gantt-bar.reserved {background:#5b8def} .crane-gantt-bar.cancelled {background:#9ba1a6;opacity:.4;text-decoration:line-through}
 		.crane-gantt-dot {position:absolute;top:44px;width:10px;height:10px;border:0;border-radius:50%;background:#9656b7;cursor:pointer;transform:translateX(-50%);padding:0}
 		.crane-gantt-dot.draft {background:#e59b3b}
 		.crane-gantt-empty {padding:38px;text-align:center;color:#6c8193;font-size:13px}
@@ -113,7 +113,7 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 		.crane-gantt-cards {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
 		.crane-gantt-card {background:#fff;border:1px solid #dce7ee;border-radius:13px;padding:15px 17px;box-shadow:0 4px 16px rgba(32,64,96,.04)}
 		.crane-gantt-card:before {content:"";display:block;width:24px;height:3px;border-radius:3px;background:#4b80da;margin-bottom:12px}
-		.crane-gantt-card.work:before {background:#24a486}.crane-gantt-card.due:before {background:#e1a042}.crane-gantt-card.released:before {background:#9476c4}
+		.crane-gantt-card.work:before {background:#24a486}.crane-gantt-card.due:before {background:#e1a042}
 		.crane-gantt-card strong {display:block;font-size:25px;line-height:1.1;font-variant-numeric:tabular-nums;color:#1b354f}
 		.crane-gantt-card span {display:block;margin-top:5px;font-size:12px;color:#657b90}
 		.crane-gantt-toolbar {display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:12px}
@@ -136,15 +136,12 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 		.crane-gantt-bar {height:17px;border-radius:5px;box-shadow:0 2px 5px rgba(32,72,110,.14);transition:filter .15s,transform .15s}
 		.crane-gantt-bar:hover,.crane-gantt-dot:hover {filter:brightness(.93);transform:translateY(-1px)}
 		.crane-gantt-bar.planned.reserved {background:linear-gradient(90deg,#4d83df,#70a1ee);opacity:1}
-		.crane-gantt-bar.planned.released {background:linear-gradient(90deg,#238d78,#67bca4);opacity:1}
 		.crane-gantt-bar.planned.draft {background:#d3dfeb;border:1px dashed #8da3b9;box-shadow:none;opacity:1}
 		.crane-gantt-bar.planned.cancelled {background:#bdc9d2;box-shadow:none;opacity:.55}
-		.crane-gantt-bar.tail {background:repeating-linear-gradient(135deg,#daebe6 0,#daebe6 5px,#eff7f5 5px,#eff7f5 10px);box-shadow:none;pointer-events:none}
 		.crane-gantt-dot {top:auto;width:12px;height:10px;border-radius:5px;background:#27a989;transform:none}
 		.crane-gantt-dot.draft {background:#e0a13e}
 		.crane-gantt-today {position:absolute;top:0;bottom:0;width:2px;background:#eeab51;z-index:1;pointer-events:none}
 		.crane-gantt-weekend {position:absolute;top:0;bottom:0;background:rgba(204,220,231,.22);pointer-events:none}
-		.crane-gantt-overdue {display:inline-block;margin-left:5px;padding:1px 5px;border-radius:4px;background:#fff1d9;color:#9b6315}
 		@media(max-width:900px){.crane-gantt-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.crane-gantt-label{width:180px;min-width:180px}}
 	</style><div class="crane-gantt-hero"></div><div class="crane-gantt-cards"></div><div class="crane-gantt-toolbar"><div><h3>${__("Fleet timeline")}</h3><p class="crane-gantt-caption"></p></div><div class="crane-gantt-controls"></div></div><div class="crane-gantt-legend"></div><div class="crane-gantt-detail"></div><div class="crane-gantt-scroll"></div>`);
 	const $controls = page.main.find(".crane-gantt-controls");
@@ -156,10 +153,9 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 			<option>Day</option><option>Week</option><option>Month</option>
 		</select></label><input class="form-control input-sm crane-gantt-search" placeholder="${__("Find crane")}">`);
 	$legend.html(`<span><i style="background:#5b8def"></i>${__("Reserved")}</span>
-		<span><i style="background:#2eab72"></i>${__("Released period")}</span>
 		<span><i style="background:#d3dfeb;border:1px dashed #8da3b9"></i>${__("Draft / cancelled")}</span>
 		<span><i style="background:#27a989"></i>${__("Work recorded")}</span>
-		<span><i style="background:#eeab51"></i>${__("Today / overdue")}</span>`);
+		<span><i style="background:#eeab51"></i>${__("Today")}</span>`);
 	$controls.on("change", ".crane-gantt-zoom", (event) => {
 		state.zoom = event.currentTarget.value;
 		render();
@@ -173,11 +169,8 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 		const segment = (state.data.cranes || []).flatMap((lane) => lane.segments)
 			.find((item) => item.assignment === assignment && item.row_name === row);
 		if (!segment) return;
-		const actual = segment.row_status === "Released" && segment.actual_end_date;
 		show_detail(`<strong>${escape(segment.row_status)} · ${escape(assignment)}</strong><br>
-			${escape(segment.start_date)} – ${escape(actual ? segment.actual_end_date : segment.end_date)}
-			${actual && segment.actual_end_date !== segment.end_date ? `<br>${__("Original expected end")}: ${escape(segment.end_date)}` : ""}
-			${segment.overdue ? `<br>${__("Release confirmation needed")}` : ""}<br>
+			${escape(segment.start_date)} – ${escape(segment.end_date)}<br>
 			<a href="/app/crane-assignment/${encodeURIComponent(assignment)}">${__("Open assignment")}</a>`);
 	});
 	$scroll.on("click", ".crane-gantt-dot", (event) => {
@@ -280,16 +273,16 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 		const segments = lanes.flatMap((lane) => lane.segments);
 		const work = lanes.flatMap((lane) => lane.work);
 		const total_hours = work.reduce((sum, marker) => sum + Number(marker.crane_hours || 0), 0);
-		const overdue = segments.filter((segment) => segment.overdue).length;
+		const drafts = segments.filter((segment) => segment.row_status === "Draft").length;
 		const title = state.assignment || state.project || __("Crane reservations");
 		page.main.find(".crane-gantt-hero").html(`<div class="crane-gantt-eyebrow">${
 			state.assignment ? __("Assignment schedule") : state.project ? __("Project schedule") : __("Fleet overview")
-		}</div><h2>${escape(title)}</h2><p>${escape(from_date)} — ${escape(to_date)} · ${__("Reservations, releases and recorded work in one timeline.")}</p>`);
+		}</div><h2>${escape(title)}</h2><p>${escape(from_date)} — ${escape(to_date)} · ${__("Bookings and recorded work in one timeline.")}</p>`);
 		page.main.find(".crane-gantt-cards").html([
 			[lanes.length, __("Cranes shown"), ""],
-			[segments.filter((segment) => segment.row_status === "Reserved").length, __("Open reservations"), ""],
+			[segments.filter((segment) => segment.row_status === "Reserved").length, __("Booked periods"), ""],
 			[format_hours(total_hours), __("Recorded crane hours"), "work"],
-			[overdue, __("Release confirmations due"), "due"],
+			[drafts, __("Draft allocations"), "due"],
 		].map(([value, label, style]) => `<div class="crane-gantt-card ${style}"><strong>${escape(value)}</strong><span>${escape(label)}</span></div>`).join(""));
 		page.main.find(".crane-gantt-caption").text(state.assignment ? __("Only this assignment") : state.project ? __("Grouped by crane in this project") : __("Grouped by crane across visible projects"));
 		$detail.removeClass("show").empty();
@@ -356,17 +349,12 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 			}
 			for (const segment of lane.segments) {
 				const id = `${segment.project} · ${segment.assignment} · ${segment.row_status}`;
-				const actual_end = segment.row_status === "Released" && segment.actual_end_date;
-				if (actual_end && segment.actual_end_date < segment.end_date) bar(
-					date_at(segment.actual_end_date, 1), segment.end_date, "tail", segment,
-					`${id} | ${__("Original expected end")}: ${segment.end_date}`
-				);
 				bar(
 					segment.start_date,
-					actual_end ? segment.actual_end_date : segment.end_date,
+					segment.end_date,
 					"planned " + segment.row_status.toLowerCase().replaceAll(" ", "-"),
 					segment,
-					`${id}: ${segment.start_date} – ${actual_end ? segment.actual_end_date : segment.end_date}`
+					`${id}: ${segment.start_date} – ${segment.end_date}`
 				);
 				segment_index++;
 			}
@@ -386,7 +374,7 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 				: [...new Set(lane.segments.map((segment) => segment.project))].join(" · ") || __("Work recorded");
 			html.push(`<div class="crane-gantt-row" style="height:${row_height}px"><div class="crane-gantt-label">${escape(
 				lane.crane_name
-			)}${lane.segments.some((s) => s.overdue) ? `<span class="crane-gantt-overdue">${__("Overdue")}</span>` : ""}<small title="${escape(lane_caption)}">${escape(lane_caption)}</small></div>
+			)}<small title="${escape(lane_caption)}">${escape(lane_caption)}</small></div>
 				<div class="crane-gantt-track" style="width:${track_width}px;height:${row_height}px;--day-width:${width}px">${parts.join("")}</div></div>`);
 		}
 		$scroll.html(html.join(""));

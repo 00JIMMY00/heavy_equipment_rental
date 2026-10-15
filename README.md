@@ -11,49 +11,38 @@ Crane rental management for Frappe/ERPNext. The Jimmy Cranes workspace uses its 
 3. Record actual work in **Crane Timesheet**. Reserved is sufficient: there is no
    Start action or In Progress booking status. Each timesheet has one header crane
    and multiple operator shifts, with native Draft/Submit/Cancel behavior.
-4. Use **Release Selected** to record the actual release date. The expected end
-   remains unchanged. Use **Cancel Selected** with a date and reason only when no
-   work has been recorded, including draft timesheets.
-5. Explicitly mark the Crane Project **Completed** or **Cancelled** after all Draft
-   and Reserved allocations are resolved and all draft timesheets are submitted
-   or removed. Releasing the last crane never closes the Project automatically.
+4. Use **Cancel Selected** with a date and reason only when no work has been
+   recorded, including draft timesheets. A Reserved booking ends on its expected
+   end date; edit that date if plans change, while keeping recorded work covered.
+5. Mark the Crane Project **Completed** or **Cancelled** after Draft allocations
+   are resolved and draft timesheets are submitted or removed. Reserved rows can
+   remain as the booking history.
 
-Only child rows have a booking status: **Draft → Reserved → Released**, or
-**Draft/Reserved → Cancelled**. Explicit **Undo Reserve**, **Undo Release**, and
-**Undo Cancel** actions restore a mistaken action; a correction reason is required.
-Undo Cancel restores the recorded previous status. Older cancelled rows without
-that history require a choice of Draft or Reserved. Crane
-Assignment has no parent status: it shows counts and a server-calculated release
-progress bar. Cancelled rows are excluded from its denominator; Draft rows remain
-included. Three Released, five Reserved and two Cancelled rows give **3 / 8 Released
-(37.5%)**. An empty or fully cancelled batch shows 0% and “No active crane allocations”.
+Assigned Crane rows use **Draft**, **Reserved**, or **Cancelled**. **Undo Reserve**
+and **Undo Cancel** correct mistakes with a required reason. Undo Cancel restores
+the recorded previous status. Crane Assignment has no parent status.
 
 Crane Project has a read-only crane overview and explicit Complete, Cancel, and
 Reopen actions. Reopening requires a correction reason.
-Its controller checks that crane rows and draft timesheets are resolved before closure.
+Its controller checks Draft crane rows and draft timesheets before closure.
 ERPNext Project has no Jimmy Cranes hooks or form script.
 
 All booking actions and corrections are recorded in the Assignment or Crane
 Project timeline with the user, status change, and reason. Frappe change tracking
 remains enabled on the parent documents. Corrections run through the same availability
-and work-coverage checks: Undo Release can be blocked if the restored planned
-window overlaps another reservation or would leave recorded work uncovered.
+and work-coverage checks.
 
 ## Dates and availability
 
-- Booking dates are inclusive across all Projects and batches. Release on October
-  18 makes the crane available from October 19, subject to other bookings and its
-  physical condition.
-- Reserved rows occupy start through expected end; Released rows occupy start
-  through actual release. Early and late releases retain the original planned end.
-  Late releases undergo conflict checks and cannot invalidate recorded work.
-- An overdue Reserved row remains Reserved and requires explicit release
-  confirmation. Availability flags it and blocks new current/future commitments
-  until resolved. Historical occupied ranges still use the documented dates.
+- Booking dates are inclusive across all Projects and batches. A booking ending
+  October 18 leaves the crane available from October 19, subject to other
+  bookings and its physical condition.
+- Reserved rows occupy their start through expected end dates. Date changes
+  cannot overlap another reservation or invalidate recorded work.
 - Draft and Cancelled rows do not block dates. Maintenance or Inactive physical
   condition blocks new reservations, independently of booking state.
-- The crane view and Fleet Reservations Gantt derive reservation, overdue, release
-  and recorded-work indicators. No job changes business statuses as dates pass.
+- The crane view and Fleet Reservations Gantt show bookings and recorded work.
+  No job changes business statuses as dates pass.
 - Bulk actions check Project and Assignment permissions, validate selected child
   IDs, lock cranes in a stable order, and save atomically. Concurrent conflicting
   requests cannot both succeed; MariaDB may reject one with a retryable deadlock.
@@ -69,9 +58,8 @@ A shift must last more than zero and at most 24 hours. **Ends Next Day** handles
 22:00–02:00 and a full 24-hour shift. Midnight ends are exclusive: 20:00–00:00 uses
 only the starting day, while 20:00–02:00 requires coverage on both days.
 
-Work must fit a Reserved or Released allocation for the same Project and crane.
-Retrospective work is accepted after release while the Project is Open; work after
-the actual release is rejected. Closed Projects reject new timesheets. System
+Work must fit a Reserved allocation for the same Project and crane. Closed
+Projects reject new timesheets. System
 Manager or Projects Manager may amend a cancelled timesheet for that same Project
 and crane on its original work dates. Submission and cancellation do not change
 Project or booking statuses.

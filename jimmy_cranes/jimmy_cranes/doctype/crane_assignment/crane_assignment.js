@@ -1,33 +1,7 @@
-function render_crane_progress(frm) {
-	const released = Number(frm.doc.released_cranes || 0);
-	const total = Number(frm.doc.total_cranes || 0);
-	const percent = Number(frm.doc.completion_percentage || 0);
-	const caption = total ? __("{0} / {1} Released", [released, total]) : __("No active crane allocations");
-	frm.get_field("completion_progress").$wrapper.html(`
-		<div class="mb-2"><strong>${percent.toFixed(1)}%</strong> · ${caption}</div>
-		<div class="progress" role="progressbar" aria-label="${__(
-			"Crane releases"
-		)}" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">
-			<div class="progress-bar" style="width:${percent}%"></div>
-		</div>`);
-}
-
 frappe.ui.form.on("Crane Assignment", {
 	refresh(frm) {
 		frm.set_query("project", () => ({ filters: { status: "Open" } }));
-		render_crane_progress(frm);
 		if (frm.is_new() || frm.is_dirty()) return;
-		frappe
-			.call({
-				method: "jimmy_cranes.rental_queries.assignment_summary",
-				args: { assignment: frm.doc.name },
-			})
-			.then(({ message }) => {
-				if (frm.is_dirty()) return;
-				Object.assign(frm.doc, message);
-				for (const field of Object.keys(message)) frm.refresh_field(field);
-				render_crane_progress(frm);
-			});
 		frm.add_custom_button(
 			__("Gantt Chart"),
 			() => {
@@ -43,8 +17,8 @@ frappe.ui.form.on("Crane Assignment", {
 		);
 		if (!frm.perm[0]?.write) return;
 		const eligible = {
-			Reserve: ["Draft"], Release: ["Reserved"], Cancel: ["Draft", "Reserved"],
-			"Undo Reserve": ["Reserved"], "Undo Release": ["Released"], "Undo Cancel": ["Cancelled"],
+			Reserve: ["Draft"], Cancel: ["Draft", "Reserved"],
+			"Undo Reserve": ["Reserved"], "Undo Cancel": ["Cancelled"],
 		};
 		for (const [action, states] of Object.entries(eligible)) {
 			const rows = (frm.doc.assigned_cranes || []).filter((row) => states.includes(row.status));
@@ -89,7 +63,7 @@ frappe.ui.form.on("Crane Assignment", {
 									{
 										fieldname: "expected_end_date",
 										fieldtype: "Date",
-										label: __("Expected End"),
+										label: __("End"),
 										in_list_view: 1,
 										read_only: 1,
 									},
@@ -109,39 +83,27 @@ frappe.ui.form.on("Crane Assignment", {
 									status: r.status,
 								})),
 							},
-							...(["Release", "Cancel"].includes(action)
+							...(action === "Cancel"
 								? [
 										{
 											fieldname: "date",
 											fieldtype: "Date",
-											label:
-												action === "Release"
-													? __("Actual Release Date")
-													: __("Cancellation Date"),
+											label: __("Cancellation Date"),
 											default: frappe.datetime.get_today(),
 											reqd: 1,
 										},
 								  ]
 								: []),
-							...(["Cancel", "Undo Reserve", "Undo Release", "Undo Cancel"].includes(action)
+							...(["Cancel", "Undo Reserve", "Undo Cancel"].includes(action)
 								? [
 										{
 											fieldname: "reason",
 											fieldtype: "Small Text",
 											label: action === "Cancel" ? __("Cancellation Reason") : __("Correction Reason"),
 											reqd: 1,
-											description: action === "Cancel" ? __("If work is recorded, use Release instead.") : __("Saved in the assignment timeline."),
+											description: action === "Cancel" ? __("Only bookings without recorded work can be cancelled.") : __("Saved in the assignment timeline."),
 										},
 								  ]
-								: []),
-							...(action === "Undo Cancel"
-								? [{
-									fieldname: "restore_status",
-									fieldtype: "Select",
-									label: __("Restore Status For Legacy Rows"),
-									options: ["", "Draft", "Reserved"],
-									description: __("Leave blank when the original status was recorded. Older cancelled rows need a choice."),
-								}]
 								: []),
 						],
 						primary_action_label: __(`${action} Selected`),
@@ -163,7 +125,6 @@ frappe.ui.form.on("Crane Assignment", {
 										action,
 										date: values.date,
 										reason: values.reason,
-										restore_status: values.restore_status,
 									},
 									freeze: true,
 								})

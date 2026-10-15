@@ -47,61 +47,6 @@
    "fieldtype": "Table",
    "label": "Assigned Cranes",
    "options": "Assigned Crane"
-  },
-  {
-   "fieldname": "completion_section",
-   "fieldtype": "Section Break",
-   "label": "Completion Progress"
-  },
-  {
-   "fieldname": "completion_progress",
-   "fieldtype": "HTML",
-   "label": "Completion Progress"
-  },
-  {
-   "fieldname": "total_cranes",
-   "fieldtype": "Int",
-   "label": "Total Cranes",
-   "read_only": 1,
-   "hidden": 1,
-   "no_copy": 1
-  },
-  {
-   "fieldname": "completion_percentage",
-   "fieldtype": "Percent",
-   "label": "Completion Percentage",
-   "read_only": 1,
-   "hidden": 1,
-   "no_copy": 1,
-   "precision": "1"
-  },
-  {
-   "fieldname": "draft_cranes",
-   "fieldtype": "Int",
-   "label": "Draft Cranes",
-   "read_only": 1,
-   "no_copy": 1
-  },
-  {
-   "fieldname": "reserved_cranes",
-   "fieldtype": "Int",
-   "label": "Reserved Cranes",
-   "read_only": 1,
-   "no_copy": 1
-  },
-  {
-   "fieldname": "released_cranes",
-   "fieldtype": "Int",
-   "label": "Released Cranes",
-   "read_only": 1,
-   "no_copy": 1
-  },
-  {
-   "fieldname": "cancelled_cranes",
-   "fieldtype": "Int",
-   "label": "Cancelled Cranes",
-   "read_only": 1,
-   "no_copy": 1
   }
  ],
  "field_order": [
@@ -109,15 +54,7 @@
   "project",
   "project_start_date",
   "project_end_date",
-  "assigned_cranes",
-  "completion_section",
-  "completion_progress",
-  "total_cranes",
-  "completion_percentage",
-  "draft_cranes",
-  "reserved_cranes",
-  "released_cranes",
-  "cancelled_cranes"
+  "assigned_cranes"
  ],
  "istable": 0,
  "is_submittable": 0,

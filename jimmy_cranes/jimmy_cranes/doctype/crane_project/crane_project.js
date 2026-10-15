@@ -120,8 +120,8 @@ frappe.ui.form.on("Crane Project", {
 				$(frm.dashboard.parent).find(".crane-project-section").remove();
 				if (!rows?.length) return;
 				const esc = (value) => frappe.utils.escape_html(String(value ?? ""));
-				const body = rows.map((row) => `<tr><td>${esc(row.crane_name)}</td><td><a href="/app/crane-assignment/${encodeURIComponent(row.assignment)}">${esc(row.assignment)}</a></td><td>${esc(row.start_date)}</td><td>${esc(row.expected_end_date)}</td><td>${esc(row.actual_end_date) || "—"}</td><td>${esc(__(row.status))}</td></tr>`).join("");
-				const headings = ["Crane Name", "Assignment", "Start", "Expected End", "Actual Release", "Status"].map((h) => `<th>${__(h)}</th>`).join("");
+				const body = rows.map((row) => `<tr><td>${esc(row.crane_name)}</td><td><a href="/app/crane-assignment/${encodeURIComponent(row.assignment)}">${esc(row.assignment)}</a></td><td>${esc(row.start_date)}</td><td>${esc(row.expected_end_date)}</td><td>${esc(__(row.status))}</td></tr>`).join("");
+				const headings = ["Crane Name", "Assignment", "Start", "End", "Status"].map((h) => `<th>${__(h)}</th>`).join("");
 				frm.dashboard.add_section(`<div class="table-responsive"><table class="table table-bordered"><thead><tr>${headings}</tr></thead><tbody>${body}</tbody></table></div>`, __("Assigned Cranes"), "crane-project-section");
 			});
 	},

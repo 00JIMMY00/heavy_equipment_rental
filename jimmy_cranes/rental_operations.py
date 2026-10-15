@@ -47,7 +47,7 @@ def project_action(project, action, reason=None):
 
 
 @frappe.whitelist()
-def crane_action(assignment, project, row_names, action, date=None, reason=None, restore_status=None):
+def crane_action(assignment, project, row_names, action, date=None, reason=None):
 	project_doc(project, "write", lock=True)
 	doc = frappe.get_doc("Crane Assignment", assignment, for_update=True)
 	doc.check_permission("write")
@@ -66,47 +66,35 @@ def crane_action(assignment, project, row_names, action, date=None, reason=None,
 		frappe.throw(_("Selected crane rows must belong to this assignment."))
 	eligible = {
 		"Reserve": ("Draft",),
-		"Release": ("Reserved",),
 		"Cancel": ("Draft", "Reserved"),
 		"Undo Reserve": ("Reserved",),
-		"Undo Release": ("Released",),
 		"Undo Cancel": ("Cancelled",),
 	}
 	if action not in eligible:
 		frappe.throw(_("Unknown crane action."))
 	if any(rows[name].status not in eligible[action] for name in names):
 		frappe.throw(_("Select only {0} rows for {1}.").format(" / ".join(eligible[action]), action))
-	effective = action_date(date) if action in ("Release", "Cancel") else None
-	if action in ("Cancel", "Undo Reserve", "Undo Release", "Undo Cancel") and not (reason or "").strip():
+	effective = action_date(date) if action == "Cancel" else None
+	if action in ("Cancel", "Undo Reserve", "Undo Cancel") and not (reason or "").strip():
 		frappe.throw(_("A reason is required for cancellation or correction."))
 	if action == "Undo Cancel":
 		for name in names:
-			prior = rows[name].status_before_cancel
-			if prior and restore_status and prior != restore_status:
-				frappe.throw(_("Row {0} was {1} before cancellation; restore it to that status.").format(rows[name].idx, prior))
-			if not prior and restore_status not in ("Draft", "Reserved"):
-				frappe.throw(_("Choose Draft or Reserved for a legacy cancelled row with no prior status."))
+			if rows[name].status_before_cancel not in ("Draft", "Reserved"):
+				frappe.throw(_("Row {0} has no previous status to restore.").format(rows[name].idx))
 	audit = []
 	for name in names:
 		row = rows[name]
 		old_status = row.status
-		old_release = row.actual_end_date
 		old_cancellation = row.cancellation_date
 		row.status = {
 			"Reserve": "Reserved",
-			"Release": "Released",
 			"Cancel": "Cancelled",
 			"Undo Reserve": "Draft",
-			"Undo Release": "Reserved",
-			"Undo Cancel": row.status_before_cancel or restore_status,
+			"Undo Cancel": row.status_before_cancel,
 		}[action]
-		if action == "Release":
-			row.actual_end_date = effective
-		elif action == "Cancel":
+		if action == "Cancel":
 			row.status_before_cancel = old_status
 			row.cancellation_date, row.cancellation_reason = effective, reason
-		elif action == "Undo Release":
-			row.actual_end_date = None
 		elif action == "Undo Cancel":
 			row.status_before_cancel = None
 			row.cancellation_date = None
@@ -114,19 +102,18 @@ def crane_action(assignment, project, row_names, action, date=None, reason=None,
 		row.last_action_by, row.last_action_at = frappe.session.user, now_datetime()
 		audit.append((
 			row.idx, row.crane, old_status, row.status,
-			old_release, row.actual_end_date, old_cancellation, row.cancellation_date,
+			old_cancellation, row.cancellation_date,
 		))
 	doc.flags.rental_action = RENTAL_ACTION
 	frappe.db.savepoint("crane_bulk_action")
 	try:
 		doc.save()
-		for idx, crane, old_status, new_status, old_release, new_release, old_cancellation, new_cancellation in audit:
+		for idx, crane, old_status, new_status, old_cancellation, new_cancellation in audit:
 			doc.add_comment(
 				"Info",
-				_("Crane {0}, row {1}: {2} → {3} by {4}. Release date: {5} → {6}; cancellation date: {7} → {8}. Reason: {9}").format(
+				_("Crane {0}, row {1}: {2} → {3} by {4}. Cancellation date: {5} → {6}. Reason: {7}").format(
 					crane_display_name(crane), idx, escape_html(old_status), escape_html(new_status),
-					escape_html(frappe.session.user), escape_html(str(old_release or "—")),
-					escape_html(str(new_release or "—")), escape_html(str(old_cancellation or "—")),
+					escape_html(frappe.session.user), escape_html(str(old_cancellation or "—")),
 					escape_html(str(new_cancellation or "—")), escape_html((reason or "").strip() or "—"),
 				),
 			)

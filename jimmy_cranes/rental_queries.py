@@ -4,15 +4,13 @@ from datetime import datetime, time, timedelta
 
 import frappe
 from frappe import _
-from frappe.utils import flt, getdate, today
+from frappe.utils import getdate, today
 
 from jimmy_cranes.rental_validation import (
 	allocation_window,
-	assignment_progress,
 	check_date_order,
 	entry_days,
 	interval,
-	overdue_reservation,
 	project_doc,
 	ranges_overlap,
 )
@@ -85,13 +83,6 @@ def assigned_crane_query(doctype, txt, searchfield, start, page_len, filters):
 
 
 @frappe.whitelist()
-def assignment_summary(assignment):
-	doc = frappe.get_doc("Crane Assignment", assignment)
-	doc.check_permission("read")
-	return assignment_progress(doc.assigned_cranes)
-
-
-@frappe.whitelist()
 def crane_availability(crane, date=None, to_date=None):
 	doc = frappe.get_doc("Crane", crane)
 	doc.check_permission("read")
@@ -104,7 +95,6 @@ def crane_availability(crane, date=None, to_date=None):
 		r for r in all_rows if allocation_window(r) and ranges_overlap(start, end, *allocation_window(r))
 	]
 	future = [r for r in all_rows if r.status == "Reserved" and getdate(r.start_date) > end]
-	overdue = [r for r in all_rows if overdue_reservation(r) and end >= getdate(today())]
 	work = frappe.db.sql(
 		"""SELECT e.* FROM `tabTimesheet Entry` e JOIN `tabCrane Timesheet` s ON s.name=e.parent
 		WHERE e.parenttype='Crane Timesheet' AND s.crane=%s AND s.docstatus<2
@@ -113,14 +103,10 @@ def crane_availability(crane, date=None, to_date=None):
 		as_dict=True,
 	)
 	has_work = any(start <= day <= end for row in work for day in entry_days(row))
-	available = not current and not overdue and doc.operational_condition == "Operational"
+	available = not current and doc.operational_condition == "Operational"
 	indicators = []
-	if overdue:
-		indicators.append("Overdue / release confirmation needed")
 	if any(r.status == "Reserved" for r in current):
 		indicators.append("Reserved for selected date")
-	if any(r.status == "Released" for r in current):
-		indicators.append("Historical occupied period")
 	if has_work:
 		indicators.append("Work recorded")
 	if future:
@@ -137,8 +123,6 @@ def crane_availability(crane, date=None, to_date=None):
 		"available": available,
 		"indicators": indicators,
 		"work_recorded": has_work,
-		"overdue": bool(overdue),
-		"overdue_reservations": [r for r in overdue if r.name in visible],
 		"future_reservations": [r for r in future if r.name in visible],
 		"has_future_reservations": bool(future),
 	}
@@ -170,11 +154,7 @@ def get_project_timeline(project=None, from_date=None, to_date=None, crane=None,
 		)
 
 	for row in rows:
-		if (
-			getdate(row.start_date) > end
-			or max(getdate(row.expected_end_date), getdate(row.actual_end_date or row.expected_end_date))
-			< start
-		):
+		if getdate(row.start_date) > end or getdate(row.expected_end_date) < start:
 			continue
 		lane(row.crane)["segments"].append(
 			{
@@ -183,10 +163,7 @@ def get_project_timeline(project=None, from_date=None, to_date=None, crane=None,
 				"row_name": row.name,
 				"start_date": row.start_date,
 				"end_date": row.expected_end_date,
-				"effective_end_date": (allocation_window(row) or (None, None))[1],
-				"actual_end_date": row.actual_end_date,
 				"row_status": row.status,
-				"overdue": overdue_reservation(row),
 			}
 		)
 	visible_projects = frappe.get_list(

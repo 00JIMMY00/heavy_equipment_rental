@@ -23,9 +23,10 @@ class TestRentalSchema(FrappeTestCase):
 		self.assertEqual(frappe.get_meta("Timesheet").module, "Projects")
 		self.assertEqual(
 			frappe.get_meta("Assigned Crane").get_field("status").options.splitlines(),
-			["Draft", "Reserved", "Released", "Cancelled"],
+			["Draft", "Reserved", "Cancelled"],
 		)
 		self.assertIsNone(frappe.get_meta("Assigned Crane").get_field("actual_start_date"))
+		self.assertIsNone(frappe.get_meta("Assigned Crane").get_field("actual_end_date"))
 		self.assertFalse(
 			any(
 				"jimmy_cranes" in path

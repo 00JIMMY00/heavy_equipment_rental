@@ -20,7 +20,6 @@ class CraneProject(Document):
 				if (
 					getdate(row.start_date) < getdate(self.expected_start_date)
 					or getdate(row.expected_end_date) > getdate(self.expected_end_date)
-					or (row.actual_end_date and getdate(row.actual_end_date) > getdate(self.expected_end_date))
 				):
 					frappe.throw(_("Project dates must cover assignment {0}, row {1} ({2} to {3}).").format(
 						row.assignment, row.idx, row.start_date, row.expected_end_date
@@ -43,7 +42,7 @@ class CraneProject(Document):
 			frappe.throw(_("Invalid Crane Project status."))
 
 	def validate_closure(self):
-		pending = [row for row in allocations(project=self.name) if row.status not in ("Released", "Cancelled")]
+		pending = [row for row in allocations(project=self.name) if row.status == "Draft"]
 		if pending:
 			cranes = frappe.get_all("Crane", filters={"name": ["in", list({row.crane for row in pending})]}, fields=["name", "crane_name"])
 			names = {row.name: row.crane_name for row in cranes}

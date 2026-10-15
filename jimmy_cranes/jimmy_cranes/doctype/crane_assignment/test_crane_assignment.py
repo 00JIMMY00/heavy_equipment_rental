@@ -12,7 +12,6 @@ from jimmy_cranes.rental_queries import (
 	get_project_timeline,
 	project_overview,
 )
-from jimmy_cranes.rental_validation import assignment_progress
 
 
 class TestCraneRental(FrappeTestCase):
@@ -117,12 +116,8 @@ class TestCraneRental(FrappeTestCase):
 		with self.assertRaises(frappe.ValidationError):
 			settings.save()
 
-	def test_early_release_inclusive_and_same_project_conflict(self):
-		assignment = self.active()
-		self.action(assignment, "Release", day=10)
-		row = assignment.assigned_cranes[0]
-		self.assertEqual(str(row.expected_end_date), self.d(30))
-		self.assertEqual(str(row.actual_end_date), self.d(10))
+	def test_booking_end_is_inclusive_and_following_day_is_free(self):
+		self.active(end=10)
 		duplicate = self.assignment(start=10, end=15)
 		with self.assertRaises(frappe.ValidationError):
 			self.action(duplicate, "Reserve")
@@ -130,27 +125,27 @@ class TestCraneRental(FrappeTestCase):
 		self.action(following, "Reserve")
 		self.assertEqual(following.assigned_cranes[0].status, "Reserved")
 
-	def test_cancel_work_rejected_and_completion_covers_work(self):
+	def test_cancel_work_rejected_and_booking_covers_work(self):
 		assignment = self.active()
 		self.sheet().insert().submit()
 		with self.assertRaises(frappe.ValidationError):
 			self.action(assignment, "Cancel", day=8, reason="No participation")
+		assignment.assigned_cranes[0].expected_end_date = self.d(4)
 		with self.assertRaises(frappe.ValidationError):
-			self.action(assignment, "Release", day=4)
-		self.action(assignment, "Release", day=5)
-		self.assertEqual(assignment.assigned_cranes[0].status, "Released")
+			assignment.save()
+		self.assertEqual(assignment.reload().assigned_cranes[0].status, "Reserved")
 
 	def test_bulk_failure_is_atomic_and_ids_are_checked(self):
 		assignment = self.active(self.cranes)
 		names = [r.name for r in assignment.assigned_cranes]
 		self.sheet(crane=self.cranes[1], entries=[self.shift(day=8)]).insert()
 		with self.assertRaises(frappe.ValidationError):
-			self.action(assignment, "Release", names, day=6)
+			self.action(assignment, "Cancel", names, day=6, reason="Not needed")
 		self.assertTrue(all(r.status == "Reserved" for r in assignment.reload().assigned_cranes))
 		with self.assertRaises(frappe.ValidationError):
-			self.action(assignment, "Release", ["injected-row"], day=10)
+			self.action(assignment, "Cancel", ["injected-row"], day=10, reason="Not needed")
 		with self.assertRaises(frappe.ValidationError):
-			crane_action(assignment.name, self.other_project.name, names, "Release", self.d(10))
+			crane_action(assignment.name, self.other_project.name, names, "Cancel", self.d(10), "Not needed")
 
 	def test_prices_default_and_preserved(self):
 		crane = self.cranes[0]
@@ -257,8 +252,9 @@ class TestCraneRental(FrappeTestCase):
 			self.sheet([self.shift(day=5, start="22:00:00", end="02:00:00", overnight=1)]).insert()
 		sheet = self.sheet([self.shift(day=4, start="22:00:00", end="02:00:00", overnight=1)]).insert()
 		self.assertEqual(sheet.total_crane_billable_hours, 4)
+		assignment.assigned_cranes[0].expected_end_date = self.d(4)
 		with self.assertRaises(frappe.ValidationError):
-			self.action(assignment, "Release", day=4)
+			assignment.save()
 		midnight = self.sheet(
 			[self.shift(day=5, start="22:00:00", end="00:00:00", overnight=1)], end=5
 		).insert()
@@ -351,53 +347,10 @@ class TestCraneRental(FrappeTestCase):
 		self.assertEqual(self.project.reload().status, "Open")
 		self.assertTrue(crane_availability(self.cranes[0].name, self.d(5))["work_recorded"])
 
-	def test_partial_release_and_progress(self):
-		cranes = self.cranes + [self.new_crane(i) for i in range(3, 10)]
-		assignment = self.active(cranes)
-		self.action(assignment, "Release", [r.name for r in assignment.assigned_cranes[:2]], day=14)
-		self.assertEqual(assignment.released_cranes, 2)
-		self.assertEqual(assignment.reserved_cranes, 8)
-		self.assertEqual(assignment.completion_percentage, 20)
-		self.assertTrue(all(str(r.expected_end_date) == self.d(30) for r in assignment.assigned_cranes))
-		self.assertEqual(str(assignment.assigned_cranes[0].actual_end_date), self.d(14))
-		self.assertEqual(self.project.reload().status, "Open")
-		following = self.assignment(start=15, end=20, project=self.other_project)
-		self.action(following, "Reserve")
-		conflicting = self.assignment(start=14, end=14, project=self.other_project)
-		with self.assertRaises(frappe.ValidationError):
-			self.action(conflicting, "Reserve")
-
-	def test_progress_cancelled_and_draft_denominators(self):
-		cranes = self.cranes + [self.new_crane(i) for i in range(3, 10)]
-		assignment = self.active(cranes)
-		self.action(assignment, "Release", [r.name for r in assignment.assigned_cranes[:3]], day=10)
-		self.action(
-			assignment,
-			"Cancel",
-			[r.name for r in assignment.assigned_cranes[8:]],
-			day=10,
-			reason="Not needed",
-		)
-		self.assertEqual(assignment.completion_percentage, 37.5)
-		self.assertEqual(assignment.total_cranes, 8)
-		self.assertEqual(assignment.cancelled_cranes, 2)
-		from jimmy_cranes.rental_queries import assignment_summary
-
-		self.assertEqual(assignment_summary(assignment.name)["completion_percentage"], 37.5)
-		for states, total, released, percent in [
-			([], 0, 0, 0),
-			(["Cancelled"], 0, 0, 0),
-			(["Released", "Draft", "Cancelled"], 2, 1, 50),
-		]:
-			data = assignment_progress([frappe._dict(status=s) for s in states])
-			self.assertEqual(
-				(data["total_cranes"], data["released_cranes"], data["completion_percentage"]),
-				(total, released, percent),
-			)
-
 	def test_historical_project_and_closing_approval(self):
 		assignment = self.active()
-		self.action(assignment, "Release", day=8)
+		assignment.assigned_cranes[0].expected_end_date = self.d(8)
+		assignment.save()
 		self.assertEqual(self.project.reload().status, "Open")
 		sheet = self.sheet().insert()
 		with self.assertRaisesRegex(frappe.ValidationError, "draft Crane Timesheets"):
@@ -423,7 +376,6 @@ class TestCraneRental(FrappeTestCase):
 	def test_closed_project_authorized_amendment(self):
 		assignment = self.active()
 		sheet = self.sheet().insert().submit()
-		self.action(assignment, "Release", day=8)
 		self.close_project()
 		sheet.cancel()
 		amendment = frappe.copy_doc(sheet)
@@ -447,46 +399,17 @@ class TestCraneRental(FrappeTestCase):
 			with self.assertRaisesRegex(frappe.ValidationError, self.cranes[0].crane_name):
 				self.close_project(status)
 		self.action(assignment, "Reserve")
-		with self.assertRaisesRegex(frappe.ValidationError, "Reserved"):
-			self.close_project()
-		self.action(assignment, "Cancel", day=10, reason="Project called off")
-		self.assertEqual(self.project.reload().status, "Open")
-		self.close_project("Cancelled")
+		self.close_project()
+		self.assertEqual(self.project.status, "Completed")
 		with self.assertRaises(frappe.ValidationError):
 			self.sheet().insert()
-
-	def test_overdue_reservation_requires_release_confirmation(self):
-		assignment = self.active(end=5)
-		data = crane_availability(self.cranes[0].name, self.d(20))
-		self.assertFalse(data["available"])
-		self.assertTrue(data["overdue"])
-		future = self.assignment(project=self.other_project, start=21, end=25)
-		with self.assertRaisesRegex(frappe.ValidationError, "overdue"):
-			self.action(future, "Reserve")
-		self.action(assignment, "Release", day=8)
-		self.action(future, "Reserve")
-		self.assertTrue(crane_availability(self.cranes[0].name, self.d(9))["available"])
-		self.assertFalse(crane_availability(self.cranes[0].name, self.d(8))["available"])
-
-	def test_late_release_conflict_and_no_work_after_release(self):
-		assignment = self.active(end=5)
-		self.action(assignment, "Release", day=8)
-		self.assertEqual(str(assignment.assigned_cranes[0].expected_end_date), self.d(5))
-		self.sheet([self.shift(day=8)]).insert()
-		with self.assertRaises(frappe.ValidationError):
-			self.sheet([self.shift(day=9)]).insert()
-		other = self.assignment(project=self.other_project, start=9, end=15)
-		self.action(other, "Reserve")
-		with self.assertRaises(frappe.ValidationError):
-			assignment.assigned_cranes[0].actual_end_date = self.d(10)
-			assignment.save()
 
 	def test_cancel_draft_work_rejected(self):
 		assignment = self.active()
 		self.sheet().insert()
-		with self.assertRaisesRegex(frappe.ValidationError, "Use Release"):
+		with self.assertRaisesRegex(frappe.ValidationError, "recorded work"):
 			self.action(assignment, "Cancel", day=10, reason="Not needed")
-		with self.assertRaises(frappe.ValidationError):
+		with self.assertRaisesRegex(frappe.ValidationError, "Unknown crane action"):
 			self.action(assignment, "Release", day=4)
 
 	def test_manual_status_injection_is_rejected(self):
@@ -497,41 +420,29 @@ class TestCraneRental(FrappeTestCase):
 		assignment.reload().assigned_cranes[0].status = "In Progress"
 		with self.assertRaises(frappe.ValidationError):
 			assignment.save()
+		assignment.reload().assigned_cranes[0].status = "Released"
+		with self.assertRaises(frappe.ValidationError):
+			assignment.save()
 
 	def test_100_crane_batch(self):
 		cranes = self.cranes + [self.new_crane(i) for i in range(3, 105)]
 		assignment = self.active(cranes)
-		self.action(assignment, "Release", [r.name for r in assignment.assigned_cranes[:2]], day=10)
-		self.assertEqual(assignment.reserved_cranes, 103)
 		self.assertEqual(len(get_project_timeline(self.project.name, self.d(0), self.d(30))["cranes"]), 105)
-		self.action(assignment, "Release", [r.name for r in assignment.assigned_cranes[2:]], day=10)
-		self.assertEqual(assignment.completion_percentage, 100)
+		self.action(assignment, "Cancel", [r.name for r in assignment.assigned_cranes[:2]], day=10, reason="Not needed")
+		self.assertEqual(sum(r.status == "Reserved" for r in assignment.assigned_cranes), 103)
 		self.assertEqual(self.project.reload().status, "Open")
-
-	def test_late_release_checks_other_bookings(self):
-		assignment = self.active(end=5)
-		following = self.assignment(project=self.other_project, start=6, end=15)
-		self.action(following, "Reserve")
-		with self.assertRaisesRegex(frappe.ValidationError, self.cranes[0].crane_name):
-			self.action(assignment, "Release", day=8)
-		self.assertEqual(assignment.reload().assigned_cranes[0].status, "Reserved")
-		self.assertFalse(assignment.assigned_cranes[0].actual_end_date)
 
 	def test_cancelled_batch_and_dates_on_load(self):
 		assignment = self.assignment(self.cranes)
 		self.action(assignment, "Cancel", day=10, reason="Not needed")
-		self.assertEqual(assignment.total_cranes, 0)
-		self.assertEqual(assignment.completion_percentage, 0)
-		self.assertEqual(assignment.cancelled_cranes, 3)
+		self.assertTrue(all(row.status == "Cancelled" for row in assignment.assigned_cranes))
 		self.project.expected_end_date = self.d(71)
 		self.project.save()
 		assignment.reload().onload()
 		self.assertEqual(str(assignment.project_end_date), self.d(71))
-		self.assertEqual(assignment.completion_percentage, 0)
 
 	def test_date_range_availability(self):
-		assignment = self.active()
-		self.action(assignment, "Release", day=10)
+		self.active(end=10)
 		self.assertFalse(crane_availability(self.cranes[0].name, self.d(9), self.d(12))["available"])
 		self.assertTrue(crane_availability(self.cranes[0].name, self.d(11), self.d(12))["available"])
 
@@ -647,37 +558,6 @@ class TestCraneRental(FrappeTestCase):
 		self.assertEqual(generate_sales_invoice(timesheet=third.name)["name"], invoice.name)
 		self.assertEqual(frappe.db.get_value("Crane Timesheet", third.name, "sales_invoice"), invoice.name)
 
-	def test_undo_release_restores_reservation_and_audits_reason(self):
-		assignment = self.active(end=20)
-		self.action(assignment, "Release", day=10)
-		self.assertEqual(assignment.released_cranes, 1)
-		with self.assertRaisesRegex(frappe.ValidationError, "reason"):
-			crane_action(assignment.name, self.project.name, [assignment.assigned_cranes[0].name], "Undo Release")
-		crane_action(
-			assignment.name, self.project.name, [assignment.assigned_cranes[0].name],
-			"Undo Release", reason="Released the wrong crane",
-		)
-		assignment.reload()
-		self.assertEqual(assignment.assigned_cranes[0].status, "Reserved")
-		self.assertFalse(assignment.assigned_cranes[0].actual_end_date)
-		self.assertEqual(assignment.released_cranes, 0)
-		comments = frappe.get_all("Comment", filters={"reference_doctype": "Crane Assignment", "reference_name": assignment.name}, pluck="content")
-		self.assertTrue(any("Released the wrong crane" in comment and self.cranes[0].crane_name in comment for comment in comments))
-
-	def test_undo_release_blocks_new_conflict_atomically(self):
-		assignment = self.active(end=10)
-		self.action(assignment, "Release", day=5)
-		following = self.assignment(project=self.other_project, start=6, end=15)
-		self.action(following, "Reserve")
-		before_comments = frappe.db.count("Comment", {"reference_doctype": "Crane Assignment", "reference_name": assignment.name})
-		with self.assertRaisesRegex(frappe.ValidationError, self.cranes[0].crane_name):
-			crane_action(
-				assignment.name, self.project.name, [assignment.assigned_cranes[0].name],
-				"Undo Release", reason="Correction",
-			)
-		self.assertEqual(assignment.reload().assigned_cranes[0].status, "Released")
-		self.assertEqual(frappe.db.count("Comment", {"reference_doctype": "Crane Assignment", "reference_name": assignment.name}), before_comments)
-
 	def test_undo_cancel_restores_original_status_and_project_reopens(self):
 		assignment = self.assignment(cranes=self.cranes[:2])
 		self.action(assignment, "Reserve", [assignment.assigned_cranes[0].name])
@@ -703,16 +583,3 @@ class TestCraneRental(FrappeTestCase):
 		self.assertEqual(self.project.reload().status, "Open")
 		comments = frappe.get_all("Comment", filters={"reference_doctype": "Crane Project", "reference_name": self.project.name}, pluck="content")
 		self.assertTrue(any("Closed by mistake" in comment for comment in comments))
-
-	def test_legacy_cancel_undo_requires_explicit_target(self):
-		assignment = self.assignment()
-		self.action(assignment, "Cancel", reason="Mistake")
-		row_name = assignment.assigned_cranes[0].name
-		frappe.db.set_value("Assigned Crane", row_name, "status_before_cancel", None, update_modified=False)
-		with self.assertRaisesRegex(frappe.ValidationError, "Choose Draft or Reserved"):
-			crane_action(assignment.name, self.project.name, [row_name], "Undo Cancel", reason="Old cancellation")
-		crane_action(
-			assignment.name, self.project.name, [row_name], "Undo Cancel",
-			reason="Old cancellation", restore_status="Draft",
-		)
-		self.assertEqual(assignment.reload().assigned_cranes[0].status, "Draft")
