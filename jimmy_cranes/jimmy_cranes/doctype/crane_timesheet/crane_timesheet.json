@@ -61,7 +61,7 @@
   {
    "fieldname": "total_operator_hours",
    "fieldtype": "Float",
-   "label": "Total Operator Hours",
+   "label": "Total Driver Hours",
    "read_only": 1,
    "precision": "6"
   },

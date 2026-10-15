@@ -32,13 +32,49 @@ class TestCraneRental(FrappeTestCase):
 		self.cranes = [self.new_crane(i) for i in range(3)]
 		self.operators = [
 			frappe.get_doc(
-				{"doctype": "Crane Operator", "operator_name": f"Operator {self.key} {i}"}
+				{
+					"doctype": "Crane Driver",
+					"operator_name": f"Driver {self.key} {i}",
+					"company": frappe.db.get_value("Company", {}, "name"),
+					"gender": frappe.db.get_value("Gender", {}, "name"),
+					"date_of_birth": "1990-01-01",
+					"date_of_joining": "2020-01-01",
+				}
 			).insert()
 			for i in range(2)
 		]
 
 	def d(self, number):
 		return str(self.base + timedelta(days=number))
+
+	def test_driver_employee_and_project_expense(self):
+		self.assignment()
+		driver = self.operators[0]
+		self.assertTrue(driver.employee)
+		self.assertEqual(frappe.db.get_value("Employee", driver.employee, "employee_name"), driver.operator_name)
+		expense_type = frappe.get_doc({
+			"doctype": "Expense Type", "expense_type_name": "Fuel " + self.key
+		}).insert()
+		expense = frappe.get_doc({
+			"doctype": "Expense Entry",
+			"project": self.project.name,
+			"posting_date": self.d(5),
+			"expense_type": expense_type.name,
+			"amount": 125,
+			"crane": self.cranes[0].name,
+			"employee": driver.employee,
+		}).insert()
+		self.assertEqual(expense.project, self.project.name)
+		self.assertEqual(expense.employee, driver.employee)
+		self.assertEqual(frappe.db.count("Expense Entry", {"project": self.project.name}), 1)
+		expense.project = self.other_project.name
+		with self.assertRaisesRegex(frappe.ValidationError, "assigned to this Crane Project"):
+			expense.save()
+		expense.project = self.project.name
+		expense.submit()
+		self.assertEqual(expense.docstatus, 1)
+		expense.cancel()
+		self.assertEqual(expense.docstatus, 2)
 
 	def new_project(self):
 		return frappe.get_doc(

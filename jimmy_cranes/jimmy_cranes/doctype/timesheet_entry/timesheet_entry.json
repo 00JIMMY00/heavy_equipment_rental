@@ -45,8 +45,8 @@
    "fieldname": "crane_operator",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Crane Operator",
-   "options": "Crane Operator",
+   "label": "Crane Driver",
+   "options": "Crane Driver",
    "reqd": 1
   },
   {
@@ -67,7 +67,7 @@
   {
    "fieldname": "line_amount",
    "fieldtype": "Currency",
-   "label": "Operator Amount (Informational)",
+   "label": "Driver Amount (Informational)",
    "read_only": 1
   }
  ],

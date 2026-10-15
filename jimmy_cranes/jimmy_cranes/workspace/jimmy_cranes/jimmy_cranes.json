@@ -8,7 +8,7 @@
  "is_hidden": 0,
  "icon": "project",
  "sequence_id": 12,
- "content": "[{\"id\": \"rental-title\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Crane Rentals</b></span>\", \"col\": 12}}, {\"id\": \"crane-link-0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project\", \"col\": 3}}, {\"id\": \"crane-link-1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Assignment\", \"col\": 3}}, {\"id\": \"crane-link-2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Timesheet\", \"col\": 3}}, {\"id\": \"crane-link-3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane\", \"col\": 3}}, {\"id\": \"crane-link-4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Operator\", \"col\": 3}}, {\"id\": \"crane-link-5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customer\", \"col\": 3}}, {\"id\": \"crane-link-6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Fleet Reservations\", \"col\": 3}}, {\"id\": \"crane-link-7\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Jimmy Cranes Settings\", \"col\": 3}}]",
+ "content": "[{\"id\": \"rental-title\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Crane Rentals</b></span>\", \"col\": 12}}, {\"id\": \"crane-link-0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project\", \"col\": 3}}, {\"id\": \"crane-link-1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Assignment\", \"col\": 3}}, {\"id\": \"crane-link-2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Timesheet\", \"col\": 3}}, {\"id\": \"crane-link-3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane\", \"col\": 3}}, {\"id\": \"crane-link-4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Driver\", \"col\": 3}}, {\"id\": \"crane-link-5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customer\", \"col\": 3}}, {\"id\": \"crane-link-6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Fleet Reservations\", \"col\": 3}}, {\"id\": \"crane-link-7\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Jimmy Cranes Settings\", \"col\": 3}}, {\"id\": \"crane-link-8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Entry\", \"col\": 3}}, {\"id\": \"crane-link-9\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Type\", \"col\": 3}}]",
  "shortcuts": [
   {
    "label": "Crane Project",
@@ -35,8 +35,8 @@
    "doc_view": "List"
   },
   {
-   "label": "Crane Operator",
-   "link_to": "Crane Operator",
+   "label": "Crane Driver",
+   "link_to": "Crane Driver",
    "type": "DocType",
    "doc_view": "List"
   },
@@ -55,6 +55,18 @@
    "label": "Jimmy Cranes Settings",
    "link_to": "Jimmy Cranes Settings",
    "type": "DocType"
+  },
+  {
+   "label": "Expense Entry",
+   "link_to": "Expense Entry",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "Expense Type",
+   "link_to": "Expense Type",
+   "type": "DocType",
+   "doc_view": "List"
   }
  ],
  "links": [],

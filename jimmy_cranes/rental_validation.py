@@ -139,7 +139,7 @@ def billable_totals(intervals):
 			if len(rates) > 1:
 				frappe.throw(
 					_(
-						"Overlapping operator intervals have different hourly prices. Use the same agreed price for the overlapping time."
+						"Overlapping driver intervals have different hourly prices. Use the same agreed price for the overlapping time."
 					)
 				)
 			duration = Decimal(str((timestamp - previous).total_seconds())) / Decimal(3600)

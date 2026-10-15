@@ -1,5 +1,5 @@
 from frappe.model.document import Document
 
 
-class CraneOperator(Document):
+class ExpenseType(Document):
 	pass

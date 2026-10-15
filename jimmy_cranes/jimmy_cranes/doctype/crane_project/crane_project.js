@@ -54,17 +54,19 @@ frappe.ui.form.on("Crane Project", {
 		const links = [
 			["Crane Assignments", "Crane Assignment"],
 			["Crane Timesheets", "Crane Timesheet"],
+			["Expenses", "Expense Entry"],
 		];
 		links.forEach(([label, doctype]) => {
 			if (frappe.model.can_read(doctype))
 				frm.add_custom_button(__(label), () => frappe.set_route("List", doctype, { project: frm.doc.name }), __("View"));
 		});
-		frm.add_custom_button(__("Fleet Reservations"), () => {
+		frm.add_custom_button(__("Gantt Chart"), () => {
 			frappe.route_options = {
+				project: frm.doc.name,
 				from_date: frm.doc.expected_start_date,
 				to_date: frm.doc.expected_end_date,
 			};
-			frappe.set_route("crane-project-gantt", frm.doc.name);
+			frappe.set_route("crane-project-gantt");
 		}, __("View"));
 		if (frappe.model.can_read("Sales Invoice") && frappe.model.can_read("Crane Timesheet"))
 			frm.add_custom_button(__("Sales Invoices"), () => frappe.call({
@@ -81,6 +83,10 @@ frappe.ui.form.on("Crane Project", {
 					if (message?.name) frappe.set_route("Form", "Sales Invoice", message.name);
 					else if (message?.existing_invoices) show_crane_project_invoices(frm.doc.name, message.existing_invoices);
 				},
+			}), __("Create"));
+		if (frappe.model.can_create("Expense Entry"))
+			frm.add_custom_button(__("Expense Entry"), () => frappe.new_doc("Expense Entry", {
+				project: frm.doc.name,
 			}), __("Create"));
 		if (frm.doc.status === "Open" && frm.perm[0]?.write) {
 			if (frappe.model.can_create("Crane Assignment"))

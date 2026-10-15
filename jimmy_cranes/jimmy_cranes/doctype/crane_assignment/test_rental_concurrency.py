@@ -22,7 +22,7 @@ class TestRentalConcurrency(FrappeTestCase):
 			"Crane Assignment": [first.name, second.name],
 			"Crane Project": [sample.project.name, sample.other_project.name],
 			"Crane": [r.name for r in sample.cranes],
-			"Crane Operator": [r.name for r in sample.operators],
+			"Crane Driver": [r.name for r in sample.operators],
 			"Customer": [sample.customer.name],
 		}
 		frappe.db.commit()

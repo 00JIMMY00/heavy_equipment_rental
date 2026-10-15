@@ -183,7 +183,7 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 			`<a href="/app/crane-timesheet/${encodeURIComponent(name)}">${escape(name)}</a>`
 		).join(" · ");
 		show_detail(`<strong>${escape(lane.crane_name)} · ${escape(date)}</strong><br>
-			${escape(format_hours(marker.crane_hours))} ${__("crane hours")} · ${escape(format_hours(marker.operator_hours))} ${__("operator hours")}<br>
+			${escape(format_hours(marker.crane_hours))} ${__("crane hours")} · ${escape(format_hours(marker.operator_hours))} ${__("driver hours")}<br>
 			${escape(marker.statuses.join(", "))} · ${links}`);
 	});
 	$detail.on("click", ".crane-gantt-detail-close", () => $detail.removeClass("show").empty());
