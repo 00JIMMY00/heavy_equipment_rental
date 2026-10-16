@@ -56,8 +56,11 @@ record ends, the condition returns to Operational only if maintenance changed it
 Manually set Maintenance and Inactive conditions are preserved. Neither maintenance
 records nor the Maintenance condition prevent reservations or timesheets.
 
-Completing maintenance requires a positive cost and Expense Type. It automatically
-creates a linked draft Expense Entry for the crane, with or without a Crane Project.
+New maintenance records default to the fixed **Maintenance** Expense Type fixture.
+Expense Types can link to a non-group Expense account; choose the account for that
+fixture on each site after installation. Completing maintenance requires a positive
+cost and Expense Type and automatically creates a linked draft Expense Entry for the
+crane, with or without a Crane Project.
 The Expense Entry links back to the maintenance record. A cancelled Expense Entry
 can be replaced from the maintenance form.
 

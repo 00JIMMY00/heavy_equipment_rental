@@ -6,3 +6,5 @@ app_email = "j@gmail.com"
 app_license = "mit"
 required_apps = ["erpnext"]
 
+fixtures = [{"doctype": "Expense Type", "filters": [["name", "=", "EXT-MAINTENANCE"]]}]
+

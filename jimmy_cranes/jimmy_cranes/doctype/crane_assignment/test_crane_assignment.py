@@ -258,10 +258,6 @@ class TestCraneRental(FrappeTestCase):
 		self.assertFalse(crane_availability(self.cranes[0].name, self.d(60))["available"])
 
 	def maintenance(self, crane=None, project=None):
-		if not hasattr(self, "maintenance_expense_type"):
-			self.maintenance_expense_type = frappe.get_doc({
-				"doctype": "Expense Type", "expense_type_name": "Maintenance " + self.key
-			}).insert()
 		return frappe.get_doc({
 			"doctype": "Crane Maintenance",
 			"crane": (crane or self.cranes[0]).name,
@@ -270,17 +266,17 @@ class TestCraneRental(FrappeTestCase):
 			"description": "Service on site",
 			"planned_start_date": self.d(1),
 			"cost": 125,
-			"expense_type": self.maintenance_expense_type.name,
 		}).insert()
 
 	def test_maintenance_condition_and_work(self):
 		first = self.maintenance(project=self.project)
+		self.assertEqual(first.expense_type, "EXT-MAINTENANCE")
 		self.assertFalse(first.expense_entry)
 		self.assertEqual(self.cranes[0].reload().operational_condition, "Operational")
 		first.status = "In Progress"
 		first.actual_start_date = self.d(1)
 		first.save()
-		self.assertTrue(first.expense_entry)
+		self.assertFalse(first.expense_entry)
 		self.assertEqual(self.cranes[0].reload().operational_condition, "Maintenance")
 		self.assertEqual(self.cranes[0].maintenance_condition_managed, 1)
 		self.assertTrue(crane_availability(self.cranes[0].name, self.d(5))["available"])
@@ -293,6 +289,7 @@ class TestCraneRental(FrappeTestCase):
 		first.status = "Completed"
 		first.actual_end_date = self.d(5)
 		first.save()
+		self.assertTrue(first.expense_entry)
 		self.assertEqual(self.cranes[0].reload().operational_condition, "Maintenance")
 		second.status = "Cancelled"
 		second.save()
@@ -364,10 +361,24 @@ class TestCraneRental(FrappeTestCase):
 		record.status = "Completed"
 		with self.assertRaisesRegex(frappe.ValidationError, "Expense Type"):
 			record.save()
-		record.expense_type = self.maintenance_expense_type.name
+		record.expense_type = "EXT-MAINTENANCE"
 		record.cost = 0
 		with self.assertRaisesRegex(frappe.ValidationError, "positive cost"):
 			record.save()
+
+	def test_maintenance_expense_type_account(self):
+		expense_type = frappe.get_doc("Expense Type", "EXT-MAINTENANCE")
+		self.assertEqual(expense_type.expense_type_name, "Maintenance")
+		account = frappe.db.get_value("Account", {"root_type": "Expense", "is_group": 0}, "name")
+		if account:
+			expense_type.account = account
+			expense_type.save()
+			self.assertEqual(expense_type.reload().account, account)
+		group_account = frappe.db.get_value("Account", {"is_group": 1}, "name")
+		if group_account:
+			expense_type.account = group_account
+			with self.assertRaisesRegex(frappe.ValidationError, "non-group Expense account"):
+				expense_type.save()
 
 	def test_operator_union_and_amount(self):
 		self.active()

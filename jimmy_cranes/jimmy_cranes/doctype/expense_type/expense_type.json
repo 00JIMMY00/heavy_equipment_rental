@@ -26,6 +26,13 @@
    "unique": 1
   },
   {
+   "fieldname": "account",
+   "fieldtype": "Link",
+   "label": "Expense Account",
+   "options": "Account",
+   "in_list_view": 1
+  },
+  {
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Description"
@@ -34,6 +41,7 @@
  "field_order": [
   "naming_series",
   "expense_type_name",
+  "account",
   "description"
  ],
  "istable": 0,
