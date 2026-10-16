@@ -59,7 +59,7 @@ records nor the Maintenance condition prevent reservations or timesheets.
 New maintenance records default to the fixed **Maintenance** Expense Type fixture.
 Expense Types can link to a non-group Expense account; choose the account for that
 fixture on each site after installation. Completing maintenance requires a positive
-cost and Expense Type and automatically creates a linked draft Expense Entry for the
+cost and Expense Type and automatically creates and submits a linked Expense Entry for the
 crane, with or without a Crane Project.
 The Expense Entry links back to the maintenance record. A cancelled Expense Entry
 can be replaced from the maintenance form.

@@ -327,12 +327,12 @@ class TestCraneRental(FrappeTestCase):
 		overridden.save()
 		self.assertEqual(self.cranes[2].reload().operational_condition, "Inactive")
 
-	def test_maintenance_expense_is_draft_and_single_active_link(self):
+	def test_maintenance_expense_is_submitted_and_single_active_link(self):
 		yard_record = self.maintenance()
 		yard_record.status = "Completed"
 		yard_record.save()
 		yard_expense = frappe.get_doc("Expense Entry", yard_record.expense_entry)
-		self.assertEqual(yard_expense.docstatus, 0)
+		self.assertEqual(yard_expense.docstatus, 1)
 		self.assertFalse(yard_expense.project)
 		self.assertEqual(yard_expense.crane_maintenance, yard_record.name)
 		self.assertEqual(yard_expense.crane, self.cranes[0].name)
@@ -343,17 +343,18 @@ class TestCraneRental(FrappeTestCase):
 		record.save()
 		expense_name = record.expense_entry
 		expense = frappe.get_doc("Expense Entry", expense_name)
-		self.assertEqual(expense.docstatus, 0)
+		self.assertEqual(expense.docstatus, 1)
 		self.assertEqual(expense.project, self.project.name)
 		self.assertEqual(expense.crane, self.cranes[0].name)
 		self.assertEqual(expense.crane_maintenance, record.name)
 		self.assertEqual(expense.amount, 125)
 		with self.assertRaises(frappe.ValidationError):
 			create_expense(record.name)
-		expense.submit()
 		expense.cancel()
-		self.assertNotEqual(create_expense(record.name), expense_name)
-		self.assertEqual(frappe.db.count("Expense Entry", {"crane_maintenance": record.name, "docstatus": 0}), 1)
+		replacement = create_expense(record.name)
+		self.assertNotEqual(replacement, expense_name)
+		self.assertEqual(frappe.db.get_value("Expense Entry", replacement, "docstatus"), 1)
+		self.assertEqual(frappe.db.count("Expense Entry", {"crane_maintenance": record.name, "docstatus": 1}), 1)
 
 	def test_maintenance_completion_requires_expense_details(self):
 		record = self.maintenance()

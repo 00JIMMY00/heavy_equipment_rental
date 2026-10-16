@@ -91,6 +91,8 @@ class CraneMaintenance(Document):
 			"description": _("Crane Maintenance {0}: {1}").format(self.name, self.description),
 			"receipt": self.attachment,
 		}).insert()
+		# Keep completion and expense submission in the same transaction.
+		expense.submit()
 		self.expense_entry = expense.name
 		frappe.db.set_value("Crane Maintenance", self.name, "expense_entry", expense.name, update_modified=False)
 		return expense.name

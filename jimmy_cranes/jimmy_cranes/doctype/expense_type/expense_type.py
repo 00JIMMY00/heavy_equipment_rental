@@ -12,6 +12,9 @@ class ExpenseType(Document):
 			frappe.rename_doc("Expense Type", existing, self.name, force=True, show_alert=False)
 		if not self.account and frappe.db.exists("Expense Type", self.name):
 			self.account = frappe.db.get_value("Expense Type", self.name, "account")
+		if not self.account:
+			# The fixture is shared across sites; each site's chart has different Account names.
+			self.flags.ignore_mandatory = True
 
 	def validate(self):
 		if not self.account:
