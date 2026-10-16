@@ -120,8 +120,8 @@ class CraneAssignment(Document):
 				frappe.throw(
 					_("{0}: a committed crane cannot be replaced. Add a separate allocation.").format(label)
 				)
-			if altered and row.status == "Reserved" and conditions.get(row.crane) != "Operational":
-				frappe.throw(_("{0}: crane is in Maintenance or Inactive.").format(label))
+			if altered and row.status == "Reserved" and conditions.get(row.crane) == "Inactive":
+				frappe.throw(_("{0}: crane is Inactive.").format(label))
 			if row.status == "Cancelled":
 				if row.status_before_cancel and row.status_before_cancel not in ("Draft", "Reserved"):
 					frappe.throw(_("{0}: invalid status before cancellation.").format(label))

@@ -48,6 +48,9 @@ class Crane(Document):
 		before = self.get_doc_before_save()
 		if before and self.item != before.item:
 			frappe.throw(_("The linked sales Item cannot be changed manually."))
+		if before and self.operational_condition != before.operational_condition:
+			# A manual condition change takes ownership away from the maintenance log.
+			self.maintenance_condition_managed = 0
 		check_non_negative(self.capacity_tons, _("Capacity"))
 		if not self.is_new():
 			lock_cranes([self.name])

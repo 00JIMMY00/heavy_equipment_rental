@@ -20,6 +20,11 @@ frappe.ui.form.on("Crane", {
 			},
 			__("View")
 		);
+		frm.add_custom_button(
+			__("Maintenance"),
+			() => frappe.set_route("List", "Crane Maintenance", { crane: frm.doc.name }),
+			__("View")
+		);
 		frm.trigger("availability_date");
 	},
 	availability_date(frm) {

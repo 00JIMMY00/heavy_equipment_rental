@@ -4,6 +4,7 @@ import frappe
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import getdate, today
 
+from jimmy_cranes.jimmy_cranes.doctype.crane_maintenance.crane_maintenance import create_expense
 from jimmy_cranes.jimmy_cranes.doctype.crane_timesheet.crane_timesheet import default_timesheet_entries
 from jimmy_cranes.rental_operations import crane_action, project_action
 from jimmy_cranes.rental_queries import (
@@ -247,9 +248,126 @@ class TestCraneRental(FrappeTestCase):
 		self.cranes[0].save()
 		self.assertEqual(assignment.reload().assigned_cranes[0].status, "Reserved")
 		next_batch = self.assignment(project=self.other_project, start=41, end=45)
+		self.action(next_batch, "Reserve")
+		self.assertTrue(crane_availability(self.cranes[0].name, self.d(50))["available"])
+		self.cranes[0].operational_condition = "Inactive"
+		self.cranes[0].save()
+		blocked = self.assignment(project=self.other_project, start=50, end=55)
+		with self.assertRaisesRegex(frappe.ValidationError, "Inactive"):
+			self.action(blocked, "Reserve")
+		self.assertFalse(crane_availability(self.cranes[0].name, self.d(60))["available"])
+
+	def maintenance(self, crane=None, project=None):
+		if not hasattr(self, "maintenance_expense_type"):
+			self.maintenance_expense_type = frappe.get_doc({
+				"doctype": "Expense Type", "expense_type_name": "Maintenance " + self.key
+			}).insert()
+		return frappe.get_doc({
+			"doctype": "Crane Maintenance",
+			"crane": (crane or self.cranes[0]).name,
+			"project": project.name if project else None,
+			"maintenance_type": "Corrective",
+			"description": "Service on site",
+			"planned_start_date": self.d(1),
+			"cost": 125,
+			"expense_type": self.maintenance_expense_type.name,
+		}).insert()
+
+	def test_maintenance_condition_and_work(self):
+		first = self.maintenance(project=self.project)
+		self.assertFalse(first.expense_entry)
+		self.assertEqual(self.cranes[0].reload().operational_condition, "Operational")
+		first.status = "In Progress"
+		first.actual_start_date = self.d(1)
+		first.save()
+		self.assertTrue(first.expense_entry)
+		self.assertEqual(self.cranes[0].reload().operational_condition, "Maintenance")
+		self.assertEqual(self.cranes[0].maintenance_condition_managed, 1)
+		self.assertTrue(crane_availability(self.cranes[0].name, self.d(5))["available"])
+		assignment = self.active()
+		self.assertEqual(assignment.assigned_cranes[0].status, "Reserved")
+		self.sheet().insert().submit()
+		second = self.maintenance()
+		second.status = "In Progress"
+		second.save()
+		first.status = "Completed"
+		first.actual_end_date = self.d(5)
+		first.save()
+		self.assertEqual(self.cranes[0].reload().operational_condition, "Maintenance")
+		second.status = "Cancelled"
+		second.save()
+		self.assertEqual(self.cranes[0].reload().operational_condition, "Operational")
+		self.assertEqual(self.cranes[0].maintenance_condition_managed, 0)
 		with self.assertRaises(frappe.ValidationError):
-			self.action(next_batch, "Reserve")
-		self.assertFalse(crane_availability(self.cranes[0].name, self.d(50))["available"])
+			first.status = "In Progress"
+			first.save()
+
+	def test_maintenance_preserves_manual_conditions(self):
+		self.cranes[0].operational_condition = "Maintenance"
+		self.cranes[0].save()
+		record = self.maintenance()
+		record.status = "In Progress"
+		record.save()
+		record.status = "Completed"
+		record.save()
+		self.assertEqual(self.cranes[0].reload().operational_condition, "Maintenance")
+		self.assertEqual(self.cranes[0].maintenance_condition_managed, 0)
+		self.cranes[1].operational_condition = "Inactive"
+		self.cranes[1].save()
+		inactive_record = self.maintenance(crane=self.cranes[1])
+		inactive_record.status = "In Progress"
+		inactive_record.save()
+		inactive_record.status = "Completed"
+		inactive_record.save()
+		self.assertEqual(self.cranes[1].reload().operational_condition, "Inactive")
+		overridden = self.maintenance(crane=self.cranes[2])
+		overridden.status = "In Progress"
+		overridden.save()
+		self.cranes[2].reload()
+		self.cranes[2].operational_condition = "Inactive"
+		self.cranes[2].save()
+		overridden.status = "Completed"
+		overridden.save()
+		self.assertEqual(self.cranes[2].reload().operational_condition, "Inactive")
+
+	def test_maintenance_expense_is_draft_and_single_active_link(self):
+		yard_record = self.maintenance()
+		yard_record.status = "Completed"
+		yard_record.save()
+		yard_expense = frappe.get_doc("Expense Entry", yard_record.expense_entry)
+		self.assertEqual(yard_expense.docstatus, 0)
+		self.assertFalse(yard_expense.project)
+		self.assertEqual(yard_expense.crane_maintenance, yard_record.name)
+		self.assertEqual(yard_expense.crane, self.cranes[0].name)
+		record = self.maintenance(project=self.project)
+		record.status = "Completed"
+		record.actual_start_date = self.d(4)
+		record.actual_end_date = self.d(5)
+		record.save()
+		expense_name = record.expense_entry
+		expense = frappe.get_doc("Expense Entry", expense_name)
+		self.assertEqual(expense.docstatus, 0)
+		self.assertEqual(expense.project, self.project.name)
+		self.assertEqual(expense.crane, self.cranes[0].name)
+		self.assertEqual(expense.crane_maintenance, record.name)
+		self.assertEqual(expense.amount, 125)
+		with self.assertRaises(frappe.ValidationError):
+			create_expense(record.name)
+		expense.submit()
+		expense.cancel()
+		self.assertNotEqual(create_expense(record.name), expense_name)
+		self.assertEqual(frappe.db.count("Expense Entry", {"crane_maintenance": record.name, "docstatus": 0}), 1)
+
+	def test_maintenance_completion_requires_expense_details(self):
+		record = self.maintenance()
+		record.expense_type = None
+		record.status = "Completed"
+		with self.assertRaisesRegex(frappe.ValidationError, "Expense Type"):
+			record.save()
+		record.expense_type = self.maintenance_expense_type.name
+		record.cost = 0
+		with self.assertRaisesRegex(frappe.ValidationError, "positive cost"):
+			record.save()
 
 	def test_operator_union_and_amount(self):
 		self.active()

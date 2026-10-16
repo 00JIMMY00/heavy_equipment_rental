@@ -103,7 +103,7 @@ def crane_availability(crane, date=None, to_date=None):
 		as_dict=True,
 	)
 	has_work = any(start <= day <= end for row in work for day in entry_days(row))
-	available = not current and doc.operational_condition == "Operational"
+	available = not current and doc.operational_condition != "Inactive"
 	indicators = []
 	if any(r.status == "Reserved" for r in current):
 		indicators.append("Reserved for selected date")

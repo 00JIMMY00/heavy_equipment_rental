@@ -39,13 +39,27 @@ and work-coverage checks.
   bookings and its physical condition.
 - Reserved rows occupy their start through expected end dates. Date changes
   cannot overlap another reservation or invalidate recorded work.
-- Draft and Cancelled rows do not block dates. Maintenance or Inactive physical
-  condition blocks new reservations, independently of booking state.
+- Draft and Cancelled rows do not block dates. Maintenance is informational and
+  does not block reservations or timesheets. Inactive blocks new reservations.
 - The crane view and Fleet Reservations Gantt show bookings and recorded work.
   No job changes business statuses as dates pass.
 - Bulk actions check Project and Assignment permissions, validate selected child
   IDs, lock cranes in a stable order, and save atomically. Concurrent conflicting
   requests cannot both succeed; MariaDB may reject one with a retryable deadlock.
+
+## Crane maintenance
+
+Crane Maintenance records planned and completed service for a crane. A Crane Project
+link is optional for work performed on site. Planned dates do not reserve the crane.
+Starting work changes an Operational crane to Maintenance; after the last active
+record ends, the condition returns to Operational only if maintenance changed it.
+Manually set Maintenance and Inactive conditions are preserved. Neither maintenance
+records nor the Maintenance condition prevent reservations or timesheets.
+
+Completing maintenance requires a positive cost and Expense Type. It automatically
+creates a linked draft Expense Entry for the crane, with or without a Crane Project.
+The Expense Entry links back to the maintenance record. A cancelled Expense Entry
+can be replaced from the maintenance form.
 
 ## Timesheets and defaults
 

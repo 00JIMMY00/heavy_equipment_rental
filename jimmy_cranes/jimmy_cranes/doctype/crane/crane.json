@@ -61,6 +61,14 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "maintenance_condition_managed",
+   "fieldtype": "Check",
+   "label": "Maintenance Condition Managed",
+   "hidden": 1,
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
    "fieldname": "period_prices",
    "fieldtype": "Table",
    "label": "Period Prices",
@@ -91,6 +99,7 @@
   "capacity_tons",
   "ownership_type",
   "operational_condition",
+  "maintenance_condition_managed",
   "period_prices",
   "availability_section",
   "availability_date",
