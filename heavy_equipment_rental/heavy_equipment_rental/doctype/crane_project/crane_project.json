@@ -7,6 +7,11 @@
  "engine": "InnoDB",
  "fields": [
   {
+   "fieldname": "assigned_cranes_html",
+   "fieldtype": "HTML",
+   "label": "Assigned Cranes"
+  },
+  {
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
@@ -75,14 +80,10 @@
    "fieldtype": "Tab Break",
    "label": "Connections",
    "show_dashboard": 1
-  },
-  {
-   "fieldname": "connections_invoice_html",
-   "fieldtype": "HTML",
-   "label": "Sales Invoices"
   }
  ],
  "field_order": [
+  "assigned_cranes_html",
   "naming_series",
   "project_name",
   "customer",
@@ -92,8 +93,7 @@
   "expected_end_date",
   "completion_date",
   "notes",
-  "connections_tab",
-  "connections_invoice_html"
+  "connections_tab"
  ],
  "permissions": [
   {

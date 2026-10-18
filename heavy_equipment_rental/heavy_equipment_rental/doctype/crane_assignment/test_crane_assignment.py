@@ -774,6 +774,21 @@ class TestCraneRental(FrappeTestCase):
 			sheet.cancel()
 		self.assertEqual(frappe.db.get_value("Crane Timesheet", sheet.name, "docstatus"), 1)
 
+	def test_hourly_invoice_shows_hours_at_each_price(self):
+		from heavy_equipment_rental.billing import generate_sales_invoice
+
+		assignment = self.assignment()
+		self.action(assignment, "Reserve")
+		sheet = self.sheet(entries=[
+			self.shift(day=5, start="08:00:00", end="12:00:00", rate=100),
+			self.shift(day=5, start="12:00:00", end="16:00:00", rate=50),
+		])
+		sheet.insert().submit()
+		invoice = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=sheet.name)["name"])
+		self.assertEqual(sum(row.qty for row in invoice.items), 8)
+		self.assertEqual({(row.qty, row.rate) for row in invoice.items}, {(4, 50), (4, 100)})
+		self.assertEqual(invoice.grand_total, 600)
+
 	def test_daily_rate_counts_crane_day_once_across_timesheets(self):
 		from heavy_equipment_rental.billing import generate_sales_invoice
 

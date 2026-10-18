@@ -12,6 +12,7 @@ from frappe.utils import escape_html, flt, today
 from heavy_equipment_rental.rental_validation import (
 	allocation_window,
 	allocations,
+	billable_totals,
 	interval,
 	project_doc,
 	work_days,
@@ -64,7 +65,7 @@ def _billing_lines(selected, all_sheets, active_invoices):
 		row = group[0][1]
 		if row.rental_rate_unit == "Hour":
 			for sheet, allocation_row, days in group:
-				lines.append(_invoice_line([sheet], row, set()))
+				lines.extend(_invoice_line([sheet], row, set()))
 				invoice_sheets.append(sheet)
 			continue
 		new_days = set().union(*(days for sheet, allocation_row, days in group)) - {
@@ -72,7 +73,7 @@ def _billing_lines(selected, all_sheets, active_invoices):
 		}
 		if new_days:
 			sheets = [sheet for sheet, allocation_row, days in group if days & new_days]
-			lines.append(_invoice_line(sheets, row, new_days))
+			lines.extend(_invoice_line(sheets, row, new_days))
 			invoice_sheets.extend(sheets)
 		for sheet, allocation_row, days in group:
 			if not days & new_days:
@@ -145,6 +146,8 @@ def rebuild_draft_invoice(project, invoice_name, reason):
 		if not lines or covered_links:
 			frappe.throw(_("This draft contains days already covered by another invoice. Review the linked timesheets before rebuilding."))
 		invoice.set("items", lines)
+		# Preserve the draft's original posting date when it is rebuilt later.
+		invoice.set_posting_time = 1
 		invoice.save()
 		invoice.add_comment(
 			"Info",
@@ -206,8 +209,6 @@ def _invoice_line(sheets, allocation, charged_days):
 		)
 	)
 	amount = Decimal(str(sheets[0].total_amount)) if unit == "Hour" else quantity * Decimal(str(allocation.rental_rate))
-	hourly_rates = {Decimal(str(entry.price_per_hour)) for entry in sheets[0].timesheet_entries} if unit == "Hour" else set()
-	hourly_rate = next(iter(hourly_rates)) if len(hourly_rates) == 1 else None
 	crane = frappe.get_doc("Crane", sheets[0].crane, for_update=True)
 	if not crane.item:
 		crane.ensure_sales_item()
@@ -216,31 +217,38 @@ def _invoice_line(sheets, allocation, charged_days):
 	)
 	if not item or item.is_stock_item or not item.is_sales_item or item.stock_uom != "Hour" or item.disabled:
 		frappe.throw(_("Crane {0}: linked Item must be an enabled, sellable, non-stock Hour service.").format(crane.crane_name))
-	return {
+	item = {
 		"item_code": crane.item,
 		"item_name": crane.crane_name,
 		"uom": "Hour",
-		# ERPNext rounds a line's rate before multiplying. Use one service
-		# charge when hourly rates vary, or for daily and monthly amounts.
-		"qty": float(hours) if unit == "Hour" and hourly_rate is not None else 1,
-		"rate": float(hourly_rate) if unit == "Hour" and hourly_rate is not None else float(amount),
-		"description": (
-			_("Crane {0}; Timesheet {1}; assignment {2}, row {3}; {4} billable hours at varying hourly prices").format(
-				crane.crane_name, sheets[0].name, allocation.assignment, allocation.idx, float(hours)
-			)
-			if unit == "Hour" and hourly_rate is None
-			else _("Crane {0}; Timesheets {1}; assignment {2}, row {3}; {4} {5} at {6} per {7}").format(
-				crane.crane_name,
-				", ".join(sheet.name for sheet in sheets),
-				allocation.assignment,
-				allocation.idx,
-				float(quantity),
-				unit if quantity == 1 else unit + "s",
-				hourly_rate if unit == "Hour" else allocation.rental_rate,
-				unit,
-			)
-		),
 	}
+	if unit == "Hour":
+		by_rate = defaultdict(list)
+		for entry in sheets[0].timesheet_entries:
+			by_rate[Decimal(str(entry.price_per_hour))].append((*interval(entry), float(entry.price_per_hour)))
+		lines = []
+		for rate, intervals in sorted(by_rate.items()):
+			billable_hours = billable_totals(intervals)[0]
+			lines.append({
+				**item,
+				"qty": billable_hours,
+				"rate": float(rate),
+				"description": _("Crane {0}; Timesheet {1}; assignment {2}, row {3}; {4} billable hours at {5} per hour").format(
+					crane.crane_name, sheets[0].name, allocation.assignment, allocation.idx,
+					billable_hours, rate,
+				),
+			})
+		return lines
+	return [{
+		**item,
+		"qty": 1,
+		"rate": float(amount),
+		"description": _("Crane {0}; Timesheets {1}; assignment {2}, row {3}; {4} {5} at {6} per {7}").format(
+			crane.crane_name, ", ".join(sheet.name for sheet in sheets), allocation.assignment,
+			allocation.idx, float(quantity), unit if quantity == 1 else unit + "s",
+			allocation.rental_rate, unit,
+		),
+	}]
 
 
 @frappe.whitelist()

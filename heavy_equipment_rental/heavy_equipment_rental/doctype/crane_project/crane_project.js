@@ -49,23 +49,43 @@ function show_crane_project_invoices(project, rows, submitted_without_invoice = 
 }
 
 function show_project_invoice_connection(frm) {
-	const wrapper = frm.fields_dict.connections_invoice_html?.$wrapper;
+	const link = $(frm.dashboard.transactions_area).find('.document-link[data-doctype="Sales Invoice"]');
+	if (!link.length || frm.is_new() || !frappe.model.can_read("Crane Timesheet")) return;
+	const project = frm.doc.name;
+	frappe.call({
+		method: "heavy_equipment_rental.billing.project_invoice_summary",
+		args: { project },
+		callback: ({ message }) => {
+			if (frm.doc.name !== project) return;
+			const names = (message?.invoices || []).map((invoice) => invoice.name);
+			link.find(".count").removeClass("hidden").text(names.length);
+			link.find(".badge-link").off("click").on("click", () => {
+				frappe.route_options = { name: ["in", names.length ? names : [""]] };
+				frappe.set_route("List", "Sales Invoice", "List");
+			});
+		},
+	});
+}
+
+function show_assigned_cranes(frm) {
+	const wrapper = frm.fields_dict.assigned_cranes_html?.$wrapper;
 	if (!wrapper) return;
 	wrapper.empty();
-	if (frm.is_new() || !frappe.model.can_read("Sales Invoice") || !frappe.model.can_read("Crane Timesheet")) return;
-	const button = $('<button type="button" class="btn btn-default btn-sm">')
-		.text(__("Sales Invoices"))
-		.appendTo(wrapper);
-	button.on("click", () => frappe.call({
-		method: "heavy_equipment_rental.billing.project_invoice_summary",
-		args: { project: frm.doc.name },
-		callback: ({ message }) => show_crane_project_invoices(frm.doc.name, message?.invoices, message?.submitted_without_invoice),
-	}));
+	if (frm.is_new() || !frappe.model.can_read("Crane Assignment")) return;
+	const project = frm.doc.name;
+	frappe.call({ method: "heavy_equipment_rental.rental_queries.project_overview", args: { project } })
+		.then(({ message: rows }) => {
+			if (frm.doc.name !== project || !rows?.length) return;
+			const esc = (value) => frappe.utils.escape_html(String(value ?? ""));
+			const body = rows.map((row) => `<tr><td>${esc(row.crane_name)}</td><td><a href="/app/crane-assignment/${encodeURIComponent(row.assignment)}">${esc(row.assignment)}</a></td><td>${esc(row.start_date)}</td><td>${esc(row.expected_end_date)}</td><td>${esc(__(row.status))}</td></tr>`).join("");
+			const headings = ["Crane Name", "Assignment", "Start", "End", "Status"].map((h) => `<th>${__(h)}</th>`).join("");
+			wrapper.html(`<h4>${__("Assigned Cranes")}</h4><div class="table-responsive"><table class="table table-bordered"><thead><tr>${headings}</tr></thead><tbody>${body}</tbody></table></div>`);
+		});
 }
 
 frappe.ui.form.on("Crane Project", {
 	refresh(frm) {
-		show_project_invoice_connection(frm);
+		show_assigned_cranes(frm);
 		if (frm.is_new()) return;
 		frm.add_custom_button(__("Gantt Chart"), () => {
 			frappe.route_options = {
@@ -121,15 +141,8 @@ frappe.ui.form.on("Crane Project", {
 				}),
 				__("Reopen Project")
 			), __("Actions"));
-		if (!frappe.model.can_read("Crane Assignment")) return;
-		frappe.call({ method: "heavy_equipment_rental.rental_queries.project_overview", args: { project: frm.doc.name } })
-			.then(({ message: rows }) => {
-				$(frm.dashboard.parent).find(".crane-project-section").remove();
-				if (!rows?.length) return;
-				const esc = (value) => frappe.utils.escape_html(String(value ?? ""));
-				const body = rows.map((row) => `<tr><td>${esc(row.crane_name)}</td><td><a href="/app/crane-assignment/${encodeURIComponent(row.assignment)}">${esc(row.assignment)}</a></td><td>${esc(row.start_date)}</td><td>${esc(row.expected_end_date)}</td><td>${esc(__(row.status))}</td></tr>`).join("");
-				const headings = ["Crane Name", "Assignment", "Start", "End", "Status"].map((h) => `<th>${__(h)}</th>`).join("");
-				frm.dashboard.add_section(`<div class="table-responsive"><table class="table table-bordered"><thead><tr>${headings}</tr></thead><tbody>${body}</tbody></table></div>`, __("Assigned Cranes"), "crane-project-section");
-			});
+	},
+	dashboard_update(frm) {
+		show_project_invoice_connection(frm);
 	},
 });
