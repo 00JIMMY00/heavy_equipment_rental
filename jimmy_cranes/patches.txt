@@ -1,7 +1,0 @@
-[pre_model_sync]
-jimmy_cranes.patches.rename_crane_operator
-
-[post_model_sync]
-jimmy_cranes.patches.add_hour_crane_price
-jimmy_cranes.patches.link_existing_drivers_to_employees
-jimmy_cranes.patches.fix_driver_naming_series

@@ -1,0 +1,9 @@
+[pre_model_sync]
+heavy_equipment_rental.patches.rename_crane_operator
+heavy_equipment_rental.patches.rename_crane_workspace
+
+[post_model_sync]
+heavy_equipment_rental.patches.add_hour_crane_price
+heavy_equipment_rental.patches.link_existing_drivers_to_employees
+heavy_equipment_rental.patches.fix_driver_naming_series
+heavy_equipment_rental.patches.default_rental_workspace

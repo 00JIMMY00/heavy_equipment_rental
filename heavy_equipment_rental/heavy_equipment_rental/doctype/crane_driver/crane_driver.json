@@ -1,0 +1,126 @@
+{
+ "doctype": "DocType",
+ "name": "Crane Driver",
+ "module": "Heavy Equipment Rental",
+ "creation": "2026-10-12 00:00:00.000000",
+ "modified": "2026-10-13 12:54:00.772138",
+ "modified_by": "Administrator",
+ "owner": "Administrator",
+ "engine": "InnoDB",
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "CD-.#####",
+   "default": "CD-.#####",
+   "reqd": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "operator_name",
+   "fieldtype": "Data",
+   "label": "Driver Name",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "read_only": 1,
+   "no_copy": 1,
+   "in_list_view": 1,
+   "options": "Employee",
+   "unique": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "reqd": 1,
+   "options": "Company"
+  },
+  {
+   "fieldname": "gender",
+   "fieldtype": "Link",
+   "label": "Gender",
+   "reqd": 1,
+   "options": "Gender"
+  },
+  {
+   "fieldname": "date_of_birth",
+   "fieldtype": "Date",
+   "label": "Date of Birth",
+   "reqd": 1
+  },
+  {
+   "fieldname": "date_of_joining",
+   "fieldtype": "Date",
+   "label": "Date of Joining",
+   "reqd": 1
+  }
+ ],
+ "field_order": [
+  "naming_series",
+  "operator_name",
+  "phone",
+  "employee",
+  "company",
+  "gender",
+  "date_of_birth",
+  "date_of_joining"
+ ],
+ "istable": 0,
+ "is_submittable": 0,
+ "grid_page_length": 50,
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "links": [],
+ "actions": [],
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "Projects Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "Projects User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "title_field": "operator_name",
+ "show_title_field_in_link": 1,
+ "search_fields": "operator_name,phone",
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field"
+}

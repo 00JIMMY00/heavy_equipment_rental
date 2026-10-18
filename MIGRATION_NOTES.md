@@ -40,5 +40,5 @@ delete source history, or bypass booking checks to clear them.
 - Python lint, JavaScript syntax checks, and app asset build passed.
 - Temporary browser session removed and `allow_tests` restored to false.
 
-Use **Jimmy Cranes → Crane Project** for rental projects, or Desk route
+Use **Heavy Equipment Rental → Crane Project** for rental projects, or Desk route
 `/app/crane-project`. The fleet timeline is `/app/crane-project-gantt`.

@@ -1,0 +1,23 @@
+{
+ "doctype": "Page",
+ "name": "crane-project-gantt",
+ "page_name": "crane-project-gantt",
+ "title": "Crane Project Gantt",
+ "module": "Heavy Equipment Rental",
+ "standard": "Yes",
+ "creation": "2026-10-12 00:00:00.000000",
+ "modified": "2026-10-13 12:54:00.771860",
+ "modified_by": "Administrator",
+ "owner": "Administrator",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Projects Manager"
+  },
+  {
+   "role": "Projects User"
+  }
+ ]
+}

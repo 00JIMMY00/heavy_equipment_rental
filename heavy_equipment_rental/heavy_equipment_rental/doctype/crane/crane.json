@@ -1,0 +1,153 @@
+{
+ "doctype": "DocType",
+ "name": "Crane",
+ "module": "Heavy Equipment Rental",
+ "engine": "InnoDB",
+ "creation": "2026-10-13 00:00:00.000000",
+ "modified": "2026-10-13 12:54:00.772895",
+ "modified_by": "Administrator",
+ "owner": "Administrator",
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "CR-.#####",
+   "default": "CR-.#####",
+   "reqd": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "crane_name",
+   "fieldtype": "Data",
+   "label": "Crane Name",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "label": "Sales Item",
+   "options": "Item",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "model",
+   "fieldtype": "Data",
+   "label": "Model",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "capacity_tons",
+   "fieldtype": "Int",
+   "label": "Capacity (tons)",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "ownership_type",
+   "fieldtype": "Select",
+   "label": "Ownership Type",
+   "options": "Owned\nRented\nOther",
+   "default": "Owned"
+  },
+  {
+   "fieldname": "operational_condition",
+   "fieldtype": "Select",
+   "label": "Operational Condition",
+   "options": "Operational\nMaintenance\nInactive",
+   "default": "Operational",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "maintenance_condition_managed",
+   "fieldtype": "Check",
+   "label": "Maintenance Condition Managed",
+   "hidden": 1,
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "period_prices",
+   "fieldtype": "Table",
+   "label": "Period Prices",
+   "options": "Crane Period Price"
+  },
+  {
+   "fieldname": "availability_section",
+   "fieldtype": "Section Break",
+   "label": "Activity and Reservations"
+  },
+  {
+   "fieldname": "availability_date",
+   "fieldtype": "Date",
+   "label": "Availability Date",
+   "default": "Today"
+  },
+  {
+   "fieldname": "availability_overview",
+   "fieldtype": "HTML",
+   "label": "Availability Overview"
+  }
+ ],
+ "field_order": [
+  "naming_series",
+  "crane_name",
+  "item",
+  "model",
+  "capacity_tons",
+  "ownership_type",
+  "operational_condition",
+  "maintenance_condition_managed",
+  "period_prices",
+  "availability_section",
+  "availability_date",
+  "availability_overview"
+ ],
+ "istable": 0,
+ "is_submittable": 0,
+ "editable_grid": 1,
+ "grid_page_length": 100,
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "Projects Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "Projects User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field",
+ "title_field": "crane_name",
+ "show_title_field_in_link": 1,
+ "search_fields": "crane_name,model"
+}

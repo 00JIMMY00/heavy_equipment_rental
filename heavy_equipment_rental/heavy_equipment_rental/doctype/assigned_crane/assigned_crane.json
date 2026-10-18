@@ -1,0 +1,118 @@
+{
+ "doctype": "DocType",
+ "name": "Assigned Crane",
+ "module": "Heavy Equipment Rental",
+ "engine": "InnoDB",
+ "creation": "2026-10-13 00:00:00.000000",
+ "modified": "2026-10-13 12:54:00.773860",
+ "modified_by": "Administrator",
+ "owner": "Administrator",
+ "fields": [
+  {
+   "fieldname": "crane",
+   "fieldtype": "Link",
+   "label": "Crane",
+   "options": "Crane",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "expected_end_date",
+   "fieldtype": "Date",
+   "label": "End Date",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nReserved\nCancelled",
+   "default": "Draft",
+   "read_only": 1,
+   "in_list_view": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "rental_rate",
+   "fieldtype": "Currency",
+   "label": "Rental Rate",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "rental_rate_unit",
+   "fieldtype": "Select",
+   "label": "Rental Rate Unit",
+   "options": "Hour\nDay\nMonth",
+   "default": "Hour",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status_before_cancel",
+   "fieldtype": "Select",
+   "label": "Status Before Cancel",
+   "options": "\nDraft\nReserved",
+   "read_only": 1,
+   "no_copy": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "cancellation_date",
+   "fieldtype": "Date",
+   "label": "Cancellation Date",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "cancellation_reason",
+   "fieldtype": "Small Text",
+   "label": "Cancellation Reason",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "last_action_by",
+   "fieldtype": "Link",
+   "label": "Last Action By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "last_action_at",
+   "fieldtype": "Datetime",
+   "label": "Last Action At",
+   "read_only": 1,
+   "no_copy": 1
+  }
+ ],
+ "field_order": [
+  "crane",
+  "start_date",
+  "expected_end_date",
+  "status",
+  "rental_rate",
+  "rental_rate_unit",
+  "status_before_cancel",
+  "cancellation_date",
+  "cancellation_reason",
+  "last_action_by",
+  "last_action_at"
+ ],
+ "istable": 1,
+ "is_submittable": 0,
+ "editable_grid": 1,
+ "grid_page_length": 100,
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 0,
+ "permissions": []
+}

@@ -1,6 +1,8 @@
-# Jimmy Cranes
+# Heavy Equipment Rental
 
-Crane rental management for Frappe/ERPNext. The Jimmy Cranes workspace uses its own **Crane Project** DocType alongside crane, assignment and timesheet DocTypes. ERPNext Project is independent.
+Crane rental management for Frappe/ERPNext. The **Crane Operations** workspace uses its own **Crane Project** DocType alongside crane, assignment and timesheet DocTypes. ERPNext Project is independent.
+
+The workspace opens with a live crane metrics block and a **Crane Dashboard** shortcut for the full view. It shows today's fleet availability, reservations, open and overdue projects, submitted billable hours, unbilled timesheets, and upcoming maintenance. On installation or migration, users with System Manager, Projects Manager, or Projects User roles whose Default Workspace is empty are assigned Crane Operations. Existing workspace preferences are preserved.
 
 ## Workflow
 
@@ -25,7 +27,7 @@ the recorded previous status. Crane Assignment has no parent status.
 Crane Project has a read-only crane overview and explicit Complete, Cancel, and
 Reopen actions. Reopening requires a correction reason.
 Its controller checks Draft crane rows and draft timesheets before closure.
-ERPNext Project has no Jimmy Cranes hooks or form script.
+ERPNext Project has no Heavy Equipment Rental hooks or form script.
 
 All booking actions and corrections are recorded in the Assignment or Crane
 Project timeline with the user, status change, and reason. Frappe change tracking
@@ -59,14 +61,20 @@ records nor the Maintenance condition prevent reservations or timesheets.
 New maintenance records default to the fixed **Maintenance** Expense Type fixture.
 Expense Types can link to a non-group Expense account; choose the account for that
 fixture on each site after installation. Completing maintenance requires a positive
-cost and Expense Type and automatically creates and submits a linked Expense Entry for the
-crane, with or without a Crane Project.
+cost, Expense Type and Credit Account and automatically creates and submits a linked
+Expense Entry for the crane, with or without a Crane Project.
 The Expense Entry links back to the maintenance record. A cancelled Expense Entry
 can be replaced from the maintenance form.
 
+Submitting any Expense Entry creates and submits a balanced Journal Entry: it debits
+the Expense Type's Account and credits the selected Credit Account. Both accounts
+must belong to the same Company and use its currency. Cancelling the Expense Entry
+cancels the Journal Entry, reversing its ledger effect. Cancel the Expense Entry to
+correct its accounting; its linked Journal Entry cannot be cancelled on its own.
+
 ## Timesheets and defaults
 
-Jimmy Cranes Settings remains the single settings DocType. Choosing a timesheet
+Heavy Equipment Rental Settings remains the single settings DocType. Choosing a timesheet
 period fills missing dates with its default day shift times, preserving existing
 rows. There is no manual “Fill Missing Dates” button. Assign operators and hourly
 rates before saving.
@@ -132,9 +140,9 @@ remaining obsolete examples, assumptions, and the exact changed-file list.
 With tests enabled on a development site:
 
 ```bash
-bench --site YOUR_SITE run-tests --module jimmy_cranes.jimmy_cranes.doctype.crane_assignment.test_crane_assignment
-bench --site YOUR_SITE run-tests --module jimmy_cranes.jimmy_cranes.doctype.crane_assignment.test_rental_workflow
-bench --site YOUR_SITE run-tests --module jimmy_cranes.jimmy_cranes.doctype.crane_assignment.test_rental_concurrency
+bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.test_crane_assignment
+bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.test_rental_workflow
+bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.test_rental_concurrency
 ```
 
 The concurrency test opens independent connections and deletes only its own

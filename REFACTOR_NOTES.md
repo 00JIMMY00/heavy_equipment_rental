@@ -4,7 +4,7 @@ Specification: `CODEX_SIMPLIFY_CRANE_WORKFLOW.md`, with the user's later
 requirement to use a separate Crane Project instead of ERPNext Project.
 
 Crane Project is the app's project record. Crane Assignment and Crane Timesheet
-link to it. ERPNext Project has no Jimmy Cranes hooks or form script. Crane
+link to it. ERPNext Project has no Heavy Equipment Rental hooks or form script. Crane
 Project is Open until explicitly Completed or Cancelled; closure checks for
 unresolved allocations and draft timesheets. Assignment remains status-free;
 Assigned Crane rows use Draft, Reserved, Released, and Cancelled.

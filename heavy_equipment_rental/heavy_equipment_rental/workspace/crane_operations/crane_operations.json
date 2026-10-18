@@ -1,0 +1,106 @@
+{
+ "doctype": "Workspace",
+ "name": "Crane Operations",
+ "title": "Crane Operations",
+ "label": "Crane Operations",
+ "module": "Heavy Equipment Rental",
+ "public": 1,
+ "is_hidden": 0,
+ "icon": "project",
+ "sequence_id": 12,
+ "content": "[{\"id\": \"crane-overview-block\", \"type\": \"custom_block\", \"data\": {\"custom_block_name\": \"Crane Operations Overview\", \"col\": 12}}, {\"id\": \"rental-title\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>تأجير المعدات</b></span>\", \"col\": 12}}, {\"id\": \"crane-dashboard-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"لوحة تحكم الرافعات\", \"col\": 12}}, {\"id\": \"crane-link-0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"المشروع\", \"col\": 3}}, {\"id\": \"crane-link-1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"تخصيص المعدات\", \"col\": 3}}, {\"id\": \"crane-link-2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"سجل ساعات المعدات\", \"col\": 3}}, {\"id\": \"crane-link-3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"المعدة\", \"col\": 3}}, {\"id\": \"crane-link-4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"سائق المعدة\", \"col\": 3}}, {\"id\": \"crane-link-5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"العميل\", \"col\": 3}}, {\"id\": \"crane-link-6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"حجوزات الأسطول\", \"col\": 3}}, {\"id\": \"crane-link-7\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"إعدادات تأجير المعدات الثقيلة\", \"col\": 3}}, {\"id\": \"crane-link-8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"قيد المصروفات\", \"col\": 3}}, {\"id\": \"crane-link-9\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"نوع المصروف\", \"col\": 3}}, {\"id\": \"crane-link-10\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"صيانة المعدات\", \"col\": 3}}]",
+ "shortcuts": [
+  {
+   "label": "لوحة تحكم الرافعات",
+   "link_to": "crane-dashboard",
+   "type": "Page"
+  },
+  {
+   "label": "مشروع المعدات",
+   "link_to": "Crane Project",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "تخصيص المعدات",
+   "link_to": "Crane Assignment",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "سجل ساعات المعدات",
+   "link_to": "Crane Timesheet",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "المعدة",
+   "link_to": "Crane",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "سائق المعدة",
+   "link_to": "Crane Driver",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "العميل",
+   "link_to": "Customer",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "حجوزات الأسطول",
+   "link_to": "crane-project-gantt",
+   "type": "Page"
+  },
+  {
+   "label": "إعدادات تأجير المعدات الثقيلة",
+   "link_to": "Heavy Equipment Rental Settings",
+   "type": "DocType"
+  },
+  {
+   "label": "قيد المصروفات",
+   "link_to": "Expense Entry",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "نوع المصروف",
+   "link_to": "Expense Type",
+   "type": "DocType",
+   "doc_view": "List"
+  },
+  {
+   "label": "صيانة المعدات",
+   "link_to": "Crane Maintenance",
+   "type": "DocType",
+   "doc_view": "List"
+  }
+ ],
+ "links": [],
+ "charts": [],
+ "number_cards": [],
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Projects Manager"
+  },
+  {
+   "role": "Projects User"
+  }
+ ],
+ "owner": "Administrator",
+ "modified_by": "Administrator",
+ "modified": "2026-10-17 22:00:00.000000",
+ "custom_blocks": [
+  {
+   "custom_block_name": "Crane Operations Overview",
+   "label": "Crane Operations Overview"
+  }
+ ]
+}

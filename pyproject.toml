@@ -1,9 +1,9 @@
 [project]
-name = "jimmy_cranes"
+name = "heavy_equipment_rental"
 authors = [
     { name = "jimmy", email = "j@gmail.com"}
 ]
-description = "cranes"
+description = "Heavy equipment rental management for Frappe/ERPNext"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
