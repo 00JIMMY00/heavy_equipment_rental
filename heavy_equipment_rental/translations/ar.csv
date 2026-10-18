@@ -1,4 +1,12 @@
 English,Arabic
+Mode of Payment,طريقة الدفع
+Mode of Payment must use a non-group Asset or Liability account.,يجب أن تستخدم طريقة الدفع حساب أصول أو التزامات غير تجميعي.
+Mode of Payment account cannot be Receivable or Payable.,لا يمكن أن يكون حساب طريقة الدفع حساب ذمم مدينة أو دائنة.
+Select a Mode of Payment before posting the expense.,اختر طريقة الدفع قبل ترحيل المصروف.
+Select an enabled Mode of Payment.,اختر طريقة دفع مفعّلة.
+"Set a Default Account for Company {0} on Mode of Payment {1}.",حدد الحساب الافتراضي للشركة {0} في طريقة الدفع {1}.
+"Set a positive cost, Expense Type and Mode of Payment before completing maintenance.",حدد تكلفة موجبة ونوع مصروف وطريقة دفع قبل إكمال الصيانة.
+"Complete maintenance with a positive cost, Expense Type and Mode of Payment first.",أكمل سجل الصيانة بتكلفة موجبة ونوع مصروف وطريقة دفع أولاً.
 A Receivable or Payable Credit Account needs a party; choose another account.,يحتاج الحساب الدائن للذمم المدينة أو الدائنة إلى طرف؛ اختر حساباً آخر.
 A reason is required for cancellation or correction.,سبب الإلغاء أو التصحيح مطلوب.
 A reason is required to cancel a Crane Project.,سبب إلغاء مشروع المعدات مطلوب.

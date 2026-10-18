@@ -3,6 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt
 
+from heavy_equipment_rental.payment import payment_account
 from heavy_equipment_rental.rental_queries import visible_allocations
 
 
@@ -15,6 +16,11 @@ class ExpenseEntry(Document):
 			frappe.throw(_("Expense amount must be greater than zero."))
 		if not self.project and not self.crane:
 			frappe.throw(_("Select a Crane Project or Crane for this expense."))
+		if self.mode_of_payment:
+			debit_name = frappe.db.get_value("Expense Type", self.expense_type, "account")
+			company = frappe.db.get_value("Account", debit_name, "company") if debit_name else None
+			if company:
+				self.credit_account = payment_account(self.mode_of_payment, company)
 		if self.crane_maintenance:
 			maintenance = frappe.get_doc("Crane Maintenance", self.crane_maintenance)
 			if maintenance.expense_entry and maintenance.expense_entry != self.name:
@@ -28,6 +34,7 @@ class ExpenseEntry(Document):
 				or self.project != maintenance.project
 				or flt(self.amount) != flt(maintenance.cost)
 				or self.expense_type != maintenance.expense_type
+				or self.mode_of_payment != maintenance.mode_of_payment
 				or self.credit_account != maintenance.credit_account
 			):
 				frappe.throw(_("Expense details must match the completed Crane Maintenance record."))
@@ -81,8 +88,19 @@ class ExpenseEntry(Document):
 		debit_name = frappe.db.get_value("Expense Type", self.expense_type, "account")
 		if not debit_name:
 			frappe.throw(_("Set an Expense Account on Expense Type {0} before submitting.").format(self.expense_type))
-		if not self.credit_account:
-			frappe.throw(_("Select a Credit Account before submitting."))
+		debit_company = frappe.db.get_value("Account", debit_name, "company")
+		if not debit_company:
+			frappe.throw(_("Expense Type must link to a non-group Expense account."))
+		if self.mode_of_payment:
+			self.credit_account = payment_account(self.mode_of_payment, debit_company)
+		elif not self.crane_maintenance or not self.credit_account:
+			frappe.throw(_("Select a Mode of Payment before posting the expense."))
+		else:
+			maintenance = frappe.get_doc("Crane Maintenance", self.crane_maintenance)
+			if maintenance.mode_of_payment or maintenance.status != "Completed" or (
+				maintenance.credit_account != self.credit_account
+			):
+				frappe.throw(_("Select a Mode of Payment before posting the expense."))
 		if debit_name == self.credit_account:
 			frappe.throw(_("Expense and Credit accounts must be different."))
 		debit = frappe.db.get_value(
@@ -95,9 +113,9 @@ class ExpenseEntry(Document):
 		if not debit or debit.is_group or debit.root_type != "Expense":
 			frappe.throw(_("Expense Type must link to a non-group Expense account."))
 		if not credit or credit.is_group or credit.root_type not in ("Asset", "Liability"):
-			frappe.throw(_("Choose a non-group Asset or Liability Credit Account."))
+			frappe.throw(_("Mode of Payment must use a non-group Asset or Liability account."))
 		if credit.account_type in ("Receivable", "Payable"):
-			frappe.throw(_("A Receivable or Payable Credit Account needs a party; choose another account."))
+			frappe.throw(_("Mode of Payment account cannot be Receivable or Payable."))
 		if not debit.company or credit.company != debit.company:
 			frappe.throw(_("Expense and Credit accounts must belong to the same Company."))
 		project_company = frappe.db.get_value("Crane Project", self.project, "company") if self.project else None

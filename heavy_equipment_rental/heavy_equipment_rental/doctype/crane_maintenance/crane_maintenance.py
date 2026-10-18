@@ -3,6 +3,8 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate, today
 
+from heavy_equipment_rental.payment import payment_account
+
 
 class CraneMaintenance(Document):
 	def validate(self):
@@ -23,13 +25,21 @@ class CraneMaintenance(Document):
 			frappe.throw(_("A started maintenance record cannot move to another crane."))
 		if before and before.expense_entry and any(
 			self.get(field) != before.get(field)
-			for field in ("crane", "project", "cost", "expense_type", "credit_account", "actual_end_date")
+			for field in ("crane", "project", "cost", "expense_type", "mode_of_payment", "credit_account", "actual_end_date")
 		):
 			frappe.throw(_("Expense details cannot change after expense creation."))
 		if flt(self.cost) < 0:
 			frappe.throw(_("Maintenance cost cannot be negative."))
-		if self.status == "Completed" and (flt(self.cost) <= 0 or not self.expense_type or not self.credit_account):
-			frappe.throw(_("Set a positive cost, Expense Type and Credit Account before completing maintenance."))
+		legacy_completed = before and before.status == "Completed" and not before.mode_of_payment and before.credit_account
+		if self.status == "Completed" and (
+			flt(self.cost) <= 0 or not self.expense_type or not (self.mode_of_payment or legacy_completed)
+		):
+			frappe.throw(_("Set a positive cost, Expense Type and Mode of Payment before completing maintenance."))
+		if self.mode_of_payment and self.expense_type and not self.expense_entry:
+			debit_name = frappe.db.get_value("Expense Type", self.expense_type, "account")
+			company = frappe.db.get_value("Account", debit_name, "company") if debit_name else None
+			if company:
+				self.credit_account = payment_account(self.mode_of_payment, company)
 		if self.planned_start_date and self.planned_end_date and getdate(self.planned_end_date) < getdate(self.planned_start_date):
 			frappe.throw(_("Planned end date cannot precede the start date."))
 		if self.status in ("In Progress", "Completed") and not self.actual_start_date:
@@ -86,6 +96,7 @@ class CraneMaintenance(Document):
 			"crane": self.crane,
 			"crane_maintenance": self.name,
 			"expense_type": self.expense_type,
+			"mode_of_payment": self.mode_of_payment,
 			"credit_account": self.credit_account,
 			"posting_date": self.actual_end_date,
 			"amount": self.cost,
@@ -103,6 +114,8 @@ class CraneMaintenance(Document):
 def create_expense(maintenance):
 	doc = frappe.get_doc("Crane Maintenance", maintenance, for_update=True)
 	doc.check_permission("write")
-	if doc.status != "Completed" or flt(doc.cost) <= 0 or not doc.expense_type or not doc.credit_account:
-		frappe.throw(_("Complete maintenance with a positive cost, Expense Type and Credit Account first."))
+	if doc.status != "Completed" or flt(doc.cost) <= 0 or not doc.expense_type or not (
+		doc.mode_of_payment or doc.credit_account
+	):
+		frappe.throw(_("Complete maintenance with a positive cost, Expense Type and Mode of Payment first."))
 	return doc.make_expense()

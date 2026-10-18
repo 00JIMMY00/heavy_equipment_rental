@@ -49,7 +49,7 @@ class TestCraneRental(FrappeTestCase):
 		return str(self.base + timedelta(days=number))
 
 	def expense_accounts(self):
-		for company in frappe.get_all("Company", pluck="name"):
+		for company in [self.project.company]:
 			currency = frappe.db.get_value("Company", company, "default_currency")
 			debit = frappe.db.get_value("Account", {
 				"company": company, "root_type": "Expense", "is_group": 0, "account_currency": currency
@@ -65,9 +65,20 @@ class TestCraneRental(FrappeTestCase):
 				return debit, credit
 		self.skipTest("Company with base-currency Expense and Asset accounts is required")
 
+	def payment_mode(self, account):
+		company = frappe.db.get_value("Account", account, "company")
+		return frappe.get_doc({
+			"doctype": "Mode of Payment",
+			"mode_of_payment": "Rental Test " + frappe.generate_hash(length=10),
+			"type": "Bank",
+			"enabled": 1,
+			"accounts": [{"company": company, "default_account": account}],
+		}).insert().name
+
 	def test_driver_employee_and_project_expense(self):
 		self.assignment()
 		debit, credit = self.expense_accounts()
+		mode = self.payment_mode(credit)
 		driver = self.operators[0]
 		self.assertTrue(driver.employee)
 		self.assertEqual(frappe.db.get_value("Employee", driver.employee, "employee_name"), driver.operator_name)
@@ -79,18 +90,19 @@ class TestCraneRental(FrappeTestCase):
 			"project": self.project.name,
 			"posting_date": self.d(5),
 			"expense_type": expense_type.name,
-			"credit_account": credit,
+			"mode_of_payment": mode,
 			"amount": 125,
 			"crane": self.cranes[0].name,
 			"employee": driver.employee,
 		}).insert()
 		self.assertEqual(expense.project, self.project.name)
 		self.assertEqual(expense.employee, driver.employee)
+		self.assertEqual(expense.credit_account, credit)
 		self.assertEqual(frappe.db.count("Expense Entry", {"project": self.project.name}), 1)
 		expense.project = self.other_project.name
 		with self.assertRaisesRegex(frappe.ValidationError, "assigned to this Crane Project"):
 			expense.save()
-		expense.project = self.project.name
+		expense.reload()
 		expense.submit()
 		self.assertEqual(expense.docstatus, 1)
 		journal = frappe.get_doc("Journal Entry", expense.journal_entry)
@@ -116,7 +128,7 @@ class TestCraneRental(FrappeTestCase):
 		self.assertEqual(expense.docstatus, 2)
 		self.assertEqual(journal.reload().docstatus, 2)
 
-	def test_expense_requires_credit_account_before_posting(self):
+	def test_expense_requires_mode_of_payment_before_posting(self):
 		debit, credit = self.expense_accounts()
 		expense_type = frappe.get_doc({
 			"doctype": "Expense Type", "expense_type_name": "Service " + self.key, "account": debit
@@ -128,13 +140,40 @@ class TestCraneRental(FrappeTestCase):
 			"expense_type": expense_type.name,
 			"amount": 125,
 		}).insert()
-		with self.assertRaisesRegex(frappe.ValidationError, "Credit Account"):
+		with self.assertRaisesRegex(frappe.ValidationError, "Mode of Payment"):
 			expense.submit()
 		self.assertEqual(expense.reload().docstatus, 0)
 		self.assertFalse(expense.journal_entry)
-		expense.credit_account = credit
+		expense.mode_of_payment = self.payment_mode(credit)
 		expense.submit()
+		self.assertEqual(expense.credit_account, credit)
 		self.assertEqual(frappe.db.get_value("Journal Entry", expense.journal_entry, "docstatus"), 1)
+
+	def test_expense_rejects_payment_mode_without_company_account(self):
+		debit, credit = self.expense_accounts()
+		company = frappe.db.get_value("Account", credit, "company")
+		mode = frappe.get_doc({
+			"doctype": "Mode of Payment",
+			"mode_of_payment": "Rental Test " + frappe.generate_hash(length=10),
+			"type": "Bank",
+			"enabled": 1,
+		}).insert()
+		expense_type = frappe.get_doc({
+			"doctype": "Expense Type", "expense_type_name": "Service " + self.key, "account": debit
+		}).insert()
+		expense = frappe.get_doc({
+			"doctype": "Expense Entry", "crane": self.cranes[0].name,
+			"posting_date": self.d(5), "expense_type": expense_type.name, "amount": 125,
+		}).insert()
+		expense.mode_of_payment = mode.name
+		with self.assertRaisesRegex(frappe.ValidationError, "Default Account for Company"):
+			expense.submit()
+		mode.append("accounts", {"company": company, "default_account": credit})
+		mode.save()
+		expense.reload()
+		expense.mode_of_payment = mode.name
+		expense.submit()
+		self.assertEqual(expense.credit_account, credit)
 
 	def new_project(self):
 		return frappe.get_doc(
@@ -318,6 +357,7 @@ class TestCraneRental(FrappeTestCase):
 
 	def maintenance(self, crane=None, project=None):
 		debit, credit = self.expense_accounts()
+		mode = self.payment_mode(credit)
 		expense_type = frappe.get_doc("Expense Type", "EXT-MAINTENANCE")
 		if expense_type.account != debit:
 			expense_type.account = debit
@@ -330,7 +370,7 @@ class TestCraneRental(FrappeTestCase):
 			"description": "Service on site",
 			"planned_start_date": self.d(1),
 			"cost": 125,
-			"credit_account": credit,
+			"mode_of_payment": mode,
 		}).insert()
 
 	def test_maintenance_condition_and_work(self):
@@ -414,6 +454,8 @@ class TestCraneRental(FrappeTestCase):
 		self.assertEqual(expense.project, self.project.name)
 		self.assertEqual(expense.crane, self.cranes[0].name)
 		self.assertEqual(expense.crane_maintenance, record.name)
+		self.assertEqual(expense.mode_of_payment, record.mode_of_payment)
+		self.assertEqual(expense.credit_account, record.credit_account)
 		self.assertEqual(expense.amount, 125)
 		with self.assertRaises(frappe.ValidationError):
 			create_expense(record.name)
@@ -429,10 +471,17 @@ class TestCraneRental(FrappeTestCase):
 
 	def test_maintenance_completion_requires_expense_details(self):
 		record = self.maintenance()
+		record.mode_of_payment = None
+		record.status = "Completed"
+		with self.assertRaisesRegex(frappe.ValidationError, "Mode of Payment"):
+			record.save()
+		record.reload()
 		record.expense_type = None
 		record.status = "Completed"
 		with self.assertRaisesRegex(frappe.ValidationError, "Expense Type"):
 			record.save()
+		record.reload()
+		record.status = "Completed"
 		record.expense_type = "EXT-MAINTENANCE"
 		record.cost = 0
 		with self.assertRaisesRegex(frappe.ValidationError, "positive cost"):
@@ -708,6 +757,10 @@ class TestCraneRental(FrappeTestCase):
 		self.assertEqual(invoice.docstatus, 0)
 		self.assertEqual(invoice.customer, self.customer.name)
 		self.assertEqual(invoice.items[0].item_code, crane.item)
+		self.assertEqual(
+			[(row.timesheet, row.crane_driver, row.employee) for row in invoice.crane_drivers],
+			[(first.name, self.operators[0].name, self.operators[0].employee)],
+		)
 		self.assertAlmostEqual(invoice.grand_total, 100)
 		self.assertEqual(generate_sales_invoice(timesheet=first.name)["name"], invoice.name)
 

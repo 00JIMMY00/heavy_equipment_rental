@@ -28,12 +28,26 @@
    "default": 8,
    "precision": "2",
    "description": "Calculated from the default start and end times."
+  },
+  {
+   "fieldname": "driver_payment_expense_account",
+   "fieldtype": "Link",
+   "label": "Direct Driver Payment Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "driver_payment_payable_account",
+   "fieldtype": "Link",
+   "label": "Direct Driver Payment Employee Payable Account",
+   "options": "Account"
   }
  ],
  "field_order": [
   "day_shift_start_time",
   "day_shift_end_time",
-  "day_shift_hours"
+  "day_shift_hours",
+  "driver_payment_expense_account",
+  "driver_payment_payable_account"
  ],
  "permissions": [
   {

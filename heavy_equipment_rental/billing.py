@@ -2,12 +2,12 @@
 
 from calendar import monthrange
 from collections import defaultdict
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 import erpnext
 import frappe
 from frappe import _
-from frappe.utils import escape_html, flt, today
+from frappe.utils import escape_html, flt, getdate, today
 
 from heavy_equipment_rental.rental_validation import (
 	allocation_window,
@@ -45,6 +45,149 @@ def _invoice_summaries(project, sheets):
 			"zero_total": flt(invoice.grand_total) == 0,
 		})
 	return sorted(result, key=lambda row: row["name"])
+
+
+def _invoice_driver_rows(sheets):
+	"""Keep each billed timesheet's distinct drivers visible on the invoice."""
+	operators = {
+		entry.crane_operator for sheet in sheets for entry in sheet.timesheet_entries
+		if entry.crane_operator
+	}
+	employees = {
+		row.name: row.employee for row in frappe.get_all(
+			"Crane Driver", filters={"name": ["in", list(operators)]}, fields=["name", "employee"]
+		)
+	} if operators else {}
+	return [
+		{
+			"timesheet": sheet.name,
+			"crane_driver": driver,
+			"employee": employees.get(driver),
+			"timesheet_line_amount": sum(
+				Decimal(str(entry.line_amount or 0))
+				for entry in sheet.timesheet_entries if entry.crane_operator == driver
+			),
+		}
+		for sheet in sheets
+		for driver in sorted({entry.crane_operator for entry in sheet.timesheet_entries if entry.crane_operator})
+	]
+
+
+def set_invoice_driver_shares(invoice, method=None):
+	"""Allocate the invoice total by the recorded driver line amounts."""
+	if not invoice.meta.has_field("customer_pays_drivers_directly") or not invoice.customer_pays_drivers_directly:
+		return
+	rows = invoice.get("crane_drivers") or []
+	weights = [Decimal(str(row.timesheet_line_amount or 0)) for row in rows]
+	if not rows or sum(weights) <= 0 or any(weight < 0 for weight in weights):
+		frappe.throw(_("Direct driver payment needs linked drivers with positive timesheet line amounts."))
+	if any(not row.employee for row in rows):
+		frappe.throw(_("Every linked Crane Driver needs an Employee before direct payment can be selected."))
+	precision = invoice.precision("grand_total") or 2
+	quantum = Decimal(1).scaleb(-precision)
+	total = Decimal(str(invoice.grand_total or 0)).quantize(quantum, rounding=ROUND_HALF_UP)
+	if total <= 0:
+		frappe.throw(_("Direct driver payment needs a positive invoice total."))
+	positive = [index for index, weight in enumerate(weights) if weight > 0]
+	allocated = Decimal(0)
+	for index, (row, weight) in enumerate(zip(rows, weights)):
+		share = (
+			total - allocated if index == positive[-1]
+			else (total * weight / sum(weights)).quantize(quantum, rounding=ROUND_HALF_UP)
+			if weight > 0 else Decimal(0)
+		)
+		row.invoice_share = float(share)
+		allocated += share
+
+
+@frappe.whitelist()
+def record_direct_driver_payment(invoice_name, payment_date, reference):
+	"""Record confirmed customer-to-Employee payment without company bank movement."""
+	if not (reference or "").strip():
+		frappe.throw(_("Enter the customer payment reference or proof."))
+	if not frappe.has_permission("Journal Entry", "create") or not frappe.has_permission("Journal Entry", "submit"):
+		frappe.throw(_("Journal Entry create and submit permissions are required."), frappe.PermissionError)
+	invoice = frappe.get_doc("Sales Invoice", invoice_name, for_update=True)
+	invoice.check_permission("read")
+	if invoice.docstatus != 1 or not invoice.customer_pays_drivers_directly:
+		frappe.throw(_("Submit a Sales Invoice marked Customer Pays Drivers Directly first."))
+	if invoice.driver_direct_payment_journal_entry:
+		frappe.throw(_("Direct driver payment has already been recorded on Journal Entry {0}.").format(invoice.driver_direct_payment_journal_entry))
+	date = getdate(payment_date)
+	if date < getdate(invoice.posting_date) or date > getdate(today()):
+		frappe.throw(_("Payment date must be between invoice posting date and today."))
+	if flt(invoice.outstanding_amount, 2) != flt(invoice.grand_total, 2) or flt(invoice.paid_amount, 2):
+		frappe.throw(_("The full invoice must still be unpaid to record direct driver payment."))
+	company_currency = frappe.db.get_value("Company", invoice.company, "default_currency")
+	if invoice.currency != company_currency or flt(invoice.conversion_rate, 6) != 1:
+		frappe.throw(_("Direct driver payment currently requires the invoice and company to use the same currency."))
+	settings = frappe.get_single("Heavy Equipment Rental Settings")
+	expense_account = settings.driver_payment_expense_account
+	payable_account = settings.driver_payment_payable_account
+	for account, root_type, account_type in (
+		(expense_account, "Expense", None),
+		(payable_account, "Liability", "Payable"),
+		(invoice.debit_to, "Asset", "Receivable"),
+	):
+		data = frappe.db.get_value("Account", account, ["company", "root_type", "account_type", "is_group"], as_dict=True) if account else None
+		if not data or data.company != invoice.company or data.is_group or data.root_type != root_type or (account_type and data.account_type != account_type):
+			frappe.throw(_("Configure valid company expense and Employee payable accounts before recording direct driver payment."))
+	set_invoice_driver_shares(invoice)
+	shares = defaultdict(Decimal)
+	for row in invoice.crane_drivers:
+		if row.invoice_share:
+			if frappe.db.get_value("Employee", row.employee, "company") != invoice.company:
+				frappe.throw(_("Driver Employee {0} must belong to the invoice company.").format(row.employee))
+			shares[row.employee] += Decimal(str(row.invoice_share))
+	if not shares:
+		frappe.throw(_("No payable driver shares were found."))
+	accounts = []
+	for employee, share in sorted(shares.items()):
+		accounts.extend([
+			{"account": expense_account, "debit_in_account_currency": float(share)},
+			{"account": payable_account, "party_type": "Employee", "party": employee, "credit_in_account_currency": float(share)},
+			{"account": payable_account, "party_type": "Employee", "party": employee, "debit_in_account_currency": float(share)},
+		])
+	accounts.append({
+		"account": invoice.debit_to,
+		"party_type": "Customer",
+		"party": invoice.customer,
+		"reference_type": "Sales Invoice",
+		"reference_name": invoice.name,
+		"credit_in_account_currency": invoice.grand_total,
+	})
+	frappe.db.savepoint("direct_driver_payment")
+	try:
+		journal = frappe.get_doc({
+			"doctype": "Journal Entry",
+			"company": invoice.company,
+			"posting_date": date,
+			"user_remark": _("Customer paid Crane Drivers directly for Sales Invoice {0}. Reference: {1}").format(invoice.name, reference.strip()),
+			"accounts": accounts,
+		})
+		journal.insert()
+		journal.submit()
+		invoice.db_set("driver_direct_payment_journal_entry", journal.name)
+		invoice.add_comment("Info", _("Direct driver payment recorded on Journal Entry {0}. Reference: {1}").format(journal.name, escape_html(reference.strip())))
+	except Exception:
+		frappe.db.rollback(save_point="direct_driver_payment")
+		raise
+	return {"journal_entry": journal.name}
+
+
+def guard_direct_driver_payment_cancel(invoice, method=None):
+	if invoice.meta.has_field("driver_direct_payment_journal_entry") and invoice.driver_direct_payment_journal_entry:
+		if frappe.db.get_value("Journal Entry", invoice.driver_direct_payment_journal_entry, "docstatus") == 1:
+			frappe.throw(_("Cancel direct driver payment Journal Entry {0} before cancelling this invoice.").format(
+				invoice.driver_direct_payment_journal_entry
+			))
+
+
+def clear_direct_driver_payment_link(journal, method=None):
+	for invoice in frappe.get_all(
+		"Sales Invoice", filters={"driver_direct_payment_journal_entry": journal.name}, pluck="name"
+	):
+		frappe.db.set_value("Sales Invoice", invoice, "driver_direct_payment_journal_entry", None, update_modified=False)
 
 
 def _billing_lines(selected, all_sheets, active_invoices):
@@ -146,6 +289,7 @@ def rebuild_draft_invoice(project, invoice_name, reason):
 		if not lines or covered_links:
 			frappe.throw(_("This draft contains days already covered by another invoice. Review the linked timesheets before rebuilding."))
 		invoice.set("items", lines)
+		invoice.set("crane_drivers", _invoice_driver_rows(billed_sheets))
 		# Preserve the draft's original posting date when it is rebuilt later.
 		invoice.set_posting_time = 1
 		invoice.save()
@@ -310,6 +454,7 @@ def generate_sales_invoice(project=None, timesheet=None):
 				"due_date": today(),
 				"remarks": _("Crane Project {0}").format(crane_project.name),
 				"items": lines,
+				"crane_drivers": _invoice_driver_rows(invoice_sheets),
 			})
 			invoice.insert()
 			for sheet in invoice_sheets:

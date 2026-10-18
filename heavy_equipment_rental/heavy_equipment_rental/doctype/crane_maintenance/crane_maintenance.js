@@ -1,8 +1,6 @@
 frappe.ui.form.on("Crane Maintenance", {
 	setup(frm) {
-		frm.set_query("credit_account", () => ({
-			filters: { is_group: 0, root_type: ["in", ["Asset", "Liability"]] },
-		}));
+		frm.set_query("mode_of_payment", () => ({ filters: { enabled: 1 } }));
 	},
 	refresh(frm) {
 		if (frm.is_new()) return;

@@ -7,9 +7,7 @@ frappe.ui.form.on("Expense Entry", {
 		frm.set_query("employee", () => ({
 			query: "heavy_equipment_rental.heavy_equipment_rental.doctype.expense_entry.expense_entry.driver_employee_query",
 		}));
-		frm.set_query("credit_account", () => ({
-			filters: { is_group: 0, root_type: ["in", ["Asset", "Liability"]] },
-		}));
+		frm.set_query("mode_of_payment", () => ({ filters: { enabled: 1 } }));
 	},
 	project(frm) {
 		frm.set_value("crane", null);

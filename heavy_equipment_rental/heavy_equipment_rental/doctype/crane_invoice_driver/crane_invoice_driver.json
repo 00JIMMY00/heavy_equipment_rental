@@ -1,0 +1,49 @@
+{
+ "doctype": "DocType",
+ "name": "Crane Invoice Driver",
+ "module": "Heavy Equipment Rental",
+ "istable": 1,
+ "editable_grid": 1,
+ "fields": [
+  {
+   "fieldname": "timesheet",
+   "fieldtype": "Link",
+   "label": "Crane Timesheet",
+   "options": "Crane Timesheet",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "crane_driver",
+   "fieldtype": "Link",
+   "label": "Crane Driver",
+   "options": "Crane Driver",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "timesheet_line_amount",
+   "fieldtype": "Currency",
+   "label": "Timesheet Line Amount",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "invoice_share",
+   "fieldtype": "Currency",
+   "label": "Invoice Share",
+   "read_only": 1,
+   "in_list_view": 1
+  }
+ ],
+ "field_order": ["timesheet", "crane_driver", "employee", "timesheet_line_amount", "invoice_share"],
+ "permissions": []
+}
