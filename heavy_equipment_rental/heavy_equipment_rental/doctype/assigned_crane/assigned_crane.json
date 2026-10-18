@@ -17,6 +17,13 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "crane_driver",
+   "fieldtype": "Link",
+   "label": "Crane Driver",
+   "options": "Crane Driver",
+   "in_list_view": 1
+  },
+  {
    "fieldname": "start_date",
    "fieldtype": "Date",
    "label": "Start Date",
@@ -95,6 +102,7 @@
  ],
  "field_order": [
   "crane",
+  "crane_driver",
   "start_date",
   "expected_end_date",
   "status",
