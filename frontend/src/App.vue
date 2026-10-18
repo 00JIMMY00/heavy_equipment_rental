@@ -70,7 +70,7 @@ function dateLabel(event) {
         <div class="eyebrow"><span class="eyebrow-mark"></span> FLEET OPERATIONS</div>
         <h1>Rental calendar</h1>
         <p>One clear view of crane reservations, project schedules, and completed work.</p>
-        <div class="hero-links"><a href="/app/crane-operations">← Crane Operations</a><span>·</span><a href="/app/crane-project-gantt">Fleet timeline ↗</a></div>
+        <div class="hero-links"><a href="/app/crane-operations">← Crane Operations</a><span>·</span><a href="/rental-calendar/timeline">Compare resource timeline ↗</a></div>
       </div>
       <div class="hero-art" aria-hidden="true"><span class="art-ring one"></span><span class="art-ring two"></span><span class="art-bar a"></span><span class="art-bar b"></span><span class="art-bar c"></span></div>
       <div class="hero-date"><span>VISIBLE RANGE</span><strong>{{ rangeLabel }}</strong></div>

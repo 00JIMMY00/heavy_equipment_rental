@@ -103,7 +103,7 @@ def get_calendar_events(start_date, end_date):
                 "toTime": get_time(entry.end_time).strftime("%H:%M"),
                 "isFullDay": False, "color": "green",
                 "status": "Submitted" if sheet.docstatus == 1 else "Draft",
-                "isDraft": sheet.docstatus == 0, "crane": sheet.crane,
+                "isDraft": sheet.docstatus == 0, "crane": sheet.crane, "project": sheet.project,
             })
         for row in sheets:
             if row.name in sheets_with_entries:
@@ -116,5 +116,34 @@ def get_calendar_events(start_date, end_date):
                 "fromDate": str(row.period_start), "toDate": str(row.period_end),
                 "isFullDay": True, "color": "green", "status": "Submitted" if row.docstatus == 1 else "Draft",
                 "isDraft": row.docstatus == 0, "hours": row.total_crane_billable_hours,
+                "crane": row.crane, "project": row.project,
             })
     return events
+
+
+@frappe.whitelist()
+def get_resource_calendar_data(start_date, end_date):
+    """Use the same permission-filtered events as the Frappe UI calendar."""
+    events = get_calendar_events(start_date, end_date)
+    resources = []
+    if frappe.has_permission("Crane Project", "read"):
+        project_ids = list({event["docname"] for event in events if event["type"] == "project"})
+        if project_ids:
+            projects = frappe.get_list(
+                "Crane Project", filters={"name": ["in", project_ids]},
+                fields=["name", "project_name", "customer"], limit_page_length=0,
+            )
+            resources.extend({
+                "id": f"project:{row.name}", "title": row.project_name or row.name,
+                "group": "Projects", "detail": row.customer or row.name,
+            } for row in projects)
+    if frappe.has_permission("Crane", "read"):
+        cranes = frappe.get_list(
+            "Crane", fields=["name", "crane_name", "model", "operational_condition"],
+            limit_page_length=0,
+        )
+        resources.extend({
+            "id": f"crane:{row.name}", "title": row.crane_name or row.name,
+            "group": "Fleet", "detail": row.model or row.operational_condition or row.name,
+        } for row in cranes)
+    return {"events": events, "resources": resources}

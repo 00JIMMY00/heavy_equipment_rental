@@ -132,6 +132,10 @@ and monthly charges use one service line to preserve currency precision.
 
 Open `/rental-calendar` or use the **تقويم الحجوزات** shortcut in Crane Operations. The calendar shows project windows, crane allocations, and timesheet work entries. Its filters and search affect the visible events; selecting an event opens its source record. Events are read-only, and the feed uses the viewer's DocType permissions.
 
+For a side-by-side workflow comparison, open `/rental-calendar/timeline` or use the **تقويم الموارد** shortcut. It uses this app's own resource timeline: projects and cranes are separate rows, and the same reservation appears on both its project and crane rows. Timesheet work appears on the related rows. This view is read-only too.
+
+The resource timeline has no Premium package, license key, or subscription requirement.
+
 The calendar frontend is built with Frappe UI and Vite. After changing `frontend/src`, rebuild the committed assets:
 
 ```bash
