@@ -128,6 +128,20 @@ each calendar month. A timesheet must fit one allocation row
 with a positive agreed rate. Invoice descriptions show the rate basis; daily
 and monthly charges use one service line to preserve currency precision.
 
+## Rental calendar
+
+Open `/rental-calendar` or use the **تقويم الحجوزات** shortcut in Crane Operations. The calendar shows project windows, crane allocations, and timesheet work entries. Its filters and search affect the visible events; selecting an event opens its source record. Events are read-only, and the feed uses the viewer's DocType permissions.
+
+The calendar frontend is built with Frappe UI and Vite. After changing `frontend/src`, rebuild the committed assets:
+
+```bash
+cd frontend
+npm ci
+npm run build
+```
+
+Run `bench --site YOUR_SITE migrate` after installing or updating the app to sync the workspace shortcut and route hooks.
+
 ## Local development
 
 Crane Project is a separate DocType. No data conversion scripts or database reset

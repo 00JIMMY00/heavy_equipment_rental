@@ -29,3 +29,8 @@ doctype_js = {
 	"Sales Invoice": "public/js/crane_sales_invoice.js",
 }
 
+
+website_route_rules = [
+    {"from_route": "/rental-calendar", "to_route": "rental_calendar"},
+    {"from_route": "/rental-calendar/<path:app_path>", "to_route": "rental_calendar"},
+]
