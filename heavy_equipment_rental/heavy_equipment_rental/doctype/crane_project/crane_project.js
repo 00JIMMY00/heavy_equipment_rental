@@ -105,14 +105,11 @@ frappe.ui.form.on("Crane Project", {
 	refresh(frm) {
 		show_assigned_cranes(frm);
 		if (frm.is_new()) return;
-		frm.add_custom_button(__("Gantt Chart"), () => {
-			frappe.route_options = {
-				project: frm.doc.name,
-				from_date: frm.doc.expected_start_date,
-				to_date: frm.doc.expected_end_date,
-			};
-			frappe.set_route("crane-project-gantt");
-		});
+		frm.add_custom_button(__("Rental Calendar"), () => {
+			const params = new URLSearchParams({ project: frm.doc.name });
+			if (frm.doc.expected_start_date) params.set("date", frm.doc.expected_start_date);
+			window.location.href = `/rental-calendar?${params}`;
+		}, __("View"));
 		if (frappe.model.can_create("Sales Invoice"))
 			frm.add_custom_button(__("Generate Sales Invoice"), () => frappe.call({
 				method: "heavy_equipment_rental.billing.generate_sales_invoice",

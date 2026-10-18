@@ -15,7 +15,7 @@ frappe.pages["crane-dashboard"].on_page_load = function (wrapper) {
 		}).join("");
 		const service = data.upcoming_maintenance.map((item) => `<div class="crane-row"><div><strong>${escape(item.crane)}</strong><small>${__(item.maintenance_type)} · ${escape(item.planned_start_date)}</small></div><span class="crane-pill service">${__(item.status)}</span></div>`).join("");
 		$root.html(`
-			<div class="crane-hero"><div><div class="crane-eyebrow">${__("Fleet operations")}</div><h1>${__("Your crane fleet at a glance")}</h1><p>${__("Live overview as of")} ${escape(data.as_of)}</p></div><a href="/app/crane-project-gantt">${__("View reservations")} ↗</a></div>
+			<div class="crane-hero"><div><div class="crane-eyebrow"><img src="/assets/heavy_equipment_rental/branding/ar-monogram-classic.png" alt="AR logo">${__("Fleet operations")}</div><h1>${__("Your crane fleet at a glance")}</h1><p>${__("Live overview as of")} ${escape(data.as_of)}</p></div><a href="/rental-calendar/timeline">${__("View reservations")} ↗</a></div>
 			<div class="crane-stats">
 				${stat("Total cranes", data.fleet_total, "Across the fleet", "#1584a6")}
 				${stat("Available today", data.available_today, "Operational and unreserved", "#22aa81")}
@@ -31,7 +31,7 @@ frappe.pages["crane-dashboard"].on_page_load = function (wrapper) {
 				<div class="crane-panel"><h2>${__("Fleet snapshot")}</h2><p class="crane-panel-sub">${__("Crane status for today")}</p>${fleet || `<div class="crane-empty">${__("No cranes have been added yet.")}</div>`}<a href="${route("Crane")}">${__("View all cranes")} →</a></div>
 			</div><div>
 				<div class="crane-panel"><h2>${__("Upcoming maintenance")}</h2><p class="crane-panel-sub">${__("Planned in the next 14 days")}</p>${service || `<div class="crane-empty">${__("No service scheduled soon.")}</div>`}<a href="${route("Crane Maintenance")}">${__("View maintenance")} →</a></div>
-				<div class="crane-panel"><h2>${__("Quick actions")}</h2><p class="crane-panel-sub">${__("Jump into daily work")}</p><div class="crane-quicklinks"><a href="${route("Crane Project")}">${__("Projects")} →</a><a href="${route("Crane Assignment")}">${__("Assignments")} →</a><a href="${route("Crane Timesheet")}">${__("Timesheets")} →</a><a href="/app/crane-project-gantt">${__("Reservations")} →</a></div></div>
+				<div class="crane-panel"><h2>${__("Quick actions")}</h2><p class="crane-panel-sub">${__("Jump into daily work")}</p><div class="crane-quicklinks"><a href="${route("Crane Project")}">${__("Projects")} →</a><a href="${route("Crane Assignment")}">${__("Assignments")} →</a><a href="${route("Crane Timesheet")}">${__("Timesheets")} →</a><a href="/rental-calendar/timeline">${__("Reservations")} →</a></div></div>
 			</div></div>`);
 	}
 	async function load() {

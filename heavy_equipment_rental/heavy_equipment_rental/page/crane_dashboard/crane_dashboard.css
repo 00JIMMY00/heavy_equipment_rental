@@ -1,6 +1,6 @@
 .crane-dashboard { --ink:#18334b; --muted:#6c7d8b; --line:#e5edf2; color:var(--ink); padding:24px 4px 40px; font-family:Inter,system-ui,sans-serif; }
 .crane-dashboard * { box-sizing:border-box; }
-.crane-hero { padding:30px 34px; border-radius:24px; background:linear-gradient(120deg,#153f63 0%,#127b9c 58%,#30b9a0 100%); color:#fff; display:flex; align-items:center; justify-content:space-between; gap:20px; box-shadow:0 16px 34px rgba(19,91,115,.18); }
+.crane-hero { padding:30px 34px; border-radius:24px; background:linear-gradient(120deg,#071a35 0%,#0d3469 58%,#1265d8 100%); color:#fff; display:flex; align-items:center; justify-content:space-between; gap:20px; box-shadow:0 16px 34px rgba(19,91,115,.18); }
 .crane-eyebrow { text-transform:uppercase; letter-spacing:.14em; font-size:11px; font-weight:800; opacity:.8; }
 .crane-hero h1 { color:#fff; font-size:29px; font-weight:800; margin:7px 0; }
 .crane-hero p { margin:0; opacity:.88; }
@@ -28,7 +28,9 @@
 .crane-pill.free { color:#087858; background:#dcf8e9; }.crane-pill.busy { color:#9c6503; background:#fff1ce; }.crane-pill.service { color:#af4660; background:#ffe7ee; }
 .crane-quicklinks { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
 .crane-quicklinks a { border:1px solid var(--line); border-radius:12px; padding:12px; color:var(--ink); text-decoration:none; font-weight:700; font-size:12px; background:#f8fbfd; }
-.crane-quicklinks a:hover { background:#e9f6f7; color:#087b8c; }
+.crane-quicklinks a:hover { background:#eaf2ff; color:#1254a6; }
 .crane-empty { color:var(--muted); padding:16px 0; font-size:13px; }
 @media(max-width:900px) { .crane-stats {grid-template-columns:repeat(2,1fr)} .crane-grid {grid-template-columns:1fr} }
 @media(max-width:560px) { .crane-stats {grid-template-columns:1fr 1fr;gap:10px}.crane-stat{padding:16px}.crane-stat-value{font-size:25px}.crane-hero{display:block;padding:24px}.crane-hero h1{font-size:24px}.crane-hero a{display:inline-block;margin-top:17px}.crane-quicklinks{grid-template-columns:1fr} }
+
+.crane-eyebrow img{width:30px;height:30px;object-fit:contain;vertical-align:middle;margin-right:8px;filter:drop-shadow(0 0 5px rgba(46,132,255,.32))}

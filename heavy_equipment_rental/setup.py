@@ -5,6 +5,8 @@ from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.permissions import add_permission, update_permission_property
 
 from heavy_equipment_rental.patches.default_rental_workspace import execute as set_default_workspace
+from heavy_equipment_rental.branding import apply_branding
+from heavy_equipment_rental.workspace import sync_calendar_shortcuts
 
 
 def execute():
@@ -41,3 +43,5 @@ def execute():
 		}],
 	})
 	set_default_workspace()
+	sync_calendar_shortcuts()
+	apply_branding()

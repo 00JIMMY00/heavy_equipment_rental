@@ -130,9 +130,11 @@ and monthly charges use one service line to preserve currency precision.
 
 ## Rental calendar
 
-Open `/rental-calendar` or use the **تقويم الحجوزات** shortcut in Crane Operations. The calendar shows project windows, crane allocations, and timesheet work entries. Its filters and search affect the visible events; selecting an event opens its source record. Events are read-only, and the feed uses the viewer's DocType permissions.
+Open `/rental-calendar` or use the **تقويم الحجوزات** shortcut in Crane Operations. The calendar shows project windows, crane allocations, timesheet work entries, and planned or actual crane maintenance. Its filters and search affect the visible events; selecting an event opens its source record. Events are read-only, and the feed uses the viewer's DocType permissions.
 
-For a side-by-side workflow comparison, open `/rental-calendar/timeline` or use the **تقويم الموارد** shortcut. It uses this app's own resource timeline: projects and cranes are separate rows, and the same reservation appears on both its project and crane rows. Timesheet work appears on the related rows. This view is read-only too.
+On a Crane Project, **View → Rental Calendar** opens the standard calendar scoped to that project and its expected start month. Crane and Crane Assignment View actions open the resource timeline with the related crane or project selected. Both calendar shortcuts appear together in the Crane Operations workspace; the old Gantt shortcut is removed.
+
+For a side-by-side workflow comparison, open `/rental-calendar/timeline` or use the **تقويم الموارد** shortcut. The operations timeline overlays selected reservations, projects, timesheets, and maintenance on shared project rows. Filter by project or crane, or switch the rows between projects and cranes to compare equipment use. Use the From and To date pickers to show an exact range of up to 120 days, or use the Week and Month presets. Only rows with selected activity appear, and overlapping events stack within the same row. Select a bar to inspect its details or open the source record. This view is read-only too.
 
 The resource timeline has no Premium package, license key, or subscription requirement.
 

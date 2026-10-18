@@ -3,15 +3,17 @@ frappe.ui.form.on("Crane Assignment", {
 		frm.set_query("project", () => ({ filters: { status: "Open" } }));
 		if (frm.is_new() || frm.is_dirty()) return;
 		frm.add_custom_button(
-			__("Gantt Chart"),
+			__("Resource Calendar"),
 			() => {
 				const rows = frm.doc.assigned_cranes || [];
-				frappe.route_options = {
-					assignment: frm.doc.name,
-					from_date: rows.length ? rows.map((r) => r.start_date).sort()[0] : frm.doc.project_start_date,
-					to_date: rows.length ? rows.map((r) => r.expected_end_date).sort().at(-1) : frm.doc.project_end_date,
-				};
-				frappe.set_route("crane-project-gantt", frm.doc.project);
+				const params = new URLSearchParams({ project: frm.doc.project });
+				const from = rows.length ? rows.map((r) => r.start_date).filter(Boolean).sort()[0] : frm.doc.project_start_date;
+				const to = rows.length ? rows.map((r) => r.expected_end_date).filter(Boolean).sort().at(-1) : frm.doc.project_end_date;
+				if (from && to && (new Date(`${to}T12:00:00`) - new Date(`${from}T12:00:00`)) / 86400000 <= 120) {
+					params.set("from", from);
+					params.set("to", to);
+				}
+				window.location.href = `/rental-calendar/timeline?${params}`;
 			},
 			__("View")
 		);

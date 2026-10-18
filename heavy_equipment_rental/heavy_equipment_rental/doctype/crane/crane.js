@@ -13,10 +13,9 @@ frappe.ui.form.on("Crane", {
 	refresh(frm) {
 		if (frm.is_new()) return;
 		frm.add_custom_button(
-			__("Fleet Reservations"),
+			__("Resource Calendar"),
 			() => {
-				frappe.route_options = { crane: frm.doc.name };
-				frappe.set_route("crane-project-gantt");
+				window.location.href = `/rental-calendar/timeline?crane=${encodeURIComponent(frm.doc.name)}`;
 			},
 			__("View")
 		);

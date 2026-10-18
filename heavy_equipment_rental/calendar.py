@@ -1,4 +1,4 @@
-"""Read-only calendar feed for reservations, projects, and timesheets."""
+"""Read-only calendar feed for rental operations."""
 
 from datetime import timedelta
 
@@ -27,6 +27,7 @@ def get_calendar_events(start_date, end_date):
             events.append({
                 "id": f"project:{row.name}", "type": "project", "doctype": "Crane Project", "docname": row.name,
                 "title": row.project_name or row.name, "participant": row.customer or "",
+                "project": row.name, "project_name": row.project_name or row.name,
                 "fromDate": str(row.expected_start_date), "toDate": str(row.expected_end_date),
                 "isFullDay": True, "color": "violet", "status": row.status,
                 "isDeclined": row.status == "Cancelled",
@@ -58,6 +59,7 @@ def get_calendar_events(start_date, end_date):
                     "fromDate": str(row.start_date), "toDate": str(row.expected_end_date),
                     "isFullDay": True, "color": "blue" if row.status == "Reserved" else "amber",
                     "status": row.status, "crane": row.crane, "project": project.name,
+                    "crane_name": crane_name, "project_name": project.project_name or project.name,
                     "isDraft": row.status == "Draft", "isDeclined": row.status == "Cancelled",
                 })
 
@@ -104,6 +106,7 @@ def get_calendar_events(start_date, end_date):
                 "isFullDay": False, "color": "green",
                 "status": "Submitted" if sheet.docstatus == 1 else "Draft",
                 "isDraft": sheet.docstatus == 0, "crane": sheet.crane, "project": sheet.project,
+                "crane_name": cranes.get(sheet.crane, sheet.crane),
             })
         for row in sheets:
             if row.name in sheets_with_entries:
@@ -117,7 +120,38 @@ def get_calendar_events(start_date, end_date):
                 "isFullDay": True, "color": "green", "status": "Submitted" if row.docstatus == 1 else "Draft",
                 "isDraft": row.docstatus == 0, "hours": row.total_crane_billable_hours,
                 "crane": row.crane, "project": row.project,
+                "crane_name": cranes.get(row.crane, row.crane),
             })
+    if frappe.has_permission("Crane Maintenance", "read"):
+        maintenance = frappe.get_list(
+            "Crane Maintenance",
+            fields=["name", "crane", "project", "maintenance_type", "status", "technician",
+                    "planned_start_date", "planned_end_date", "actual_start_date", "actual_end_date"],
+            limit_page_length=0,
+        )
+        crane_ids = list({row.crane for row in maintenance if row.crane})
+        crane_names = {row.name: row.crane_name for row in frappe.get_list(
+            "Crane", filters={"name": ["in", crane_ids]}, fields=["name", "crane_name"], limit_page_length=0,
+        )} if crane_ids and frappe.has_permission("Crane", "read") else {}
+        for row in maintenance:
+            planned = (row.planned_start_date, row.planned_end_date or row.planned_start_date)
+            actual = (row.actual_start_date, row.actual_end_date or row.actual_start_date)
+            for phase, (first, last) in (("planned", planned), ("actual", actual)):
+                if not first or not last or getdate(first) > end or getdate(last) < start:
+                    continue
+                if phase == "actual" and planned == actual:
+                    continue
+                crane_name = crane_names.get(row.crane, row.crane)
+                events.append({
+                    "id": f"maintenance:{row.name}:{phase}", "type": "maintenance",
+                    "doctype": "Crane Maintenance", "docname": row.name,
+                    "title": f"{phase.title()} {row.maintenance_type or 'maintenance'} · {crane_name}",
+                    "participant": row.technician or "", "venue": row.project or "",
+                    "fromDate": str(first), "toDate": str(last), "isFullDay": True,
+                    "color": "orange", "status": row.status, "phase": phase,
+                    "crane": row.crane, "crane_name": crane_name, "project": row.project,
+                    "isDeclined": row.status == "Cancelled",
+                })
     return events
 
 

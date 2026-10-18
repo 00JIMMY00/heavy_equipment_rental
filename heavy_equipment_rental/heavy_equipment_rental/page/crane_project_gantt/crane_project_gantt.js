@@ -105,15 +105,15 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 		.crane-gantt-dot {position:absolute;top:44px;width:10px;height:10px;border:0;border-radius:50%;background:#9656b7;cursor:pointer;transform:translateX(-50%);padding:0}
 		.crane-gantt-dot.draft {background:#e59b3b}
 		.crane-gantt-empty {padding:38px;text-align:center;color:#6c8193;font-size:13px}
-		.crane-gantt-hero {position:relative;overflow:hidden;margin:18px 0 15px;padding:25px 29px;background:linear-gradient(115deg,#183451,#25536d 65%,#2d777a);border-radius:17px;color:#fff;box-shadow:0 12px 28px rgba(28,69,91,.16)}
+		.crane-gantt-hero {position:relative;overflow:hidden;margin:18px 0 15px;padding:25px 29px;background:linear-gradient(115deg,#071a35,#0d3469 65%,#1265d8);border-radius:17px;color:#fff;box-shadow:0 12px 28px rgba(28,69,91,.16)}
 		.crane-gantt-hero:after {content:"";position:absolute;right:-90px;top:-130px;width:350px;height:350px;border:1px solid rgba(255,255,255,.18);border-radius:50%;box-shadow:0 0 0 52px rgba(255,255,255,.04),0 0 0 104px rgba(255,255,255,.025);pointer-events:none}
-		.crane-gantt-eyebrow {font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:#a9e8df;margin-bottom:8px}
+		.crane-gantt-eyebrow {font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:#c3e1ff;margin-bottom:8px}
 		.crane-gantt-hero h2 {margin:0 0 8px;font-size:25px;line-height:1.2;font-weight:700;color:#fff}
 		.crane-gantt-hero p {margin:0;color:#d5e7ed;font-size:13px}
 		.crane-gantt-cards {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
 		.crane-gantt-card {background:#fff;border:1px solid #dce7ee;border-radius:13px;padding:15px 17px;box-shadow:0 4px 16px rgba(32,64,96,.04)}
 		.crane-gantt-card:before {content:"";display:block;width:24px;height:3px;border-radius:3px;background:#4b80da;margin-bottom:12px}
-		.crane-gantt-card.work:before {background:#24a486}.crane-gantt-card.due:before {background:#e1a042}
+		.crane-gantt-card.work:before {background:#3a96ef}.crane-gantt-card.due:before {background:#e1a042}
 		.crane-gantt-card strong {display:block;font-size:25px;line-height:1.1;font-variant-numeric:tabular-nums;color:#1b354f}
 		.crane-gantt-card span {display:block;margin-top:5px;font-size:12px;color:#657b90}
 		.crane-gantt-toolbar {display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:12px}
@@ -123,7 +123,7 @@ frappe.pages["crane-project-gantt"].on_page_load = function (wrapper) {
 		.crane-gantt-controls input,.crane-gantt-controls select {border-radius:8px!important}
 		.crane-gantt-legend {margin:0 0 11px;font-size:11px;color:#657b90;gap:15px}
 		.crane-gantt-legend i {border-radius:6px;vertical-align:middle}
-		.crane-gantt-detail {display:none;position:relative;background:#f2faf9;border:1px solid #cce5e1;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:12px;line-height:1.6;color:#25485b}
+		.crane-gantt-detail {display:none;position:relative;background:#eaf2ff;border:1px solid #cfe1fa;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:12px;line-height:1.6;color:#25485b}
 		.crane-gantt-detail.show {display:block}.crane-gantt-detail strong {font-size:13px;color:#1b354f}.crane-gantt-detail a {font-weight:600}
 		.crane-gantt-detail-close {position:absolute;right:12px;top:7px;border:0;background:transparent;font-size:20px;color:#738b94}
 		.crane-gantt-scroll {max-height:calc(100vh - 360px);min-height:170px;border-color:#dce7ee;border-radius:13px;box-shadow:0 7px 22px rgba(32,64,96,.04)}
