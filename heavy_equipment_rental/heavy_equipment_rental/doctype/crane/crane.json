@@ -9,6 +9,16 @@
  "owner": "Administrator",
  "fields": [
   {
+   "fieldname": "details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Crane Details"
+  },
+  {
+   "fieldname": "identity_section",
+   "fieldtype": "Section Break",
+   "label": "Crane"
+  },
+  {
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
@@ -37,6 +47,10 @@
    "fieldtype": "Data",
    "label": "Model",
    "in_list_view": 1
+  },
+  {
+   "fieldname": "specs_col",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "capacity_tons",
@@ -69,10 +83,25 @@
    "no_copy": 1
   },
   {
+   "fieldname": "pricing_tab",
+   "fieldtype": "Tab Break",
+   "label": "Pricing"
+  },
+  {
+   "fieldname": "pricing_section",
+   "fieldtype": "Section Break",
+   "label": "Period Prices"
+  },
+  {
    "fieldname": "period_prices",
    "fieldtype": "Table",
    "label": "Period Prices",
    "options": "Crane Period Price"
+  },
+  {
+   "fieldname": "availability_tab",
+   "fieldtype": "Tab Break",
+   "label": "Availability"
   },
   {
    "fieldname": "availability_section",
@@ -92,15 +121,21 @@
   }
  ],
  "field_order": [
+  "details_tab",
+  "identity_section",
   "naming_series",
   "crane_name",
   "item",
   "model",
+  "specs_col",
   "capacity_tons",
   "ownership_type",
   "operational_condition",
   "maintenance_condition_managed",
+  "pricing_tab",
+  "pricing_section",
   "period_prices",
+  "availability_tab",
   "availability_section",
   "availability_date",
   "availability_overview"

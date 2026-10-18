@@ -7,6 +7,16 @@
  "istable": 0,
  "fields": [
   {
+   "fieldname": "shifts_tab",
+   "fieldtype": "Tab Break",
+   "label": "Day Shift"
+  },
+  {
+   "fieldname": "shift_section",
+   "fieldtype": "Section Break",
+   "label": "Default Day Shift"
+  },
+  {
    "fieldname": "day_shift_start_time",
    "fieldtype": "Time",
    "label": "Default Day Shift Start",
@@ -21,6 +31,10 @@
    "reqd": 1
   },
   {
+   "fieldname": "hours_col",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "day_shift_hours",
    "fieldtype": "Float",
    "label": "Default Day Shift Hours",
@@ -30,10 +44,24 @@
    "description": "Calculated from the default start and end times."
   },
   {
+   "fieldname": "accounts_tab",
+   "fieldtype": "Tab Break",
+   "label": "Driver Payment"
+  },
+  {
+   "fieldname": "accounts_section",
+   "fieldtype": "Section Break",
+   "label": "Accounts"
+  },
+  {
    "fieldname": "driver_payment_expense_account",
    "fieldtype": "Link",
    "label": "Direct Driver Payment Expense Account",
    "options": "Account"
+  },
+  {
+   "fieldname": "payable_col",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "driver_payment_payable_account",
@@ -43,10 +71,16 @@
   }
  ],
  "field_order": [
+  "shifts_tab",
+  "shift_section",
   "day_shift_start_time",
   "day_shift_end_time",
+  "hours_col",
   "day_shift_hours",
+  "accounts_tab",
+  "accounts_section",
   "driver_payment_expense_account",
+  "payable_col",
   "driver_payment_payable_account"
  ],
  "permissions": [

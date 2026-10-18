@@ -5,22 +5,43 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "work_section",
   "work_date",
+  "crane_operator",
+  "time_col",
   "start_time",
   "end_time",
   "ends_next_day",
-  "crane_operator",
+  "calculation_section",
   "price_per_hour",
   "worked_hours",
+  "amount_col",
   "line_amount"
  ],
  "fields": [
+  {
+   "fieldname": "work_section",
+   "fieldtype": "Section Break",
+   "label": "Work Period"
+  },
   {
    "fieldname": "work_date",
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Work Date",
    "reqd": 1
+  },
+  {
+   "fieldname": "crane_operator",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Crane Driver",
+   "options": "Crane Driver",
+   "reqd": 1
+  },
+  {
+   "fieldname": "time_col",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "start_time",
@@ -42,12 +63,9 @@
    "label": "Ends Next Day"
   },
   {
-   "fieldname": "crane_operator",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Crane Driver",
-   "options": "Crane Driver",
-   "reqd": 1
+   "fieldname": "calculation_section",
+   "fieldtype": "Section Break",
+   "label": "Hours and Amount"
   },
   {
    "fieldname": "price_per_hour",
@@ -63,6 +81,10 @@
    "label": "Worked Hours",
    "precision": "6",
    "read_only": 1
+  },
+  {
+   "fieldname": "amount_col",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "line_amount",

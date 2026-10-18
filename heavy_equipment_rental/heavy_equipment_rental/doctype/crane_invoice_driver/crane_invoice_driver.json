@@ -6,12 +6,9 @@
  "editable_grid": 1,
  "fields": [
   {
-   "fieldname": "timesheet",
-   "fieldtype": "Link",
-   "label": "Crane Timesheet",
-   "options": "Crane Timesheet",
-   "read_only": 1,
-   "in_list_view": 1
+   "fieldname": "driver_section",
+   "fieldtype": "Section Break",
+   "label": "Driver"
   },
   {
    "fieldname": "crane_driver",
@@ -30,11 +27,32 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "timesheet_col",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "timesheet",
+   "fieldtype": "Link",
+   "label": "Crane Timesheet",
+   "options": "Crane Timesheet",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "amount_section",
+   "fieldtype": "Section Break",
+   "label": "Amounts"
+  },
+  {
    "fieldname": "timesheet_line_amount",
    "fieldtype": "Currency",
    "label": "Timesheet Line Amount",
    "read_only": 1,
    "in_list_view": 1
+  },
+  {
+   "fieldname": "share_col",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "invoice_share",
@@ -44,6 +62,6 @@
    "in_list_view": 1
   }
  ],
- "field_order": ["timesheet", "crane_driver", "employee", "timesheet_line_amount", "invoice_share"],
+ "field_order": ["driver_section", "crane_driver", "employee", "timesheet_col", "timesheet", "amount_section", "timesheet_line_amount", "share_col", "invoice_share"],
  "permissions": []
 }

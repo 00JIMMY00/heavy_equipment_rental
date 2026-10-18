@@ -9,6 +9,11 @@
  "search_fields": "expense_type_name",
  "fields": [
   {
+   "fieldname": "type_section",
+   "fieldtype": "Section Break",
+   "label": "Expense Type"
+  },
+  {
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
@@ -26,6 +31,10 @@
    "unique": 1
   },
   {
+   "fieldname": "account_col",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "account",
    "fieldtype": "Link",
    "label": "Expense Account",
@@ -34,15 +43,23 @@
    "reqd": 1
   },
   {
+   "fieldname": "description_section",
+   "fieldtype": "Section Break",
+   "label": "Description"
+  },
+  {
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Description"
   }
  ],
  "field_order": [
+  "type_section",
   "naming_series",
   "expense_type_name",
+  "account_col",
   "account",
+  "description_section",
   "description"
  ],
  "istable": 0,

@@ -9,6 +9,16 @@
  "search_fields": "project,expense_type,crane,employee,crane_maintenance,journal_entry",
  "fields": [
   {
+   "fieldname": "details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Expense Details"
+  },
+  {
+   "fieldname": "expense_section",
+   "fieldtype": "Section Break",
+   "label": "Expense"
+  },
+  {
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
@@ -42,6 +52,18 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "payment_col",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "reqd": 1,
+   "in_list_view": 1,
+   "non_negative": 1
+  },
+  {
    "fieldname": "mode_of_payment",
    "fieldtype": "Link",
    "label": "Mode of Payment",
@@ -58,12 +80,9 @@
    "hidden": 1
   },
   {
-   "fieldname": "amount",
-   "fieldtype": "Currency",
-   "label": "Amount",
-   "reqd": 1,
-   "in_list_view": 1,
-   "non_negative": 1
+   "fieldname": "allocation_section",
+   "fieldtype": "Section Break",
+   "label": "Allocation"
   },
   {
    "fieldname": "crane",
@@ -81,6 +100,10 @@
    "in_standard_filter": 1
   },
   {
+   "fieldname": "work_col",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Description"
@@ -89,6 +112,16 @@
    "fieldname": "receipt",
    "fieldtype": "Attach",
    "label": "Receipt"
+  },
+  {
+   "fieldname": "references_tab",
+   "fieldtype": "Tab Break",
+   "label": "References"
+  },
+  {
+   "fieldname": "references_section",
+   "fieldtype": "Section Break",
+   "label": "Linked Documents"
   },
   {
    "fieldname": "crane_maintenance",
@@ -119,17 +152,24 @@
   }
  ],
  "field_order": [
+  "details_tab",
+  "expense_section",
   "naming_series",
   "project",
   "posting_date",
   "expense_type",
+  "payment_col",
+  "amount",
   "mode_of_payment",
   "credit_account",
-  "amount",
+  "allocation_section",
   "crane",
   "employee",
+  "work_col",
   "description",
   "receipt",
+  "references_tab",
+  "references_section",
   "crane_maintenance",
   "journal_entry",
   "amended_from"

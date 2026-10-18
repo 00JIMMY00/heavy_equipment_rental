@@ -7,9 +7,14 @@
  "engine": "InnoDB",
  "fields": [
   {
-   "fieldname": "assigned_cranes_html",
-   "fieldtype": "HTML",
-   "label": "Assigned Cranes"
+   "fieldname": "details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Project Details"
+  },
+  {
+   "fieldname": "project_section",
+   "fieldtype": "Section Break",
+   "label": "Project"
   },
   {
    "fieldname": "naming_series",
@@ -36,6 +41,10 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "project_col",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
@@ -52,6 +61,11 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "schedule_section",
+   "fieldtype": "Section Break",
+   "label": "Schedule"
+  },
+  {
    "fieldname": "expected_start_date",
    "fieldtype": "Date",
    "label": "Expected Start Date",
@@ -64,6 +78,10 @@
    "reqd": 1
   },
   {
+   "fieldname": "completion_col",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "completion_date",
    "fieldtype": "Date",
    "label": "Completion Date",
@@ -71,9 +89,29 @@
    "no_copy": 1
   },
   {
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
    "fieldname": "notes",
    "fieldtype": "Small Text",
    "label": "Notes"
+  },
+  {
+   "fieldname": "cranes_tab",
+   "fieldtype": "Tab Break",
+   "label": "Assigned Cranes"
+  },
+  {
+   "fieldname": "cranes_section",
+   "fieldtype": "Section Break",
+   "label": "Assigned Cranes"
+  },
+  {
+   "fieldname": "assigned_cranes_html",
+   "fieldtype": "HTML",
+   "label": "Assigned Cranes"
   },
   {
    "fieldname": "connections_tab",
@@ -83,16 +121,24 @@
   }
  ],
  "field_order": [
-  "assigned_cranes_html",
+  "details_tab",
+  "project_section",
   "naming_series",
   "project_name",
   "customer",
+  "project_col",
   "company",
   "status",
+  "schedule_section",
   "expected_start_date",
   "expected_end_date",
+  "completion_col",
   "completion_date",
+  "notes_section",
   "notes",
+  "cranes_tab",
+  "cranes_section",
+  "assigned_cranes_html",
   "connections_tab"
  ],
  "permissions": [

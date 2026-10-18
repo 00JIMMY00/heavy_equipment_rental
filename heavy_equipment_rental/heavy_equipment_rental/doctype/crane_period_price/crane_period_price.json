@@ -9,6 +9,11 @@
  "owner": "Administrator",
  "fields": [
   {
+   "fieldname": "price_section",
+   "fieldtype": "Section Break",
+   "label": "Period Price"
+  },
+  {
    "fieldname": "period",
    "fieldtype": "Select",
    "label": "Period",
@@ -16,6 +21,10 @@
    "reqd": 1,
    "read_only": 1,
    "in_list_view": 1
+  },
+  {
+   "fieldname": "price_col",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "price",
@@ -27,7 +36,9 @@
   }
  ],
  "field_order": [
+  "price_section",
   "period",
+  "price_col",
   "price"
  ],
  "istable": 1,

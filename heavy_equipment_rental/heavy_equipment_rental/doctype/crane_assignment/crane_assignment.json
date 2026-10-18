@@ -9,6 +9,16 @@
  "owner": "Administrator",
  "fields": [
   {
+   "fieldname": "details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Assignment Details"
+  },
+  {
+   "fieldname": "project_section",
+   "fieldtype": "Section Break",
+   "label": "Project"
+  },
+  {
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
@@ -27,6 +37,10 @@
    "in_standard_filter": 1
   },
   {
+   "fieldname": "dates_col",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "project_start_date",
    "fieldtype": "Date",
    "label": "Project Start Date",
@@ -43,6 +57,16 @@
    "no_copy": 1
   },
   {
+   "fieldname": "cranes_tab",
+   "fieldtype": "Tab Break",
+   "label": "Assigned Cranes"
+  },
+  {
+   "fieldname": "cranes_section",
+   "fieldtype": "Section Break",
+   "label": "Cranes"
+  },
+  {
    "fieldname": "assigned_cranes",
    "fieldtype": "Table",
    "label": "Assigned Cranes",
@@ -50,10 +74,15 @@
   }
  ],
  "field_order": [
+  "details_tab",
+  "project_section",
   "naming_series",
   "project",
+  "dates_col",
   "project_start_date",
   "project_end_date",
+  "cranes_tab",
+  "cranes_section",
   "assigned_cranes"
  ],
  "istable": 0,

@@ -9,6 +9,11 @@
  "owner": "Administrator",
  "fields": [
   {
+   "fieldname": "assignment_section",
+   "fieldtype": "Section Break",
+   "label": "Assignment"
+  },
+  {
    "fieldname": "crane",
    "fieldtype": "Link",
    "label": "Crane",
@@ -22,6 +27,20 @@
    "label": "Crane Driver",
    "options": "Crane Driver",
    "in_list_view": 1
+  },
+  {
+   "fieldname": "assignment_col",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nReserved\nCancelled",
+   "default": "Draft",
+   "read_only": 1,
+   "in_list_view": 1,
+   "no_copy": 1
   },
   {
    "fieldname": "start_date",
@@ -38,14 +57,9 @@
    "in_list_view": 1
   },
   {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "Draft\nReserved\nCancelled",
-   "default": "Draft",
-   "read_only": 1,
-   "in_list_view": 1,
-   "no_copy": 1
+   "fieldname": "rate_section",
+   "fieldtype": "Section Break",
+   "label": "Rental Rate"
   },
   {
    "fieldname": "rental_rate",
@@ -62,13 +76,9 @@
    "reqd": 1
   },
   {
-   "fieldname": "status_before_cancel",
-   "fieldtype": "Select",
-   "label": "Status Before Cancel",
-   "options": "\nDraft\nReserved",
-   "read_only": 1,
-   "no_copy": 1,
-   "hidden": 1
+   "fieldname": "cancellation_section",
+   "fieldtype": "Section Break",
+   "label": "Cancellation"
   },
   {
    "fieldname": "cancellation_date",
@@ -83,6 +93,19 @@
    "label": "Cancellation Reason",
    "read_only": 1,
    "no_copy": 1
+  },
+  {
+   "fieldname": "audit_col",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status_before_cancel",
+   "fieldtype": "Select",
+   "label": "Status Before Cancel",
+   "options": "\nDraft\nReserved",
+   "read_only": 1,
+   "no_copy": 1,
+   "hidden": 1
   },
   {
    "fieldname": "last_action_by",
@@ -101,16 +124,21 @@
   }
  ],
  "field_order": [
+  "assignment_section",
   "crane",
   "crane_driver",
+  "assignment_col",
+  "status",
   "start_date",
   "expected_end_date",
-  "status",
+  "rate_section",
   "rental_rate",
   "rental_rate_unit",
-  "status_before_cancel",
+  "cancellation_section",
   "cancellation_date",
   "cancellation_reason",
+  "audit_col",
+  "status_before_cancel",
   "last_action_by",
   "last_action_at"
  ],
