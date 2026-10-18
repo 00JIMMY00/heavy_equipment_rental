@@ -54,7 +54,25 @@ def visible_allocations(project=None, crane=None, status=None):
 
 @frappe.whitelist()
 def project_overview(project):
-	return visible_allocations(project=project)
+	rows = visible_allocations(project=project)
+	if not rows:
+		return rows
+	timesheets = []
+	if frappe.has_permission("Crane Timesheet", "read"):
+		timesheets = frappe.get_list(
+			"Crane Timesheet",
+			filters={"project": project, "crane": ["in", list({row.crane for row in rows})], "docstatus": ["<", 2]},
+			fields=["name", "crane", "period_start", "period_end"],
+			limit_page_length=0,
+		)
+	for row in rows:
+		row.timesheets = [
+			sheet.name for sheet in timesheets
+			if sheet.crane == row.crane
+			and getdate(sheet.period_start) <= getdate(row.expected_end_date)
+			and getdate(row.start_date) <= getdate(sheet.period_end)
+		]
+	return rows
 
 
 @frappe.whitelist()

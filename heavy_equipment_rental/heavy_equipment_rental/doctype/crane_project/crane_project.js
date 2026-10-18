@@ -77,9 +77,27 @@ function show_assigned_cranes(frm) {
 		.then(({ message: rows }) => {
 			if (frm.doc.name !== project || !rows?.length) return;
 			const esc = (value) => frappe.utils.escape_html(String(value ?? ""));
-			const body = rows.map((row) => `<tr><td>${esc(row.crane_name)}</td><td><a href="/app/crane-assignment/${encodeURIComponent(row.assignment)}">${esc(row.assignment)}</a></td><td>${esc(row.start_date)}</td><td>${esc(row.expected_end_date)}</td><td>${esc(__(row.status))}</td></tr>`).join("");
-			const headings = ["Crane Name", "Assignment", "Start", "End", "Status"].map((h) => `<th>${__(h)}</th>`).join("");
+			const can_create = frm.doc.status === "Open" && frappe.model.can_create("Crane Timesheet");
+			const body = rows.map((row, index) => {
+				const sheets = (row.timesheets || []).map((name) =>
+					`<a href="/app/crane-timesheet/${encodeURIComponent(name)}">${esc(name)}</a>`
+				).join(", ");
+				const timesheet = sheets || (can_create && row.status === "Reserved"
+					? `<button type="button" class="btn btn-xs btn-default create-crane-timesheet" data-row="${index}">${__("Create Timesheet")}</button>`
+					: "—");
+				return `<tr><td>${esc(row.crane_name)}</td><td><a href="/app/crane-assignment/${encodeURIComponent(row.assignment)}">${esc(row.assignment)}</a></td><td>${esc(row.start_date)}</td><td>${esc(row.expected_end_date)}</td><td>${esc(__(row.status))}</td><td>${timesheet}</td></tr>`;
+			}).join("");
+			const headings = ["Crane Name", "Assignment", "Start", "End", "Status", "Timesheet"].map((h) => `<th>${__(h)}</th>`).join("");
 			wrapper.html(`<h4>${__("Assigned Cranes")}</h4><div class="table-responsive"><table class="table table-bordered"><thead><tr>${headings}</tr></thead><tbody>${body}</tbody></table></div>`);
+			wrapper.find(".create-crane-timesheet").on("click", function () {
+				const row = rows[Number($(this).attr("data-row"))];
+				frappe.new_doc("Crane Timesheet", {
+					project,
+					crane: row.crane,
+					period_start: row.start_date,
+					period_end: row.expected_end_date,
+				});
+			});
 		});
 }
 
