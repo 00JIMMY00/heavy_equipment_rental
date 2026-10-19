@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*'
-  release:
-    types: [published]
 
 permissions:
   contents: read
@@ -139,11 +137,11 @@ jobs:
           python deploy/make_apps_json.py
       - name: Deploy over SSH
         env:
-          SSH_HOST: 62.84.180.139
-          SSH_USER: jimmy
+          SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          SSH_KNOWN_HOSTS: 62.84.180.139 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID6T4aUSjXHygCZWuHhArZKxKmnU50BZk1l5+euj3Hvl
-          DEPLOY_DIR: /home/jimmy/heavy_equipment_rental/deploy
+          SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+          DEPLOY_DIR: ${{ secrets.DEPLOY_DIR }}
           IMAGE_REF: ${{ needs.image.outputs.image_ref }}
           GHCR_USER: ${{ github.actor }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
