@@ -29,6 +29,8 @@ if args[0] == "compose":
         if state["current"]:
             print(args[2] + "-id")
     elif args[0] == "pull":
+        if args != ["pull", "--policy", "missing"]:
+            sys.exit("Expected all stack images to be pulled: " + repr(args))
         if os.environ.get("FAIL_PULL") == "1":
             sys.exit(1)
     elif args[0] == "up":
