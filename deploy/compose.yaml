@@ -91,11 +91,11 @@ services:
 
   queue-short:
     <<: *bench
-    command: [bench, worker, --queue, short,default]
+    command: [bench, worker, --queue, "short,default"]
 
   queue-long:
     <<: *bench
-    command: [bench, worker, --queue, long,default,short]
+    command: [bench, worker, --queue, "long,default,short"]
 
   scheduler:
     <<: *bench
