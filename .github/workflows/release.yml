@@ -147,7 +147,6 @@ jobs:
   deploy:
     needs: image
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - uses: actions/checkout@v4
         with:
