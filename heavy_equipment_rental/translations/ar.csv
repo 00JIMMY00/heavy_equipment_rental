@@ -1,0 +1,345 @@
+English,Arabic
+Crane Operations,عمليات المعدات
+Reports,التقارير
+Accounting,المحاسبة
+Settings,الإعدادات
+Rental Calendar,تقويم الحجوزات
+Resource Timeline,تقويم الموارد
+Crane Projects,مشاريع المعدات
+Crane Assignments,تخصيصات المعدات
+Crane Drivers,سائقو المعدات
+Cranes,المعدات
+Customers,العملاء
+Timesheet Report,تقرير ساعات المعدات
+Maintenance Report,تقرير الصيانة
+Sales Register,سجل المبيعات
+Accounts Receivable,الذمم المدينة
+Expense Entries,قيود المصروفات
+Expense Types,أنواع المصروفات
+Rental Settings,إعدادات تأجير المعدات الثقيلة
+Mode of Payment,طريقة الدفع
+Mode of Payment must use a non-group Asset or Liability account.,يجب أن تستخدم طريقة الدفع حساب أصول أو التزامات غير تجميعي.
+Mode of Payment account cannot be Receivable or Payable.,لا يمكن أن يكون حساب طريقة الدفع حساب ذمم مدينة أو دائنة.
+Select a Mode of Payment before posting the expense.,اختر طريقة الدفع قبل ترحيل المصروف.
+Select an enabled Mode of Payment.,اختر طريقة دفع مفعّلة.
+"Set a Default Account for Company {0} on Mode of Payment {1}.",حدد الحساب الافتراضي للشركة {0} في طريقة الدفع {1}.
+"Set a positive cost, Expense Type and Mode of Payment before completing maintenance.",حدد تكلفة موجبة ونوع مصروف وطريقة دفع قبل إكمال الصيانة.
+"Complete maintenance with a positive cost, Expense Type and Mode of Payment first.",أكمل سجل الصيانة بتكلفة موجبة ونوع مصروف وطريقة دفع أولاً.
+A Receivable or Payable Credit Account needs a party; choose another account.,يحتاج الحساب الدائن للذمم المدينة أو الدائنة إلى طرف؛ اختر حساباً آخر.
+A reason is required for cancellation or correction.,سبب الإلغاء أو التصحيح مطلوب.
+A reason is required to cancel a Crane Project.,سبب إلغاء مشروع المعدات مطلوب.
+A reason is required to reopen a Crane Project.,سبب إعادة فتح مشروع المعدات مطلوب.
+A started maintenance record cannot move to another crane.,لا يمكن نقل سجل صيانة بدأت إلى معدة أخرى.
+Account,الحساب
+Actions,الإجراءات
+Activity and Reservations,النشاط والحجوزات
+Actual End Date,تاريخ الانتهاء الفعلي
+Actual Start Date,تاريخ البدء الفعلي
+Actual end date cannot precede the start date.,لا يمكن أن يسبق تاريخ الانتهاء الفعلي تاريخ البدء الفعلي.
+Add at least one shift before submitting the timesheet.,أضف وردية واحدة على الأقل قبل إرسال سجل الساعات.
+Allocation Status,حالة التخصيص
+Amend a cancelled Timesheet for this same Project and crane.,عدّل سجل ساعات ملغى للمشروع والمعدة نفسيهما.
+Amended From,معدّل من
+Amount,المبلغ
+An active Expense Entry is already linked to this maintenance.,يوجد قيد مصروفات نشط مرتبط بهذا السجل.
+An actual action date cannot be in the future.,لا يمكن أن يكون تاريخ الإجراء الفعلي في المستقبل.
+An amendment on a closed Project cannot add new work dates.,لا يمكن لتعديل مشروع مغلق إضافة تواريخ عمل جديدة.
+An assignment with booking history cannot move to another Project.,لا يمكن نقل تخصيص له سجل حجوزات إلى مشروع آخر.
+Assigned Crane,المعدة المخصصة
+Assigned Cranes,المعدات المخصصة
+Assignment does not belong to the selected Project.,هذا التخصيص لا يتبع المشروع المحدد.
+Assignment schedule,جدول التخصيص
+"Assignment {0}, row {1}, crane {2}",التخصيص {0}، الصف {1}، المعدة {2}
+Assignments with booking history cannot be deleted. Cancel unused bookings instead.,لا يمكن حذف التخصيصات التي لها سجل حجوزات. ألغِ الحجوزات غير المستخدمة بدلاً من ذلك.
+Attachment,المرفق
+Availability,التوفر
+Availability Date,تاريخ التوفر
+Availability Overview,نظرة عامة على التوفر
+Availability period,فترة التوفر
+Available,متاحة
+Booked periods,الفترات المحجوزة
+Bookings and recorded work in one timeline.,الحجوزات والعمل المسجل في جدول زمني واحد.
+Calculated from the default start and end times.,يُحتسب من وقتي البدء والانتهاء الافتراضيين.
+Cancel Expense Entry {0} to reverse this Journal Entry.,ألغِ قيد المصروفات {0} لعكس قيد اليومية هذا.
+Cancel or remove Sales Invoice {0} before cancelling this Crane Timesheet.,ألغِ فاتورة المبيعات {0} أو أزلها قبل إلغاء سجل ساعات المعدة هذا.
+Cancellation Date,تاريخ الإلغاء
+Cancellation Reason,سبب الإلغاء
+Cancelled,ملغى
+Capacity,السعة
+Capacity (tons),السعة (بالأطنان)
+Choose a non-group Asset or Liability Credit Account.,اختر حساباً دائناً غير تجميعي من الأصول أو الالتزامات.
+Choose a non-group Expense account.,اختر حساب مصروفات غير تجميعي.
+Choose a timeline range of at most three years.,اختر نطاقاً زمنياً لا يتجاوز ثلاث سنوات.
+Choose a timesheet period of at most 367 days.,اختر فترة سجل ساعات لا تتجاوز 367 يوماً.
+Choose dates; optionally filter by Project or crane.,اختر التواريخ، ويمكنك التصفية حسب المشروع أو المعدة.
+Choose either a Crane Project or one Crane Timesheet.,اختر مشروع معدة أو سجل ساعات معدة واحداً.
+Close,إغلاق
+Closed Projects accept only authorized amendments of cancelled Timesheets.,لا تقبل المشاريع المغلقة إلا تعديلات مصرحاً بها لسجلات الساعات الملغاة.
+Company,الشركة
+"Complete maintenance with a positive cost, Expense Type and Credit Account first.",أكمل سجل الصيانة بتكلفة موجبة ونوع مصروف وحساب دائن أولاً.
+Completed,مكتمل
+Completed or Cancelled maintenance cannot be reopened.,لا يمكن إعادة فتح الصيانة المكتملة أو الملغاة.
+Completion Date,تاريخ الإكمال
+Connections,الروابط
+Correction Reason,سبب التصحيح
+Corrective,تصحيحية
+Cost,التكلفة
+Crane,المعدة
+Crane / activity,المعدة / النشاط
+Crane Assignment,تخصيص المعدات
+Crane Driver,سائق المعدة
+Crane Driver (Employee),سائق المعدة (الموظف)
+Crane Item missing: {0},صنف المعدة غير موجود: {0}
+Crane Maintenance,صيانة المعدات
+Crane Maintenance {0}: {1},صيانة المعدة {0}: {1}
+Crane Name,اسم المعدة
+Crane Period Price,سعر المعدة حسب الفترة
+Crane Project,مشروع المعدات
+Crane Project Gantt,مخطط جانت لمشروع المعدات
+Crane Project Sales Invoices,فواتير مبيعات مشروع المعدات
+Crane Project {0},مشروع المعدات {0}
+Crane Reservations and Work,حجوزات المعدات والعمل
+Crane Timesheet,سجل ساعات المعدة
+Crane Timesheet {0} was not found.,لم يتم العثور على سجل ساعات المعدة {0}.
+Crane Timesheets,سجلات ساعات المعدات
+Crane allocations can only be changed on an Open Project.,لا يمكن تغيير تخصيصات المعدات إلا في مشروع مفتوح.
+Crane maintenance expenses,مصروفات صيانة المعدات
+"Crane prices must contain Hour, Day, Month and Year exactly once.",يجب أن تتضمن أسعار المعدات الساعة واليوم والشهر والسنة مرة واحدة لكل منها.
+Crane rental items rebuilt from Timesheets {0} by {1}. Reason: {2},أُعيد إنشاء بنود تأجير المعدات من سجلات الساعات {0} بواسطة {1}. السبب: {2}
+Crane reservations,حجوزات المعدات
+"Crane {0}, row {1}: {2} → {3} by {4}. Cancellation date: {5} → {6}. Reason: {7}",المعدة {0}، الصف {1}: {2} ← {3} بواسطة {4}. تاريخ الإلغاء: {5} ← {6}. السبب: {7}
+Crane {0}: change would invalidate Timesheet {1} on {2}. Keep recorded work within the booking dates.,المعدة {0}: سيؤدي التغيير إلى إبطال سجل الساعات {1} بتاريخ {2}. أبقِ العمل المسجل ضمن تواريخ الحجز.
+"Crane {0}: linked Item must be an enabled, sellable, non-stock Hour service.",المعدة {0}: يجب أن يكون الصنف المرتبط خدمة ساعة مفعّلة وقابلة للبيع وغير مخزنية.
+"Crane {0}: row {1} conflicts with assignment {2}, row {3}, Project {4} ({5} to {6}).",المعدة {0}: يتعارض الصف {1} مع التخصيص {2}، الصف {3}، المشروع {4} (من {5} إلى {6}).
+Crane {0}: shift overlaps submitted timesheet {1}. Cancel/amend that sheet before billing the same crane time again.,المعدة {0}: تتداخل الوردية مع سجل الساعات المرسل {1}. ألغِ ذلك السجل أو عدّله قبل فوترة وقت المعدة نفسه مجدداً.
+"Crane {0}; Timesheet {1}; assignment {2}, row {3}; {4} billable hours at varying hourly prices",المعدة {0}؛ سجل الساعات {1}؛ التخصيص {2}، الصف {3}؛ {4} ساعة قابلة للفوترة بأسعار ساعة متفاوتة
+"Crane {0}; Timesheets {1}; assignment {2}, row {3}; {4} {5} at {6} per {7}",المعدة {0}؛ سجلات الساعات {1}؛ التخصيص {2}، الصف {3}؛ {4} {5} بسعر {6} لكل {7}
+Cranes shown,المعدات المعروضة
+Create,إنشاء
+Create Expense,إنشاء مصروف
+Create a service Item Group before saving cranes.,أنشئ مجموعة أصناف للخدمات قبل حفظ المعدات.
+Create the Hour UOM before saving cranes.,أنشئ وحدة قياس الساعة قبل حفظ المعدات.
+Credit Account,الحساب الدائن
+Customer,العميل
+Date of Birth,تاريخ الميلاد
+Date of Joining,تاريخ الالتحاق
+Default Day Shift End,نهاية الوردية النهارية الافتراضية
+Default Day Shift Hours,ساعات الوردية النهارية الافتراضية
+Default Day Shift Start,بداية الوردية النهارية الافتراضية
+Description,الوصف
+Draft,مسودة
+Draft / cancelled,مسودة / ملغى
+Draft allocations,التخصيصات المسودة
+Driver Amount (Informational),مبلغ السائق (للمعلومات)
+Driver Name,اسم السائق
+Employee,الموظف
+End,النهاية
+End Date,تاريخ الانتهاء
+End Time,وقت الانتهاء
+Ends Next Day,ينتهي في اليوم التالي
+English,Arabic
+Enter a reason for rebuilding the draft invoice.,أدخل سبباً لإعادة إنشاء فاتورة المسودة.
+Enter both default day shift times.,أدخل وقتي الوردية النهارية الافتراضيين.
+Entries,الإدخالات
+Expected End Date,تاريخ الانتهاء المتوقع
+Expected Start Date,تاريخ البدء المتوقع
+Expense Account,حساب المصروفات
+Expense Date,تاريخ المصروف
+Expense Entry,قيد المصروفات
+Expense Entry {0}: {1},قيد المصروفات {0}: {1}
+Expense Type,نوع المصروف
+Expense Type must link to a non-group Expense account.,يجب أن يرتبط نوع المصروف بحساب مصروفات غير تجميعي.
+Expense amount must be greater than zero.,يجب أن يكون مبلغ المصروف أكبر من صفر.
+Expense and Credit accounts must be different.,يجب أن يكون حساب المصروفات والحساب الدائن مختلفين.
+Expense and Credit accounts must belong to the same Company.,يجب أن ينتمي حساب المصروفات والحساب الدائن إلى الشركة نفسها.
+Expense and Credit accounts must use the Company currency.,يجب أن يستخدم حساب المصروفات والحساب الدائن عملة الشركة.
+Expense details cannot change after expense creation.,لا يمكن تغيير تفاصيل المصروف بعد إنشائه.
+Expense details must match the completed Crane Maintenance record.,يجب أن تطابق تفاصيل المصروف سجل صيانة المعدات المكتمل.
+Find crane,ابحث عن معدة
+Fleet Reservations,حجوزات الأسطول
+Fleet overview,نظرة عامة على الأسطول
+Fleet timeline,الجدول الزمني للأسطول
+From,من
+Future reservations,الحجوزات المستقبلية
+Gantt Chart,مخطط جانت
+Gender,الجنس
+Generate Sales Invoice,إنشاء فاتورة مبيعات
+Grouped by crane across visible projects,مجمّع حسب المعدة عبر المشاريع المرئية
+Grouped by crane in this project,مجمّع حسب المعدة في هذا المشروع
+Heavy Equipment Rental,تأجير المعدات الثقيلة
+Heavy Equipment Rental Settings,إعدادات تأجير المعدات الثقيلة
+In Progress,قيد التنفيذ
+Inactive,غير نشطة
+Inspection,فحص
+Invalid Crane Project status.,حالة مشروع المعدات غير صالحة.
+Invalid maintenance status transition.,انتقال حالة الصيانة غير صالح.
+Invoice customer or company does not match the Crane Project.,لا يتطابق عميل الفاتورة أو شركتها مع مشروع المعدات.
+Item,الصنف
+Item {0} already exists; choose a distinct crane code.,الصنف {0} موجود بالفعل؛ اختر رمزاً مختلفاً للمعدة.
+Journal Entry,قيد اليومية
+Keep booking history for crane {0}. Cancel an unused booking instead of deleting it.,احتفظ بسجل حجوزات المعدة {0}. ألغِ الحجز غير المستخدم بدلاً من حذفه.
+Last Action At,وقت آخر إجراء
+Last Action By,منفذ آخر إجراء
+Linked Journal Entry {0} is missing.,قيد اليومية المرتبط {0} غير موجود.
+Linked Journal Entry {0} is still a draft.,قيد اليومية المرتبط {0} ما زال مسودة.
+Loading timeline...,جارٍ تحميل الجدول الزمني...
+Maintenance,الصيانة
+Maintenance Condition Managed,تتم إدارة حالة الصيانة
+Maintenance Type,نوع الصيانة
+Maintenance cost cannot be negative.,لا يمكن أن تكون تكلفة الصيانة سالبة.
+Model,الطراز
+New Crane Projects must be Open.,يجب أن تكون مشاريع المعدات الجديدة مفتوحة.
+No Sales Invoices found.,لم يتم العثور على فواتير مبيعات.
+No reservations or work match these filters.,لا توجد حجوزات أو أعمال تطابق عوامل التصفية هذه.
+No submitted Crane Timesheets are linked to this Sales Invoice.,لا توجد سجلات ساعات معدات مرسلة مرتبطة بفاتورة المبيعات هذه.
+No submitted Crane Timesheets were found for this Crane Project.,لم يتم العثور على سجلات ساعات معدات مرسلة لهذا المشروع.
+Notes,ملاحظات
+Only a Completed or Cancelled Crane Project can be reopened.,يمكن إعادة فتح مشروع معدات مكتمل أو ملغى فقط.
+Only an Open Crane Project can be closed.,يمكن إغلاق مشروع معدات مفتوح فقط.
+Only bookings without recorded work can be cancelled.,يمكن إلغاء الحجوزات التي لا تتضمن عملاً مسجلاً فقط.
+Only draft Sales Invoices can be rebuilt.,يمكن إعادة إنشاء فواتير المبيعات المسودة فقط.
+Only planned maintenance without an expense can be deleted.,يمكن حذف الصيانة المخطط لها التي لا تتضمن مصروفاً فقط.
+Only submitted Crane Timesheets can be invoiced.,يمكن إصدار فاتورة لسجلات ساعات المعدات المرسلة فقط.
+Only this assignment,هذا التخصيص فقط
+Open,مفتوح
+Open assignment,فتح التخصيص
+Operational,تعمل
+Operational Condition,الحالة التشغيلية
+Operations,العمليات
+Other,أخرى
+Overlapping driver intervals have different hourly prices. Use the same agreed price for the overlapping time.,تختلف أسعار الساعة لفترات عمل السائق المتداخلة. استخدم السعر المتفق عليه نفسه للوقت المتداخل.
+Owned,مملوكة
+Ownership Type,نوع الملكية
+Period,الفترة
+Period End,نهاية الفترة
+Period Prices,أسعار الفترات
+Period Start,بداية الفترة
+Phone,الهاتف
+Planned,مخطط
+Planned End Date,تاريخ الانتهاء المخطط
+Planned Start Date,تاريخ البدء المخطط
+Planned end date cannot precede the start date.,لا يمكن أن يسبق تاريخ الانتهاء المخطط تاريخ البدء.
+Preventive,وقائية
+Price,السعر
+Price / Hour,السعر / ساعة
+Project End Date,تاريخ انتهاء المشروع
+Project Name,اسم المشروع
+Project Start Date,تاريخ بدء المشروع
+"Project dates must cover assignment {0}, row {1} ({2} to {3}).",يجب أن تغطي تواريخ المشروع التخصيص {0}، الصف {1} (من {2} إلى {3}).
+Project schedule,جدول المشروع
+Project status changed from {0} to {1} by {2}. Reason: {3},تغيرت حالة المشروع من {0} إلى {1} بواسطة {2}. السبب: {3}
+Rebuild Draft Invoice,إعادة إنشاء فاتورة مسودة
+Rebuild Draft Items,إعادة إنشاء البنود المسودة
+Rebuild Reason,سبب إعادة الإنشاء
+Receipt,الإيصال
+Recorded crane hours,ساعات تشغيل المعدات المسجلة
+Refresh,تحديث
+Rental Rate,سعر التأجير
+Rental Rate Unit,وحدة سعر التأجير
+Rented,مستأجرة
+Reopen Project,إعادة فتح المشروع
+Replaces the draft's current items with charges calculated from its linked submitted Crane Timesheets.,يستبدل البنود الحالية للمسودة برسوم محسوبة من سجلات ساعات المعدات المرسلة والمرتبطة بها.
+Reserved,محجوزة
+Resolve these crane allocations before closing the Crane Project:<br>{0},عالج تخصيصات المعدات هذه قبل إغلاق مشروع المعدات:<br>{0}
+Review,مراجعة
+Row {0} has no previous status to restore.,لا توجد حالة سابقة لاستعادتها للصف {0}.
+Row {0} hourly price,سعر الساعة للصف {0}
+"Row {0}, crane {1}, Project {2}, date {3}",الصف {0}، المعدة {1}، المشروع {2}، التاريخ {3}
+Row {0}: a shift with no hourly price must fit one crane assignment. Split the shift at the assignment boundary.,الصف {0}: يجب أن تقع الوردية التي لا تملك سعر ساعة ضمن تخصيص معدة واحد. قسّم الوردية عند حد التخصيص.
+Row {0}: invalid shift time.,الصف {0}: وقت الوردية غير صالح.
+Row {0}: shift must be longer than zero and at most 24 hours. Mark Ends Next Day for overnight work.,الصف {0}: يجب أن تزيد مدة الوردية عن صفر وألا تتجاوز 24 ساعة. حدد «ينتهي في اليوم التالي» للعمل الليلي.
+"Row {0}: work date, start time and end time are required.",الصف {0}: تاريخ العمل ووقت البدء ووقت الانتهاء مطلوبة.
+Sales Invoice,فاتورة المبيعات
+Sales Invoices,فواتير المبيعات
+Sales Item,صنف المبيعات
+Saved in the assignment timeline.,يُحفظ في الجدول الزمني للتخصيص.
+Select Crane Rows,اختر صفوف المعدات
+Select a Crane Project or Crane for this expense.,اختر مشروع معدات أو معدة لهذا المصروف.
+Select a Credit Account before submitting.,اختر حساباً دائناً قبل الإرسال.
+Select a crane assigned to this Crane Project.,اختر معدة مخصصة لمشروع المعدات هذا.
+Select an Employee linked to a Crane Driver.,اختر موظفاً مرتبطاً بسائق معدة.
+Select at least one crane row using the checkboxes.,اختر صف معدة واحداً على الأقل باستخدام مربعات الاختيار.
+Select one or more distinct crane rows.,اختر صفاً واحداً أو أكثر من صفوف المعدات دون تكرار.
+Select only {0} rows for {1}.,اختر {0} صفوف فقط لـ {1}.
+Selected crane rows must belong to this assignment.,يجب أن تنتمي صفوف المعدات المحددة إلى هذا التخصيص.
+Series,التسلسل
+Set a Company on the Crane Project or a default Company for this user.,حدد شركة في مشروع المعدات أو شركة افتراضية لهذا المستخدم.
+"Set a positive cost, Expense Type and Credit Account before completing maintenance.",حدد تكلفة موجبة ونوع مصروف وحساباً دائناً قبل إكمال الصيانة.
+Set an Expense Account on Expense Type {0} before submitting.,حدد حساب مصروفات لنوع المصروف {0} قبل الإرسال.
+Set the actual start date before the end date.,حدد تاريخ البدء الفعلي قبل تاريخ الانتهاء.
+Signed Timesheet,سجل ساعات موقع
+Start,البداية
+Start Date,تاريخ البدء
+Start Time,وقت البدء
+Status,الحالة
+Status Before Cancel,الحالة قبل الإلغاء
+Submit or remove these draft Crane Timesheets before closing the Crane Project: {0}.,أرسل سجلات ساعات المعدات المسودة هذه أو أزلها قبل إغلاق مشروع المعدات: {0}.
+Submitted,مرسل
+Submitted timesheets without an active invoice,سجلات الساعات المرسلة دون فاتورة نشطة
+Technician,الفني
+The Crane Project Company must match the expense accounts.,يجب أن تطابق شركة مشروع المعدات شركات حسابات المصروفات.
+The Employee link is created automatically when the Crane Driver is saved.,يُنشأ رابط الموظف تلقائياً عند حفظ بيانات سائق المعدة.
+The Journal Entry link is managed by Expense Entry submission.,تتم إدارة رابط قيد اليومية عند إرسال قيد المصروفات.
+The Sales Invoice link is managed by Generate Sales Invoice.,تتم إدارة رابط فاتورة المبيعات عبر إنشاء فاتورة مبيعات.
+The assignment does not belong to the supplied Project.,هذا التخصيص لا يتبع المشروع المحدد.
+The default day shift end must be after its start on the same day.,يجب أن يكون وقت انتهاء الوردية النهارية الافتراضي بعد وقت بدايتها في اليوم نفسه.
+The linked Employee cannot be changed.,لا يمكن تغيير الموظف المرتبط.
+The linked Employee does not exist.,الموظف المرتبط غير موجود.
+The linked sales Item cannot be changed manually.,لا يمكن تغيير صنف المبيعات المرتبط يدوياً.
+The linked sales Item for crane {0} is missing.,صنف المبيعات المرتبط بالمعدة {0} غير موجود.
+This Expense Entry already has a Journal Entry.,قيد المصروفات هذا مرتبط بالفعل بقيد يومية.
+This Sales Invoice also links to another Crane Project.,ترتبط فاتورة المبيعات هذه أيضاً بمشروع معدات آخر.
+This draft contains days already covered by another invoice. Review the linked timesheets before rebuilding.,تتضمن هذه المسودة أياماً تغطيها فاتورة أخرى بالفعل. راجع سجلات الساعات المرتبطة قبل إعادة الإنشاء.
+Timeline,الجدول الزمني
+Timesheet Entry,إدخال سجل الساعات
+Timesheet period,فترة سجل الساعات
+Timesheet {0} has no billable crane hours.,لا يحتوي سجل الساعات {0} على ساعات معدات قابلة للفوترة.
+Timesheet {0} has no positive hourly price.,لا يحتوي سجل الساعات {0} على سعر ساعة موجب.
+"Timesheet {0}: set a positive Day or Month rental rate on assignment {1}, row {2}.",سجل الساعات {0}: حدد سعر تأجير موجباً لليوم أو الشهر في التخصيص {1}، الصف {2}.
+Timesheet {0}: work must fit one Reserved crane allocation with an agreed rental rate.,سجل الساعات {0}: يجب أن يقع العمل ضمن تخصيص معدة محجوز واحد بسعر تأجير متفق عليه.
+To,إلى
+Today,اليوم
+Total,الإجمالي
+Total Amount,المبلغ الإجمالي
+Total Crane Billable Hours,إجمالي ساعات المعدات القابلة للفوترة
+Total Driver Hours,إجمالي ساعات السائق
+Unavailable,غير متاحة
+Unknown Crane Project action.,إجراء مشروع المعدات غير معروف.
+Unknown crane action.,إجراء المعدة غير معروف.
+Use Create Expense to link an Expense Entry.,استخدم «إنشاء مصروف» لربط قيد مصروفات.
+"Use for overnight shifts, such as 22:00 to 02:00. It also allows a 24-hour shift when start and end times match.",استخدمه للورديات الليلية، مثل 22:00 إلى 02:00. كما يسمح بوردية مدتها 24 ساعة عند تطابق وقتي البدء والانتهاء.
+Use the Crane Project Actions to change its status.,استخدم إجراءات مشروع المعدات لتغيير حالته.
+User,المستخدم
+View,عرض
+Work Date,تاريخ العمل
+Work recorded,عمل مسجل
+Worked Hours,ساعات العمل
+You cannot create Crane Timesheets.,لا يمكنك إنشاء سجلات ساعات المعدات.
+You cannot create Sales Invoices.,لا يمكنك إنشاء فواتير مبيعات.
+You cannot select Employees.,لا يمكنك اختيار الموظفين.
+You cannot view Crane Timesheets or Sales Invoices.,لا يمكنك عرض سجلات ساعات المعدات أو فواتير المبيعات.
+Zero total — review this invoice,الإجمالي صفر — راجع هذه الفاتورة
+Zoom,التكبير
+allocations,تخصيصات
+crane hours,ساعات المعدات
+driver hours,ساعات السائق
+{0} cannot be negative.,يجب ألا تكون قيمة {0} سالبة.
+{0} price,سعر {0}
+"{0} — assignment {1}, row {2}: {3}",{0} — التخصيص {1}، الصف {2}: {3}
+{0}: a committed crane cannot be replaced. Add a separate allocation.,{0}: لا يمكن استبدال معدة تم تثبيت حجزها. أضف تخصيصاً منفصلاً.
+{0}: assignment dates must be within the Project dates ({1} to {2}).,{0}: يجب أن تقع تواريخ التخصيص ضمن تواريخ المشروع (من {1} إلى {2}).
+{0}: cancellation date and reason are required.,{0}: تاريخ الإلغاء وسببه مطلوبان.
+{0}: cancellation details require Cancelled status.,{0}: تتطلب تفاصيل الإلغاء أن تكون الحالة «ملغى».
+"{0}: choose Hour, Day or Month for the rental rate.",{0}: اختر الساعة أو اليوم أو الشهر كوحدة لسعر التأجير.
+{0}: crane is Inactive.,{0}: المعدة غير نشطة.
+{0}: future work cannot be recorded.,{0}: لا يمكن تسجيل عمل مستقبلي.
+{0}: invalid booking status.,{0}: حالة الحجز غير صالحة.
+{0}: invalid status before cancellation.,{0}: الحالة السابقة للإلغاء غير صالحة.
+{0}: invalid transition from {1} to {2}.,{0}: انتقال غير صالح من {1} إلى {2}.
+{0}: new rows must be Draft. Use Reserve Selected to commit them.,{0}: يجب أن تكون الصفوف الجديدة مسودة. استخدم «حجز المحدد» لتثبيتها.
+{0}: no Reserved allocation covers this work.,{0}: لا يوجد تخصيص محجوز يغطي هذا العمل.
+{0}: provide a start date on or before the end date.,{0}: أدخل تاريخ بدء يسبق تاريخ الانتهاء أو يساويه.
+"{0}: recorded work exists, including draft Timesheets. Keep the booking Reserved.",{0}: يوجد عمل مسجل، بما في ذلك سجلات الساعات المسودة. أبقِ الحجز محجوزاً.
+{0}: shift is outside the timesheet period.,{0}: الوردية خارج فترة سجل الساعات.
+{0}: terminal booking history cannot be rewritten.,{0}: لا يمكن إعادة كتابة سجل الحجز النهائي.
+{0}: use an Actions button to change booking state.,{0}: استخدم زر الإجراءات لتغيير حالة الحجز.

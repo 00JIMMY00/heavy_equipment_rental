@@ -1,0 +1,9 @@
+[
+ {
+  "doctype": "Expense Type",
+  "name": "EXT-MAINTENANCE",
+  "naming_series": "EXT-.#####",
+  "expense_type_name": "Maintenance",
+  "description": "Crane maintenance expenses"
+ }
+]

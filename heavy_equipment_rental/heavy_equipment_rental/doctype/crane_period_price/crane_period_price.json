@@ -1,0 +1,53 @@
+{
+ "doctype": "DocType",
+ "name": "Crane Period Price",
+ "module": "Heavy Equipment Rental",
+ "engine": "InnoDB",
+ "creation": "2026-10-13 00:00:00.000000",
+ "modified": "2026-10-13 12:54:00.773123",
+ "modified_by": "Administrator",
+ "owner": "Administrator",
+ "fields": [
+  {
+   "fieldname": "price_section",
+   "fieldtype": "Section Break",
+   "label": "Period Price"
+  },
+  {
+   "fieldname": "period",
+   "fieldtype": "Select",
+   "label": "Period",
+   "options": "Hour\nDay\nMonth\nYear",
+   "reqd": 1,
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "price_col",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "price",
+   "fieldtype": "Currency",
+   "label": "Price",
+   "default": 0,
+   "non_negative": 1,
+   "in_list_view": 1
+  }
+ ],
+ "field_order": [
+  "price_section",
+  "period",
+  "price_col",
+  "price"
+ ],
+ "istable": 1,
+ "is_submittable": 0,
+ "editable_grid": 1,
+ "grid_page_length": 100,
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 0,
+ "permissions": []
+}

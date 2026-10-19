@@ -1,0 +1,88 @@
+/* AR rental system palette. Keep native Frappe contrast and layout behavior. */
+:root,
+[data-theme="light"] {
+  --primary-color: #1265d8;
+  --btn-primary: #1265d8;
+  --border-primary: #1265d8;
+  --bg-color: #f5f8fd;
+  --fg-color: #ffffff;
+  --card-bg: #ffffff;
+  --control-bg: #edf3fb;
+  --control-bg-on-gray: #e5eef9;
+  --navbar-bg: #071a35;
+  --text-color: #1b3553;
+  --heading-color: #0b2342;
+  --text-muted: #647d99;
+  --border-color: #dbe6f2;
+  --dark-border-color: #c8d9ed;
+  --sidebar-select-color: #e4efff;
+  --fg-hover-color: #edf4ff;
+}
+
+[data-theme="dark"] {
+  --primary-color: #65aaff;
+  --btn-primary: #1265d8;
+  --border-primary: #65aaff;
+  --bg-color: #071426;
+  --fg-color: #0d2039;
+  --card-bg: #0d2039;
+  --control-bg: #182d49;
+  --control-bg-on-gray: #1a3150;
+  --navbar-bg: #040e20;
+  --text-color: #e5f0ff;
+  --heading-color: #f4f8ff;
+  --text-muted: #abc0d7;
+  --border-color: #294260;
+  --dark-border-color: #395674;
+  --sidebar-select-color: #1a3d68;
+  --fg-hover-color: #183251;
+}
+
+.navbar {
+  box-shadow: 0 5px 20px rgba(3, 21, 48, .13);
+  border-bottom-color: rgba(72, 143, 234, .23);
+}
+.navbar .navbar-home { display: flex; align-items: center; }
+.navbar .navbar-home .app-logo {
+  height: 36px;
+  width: 36px;
+  max-height: 36px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 5px rgba(46, 132, 255, .35));
+}
+.navbar #navbar-breadcrumbs a,
+.navbar #navbar-breadcrumbs li,
+.navbar .navbar-nav > .nav-item > .nav-link,
+.navbar .navbar-nav > .nav-item > .nav-link.text-muted {
+  color: #dfecff !important;
+}
+.navbar .navbar-nav > .nav-item > .nav-link:hover,
+.navbar #navbar-breadcrumbs a:hover { color: #ffffff !important; }
+.navbar #navbar-breadcrumbs a::before { filter: brightness(0) invert(1); }
+.navbar .navbar-nav > .nav-item > .nav-link svg,
+.navbar .search-bar svg { stroke: #c6dfff !important; }
+.navbar .search-bar input {
+  background: rgba(229, 241, 255, .12) !important;
+  color: #f4f8ff !important;
+  border: 1px solid rgba(204, 228, 255, .15) !important;
+  border-radius: 9px;
+}
+.navbar .search-bar input::placeholder { color: #c1d4ec !important; }
+
+.page-head .title-text { color: var(--heading-color); letter-spacing: -.02em; }
+.layout-main-section.frappe-card,
+.frappe-card,
+.widget,
+.form-dashboard-section {
+  border-radius: 13px;
+  border-color: var(--border-color);
+}
+.btn, .form-control, .control-input, .list-row-container { border-radius: 8px; }
+.btn-primary { box-shadow: 0 3px 9px rgba(18, 101, 216, .18); }
+.btn-primary:hover { filter: brightness(1.07); }
+.nav-tabs .nav-link.active,
+.form-tabs-list .form-tabs .nav-item .nav-link.active {
+  color: #1265d8;
+  border-bottom-color: #1265d8;
+}
+:focus-visible { outline-color: #3c91f5; }

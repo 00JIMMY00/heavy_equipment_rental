@@ -1,0 +1,225 @@
+{
+ "doctype": "DocType",
+ "name": "Expense Entry",
+ "module": "Heavy Equipment Rental",
+ "engine": "InnoDB",
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field",
+ "title_field": "project",
+ "search_fields": "project,expense_type,crane,employee,crane_maintenance,journal_entry",
+ "fields": [
+  {
+   "fieldname": "details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Expense Details"
+  },
+  {
+   "fieldname": "expense_section",
+   "fieldtype": "Section Break",
+   "label": "Expense"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "EXP-.#####",
+   "default": "EXP-.#####",
+   "reqd": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Crane Project",
+   "options": "Crane Project",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Expense Date",
+   "default": "Today",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "expense_type",
+   "fieldtype": "Link",
+   "label": "Expense Type",
+   "options": "Expense Type",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "payment_col",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "reqd": 1,
+   "in_list_view": 1,
+   "non_negative": 1
+  },
+  {
+   "fieldname": "mode_of_payment",
+   "fieldtype": "Link",
+   "label": "Mode of Payment",
+   "options": "Mode of Payment",
+   "mandatory_depends_on": "eval:doc.docstatus==1 && !doc.crane_maintenance",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "credit_account",
+   "fieldtype": "Link",
+   "label": "Credit Account",
+   "options": "Account",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "allocation_section",
+   "fieldtype": "Section Break",
+   "label": "Allocation"
+  },
+  {
+   "fieldname": "crane",
+   "fieldtype": "Link",
+   "label": "Crane",
+   "options": "Crane",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Crane Driver (Employee)",
+   "options": "Employee",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "work_col",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "receipt",
+   "fieldtype": "Attach",
+   "label": "Receipt"
+  },
+  {
+   "fieldname": "references_tab",
+   "fieldtype": "Tab Break",
+   "label": "References"
+  },
+  {
+   "fieldname": "references_section",
+   "fieldtype": "Section Break",
+   "label": "Linked Documents"
+  },
+  {
+   "fieldname": "crane_maintenance",
+   "fieldtype": "Link",
+   "label": "Crane Maintenance",
+   "options": "Crane Maintenance",
+   "read_only": 1,
+   "no_copy": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "journal_entry",
+   "fieldtype": "Link",
+   "label": "Journal Entry",
+   "options": "Journal Entry",
+   "read_only": 1,
+   "no_copy": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Expense Entry",
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1
+  }
+ ],
+ "field_order": [
+  "details_tab",
+  "expense_section",
+  "naming_series",
+  "project",
+  "posting_date",
+  "expense_type",
+  "payment_col",
+  "amount",
+  "mode_of_payment",
+  "credit_account",
+  "allocation_section",
+  "crane",
+  "employee",
+  "work_col",
+  "description",
+  "receipt",
+  "references_tab",
+  "references_section",
+  "crane_maintenance",
+  "journal_entry",
+  "amended_from"
+ ],
+ "istable": 0,
+ "is_submittable": 1,
+ "track_changes": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "links": [],
+ "actions": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "submit": 1,
+   "amend": 1,
+   "cancel": 1
+  },
+  {
+   "role": "Projects Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "submit": 1,
+   "amend": 1,
+   "cancel": 1
+  },
+  {
+   "role": "Projects User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "submit": 1,
+   "amend": 1,
+   "cancel": 0
+  }
+ ]
+}

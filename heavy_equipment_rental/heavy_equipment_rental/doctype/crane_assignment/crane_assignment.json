@@ -1,0 +1,130 @@
+{
+ "doctype": "DocType",
+ "name": "Crane Assignment",
+ "module": "Heavy Equipment Rental",
+ "engine": "InnoDB",
+ "creation": "2026-10-13 00:00:00.000000",
+ "modified": "2026-10-13 12:54:00.773630",
+ "modified_by": "Administrator",
+ "owner": "Administrator",
+ "fields": [
+  {
+   "fieldname": "details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Assignment Details"
+  },
+  {
+   "fieldname": "project_section",
+   "fieldtype": "Section Break",
+   "label": "Project"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "ASG-.#####",
+   "default": "ASG-.#####",
+   "reqd": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Crane Project",
+   "options": "Crane Project",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "dates_col",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "project_start_date",
+   "fieldtype": "Date",
+   "label": "Project Start Date",
+   "fetch_from": "project.expected_start_date",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "project_end_date",
+   "fieldtype": "Date",
+   "label": "Project End Date",
+   "fetch_from": "project.expected_end_date",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "cranes_tab",
+   "fieldtype": "Tab Break",
+   "label": "Assigned Cranes"
+  },
+  {
+   "fieldname": "cranes_section",
+   "fieldtype": "Section Break",
+   "label": "Cranes"
+  },
+  {
+   "fieldname": "assigned_cranes",
+   "fieldtype": "Table",
+   "label": "Assigned Cranes",
+   "options": "Assigned Crane"
+  }
+ ],
+ "field_order": [
+  "details_tab",
+  "project_section",
+  "naming_series",
+  "project",
+  "dates_col",
+  "project_start_date",
+  "project_end_date",
+  "cranes_tab",
+  "cranes_section",
+  "assigned_cranes"
+ ],
+ "istable": 0,
+ "is_submittable": 0,
+ "editable_grid": 1,
+ "grid_page_length": 100,
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "Projects Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "Projects User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field"
+}

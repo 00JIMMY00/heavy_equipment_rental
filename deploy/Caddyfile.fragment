@@ -1,0 +1,5 @@
+alsakr.arab-erp.com, cranes.arab-erp.com {
+	reverse_proxy rental-frontend:8080 {
+		header_up Host {host}
+	}
+}

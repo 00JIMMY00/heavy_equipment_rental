@@ -1,0 +1,82 @@
+# Two-site production deployment
+
+`clients.yaml` in the repository root is the source of truth. The release image
+contains the union of apps required by both sites. Each site installs only its
+listed apps:
+
+| Site | Apps |
+| --- | --- |
+| `alsakr.arab-erp.com` | ERPNext |
+| `cranes.arab-erp.com` | ERPNext, Heavy Equipment Rental |
+
+To add another app later, add its public Git URL and ref under `apps`, add its
+name to the intended site's list, release an image, and install the app on that
+site. The deployment verifies the installed app sets; it never installs or
+removes site apps automatically.
+
+## GitHub settings
+
+Create the empty public repository `00JIMMY00/heavy_equipment_rental`, then add:
+
+| Kind | Name | Value |
+| --- | --- | --- |
+| Secret | `DEPLOY_SSH_KEY` | Dedicated SSH private key whose public key is authorized for server user `jimmy` |
+| Variable | `DEPLOY_SSH_HOST` | `62.84.180.139` |
+| Variable | `DEPLOY_SSH_USER` | `jimmy` |
+| Variable | `DEPLOY_DIR` | `/home/jimmy/heavy_equipment_rental/deploy` |
+| Variable | `DEPLOY_SSH_KNOWN_HOSTS` | Verified SSH ED25519 host-key line for `62.84.180.139` |
+
+`GITHUB_TOKEN` is provided by GitHub Actions and authenticates both publication
+and the temporary server pull session. No GHCR personal token is needed. The
+database password stays in the server's `.env`, never in GitHub.
+
+## Initial server setup
+
+The server uses Docker Compose and the existing Caddy container on Docker's
+external `reverse_proxy` network. Copy `compose.yaml`, `rollout.sh`, and
+`clients_runtime.py` to `/home/jimmy/heavy_equipment_rental/deploy`. Copy
+`.env.example` to `.env`, generate a strong `DB_PASSWORD`, and copy
+`deploy.conf.example` to `deploy.conf`. Keep both files readable only by `jimmy`.
+The rollout copies the rendered `clients.json` from the release each time.
+
+Add `Caddyfile.fragment` to the existing Caddyfile, validate it, and reload
+Caddy. It preserves the original Host header and routes only the two new names
+to `rental-frontend:8080`; other Caddy routes stay as they are. Point both DNS
+A records to `62.84.180.139` before checking HTTPS.
+
+The first `v*` tag is allowed to try deployment before site creation. It can
+start the stack but will report failure because the sites do not exist yet. You
+then create the sites in that stack and install their apps:
+
+```bash
+cd /home/jimmy/heavy_equipment_rental/deploy
+docker compose exec backend bench new-site --db-root-password 'DB_PASSWORD' --admin-password 'ALSAKR_ADMIN_PASSWORD' alsakr.arab-erp.com
+docker compose exec backend bench --site alsakr.arab-erp.com install-app erpnext
+
+docker compose exec backend bench new-site --db-root-password 'DB_PASSWORD' --admin-password 'CRANES_ADMIN_PASSWORD' cranes.arab-erp.com
+docker compose exec backend bench --site cranes.arab-erp.com install-app erpnext
+docker compose exec backend bench --site cranes.arab-erp.com install-app heavy_equipment_rental
+```
+
+Rerun the failed deployment job. It rechecks installed apps, migrates both
+sites, and verifies both HTTPS endpoints even when the image digest is already
+running.
+
+## Release behavior
+
+Push a `v*` tag from `main` or publish a GitHub Release for such a tag. CI runs
+Bench tests, checks the frontend assets, builds and smoke-tests the image, then
+pushes it to GHCR. The deployment uses the registry digest, which identifies
+the exact image that passed the smoke test.
+
+The server pulls before changing containers. It backs up both sites, recreates
+app services, verifies their installed app sets, migrates both sites, and checks
+each site's HTTPS ping endpoint through Caddy. On startup, migration, or health
+failure, it restores the previous image digest. Docker Compose removes replaced
+app containers. After success, only the current and previous app images are
+retained; the image from two successful releases ago is removed. Database,
+Redis, and site volumes are never pruned.
+
+Container rollback does not reverse database changes. Site backups are created
+before migration and remain available for a reviewed restore. Keep independent
+off-server backups too.

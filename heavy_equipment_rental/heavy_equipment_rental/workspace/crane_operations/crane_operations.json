@@ -1,0 +1,129 @@
+{
+ "doctype": "Workspace",
+ "name": "Crane Operations",
+ "title": "Crane Operations",
+ "label": "Crane Operations",
+ "module": "Heavy Equipment Rental",
+ "public": 1,
+ "is_hidden": 0,
+ "icon": "project",
+ "sequence_id": 12,
+ "content": "[{\"id\": \"operations-section\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Operations</b></span>\", \"col\": 12}}, {\"id\": \"rental-calendar-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Rental Calendar\", \"col\": 6}}, {\"id\": \"resource-calendar-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Resource Timeline\", \"col\": 6}}, {\"id\": \"projects-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Projects\", \"col\": 4}}, {\"id\": \"assignments-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Assignments\", \"col\": 4}}, {\"id\": \"timesheets-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Timesheets\", \"col\": 4}}, {\"id\": \"maintenance-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Maintenance\", \"col\": 4}}, {\"id\": \"cranes-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Cranes\", \"col\": 4}}, {\"id\": \"drivers-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Drivers\", \"col\": 4}}, {\"id\": \"customers-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customers\", \"col\": 4}}, {\"id\": \"reports-section\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Reports</b></span>\", \"col\": 12}}, {\"id\": \"timesheet-report-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Timesheet Report\", \"col\": 3}}, {\"id\": \"maintenance-report-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Maintenance Report\", \"col\": 3}}, {\"id\": \"sales-register-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Register\", \"col\": 3}}, {\"id\": \"accounts-receivable-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Accounts Receivable\", \"col\": 3}}, {\"id\": \"accounting-section\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Accounting</b></span>\", \"col\": 12}}, {\"id\": \"sales-invoices-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Invoices\", \"col\": 4}}, {\"id\": \"expense-entry-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Entries\", \"col\": 4}}, {\"id\": \"expense-type-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Types\", \"col\": 4}}, {\"id\": \"settings-section\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Settings</b></span>\", \"col\": 12}}, {\"id\": \"rental-settings-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Rental Settings\", \"col\": 4}}]",
+ "shortcuts": [
+  {
+   "label": "Rental Calendar",
+   "type": "URL",
+   "url": "/rental-calendar"
+  },
+  {
+   "label": "Resource Timeline",
+   "type": "URL",
+   "url": "/rental-calendar/timeline"
+  },
+  {
+   "label": "Crane Projects",
+   "type": "DocType",
+   "link_to": "Crane Project",
+   "doc_view": "List"
+  },
+  {
+   "label": "Crane Assignments",
+   "type": "DocType",
+   "link_to": "Crane Assignment",
+   "doc_view": "List"
+  },
+  {
+   "label": "Crane Timesheets",
+   "type": "DocType",
+   "link_to": "Crane Timesheet",
+   "doc_view": "List"
+  },
+  {
+   "label": "Crane Maintenance",
+   "type": "DocType",
+   "link_to": "Crane Maintenance",
+   "doc_view": "List"
+  },
+  {
+   "label": "Cranes",
+   "type": "DocType",
+   "link_to": "Crane",
+   "doc_view": "List"
+  },
+  {
+   "label": "Crane Drivers",
+   "type": "DocType",
+   "link_to": "Crane Driver",
+   "doc_view": "List"
+  },
+  {
+   "label": "Customers",
+   "type": "DocType",
+   "link_to": "Customer",
+   "doc_view": "List"
+  },
+  {
+   "label": "Timesheet Report",
+   "type": "DocType",
+   "link_to": "Crane Timesheet",
+   "doc_view": "Report Builder"
+  },
+  {
+   "label": "Maintenance Report",
+   "type": "DocType",
+   "link_to": "Crane Maintenance",
+   "doc_view": "Report Builder"
+  },
+  {
+   "label": "Sales Register",
+   "type": "Report",
+   "link_to": "Sales Register"
+  },
+  {
+   "label": "Accounts Receivable",
+   "type": "Report",
+   "link_to": "Accounts Receivable"
+  },
+  {
+   "label": "Sales Invoices",
+   "type": "DocType",
+   "link_to": "Sales Invoice",
+   "doc_view": "List"
+  },
+  {
+   "label": "Expense Entries",
+   "type": "DocType",
+   "link_to": "Expense Entry",
+   "doc_view": "List"
+  },
+  {
+   "label": "Expense Types",
+   "type": "DocType",
+   "link_to": "Expense Type",
+   "doc_view": "List"
+  },
+  {
+   "label": "Rental Settings",
+   "type": "DocType",
+   "link_to": "Heavy Equipment Rental Settings"
+  }
+ ],
+ "links": [],
+ "charts": [],
+ "number_cards": [],
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Projects Manager"
+  },
+  {
+   "role": "Projects User"
+  }
+ ],
+ "owner": "Administrator",
+ "modified_by": "Administrator",
+ "modified": "2026-10-17 22:00:00.000000",
+ "custom_blocks": []
+}

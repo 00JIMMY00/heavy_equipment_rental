@@ -1,0 +1,217 @@
+{
+ "doctype": "DocType",
+ "name": "Crane Timesheet",
+ "module": "Heavy Equipment Rental",
+ "engine": "InnoDB",
+ "creation": "2026-10-13 00:00:00.000000",
+ "modified": "2026-10-13 12:54:00.772613",
+ "modified_by": "Administrator",
+ "owner": "Administrator",
+ "fields": [
+  {
+   "fieldname": "details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Timesheet Details"
+  },
+  {
+   "fieldname": "context_section",
+   "fieldtype": "Section Break",
+   "label": "Project and Crane"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "TS-.#####",
+   "default": "TS-.#####",
+   "reqd": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Crane Project",
+   "options": "Crane Project",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "crane",
+   "fieldtype": "Link",
+   "label": "Crane",
+   "options": "Crane",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "period_col",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "period_start",
+   "fieldtype": "Date",
+   "label": "Period Start",
+   "reqd": 1
+  },
+  {
+   "fieldname": "period_end",
+   "fieldtype": "Date",
+   "label": "Period End",
+   "reqd": 1
+  },
+  {
+   "fieldname": "signed_timesheet",
+   "fieldtype": "Attach",
+   "label": "Signed Timesheet"
+  },
+  {
+   "fieldname": "entries_tab",
+   "fieldtype": "Tab Break",
+   "label": "Entries"
+  },
+  {
+   "fieldname": "entries_section",
+   "fieldtype": "Section Break",
+   "label": "Timesheet Entries"
+  },
+  {
+   "fieldname": "timesheet_entries",
+   "fieldtype": "Table",
+   "label": "Entries",
+   "options": "Timesheet Entry"
+  },
+  {
+   "fieldname": "totals_section",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "fieldname": "total_operator_hours",
+   "fieldtype": "Float",
+   "label": "Total Driver Hours",
+   "read_only": 1,
+   "precision": "6"
+  },
+  {
+   "fieldname": "total_crane_billable_hours",
+   "fieldtype": "Float",
+   "label": "Total Crane Billable Hours",
+   "read_only": 1,
+   "precision": "6"
+  },
+  {
+   "fieldname": "amount_col",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "references_tab",
+   "fieldtype": "Tab Break",
+   "label": "References"
+  },
+  {
+   "fieldname": "references_section",
+   "fieldtype": "Section Break",
+   "label": "Documents"
+  },
+  {
+   "fieldname": "sales_invoice",
+   "fieldtype": "Link",
+   "label": "Sales Invoice",
+   "options": "Sales Invoice",
+   "read_only": 1,
+   "no_copy": 1,
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Crane Timesheet",
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1
+  }
+ ],
+ "field_order": [
+  "details_tab",
+  "context_section",
+  "naming_series",
+  "project",
+  "crane",
+  "period_col",
+  "period_start",
+  "period_end",
+  "signed_timesheet",
+  "entries_tab",
+  "entries_section",
+  "timesheet_entries",
+  "totals_section",
+  "total_operator_hours",
+  "total_crane_billable_hours",
+  "amount_col",
+  "total_amount",
+  "references_tab",
+  "references_section",
+  "sales_invoice",
+  "amended_from"
+ ],
+ "istable": 0,
+ "is_submittable": 1,
+ "editable_grid": 1,
+ "grid_page_length": 100,
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "Projects Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "Projects User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "submit": 1,
+   "cancel": 0,
+   "amend": 1
+  }
+ ],
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field"
+}

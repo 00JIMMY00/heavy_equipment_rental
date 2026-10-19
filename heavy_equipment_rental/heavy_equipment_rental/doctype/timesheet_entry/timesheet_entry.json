@@ -1,0 +1,110 @@
+{
+ "actions": [],
+ "creation": "2026-10-13 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "work_section",
+  "work_date",
+  "crane_operator",
+  "time_col",
+  "start_time",
+  "end_time",
+  "ends_next_day",
+  "calculation_section",
+  "price_per_hour",
+  "worked_hours",
+  "amount_col",
+  "line_amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "work_section",
+   "fieldtype": "Section Break",
+   "label": "Work Period"
+  },
+  {
+   "fieldname": "work_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Work Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "crane_operator",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Crane Driver",
+   "options": "Crane Driver",
+   "reqd": 1
+  },
+  {
+   "fieldname": "time_col",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "start_time",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Start Time"
+  },
+  {
+   "fieldname": "end_time",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "End Time"
+  },
+  {
+   "default": "0",
+   "description": "Use for overnight shifts, such as 22:00 to 02:00. It also allows a 24-hour shift when start and end times match.",
+   "fieldname": "ends_next_day",
+   "fieldtype": "Check",
+   "label": "Ends Next Day"
+  },
+  {
+   "fieldname": "calculation_section",
+   "fieldtype": "Section Break",
+   "label": "Hours and Amount"
+  },
+  {
+   "fieldname": "price_per_hour",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Price / Hour",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "worked_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Worked Hours",
+   "precision": "6",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amount_col",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "line_amount",
+   "fieldtype": "Currency",
+   "label": "Driver Amount (Informational)",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 100,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-10-14 02:40:05.915316",
+ "modified_by": "Administrator",
+ "module": "Heavy Equipment Rental",
+ "name": "Timesheet Entry",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
