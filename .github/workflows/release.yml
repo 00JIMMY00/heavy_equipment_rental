@@ -139,11 +139,11 @@ jobs:
           python deploy/make_apps_json.py
       - name: Deploy over SSH
         env:
-          SSH_HOST: ${{ vars.DEPLOY_SSH_HOST }}
-          SSH_USER: ${{ vars.DEPLOY_SSH_USER }}
+          SSH_HOST: 62.84.180.139
+          SSH_USER: jimmy
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          SSH_KNOWN_HOSTS: ${{ vars.DEPLOY_SSH_KNOWN_HOSTS }}
-          DEPLOY_DIR: ${{ vars.DEPLOY_DIR }}
+          SSH_KNOWN_HOSTS: 62.84.180.139 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID6T4aUSjXHygCZWuHhArZKxKmnU50BZk1l5+euj3Hvl
+          DEPLOY_DIR: /home/jimmy/heavy_equipment_rental/deploy
           IMAGE_REF: ${{ needs.image.outputs.image_ref }}
           GHCR_USER: ${{ github.actor }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
