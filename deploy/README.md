@@ -47,10 +47,19 @@ external `reverse_proxy` network. Copy `compose.yaml`, `rollout.sh`, and
 deployment user.
 The rollout copies the rendered `clients.json` from the release each time.
 
-Add `Caddyfile.fragment` to the existing Caddyfile, validate it, and reload
-Caddy. It preserves the original Host header and routes only the two new names
-to `rental-frontend:8080`; other Caddy routes stay as they are. Point both DNS
-A records to the server before checking HTTPS.
+If using the existing Caddy server, add `Caddyfile.fragment` to its Caddyfile,
+validate it, and reload Caddy. It preserves the original Host header and routes
+only the two new names to `rental-frontend:8080`.
+
+For a Cloudflare Tunnel on the same host, the frontend also listens on
+`127.0.0.1:8083`. In the tunnel's **Public Hostnames**, route each hostname
+(`cranes.arab-erp.com` and `alsakr.arab-erp.com`) to the HTTP service URL
+`http://localhost:8083`. Cloudflare must create a DNS CNAME for each hostname
+pointing to that tunnel; remove any conflicting A/AAAA/CNAME records first.
+The tunnel terminates public HTTPS, so its service URL uses HTTP. Both sites
+share the port and Frappe selects the site from the original Host header.
+Use `alsakr` (starting with **a**) in the tunnel hostname, matching
+`clients.yaml` and the Bench site directory.
 
 The first `v*` tag is allowed to try deployment before site creation. It can
 start the stack but will report failure because the sites do not exist yet. You
@@ -86,10 +95,11 @@ the exact image that passed the smoke test.
 
 The server pulls before changing containers. It backs up both sites, recreates
 app services, verifies their installed app sets, migrates both sites, and checks
-each site's HTTPS ping endpoint through Caddy. On startup, migration, or health
-failure, it restores the previous image digest. Docker Compose removes replaced
-app containers. After success, only the current and previous app images are
-retained; the image from two successful releases ago is removed. Database,
+each site's ping endpoint on the local frontend port with its Host header. On
+startup, migration, or health failure, it restores the previous image digest.
+Docker Compose removes replaced app containers. After success, only the current
+and previous app images are retained; the image from two successful releases
+ago is removed. Database,
 Redis, and site volumes are never pruned.
 
 Container rollback does not reverse database changes. Site backups are created

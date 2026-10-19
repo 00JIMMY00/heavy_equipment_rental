@@ -61,8 +61,8 @@ healthy() {
   done
   for site in "${sites[@]}"; do
     curl --silent --show-error --fail --max-time 8 \
-      --resolve "$site:443:127.0.0.1" \
-      "https://$site/api/method/ping" >/dev/null || return 1
+      --header "Host: $site" \
+      "http://127.0.0.1:8083/api/method/ping" >/dev/null || return 1
   done
 }
 

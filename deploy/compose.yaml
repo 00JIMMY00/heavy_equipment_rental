@@ -70,6 +70,8 @@ services:
   frontend:
     <<: *app-image
     command: [nginx-entrypoint.sh]
+    ports:
+      - "127.0.0.1:8083:8080"
     networks:
       default:
       reverse_proxy:
