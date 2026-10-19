@@ -16,15 +16,22 @@ removes site apps automatically.
 
 ## GitHub settings
 
-Create the empty public repository `00JIMMY00/heavy_equipment_rental`, then add:
+Add these **repository Actions secrets** (Settings → Secrets and variables →
+Actions → Secrets). They are also available to the `production` environment:
 
 | Kind | Name | Value |
 | --- | --- | --- |
-| Secret | `DEPLOY_SSH_KEY` | Dedicated SSH private key whose public key is authorized for server user `jimmy` |
-| Variable | `DEPLOY_SSH_HOST` | `62.84.180.139` |
-| Variable | `DEPLOY_SSH_USER` | `jimmy` |
-| Variable | `DEPLOY_DIR` | `/home/jimmy/heavy_equipment_rental/deploy` |
-| Variable | `DEPLOY_SSH_KNOWN_HOSTS` | Verified SSH ED25519 host-key line for `62.84.180.139` |
+| Secret | `DEPLOY_SSH_KEY` | Complete contents of the dedicated, unencrypted SSH private key file |
+| Secret | `DEPLOY_SSH_HOST` | Server address |
+| Secret | `DEPLOY_SSH_USER` | Server login name |
+| Secret | `DEPLOY_DIR` | Absolute path to the server deployment directory |
+| Secret | `DEPLOY_SSH_KNOWN_HOSTS` | Verified SSH host-key line |
+
+The private key must begin with `-----BEGIN OPENSSH PRIVATE KEY-----` and end
+with `-----END OPENSSH PRIVATE KEY-----`. Paste the file contents, not its path,
+public key, or a quoted/escaped string. The deploy script validates the key
+before it connects. If using the GitHub CLI, copy the file without changing its
+format: `gh secret set DEPLOY_SSH_KEY --repo 00JIMMY00/heavy_equipment_rental < ~/.ssh/heavy_equipment_rental_deploy_ed25519`.
 
 `GITHUB_TOKEN` is provided by GitHub Actions and authenticates both publication
 and the temporary server pull session. No GHCR personal token is needed. The
@@ -34,22 +41,23 @@ database password stays in the server's `.env`, never in GitHub.
 
 The server uses Docker Compose and the existing Caddy container on Docker's
 external `reverse_proxy` network. Copy `compose.yaml`, `rollout.sh`, and
-`clients_runtime.py` to `/home/jimmy/heavy_equipment_rental/deploy`. Copy
+`clients_runtime.py` to the server directory named by `DEPLOY_DIR`. Copy
 `.env.example` to `.env`, generate a strong `DB_PASSWORD`, and copy
-`deploy.conf.example` to `deploy.conf`. Keep both files readable only by `jimmy`.
+`deploy.conf.example` to `deploy.conf`. Keep both files readable only by the
+deployment user.
 The rollout copies the rendered `clients.json` from the release each time.
 
 Add `Caddyfile.fragment` to the existing Caddyfile, validate it, and reload
 Caddy. It preserves the original Host header and routes only the two new names
 to `rental-frontend:8080`; other Caddy routes stay as they are. Point both DNS
-A records to `62.84.180.139` before checking HTTPS.
+A records to the server before checking HTTPS.
 
 The first `v*` tag is allowed to try deployment before site creation. It can
 start the stack but will report failure because the sites do not exist yet. You
 then create the sites in that stack and install their apps:
 
 ```bash
-cd /home/jimmy/heavy_equipment_rental/deploy
+cd /path/to/deploy
 set -a
 . ./.env
 set +a
@@ -71,7 +79,7 @@ running.
 
 ## Release behavior
 
-Push a `v*` tag from `main` or publish a GitHub Release for such a tag. CI runs
+Push a `v*` tag from `main`. CI runs
 Bench tests, checks the frontend assets, builds and smoke-tests the image, then
 pushes it to GHCR. The deployment uses the registry digest, which identifies
 the exact image that passed the smoke test.
