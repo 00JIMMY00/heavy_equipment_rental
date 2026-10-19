@@ -32,10 +32,8 @@ fi
 
 # Pulling cannot affect running containers. Repeat validation on a same-image rerun.
 export APP_IMAGE="$target_ref"
-if [[ "$old_ref" != "$target_ref" ]]; then
-  echo "Pulling $target_ref"
-  compose pull configurator backend frontend websocket queue-short queue-long scheduler || exit 1
-fi
+echo "Ensuring all stack images are present, including $target_ref"
+compose pull --policy missing || exit 1
 
 if [[ -n "$old_ref" ]]; then
   echo "Backing up ${#sites[@]} sites before migration"
