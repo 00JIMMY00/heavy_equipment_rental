@@ -17,7 +17,7 @@ removes site apps automatically.
 ## GitHub settings
 
 Add these **repository Actions secrets** (Settings → Secrets and variables →
-Actions → Secrets). They are also available to the `production` environment:
+Actions → Secrets):
 
 | Kind | Name | Value |
 | --- | --- | --- |
