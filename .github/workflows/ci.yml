@@ -97,6 +97,7 @@ jobs:
           bench new-site --db-root-password root --admin-password admin test_site
           bench --site test_site install-app erpnext
           bench --site test_site install-app heavy_equipment_rental
+          bench --site test_site execute frappe.desk.page.setup_wizard.install_fixtures.install
           bench --site test_site execute erpnext.setup.setup_wizard.operations.install_fixtures.install --kwargs '{"country":"Egypt"}'
           bench build
         env:
