@@ -27,6 +27,32 @@ jobs:
           [[ "$RELEASE_TAG" == v* ]]
           git fetch origin main
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+      - name: Validate deployment secrets
+        env:
+          SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+          DEPLOY_DIR: ${{ secrets.DEPLOY_DIR }}
+        run: |
+          set -euo pipefail
+          for name in SSH_HOST SSH_USER SSH_KEY SSH_KNOWN_HOSTS DEPLOY_DIR; do
+            [[ -n "${!name:-}" ]] || { echo "Missing GitHub secret for $name" >&2; exit 2; }
+          done
+          key_file="$(mktemp)"
+          hosts_file="$(mktemp)"
+          trap 'rm -f "$key_file" "$hosts_file"' EXIT
+          chmod 600 "$key_file" "$hosts_file"
+          printf '%s\n' "$SSH_KEY" > "$key_file"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$hosts_file"
+          ssh-keygen -y -P '' -f "$key_file" >/dev/null 2>&1 || {
+            echo 'DEPLOY_SSH_KEY must contain the complete unencrypted private key file' >&2
+            exit 2
+          }
+          ssh-keygen -F "$SSH_HOST" -f "$hosts_file" >/dev/null 2>&1 || {
+            echo 'DEPLOY_SSH_KNOWN_HOSTS does not match DEPLOY_SSH_HOST' >&2
+            exit 2
+          }
 
   tests:
     needs: verify_ref
