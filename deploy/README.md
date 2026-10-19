@@ -50,10 +50,17 @@ then create the sites in that stack and install their apps:
 
 ```bash
 cd /home/jimmy/heavy_equipment_rental/deploy
-docker compose exec backend bench new-site --db-root-password 'DB_PASSWORD' --admin-password 'ALSAKR_ADMIN_PASSWORD' alsakr.arab-erp.com
+set -a
+. ./.env
+set +a
+read -rsp 'Alsakr Administrator password: ' ADMIN_PASSWORD; echo
+docker compose exec backend bench new-site --db-root-password "$DB_PASSWORD" --admin-password "$ADMIN_PASSWORD" alsakr.arab-erp.com
+unset ADMIN_PASSWORD
 docker compose exec backend bench --site alsakr.arab-erp.com install-app erpnext
 
-docker compose exec backend bench new-site --db-root-password 'DB_PASSWORD' --admin-password 'CRANES_ADMIN_PASSWORD' cranes.arab-erp.com
+read -rsp 'Cranes Administrator password: ' ADMIN_PASSWORD; echo
+docker compose exec backend bench new-site --db-root-password "$DB_PASSWORD" --admin-password "$ADMIN_PASSWORD" cranes.arab-erp.com
+unset ADMIN_PASSWORD DB_PASSWORD
 docker compose exec backend bench --site cranes.arab-erp.com install-app erpnext
 docker compose exec backend bench --site cranes.arab-erp.com install-app heavy_equipment_rental
 ```
