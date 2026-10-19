@@ -1,4 +1,22 @@
 English,Arabic
+Crane Operations,عمليات المعدات
+Reports,التقارير
+Accounting,المحاسبة
+Settings,الإعدادات
+Rental Calendar,تقويم الحجوزات
+Resource Timeline,تقويم الموارد
+Crane Projects,مشاريع المعدات
+Crane Assignments,تخصيصات المعدات
+Crane Drivers,سائقو المعدات
+Cranes,المعدات
+Customers,العملاء
+Timesheet Report,تقرير ساعات المعدات
+Maintenance Report,تقرير الصيانة
+Sales Register,سجل المبيعات
+Accounts Receivable,الذمم المدينة
+Expense Entries,قيود المصروفات
+Expense Types,أنواع المصروفات
+Rental Settings,إعدادات تأجير المعدات الثقيلة
 Mode of Payment,طريقة الدفع
 Mode of Payment must use a non-group Asset or Liability account.,يجب أن تستخدم طريقة الدفع حساب أصول أو التزامات غير تجميعي.
 Mode of Payment account cannot be Receivable or Payable.,لا يمكن أن يكون حساب طريقة الدفع حساب ذمم مدينة أو دائنة.

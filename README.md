@@ -2,7 +2,7 @@
 
 Crane rental management for Frappe/ERPNext. The **Crane Operations** workspace uses its own **Crane Project** DocType alongside crane, assignment and timesheet DocTypes. ERPNext Project is independent.
 
-The workspace opens with a live crane metrics block and a **Crane Dashboard** shortcut for the full view. It shows today's fleet availability, reservations, open and overdue projects, submitted billable hours, unbilled timesheets, and upcoming maintenance. On installation or migration, users with System Manager, Projects Manager, or Projects User roles whose Default Workspace is empty are assigned Crane Operations. Existing workspace preferences are preserved.
+The workspace groups direct links under Operations, Reports, Accounting, and Settings. Operations includes both calendars and the crane rental DocTypes; Reports links to timesheet and maintenance report views plus sales and receivables reports. On installation or migration, users with System Manager, Projects Manager, or Projects User roles whose Default Workspace is empty are assigned Crane Operations. Existing default-workspace preferences are preserved.
 
 ## Workflow
 
@@ -146,7 +146,7 @@ npm ci
 npm run build
 ```
 
-Run `bench --site YOUR_SITE migrate` after installing or updating the app to sync the workspace shortcut and route hooks.
+Run `bench --site YOUR_SITE migrate` after installing or updating the app to sync the workspace layout and route hooks.
 
 ## Local development
 

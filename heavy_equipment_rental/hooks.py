@@ -29,7 +29,6 @@ doc_events = {
 
 fixtures = [
 	{"doctype": "Expense Type", "filters": [["name", "=", "EXT-MAINTENANCE"]]},
-	{"doctype": "Custom HTML Block", "filters": [["name", "=", "Crane Operations Overview"]]},
 ]
 
 doctype_js = {
