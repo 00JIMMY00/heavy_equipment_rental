@@ -1,9 +1,9 @@
-name: Build and deploy release
+name: Test, build and deploy
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -14,19 +14,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  verify_ref:
+  preflight:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Require a release tag on main
-        env:
-          RELEASE_TAG: ${{ github.event.release.tag_name || github.ref_name }}
-        run: |
-          [[ "$RELEASE_TAG" == v* ]]
-          git fetch origin main
-          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
       - name: Validate deployment secrets
         env:
           SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
@@ -55,7 +46,7 @@ jobs:
           }
 
   tests:
-    needs: verify_ref
+    needs: preflight
     uses: ./.github/workflows/ci.yml
 
   image:
@@ -65,8 +56,6 @@ jobs:
       image_ref: ${{ steps.digest.outputs.image_ref }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.release.tag_name || github.ref }}
 
       - name: Select commit image tag
         id: meta
@@ -82,7 +71,7 @@ jobs:
           python-version: '3.10'
       - name: Render client manifests
         env:
-          RELEASE_TAG: ${{ github.event.release.tag_name || github.ref_name }}
+          APP_COMMIT: ${{ github.sha }}
         run: |
           python -m pip install PyYAML==6.0.3
           python deploy/make_apps_json.py
@@ -119,9 +108,10 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/amd64 \
-            --file frappe_docker/images/layered/Containerfile \
+            --file deploy/Containerfile \
             --build-arg FRAPPE_BRANCH=version-15 \
             --build-arg "CACHE_BUST=$GITHUB_SHA" \
+            --build-arg "APP_COMMIT=$GITHUB_SHA" \
             --secret id=apps_json,src=/tmp/apps.json \
             --tag "$IMAGE:$TAG" \
             --load frappe_docker
@@ -131,8 +121,8 @@ jobs:
           IMAGE: ${{ steps.meta.outputs.image }}
           TAG: ${{ steps.meta.outputs.tag }}
         run: |
-          docker run --rm --entrypoint bash "$IMAGE:$TAG" -lc \
-            'test -d apps/heavy_equipment_rental && test -f sites/apps.txt && test -f apps/heavy_equipment_rental/heavy_equipment_rental/www/rental_calendar.html'
+          docker run --rm --entrypoint bash -e APP_COMMIT="$GITHUB_SHA" "$IMAGE:$TAG" -lc \
+            'test "$(cat apps/heavy_equipment_rental/.source-commit)" = "$APP_COMMIT" && test -f sites/apps.txt && test -f apps/heavy_equipment_rental/heavy_equipment_rental/www/rental_calendar.html'
 
       - name: Publish image and capture digest
         id: digest
@@ -149,14 +139,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.release.tag_name || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - name: Render client manifest
         env:
-          RELEASE_TAG: ${{ github.event.release.tag_name || github.ref_name }}
+          APP_COMMIT: ${{ github.sha }}
         run: |
           python -m pip install PyYAML==6.0.3
           python deploy/make_apps_json.py

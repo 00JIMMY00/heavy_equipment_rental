@@ -6,7 +6,7 @@ apps:
     ref: version-15
   heavy_equipment_rental:
     url: https://github.com/00JIMMY00/heavy_equipment_rental.git
-    ref: release-tag
+    ref: main-commit
 
 sites:
   elsakr.arab-erp.com:

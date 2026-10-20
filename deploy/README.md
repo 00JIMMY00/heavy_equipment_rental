@@ -1,6 +1,6 @@
 # Two-site production deployment
 
-`clients.yaml` in the repository root is the source of truth. The release image
+`clients.yaml` in the repository root is the source of truth. The deployment image
 contains the union of apps required by both sites. Each site installs only its
 listed apps:
 
@@ -10,7 +10,7 @@ listed apps:
 | `cranes.arab-erp.com` | ERPNext, Heavy Equipment Rental |
 
 To add another app later, add its public Git URL and ref under `apps`, add its
-name to the intended site's list, release an image, and install the app on that
+name to the intended site's list, push the image change to `main`, and install the app on that
 site. The deployment verifies the installed app sets; it never installs or
 removes site apps automatically.
 
@@ -45,7 +45,7 @@ external `reverse_proxy` network. Copy `compose.yaml`, `rollout.sh`, and
 `.env.example` to `.env`, generate a strong `DB_PASSWORD`, and copy
 `deploy.conf.example` to `deploy.conf`. Keep both files readable only by the
 deployment user.
-The rollout copies the rendered `clients.json` from the release each time.
+The rollout copies the rendered `clients.json` from the deployment each time.
 
 If using the existing Caddy server, add `Caddyfile.fragment` to its Caddyfile,
 validate it, and reload Caddy. It preserves the original Host header and routes
@@ -61,9 +61,8 @@ share the port and Frappe selects the site from the original Host header.
 Use `elsakr` in the tunnel hostname, matching `clients.yaml` and the Bench
 site directory.
 
-The first `v*` tag is allowed to try deployment before site creation. It can
-start the stack but will report failure because the sites do not exist yet. You
-then create the sites in that stack and install their apps:
+For a new server, the first push to `main` can start the stack but will report
+failure until the sites exist. Create the sites in that stack and install their apps:
 
 ```bash
 cd /path/to/deploy
@@ -82,16 +81,18 @@ docker compose exec backend bench --site cranes.arab-erp.com install-app erpnext
 docker compose exec backend bench --site cranes.arab-erp.com install-app heavy_equipment_rental
 ```
 
-Rerun the failed deployment job. It rechecks installed apps, migrates both
-sites, and verifies both HTTPS endpoints even when the image digest is already
+Rerun the failed workflow. It rechecks installed apps, migrates both
+sites, and checks both local site endpoints even when the image digest is already
 running.
 
-## Release behavior
+## Deployment behavior
 
-Push a `v*` tag from `main`. CI runs
-Bench tests, checks the frontend assets, builds and smoke-tests the image, then
-pushes it to GHCR. The deployment uses the registry digest, which identifies
-the exact image that passed the smoke test.
+Push a commit to `main`. One workflow runs Bench tests, checks the frontend
+assets, builds and smoke-tests the image, then pushes it to GHCR and deploys it.
+Pushes to `develop`, pull requests, and tags do not start automatic workflows.
+The optional linter workflow can still be run manually. The image build verifies
+that the rental app checkout matches the tested `main` commit. The deployment
+uses the registry digest, which identifies the exact image that passed the smoke test.
 
 The server pulls before changing containers. It backs up both sites, recreates
 app services, verifies their installed app sets, migrates both sites, and checks

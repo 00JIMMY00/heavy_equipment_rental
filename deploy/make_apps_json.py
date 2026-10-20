@@ -39,14 +39,14 @@ for site, config in sites.items():
 if needed != set(apps):
     raise SystemExit("Remove unused app sources or assign them to a site")
 
-release_tag = os.environ["RELEASE_TAG"]
-if not re.fullmatch(r"v[0-9A-Za-z][0-9A-Za-z._-]*", release_tag):
-    raise SystemExit("Release tag must start with v and contain only safe tag characters")
+app_commit = os.environ["APP_COMMIT"]
+if not re.fullmatch(r"[a-f0-9]{40}", app_commit):
+    raise SystemExit("APP_COMMIT must be a full Git commit SHA")
 
 build_apps = []
 for name, source in apps.items():
     if name in needed:
-        ref = release_tag if source["ref"] == "release-tag" else source["ref"]
+        ref = "main" if source["ref"] == "main-commit" else source["ref"]
         build_apps.append({"url": source["url"], "branch": ref})
 
 output = Path("/tmp/apps.json")

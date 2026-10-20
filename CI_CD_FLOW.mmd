@@ -1,0 +1,21 @@
+%% One automatic deployment workflow per push to main.
+%% Pushing to develop or creating a tag starts no workflow.
+flowchart TD
+    Main["Push commit to main"] --> Gate["Validate deployment secrets"]
+    Gate --> Tests["Run Bench tests and build assets"]
+    Tests --> Image["Build image with exact app commit; smoke test"]
+    Image --> GHCR["Push to GHCR and record image digest"]
+    GHCR --> SSH["SSH to contabo1"]
+
+    subgraph Server["Production Docker Compose"]
+        SSH --> Pull["Pull image before switching"]
+        Pull --> Pulled{"Pull worked?"}
+        Pulled -- No --> Keep["Keep running containers"]
+        Pulled -- Yes --> Backup["Back up both sites"]
+        Backup --> BackedUp{"Backup worked?"}
+        BackedUp -- No --> Keep
+        BackedUp -- Yes --> Switch["Recreate app containers"]
+        Switch --> Verify{"App lists, migrations, and site health pass?"}
+        Verify -- Yes --> Retain["Keep current and previous images; remove older"]
+        Verify -- No --> Rollback["Restore previous image digest"]
+    end

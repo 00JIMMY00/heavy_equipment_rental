@@ -158,7 +158,7 @@ fresh allocations for this workflow.
 See [REFACTOR_NOTES.md](REFACTOR_NOTES.md) for the local verification results,
 remaining obsolete examples, assumptions, and the exact changed-file list.
 
-For tag/release CI, the two-site Docker Compose deployment, and rollback setup,
+For main-push CI/CD, the two-site Docker Compose deployment, and rollback setup,
 see [deploy/README.md](deploy/README.md).
 
 With tests enabled on a development site:
