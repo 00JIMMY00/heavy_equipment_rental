@@ -4,11 +4,13 @@ name: CI
 on:
   push:
     branches:
+      - main
       - develop
   pull_request:
+  workflow_call:
 
 concurrency:
-  group: develop-heavy_equipment_rental-${{ github.event.number }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -37,7 +39,7 @@ jobs:
 
     steps:
       - name: Clone
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Find tests
         run: |
@@ -45,12 +47,12 @@ jobs:
           grep -rn "def test" > /dev/null
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
           check-latest: true
@@ -66,7 +68,7 @@ jobs:
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
-        run: 'echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT'
+        run: 'echo "dir=$(yarn cache dir)" >> "$GITHUB_OUTPUT"'
 
       - uses: actions/cache@v4
         id: yarn-cache
@@ -77,22 +79,25 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install MariaDB Client
-        run: sudo apt-get install mariadb-client-10.6
+        run: sudo apt-get update && sudo apt-get install -y mariadb-client
 
       - name: Setup
         run: |
           pip install frappe-bench
-          bench init --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
+          bench init --frappe-branch version-15 --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
           mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL character_set_server = 'utf8mb4'"
           mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL collation_server = 'utf8mb4_unicode_ci'"
 
       - name: Install
         working-directory: /home/runner/frappe-bench
         run: |
-          bench get-app heavy_equipment_rental $GITHUB_WORKSPACE
+          bench get-app --branch version-15 erpnext https://github.com/frappe/erpnext
+          bench get-app heavy_equipment_rental "$GITHUB_WORKSPACE"
           bench setup requirements --dev
           bench new-site --db-root-password root --admin-password admin test_site
+          bench --site test_site install-app erpnext
           bench --site test_site install-app heavy_equipment_rental
+          bench --site test_site execute erpnext.setup.utils.before_tests
           bench build
         env:
           CI: 'Yes'
@@ -101,6 +106,6 @@ jobs:
         working-directory: /home/runner/frappe-bench
         run: |
           bench --site test_site set-config allow_tests true
-          bench --site test_site run-tests --app heavy_equipment_rental
+          bench --site test_site run-tests --app heavy_equipment_rental --skip-test-records
         env:
           TYPE: server

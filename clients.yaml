@@ -1,0 +1,15 @@
+# The image contains the union of apps required by all sites.
+# Add an app here and to a site before installing it on that site.
+apps:
+  erpnext:
+    url: https://github.com/frappe/erpnext.git
+    ref: version-15
+  heavy_equipment_rental:
+    url: https://github.com/00JIMMY00/heavy_equipment_rental.git
+    ref: release-tag
+
+sites:
+  elsakr.arab-erp.com:
+    apps: [erpnext]
+  cranes.arab-erp.com:
+    apps: [erpnext, heavy_equipment_rental]

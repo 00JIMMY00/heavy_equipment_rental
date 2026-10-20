@@ -1,0 +1,113 @@
+x-app-image: &app-image
+  image: ${APP_IMAGE:?set APP_IMAGE}
+  restart: unless-stopped
+
+x-bench: &bench
+  <<: *app-image
+  volumes:
+    - sites:/home/frappe/frappe-bench/sites
+  depends_on:
+    configurator:
+      condition: service_completed_successfully
+
+services:
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis-cache:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  redis-queue:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-queue-data:/data
+
+  configurator:
+    <<: *app-image
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+    restart: on-failure:5
+    entrypoint: [bash, -c]
+    command:
+      - >-
+        ls -1 apps > sites/apps.txt;
+        bench set-config -g db_host db;
+        bench set-config -gp db_port 3306;
+        bench set-config -g redis_cache redis://redis-cache:6379;
+        bench set-config -g redis_queue redis://redis-queue:6379;
+        bench set-config -g redis_socketio redis://redis-queue:6379;
+        bench set-config -gp socketio_port 9000
+    depends_on:
+      db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
+      redis-queue:
+        condition: service_started
+
+  backend:
+    <<: *bench
+    environment:
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-2}
+      GUNICORN_THREADS: ${GUNICORN_THREADS:-4}
+
+  frontend:
+    <<: *app-image
+    command: [nginx-entrypoint.sh]
+    ports:
+      - "127.0.0.1:8083:8080"
+    networks:
+      default:
+      reverse_proxy:
+        aliases:
+          - rental-frontend
+    environment:
+      BACKEND: backend:8000
+      SOCKETIO: websocket:9000
+      FRAPPE_SITE_NAME_HEADER: $$host
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+    depends_on:
+      - backend
+      - websocket
+
+  websocket:
+    <<: *bench
+    command: [node, /home/frappe/frappe-bench/apps/frappe/socketio.js]
+
+  queue-short:
+    <<: *bench
+    command: [bench, worker, --queue, "short,default"]
+
+  queue-long:
+    <<: *bench
+    command: [bench, worker, --queue, "long,default,short"]
+
+  scheduler:
+    <<: *bench
+    command: [bench, schedule]
+
+volumes:
+  sites:
+  db-data:
+  redis-queue-data:
+
+networks:
+  reverse_proxy:
+    external: true

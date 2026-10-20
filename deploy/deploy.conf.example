@@ -1,0 +1,2 @@
+# Copy to deploy.conf on the server. Site names and app lists come from clients.json.
+HEALTH_TIMEOUT=180
