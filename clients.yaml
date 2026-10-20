@@ -7,9 +7,11 @@ apps:
   heavy_equipment_rental:
     url: https://github.com/00JIMMY00/heavy_equipment_rental.git
     ref: main-commit
-
+  arab_erp_theme:
+    url: https://github.com/00JIMMY00/arab_erp_theme
+    
 sites:
   elsakr.arab-erp.com:
-    apps: [erpnext]
+    apps: [erpnext, arab_erp_theme]
   cranes.arab-erp.com:
     apps: [erpnext, heavy_equipment_rental]
