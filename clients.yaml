@@ -8,8 +8,9 @@ apps:
     url: https://github.com/00JIMMY00/heavy_equipment_rental.git
     ref: main-commit
   arab_erp_theme:
-    url: https://github.com/00JIMMY00/arab_erp_theme
-    
+    url: https://github.com/00JIMMY00/arab_erp_theme.git
+    ref: main-commit
+
 sites:
   elsakr.arab-erp.com:
     apps: [erpnext, arab_erp_theme]
