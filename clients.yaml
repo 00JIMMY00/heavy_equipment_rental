@@ -9,7 +9,7 @@ apps:
     ref: main-commit
   arab_erp_theme:
     url: https://github.com/00JIMMY00/arab_erp_theme.git
-    ref: main-commit
+    ref: develop
 
 sites:
   elsakr.arab-erp.com:

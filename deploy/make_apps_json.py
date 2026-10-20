@@ -25,6 +25,8 @@ for name, source in apps.items():
         raise SystemExit(f"App {name} must have a public GitHub clone URL")
     if not isinstance(source["ref"], str) or not source["ref"]:
         raise SystemExit(f"App {name} needs a ref")
+    if source["ref"] == "main-commit" and name != "heavy_equipment_rental":
+        raise SystemExit("main-commit is only valid for heavy_equipment_rental; use the other app's actual branch or tag")
 
 needed = set()
 for site, config in sites.items():

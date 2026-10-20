@@ -6,13 +6,15 @@ listed apps:
 
 | Site | Apps |
 | --- | --- |
-| `elsakr.arab-erp.com` | ERPNext |
+| `elsakr.arab-erp.com` | ERPNext, Arab ERP Theme |
 | `cranes.arab-erp.com` | ERPNext, Heavy Equipment Rental |
 
-To add another app later, add its public Git URL and ref under `apps`, add its
-name to the intended site's list, push the image change to `main`, and install the app on that
-site. The deployment verifies the installed app sets; it never installs or
-removes site apps automatically.
+To add another app later, add its public Git URL and actual branch or tag under
+`apps`, then add its name to the intended site's list. The deployment image
+contains the app code, but the site still needs a one-time `bench --site SITE
+install-app APP`. The first rollout will fail its app-list check and restore
+the previous image; complete the site installation with the new image, then
+rerun the deploy job. The rollout never installs or removes site apps automatically.
 
 ## GitHub settings
 
