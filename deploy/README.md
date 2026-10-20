@@ -72,12 +72,12 @@ set -a
 . ./.env
 set +a
 read -rsp 'Elsakr Administrator password: ' ADMIN_PASSWORD; echo
-docker compose exec backend bench new-site --db-root-password "$DB_PASSWORD" --admin-password "$ADMIN_PASSWORD" elsakr.arab-erp.com
+docker compose exec backend bench new-site --db-root-password "$DB_PASSWORD" --admin-password "$ADMIN_PASSWORD" --mariadb-user-host-login-scope='%' elsakr.arab-erp.com
 unset ADMIN_PASSWORD
 docker compose exec backend bench --site elsakr.arab-erp.com install-app erpnext
 
 read -rsp 'Cranes Administrator password: ' ADMIN_PASSWORD; echo
-docker compose exec backend bench new-site --db-root-password "$DB_PASSWORD" --admin-password "$ADMIN_PASSWORD" cranes.arab-erp.com
+docker compose exec backend bench new-site --db-root-password "$DB_PASSWORD" --admin-password "$ADMIN_PASSWORD" --mariadb-user-host-login-scope='%' cranes.arab-erp.com
 unset ADMIN_PASSWORD DB_PASSWORD
 docker compose exec backend bench --site cranes.arab-erp.com install-app erpnext
 docker compose exec backend bench --site cranes.arab-erp.com install-app heavy_equipment_rental

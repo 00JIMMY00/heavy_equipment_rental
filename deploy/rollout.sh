@@ -117,8 +117,14 @@ mapfile -t prior < <(cat "$history" 2>/dev/null || true)
 keep_previous=""
 if [[ -n "$old_ref" && "$old_ref" != "$target_ref" ]]; then
   keep_previous="$old_ref"
-elif [[ "$old_ref" == "$target_ref" && ${#prior[@]} -gt 1 ]]; then
-  keep_previous="${prior[1]}"
+elif [[ "$old_ref" == "$target_ref" && ${#prior[@]} -gt 0 ]]; then
+  # A site app may have been installed after manually switching to the new
+  # image, before this rollout records it as a successful release.
+  if [[ "${prior[0]}" != "$target_ref" ]]; then
+    keep_previous="${prior[0]}"
+  elif [[ ${#prior[@]} -gt 1 ]]; then
+    keep_previous="${prior[1]}"
+  fi
 fi
 printf '%s\n' "$target_ref" > "$history"
 if [[ -n "$keep_previous" ]]; then

@@ -149,6 +149,16 @@ class RolloutTests(unittest.TestCase):
         self.assertEqual(self.state()["removed"], [])
         self.assertEqual((self.root / ".image-history").read_text().splitlines(), [V2, V1])
 
+    def test_manually_switched_image_keeps_last_successful_image(self):
+        (self.root / ".image-history").write_text(V2 + "\n" + V1 + "\n")
+        self.state_path.write_text(json.dumps({
+            "current": V3, "up_count": 0, "backups": [], "migrations": [], "removed": [],
+        }))
+        result = self.run_rollout(target=V3)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual((self.root / ".image-history").read_text().splitlines(), [V3, V2])
+        self.assertEqual(self.state()["removed"], [V1])
+
     def test_first_release_can_be_rerun_after_sites_are_created(self):
         self.state_path.write_text(json.dumps({
             "current": "", "up_count": 0, "backups": [], "migrations": [], "removed": [],
