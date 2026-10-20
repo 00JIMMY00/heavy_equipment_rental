@@ -6,6 +6,7 @@ The workspace groups direct links under Operations, Reports, Accounting, and Set
 
 ## Workflow
 
+
 1. Create an **Open Crane Project** and one or more **Crane Assignments**. Each assignment
    is a non-submittable batch containing 100+ **Assigned Crane** child rows.
 2. Add proposed cranes and planned dates as **Draft** rows. Drafts do not reserve
