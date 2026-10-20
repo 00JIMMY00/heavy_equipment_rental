@@ -93,7 +93,7 @@ class RolloutTests(unittest.TestCase):
         for name in ("rollout.sh", "clients_runtime.py"):
             shutil.copy2(HERE / name, self.root / name)
         (self.root / "clients.json").write_text(json.dumps({"sites": {
-            "alsakr.arab-erp.com": {"apps": ["erpnext"]},
+            "elsakr.arab-erp.com": {"apps": ["erpnext"]},
             "cranes.arab-erp.com": {"apps": ["erpnext", "heavy_equipment_rental"]},
         }}))
         (self.root / "deploy.conf").write_text("HEALTH_TIMEOUT=0\n")

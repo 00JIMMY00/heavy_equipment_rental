@@ -9,7 +9,7 @@ apps:
     ref: release-tag
 
 sites:
-  alsakr.arab-erp.com:
+  elsakr.arab-erp.com:
     apps: [erpnext]
   cranes.arab-erp.com:
     apps: [erpnext, heavy_equipment_rental]

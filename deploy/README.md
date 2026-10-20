@@ -6,7 +6,7 @@ listed apps:
 
 | Site | Apps |
 | --- | --- |
-| `alsakr.arab-erp.com` | ERPNext |
+| `elsakr.arab-erp.com` | ERPNext |
 | `cranes.arab-erp.com` | ERPNext, Heavy Equipment Rental |
 
 To add another app later, add its public Git URL and ref under `apps`, add its
@@ -53,13 +53,13 @@ only the two new names to `rental-frontend:8080`.
 
 For a Cloudflare Tunnel on the same host, the frontend also listens on
 `127.0.0.1:8083`. In the tunnel's **Public Hostnames**, route each hostname
-(`cranes.arab-erp.com` and `alsakr.arab-erp.com`) to the HTTP service URL
+(`cranes.arab-erp.com` and `elsakr.arab-erp.com`) to the HTTP service URL
 `http://localhost:8083`. Cloudflare must create a DNS CNAME for each hostname
 pointing to that tunnel; remove any conflicting A/AAAA/CNAME records first.
 The tunnel terminates public HTTPS, so its service URL uses HTTP. Both sites
 share the port and Frappe selects the site from the original Host header.
-Use `alsakr` (starting with **a**) in the tunnel hostname, matching
-`clients.yaml` and the Bench site directory.
+Use `elsakr` in the tunnel hostname, matching `clients.yaml` and the Bench
+site directory.
 
 The first `v*` tag is allowed to try deployment before site creation. It can
 start the stack but will report failure because the sites do not exist yet. You
@@ -70,10 +70,10 @@ cd /path/to/deploy
 set -a
 . ./.env
 set +a
-read -rsp 'Alsakr Administrator password: ' ADMIN_PASSWORD; echo
-docker compose exec backend bench new-site --db-root-password "$DB_PASSWORD" --admin-password "$ADMIN_PASSWORD" alsakr.arab-erp.com
+read -rsp 'Elsakr Administrator password: ' ADMIN_PASSWORD; echo
+docker compose exec backend bench new-site --db-root-password "$DB_PASSWORD" --admin-password "$ADMIN_PASSWORD" elsakr.arab-erp.com
 unset ADMIN_PASSWORD
-docker compose exec backend bench --site alsakr.arab-erp.com install-app erpnext
+docker compose exec backend bench --site elsakr.arab-erp.com install-app erpnext
 
 read -rsp 'Cranes Administrator password: ' ADMIN_PASSWORD; echo
 docker compose exec backend bench new-site --db-root-password "$DB_PASSWORD" --admin-password "$ADMIN_PASSWORD" cranes.arab-erp.com
