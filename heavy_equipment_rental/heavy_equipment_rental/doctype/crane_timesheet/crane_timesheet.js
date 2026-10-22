@@ -1,58 +1,83 @@
 function fill_default_days(frm) {
-	if (frm.doc.docstatus !== 0 || !frm.doc.period_start || !frm.doc.period_end) return;
-	const start = frm.doc.period_start;
-	const end = frm.doc.period_end;
-	const request = (frm._default_days_request || 0) + 1;
-	frm._default_days_request = request;
-	frappe
-		.call({
-			method: "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.crane_timesheet.default_timesheet_entries",
-			args: { period_start: start, period_end: end },
-		})
-		.then(({ message: defaults }) => {
-			if (
-				request !== frm._default_days_request ||
-				frm.doc.period_start !== start ||
-				frm.doc.period_end !== end
-			)
-				return;
-			const existing = new Set((frm.doc.timesheet_entries || []).map((row) => row.work_date));
-			let added = false;
-			for (const values of defaults || []) {
-				if (existing.has(values.work_date)) continue;
-				frm.add_child("timesheet_entries", values);
-				existing.add(values.work_date);
-				added = true;
-			}
-			if (added) frm.refresh_field("timesheet_entries");
-		});
+    if (frm.doc.docstatus !== 0 || !frm.doc.period_start || !frm.doc.period_end) return;
+    const start = frm.doc.period_start;
+    const end = frm.doc.period_end;
+    const request = (frm._default_days_request || 0) + 1;
+    frm._default_days_request = request;
+    frappe.call({
+        method: "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.crane_timesheet.default_timesheet_entries",
+        args: { period_start: start, period_end: end },
+    }).then(({ message: defaults }) => {
+        if (request !== frm._default_days_request || frm.doc.period_start !== start || frm.doc.period_end !== end) return;
+        const existing = new Set((frm.doc.timesheet_entries || []).map((row) => row.work_date));
+        let added = false;
+        for (const values of defaults || []) {
+            if (existing.has(values.work_date)) continue;
+            frm.add_child("timesheet_entries", values);
+            existing.add(values.work_date);
+            added = true;
+        }
+        if (added) frm.refresh_field("timesheet_entries");
+    });
+}
+
+function suggest_assignment(frm) {
+    if (frm.doc.assignment || !frm.is_new()) return;
+    const { crane, customer, location, period_start, period_end } = frm.doc;
+    if (![crane, customer, location, period_start, period_end].every(Boolean)) return;
+    const key = [crane, customer, location, period_start, period_end].join("|");
+    if (frm._assignment_prompt_key === key) return;
+    frm._assignment_prompt_key = key;
+    frappe.call({
+        method: "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.crane_timesheet.find_assignments",
+        args: { crane, customer, location, period_start, period_end },
+    }).then(({ message: matches }) => {
+        if (frm.doc.assignment || frm._assignment_prompt_key !== key) return;
+        if (matches?.length === 1) frm.set_value("assignment", matches[0]);
+        if (matches?.length > 1) {
+            const dialog = new frappe.ui.Dialog({
+                title: __("Choose the rental Assignment"),
+                fields: [{ fieldname: "assignment", fieldtype: "Select", label: __("Assignment"),
+                    options: ["", ...matches].join("\n"), reqd: 1 }],
+                primary_action_label: __("Use Assignment"),
+                primary_action(values) {
+                    frm.set_value("assignment", values.assignment);
+                    dialog.hide();
+                },
+            });
+            dialog.show();
+        }
+    });
 }
 
 frappe.ui.form.on("Crane Timesheet", {
-	setup(frm) {
-		frm.set_query("crane", () => ({
-			query: "heavy_equipment_rental.rental_queries.assigned_crane_query",
-			filters: {
-				project: frm.doc.project,
-				work_date: frm.doc.timesheet_entries?.[0]?.work_date || frm.doc.period_start,
-			},
-		}));
-	},
-	project(frm) {
-		frm.set_value("crane", null);
-	},
-	period_start: fill_default_days,
-	period_end: fill_default_days,
-	refresh(frm) {
-		if (frm.doc.docstatus === 0 && !(frm.doc.timesheet_entries || []).length) fill_default_days(frm);
-		if (frm.doc.docstatus === 1 && frappe.model.can_create("Sales Invoice"))
-			frm.add_custom_button(__("Generate Sales Invoice"), () => frappe.call({
-				method: "heavy_equipment_rental.billing.generate_sales_invoice",
-				args: { timesheet: frm.doc.name },
-				freeze: true,
-				callback: ({ message }) => {
-					if (message?.name) frappe.set_route("Form", "Sales Invoice", message.name);
-				},
-			}), __("Create"));
-	},
+    setup(frm) {
+        frm.set_query("assignment", () => ({ filters: Object.fromEntries([
+            ["customer", frm.doc.customer], ["location", frm.doc.location],
+        ].filter(([, value]) => value)) }));
+    },
+    async assignment(frm) {
+        if (!frm.doc.assignment) return;
+        const { message } = await frappe.db.get_value("Crane Assignment", frm.doc.assignment, ["customer", "location"]);
+        if (message) {
+            await frm.set_value({ customer: message.customer, location: message.location });
+        }
+    },
+    crane: suggest_assignment,
+    customer: suggest_assignment,
+    location: suggest_assignment,
+    period_start(frm) { fill_default_days(frm); suggest_assignment(frm); },
+    period_end(frm) { fill_default_days(frm); suggest_assignment(frm); },
+    refresh(frm) {
+        if (frm.doc.docstatus === 0 && !(frm.doc.timesheet_entries || []).length) fill_default_days(frm);
+        if (frm.doc.docstatus === 1 && frappe.model.can_create("Sales Invoice"))
+            frm.add_custom_button(__("Generate Sales Invoice"), () => frappe.call({
+                method: "heavy_equipment_rental.billing.generate_sales_invoice",
+                args: { timesheet: frm.doc.name },
+                freeze: true,
+                callback: ({ message }) => {
+                    if (message?.name) frappe.set_route("Form", "Sales Invoice", message.name);
+                },
+            }), __("Create"));
+    },
 });

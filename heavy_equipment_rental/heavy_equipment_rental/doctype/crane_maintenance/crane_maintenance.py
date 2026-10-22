@@ -25,7 +25,7 @@ class CraneMaintenance(Document):
 			frappe.throw(_("A started maintenance record cannot move to another crane."))
 		if before and before.expense_entry and any(
 			self.get(field) != before.get(field)
-			for field in ("crane", "project", "cost", "expense_type", "mode_of_payment", "credit_account", "actual_end_date")
+			for field in ("crane", "cost", "expense_type", "mode_of_payment", "credit_account", "actual_end_date")
 		):
 			frappe.throw(_("Expense details cannot change after expense creation."))
 		if flt(self.cost) < 0:
@@ -92,7 +92,6 @@ class CraneMaintenance(Document):
 				frappe.throw(_("An active Expense Entry is already linked to this maintenance."))
 		expense = frappe.get_doc({
 			"doctype": "Expense Entry",
-			"project": self.project,
 			"crane": self.crane,
 			"crane_maintenance": self.name,
 			"expense_type": self.expense_type,

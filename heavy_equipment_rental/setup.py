@@ -20,7 +20,7 @@ def execute():
 		"Sales Invoice": [{
 			"fieldname": "crane_drivers",
 			"fieldtype": "Table",
-			"label": "Crane Drivers",
+			"label": "Crane Operators",
 			"options": "Crane Invoice Driver",
 			"insert_after": "items",
 			"read_only": 1,
@@ -28,7 +28,7 @@ def execute():
 			"fieldname": "customer_pays_drivers_directly",
 			"fieldtype": "Check",
 			"label": "Customer Pays Drivers Directly",
-			"description": "Record the actual customer-to-driver payment after submitting the invoice.",
+			"description": "Record the actual customer-to-operator payment after submitting the invoice.",
 			"insert_after": "crane_drivers",
 			"default": 0,
 		}, {

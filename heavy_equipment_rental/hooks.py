@@ -1,7 +1,7 @@
 app_name = "heavy_equipment_rental"
 app_title = "Heavy Equipment Rental"
 app_publisher = "jimmy"
-app_description = "Heavy equipment rental projects, fleet reservations and driver timesheets"
+app_description = "Crane assignments, timesheets, maintenance and direct invoicing"
 app_email = "j@gmail.com"
 app_license = "mit"
 app_logo_url = "/assets/heavy_equipment_rental/branding/ar-monogram-classic.png"

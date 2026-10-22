@@ -7,10 +7,11 @@
  "field_order": [
   "work_section",
   "work_date",
-  "crane_operator",
+  "employee",
   "time_col",
   "start_time",
   "end_time",
+  "overtime_hours",
   "ends_next_day",
   "calculation_section",
   "price_per_hour",
@@ -32,11 +33,11 @@
    "reqd": 1
   },
   {
-   "fieldname": "crane_operator",
+   "fieldname": "employee",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Crane Driver",
-   "options": "Crane Driver",
+   "label": "Operator (Employee)",
+   "options": "Employee",
    "reqd": 1
   },
   {
@@ -54,6 +55,12 @@
    "fieldtype": "Time",
    "in_list_view": 1,
    "label": "End Time"
+  },
+  {
+   "fieldname": "overtime_hours",
+   "fieldtype": "Float",
+   "label": "Overtime hours",
+   "default": 0
   },
   {
    "default": "0",

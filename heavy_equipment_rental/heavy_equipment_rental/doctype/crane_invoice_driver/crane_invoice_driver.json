@@ -8,15 +8,7 @@
   {
    "fieldname": "driver_section",
    "fieldtype": "Section Break",
-   "label": "Driver"
-  },
-  {
-   "fieldname": "crane_driver",
-   "fieldtype": "Link",
-   "label": "Crane Driver",
-   "options": "Crane Driver",
-   "read_only": 1,
-   "in_list_view": 1
+   "label": "Operator"
   },
   {
    "fieldname": "employee",
@@ -62,6 +54,15 @@
    "in_list_view": 1
   }
  ],
- "field_order": ["driver_section", "crane_driver", "employee", "timesheet_col", "timesheet", "amount_section", "timesheet_line_amount", "share_col", "invoice_share"],
+ "field_order": [
+  "driver_section",
+  "employee",
+  "timesheet_col",
+  "timesheet",
+  "amount_section",
+  "timesheet_line_amount",
+  "share_col",
+  "invoice_share"
+ ],
  "permissions": []
 }

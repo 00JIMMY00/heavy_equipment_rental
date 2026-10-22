@@ -6,7 +6,7 @@ frappe.ui.form.on("Sales Invoice", {
 			frm.doc.driver_direct_payment_journal_entry ||
 			!frappe.model.can_create("Journal Entry")
 		) return;
-		frm.add_custom_button(__("Record Customer Payment to Drivers"), () => {
+		frm.add_custom_button(__("Record Customer Payment to Operators"), () => {
 			frappe.prompt([
 				{ fieldname: "payment_date", fieldtype: "Date", label: __("Actual Payment Date"), default: frappe.datetime.get_today(), reqd: 1 },
 				{ fieldname: "reference", fieldtype: "Data", label: __("Payment Reference or Proof"), reqd: 1 },
@@ -15,7 +15,7 @@ frappe.ui.form.on("Sales Invoice", {
 				args: { invoice_name: frm.doc.name, ...values },
 				freeze: true,
 				callback: () => frm.reload_doc(),
-			}), __("Record Customer Payment to Drivers"));
+			}), __("Record Customer Payment to Operators"));
 		}, __("Actions"));
 	},
 });

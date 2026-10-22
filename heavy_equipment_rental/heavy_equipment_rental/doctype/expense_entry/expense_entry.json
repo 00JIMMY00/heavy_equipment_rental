@@ -28,14 +28,6 @@
    "hidden": 1
   },
   {
-   "fieldname": "project",
-   "fieldtype": "Link",
-   "label": "Crane Project",
-   "options": "Crane Project",
-   "in_list_view": 1,
-   "in_standard_filter": 1
-  },
-  {
    "fieldname": "posting_date",
    "fieldtype": "Date",
    "label": "Expense Date",
@@ -155,7 +147,6 @@
   "details_tab",
   "expense_section",
   "naming_series",
-  "project",
   "posting_date",
   "expense_type",
   "payment_col",

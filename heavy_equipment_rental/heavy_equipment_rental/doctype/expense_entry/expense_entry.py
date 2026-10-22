@@ -4,7 +4,6 @@ from frappe.model.document import Document
 from frappe.utils import flt
 
 from heavy_equipment_rental.payment import payment_account
-from heavy_equipment_rental.rental_queries import visible_allocations
 
 
 class ExpenseEntry(Document):
@@ -14,8 +13,8 @@ class ExpenseEntry(Document):
 			frappe.throw(_("The Journal Entry link is managed by Expense Entry submission."))
 		if flt(self.amount) <= 0:
 			frappe.throw(_("Expense amount must be greater than zero."))
-		if not self.project and not self.crane:
-			frappe.throw(_("Select a Crane Project or Crane for this expense."))
+		if not self.crane:
+			frappe.throw(_("Select a Crane for this expense."))
 		if self.mode_of_payment:
 			debit_name = frappe.db.get_value("Expense Type", self.expense_type, "account")
 			company = frappe.db.get_value("Account", debit_name, "company") if debit_name else None
@@ -31,17 +30,12 @@ class ExpenseEntry(Document):
 			if (
 				maintenance.status != "Completed"
 				or self.crane != maintenance.crane
-				or self.project != maintenance.project
 				or flt(self.amount) != flt(maintenance.cost)
 				or self.expense_type != maintenance.expense_type
 				or self.mode_of_payment != maintenance.mode_of_payment
 				or self.credit_account != maintenance.credit_account
 			):
 				frappe.throw(_("Expense details must match the completed Crane Maintenance record."))
-		elif self.project and self.crane and not visible_allocations(project=self.project, crane=self.crane):
-			frappe.throw(_("Select a crane assigned to this Crane Project."))
-		if self.employee and not frappe.db.exists("Crane Driver", {"employee": self.employee}):
-			frappe.throw(_("Select an Employee linked to a Crane Driver."))
 
 	def before_submit(self):
 		self.accounting_accounts()
@@ -118,9 +112,6 @@ class ExpenseEntry(Document):
 			frappe.throw(_("Mode of Payment account cannot be Receivable or Payable."))
 		if not debit.company or credit.company != debit.company:
 			frappe.throw(_("Expense and Credit accounts must belong to the same Company."))
-		project_company = frappe.db.get_value("Crane Project", self.project, "company") if self.project else None
-		if project_company and project_company != debit.company:
-			frappe.throw(_("The Crane Project Company must match the expense accounts."))
 		currency = frappe.db.get_value("Company", debit.company, "default_currency")
 		if debit.account_currency != currency or credit.account_currency != currency:
 			frappe.throw(_("Expense and Credit accounts must use the Company currency."))
@@ -131,46 +122,3 @@ def guard_journal_entry_cancel(doc, method=None):
 	linked = frappe.db.get_value("Expense Entry", {"journal_entry": doc.name, "docstatus": 1}, "name")
 	if linked:
 		frappe.throw(_("Cancel Expense Entry {0} to reverse this Journal Entry.").format(linked))
-
-
-@frappe.whitelist()
-@frappe.validate_and_sanitize_search_inputs
-def project_crane_query(doctype, txt, searchfield, start, page_len, filters):
-	filters = frappe.parse_json(filters) if isinstance(filters, str) else (filters or {})
-	if not filters.get("project"):
-		return frappe.get_list(
-			"Crane",
-			or_filters={"name": ["like", f"%{txt}%"], "crane_name": ["like", f"%{txt}%"]},
-			fields=["name", "crane_name"],
-			start=start,
-			page_length=page_len,
-			as_list=True,
-		)
-	names = {row.crane for row in visible_allocations(project=filters["project"])}
-	if not names:
-		return []
-	return frappe.get_list(
-		"Crane",
-		filters={"name": ["in", list(names)]},
-		or_filters={"name": ["like", f"%{txt}%"], "crane_name": ["like", f"%{txt}%"]},
-		fields=["name", "crane_name"],
-		start=start,
-		page_length=page_len,
-		as_list=True,
-	)
-
-
-@frappe.whitelist()
-@frappe.validate_and_sanitize_search_inputs
-def driver_employee_query(doctype, txt, searchfield, start, page_len, filters):
-	if not frappe.has_permission("Employee", "select"):
-		frappe.throw(_("You cannot select Employees."), frappe.PermissionError)
-	drivers = frappe.get_list(
-		"Crane Driver",
-		filters={"employee": ["is", "set"]},
-		or_filters={"operator_name": ["like", f"%{txt}%"], "employee": ["like", f"%{txt}%"]},
-		fields=["employee", "operator_name"],
-		start=start,
-		page_length=page_len,
-	)
-	return [(driver.employee, driver.operator_name) for driver in drivers]

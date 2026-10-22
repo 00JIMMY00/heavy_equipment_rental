@@ -28,13 +28,28 @@
    "hidden": 1
   },
   {
-   "fieldname": "project",
+   "fieldname": "assignment",
    "fieldtype": "Link",
-   "label": "Crane Project",
-   "options": "Crane Project",
-   "reqd": 1,
+   "label": "Crane Assignment",
+   "options": "Crane Assignment",
    "in_list_view": 1,
    "in_standard_filter": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "reqd": 1,
+   "in_list_view": 1,
+   "fetch_from": "assignment.customer"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location",
+   "reqd": 1,
+   "fetch_from": "assignment.location"
   },
   {
    "fieldname": "crane",
@@ -67,6 +82,46 @@
    "label": "Signed Timesheet"
   },
   {
+   "fieldname": "new_rental_section",
+   "fieldtype": "Section Break",
+   "label": "New rental terms",
+   "depends_on": "eval:!doc.assignment"
+  },
+  {
+   "fieldname": "rental_start_date",
+   "fieldtype": "Date",
+   "label": "Agreed rental start",
+   "depends_on": "eval:!doc.assignment",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "rental_end_date",
+   "fieldtype": "Date",
+   "label": "Agreed rental end",
+   "depends_on": "eval:!doc.assignment",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "rental_terms_column",
+   "fieldtype": "Column Break",
+   "label": ""
+  },
+  {
+   "fieldname": "rental_rate_unit",
+   "fieldtype": "Select",
+   "label": "Billing unit",
+   "options": "\nHour\nDay\nMonth",
+   "depends_on": "eval:!doc.assignment",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "rental_rate",
+   "fieldtype": "Currency",
+   "label": "Agreed rate",
+   "depends_on": "eval:!doc.assignment",
+   "no_copy": 1
+  },
+  {
    "fieldname": "entries_tab",
    "fieldtype": "Tab Break",
    "label": "Entries"
@@ -79,7 +134,7 @@
   {
    "fieldname": "timesheet_entries",
    "fieldtype": "Table",
-   "label": "Entries",
+   "label": "Operator Shifts",
    "options": "Timesheet Entry"
   },
   {
@@ -144,12 +199,20 @@
   "details_tab",
   "context_section",
   "naming_series",
-  "project",
+  "assignment",
+  "customer",
+  "location",
   "crane",
   "period_col",
   "period_start",
   "period_end",
   "signed_timesheet",
+  "new_rental_section",
+  "rental_start_date",
+  "rental_end_date",
+  "rental_terms_column",
+  "rental_rate_unit",
+  "rental_rate",
   "entries_tab",
   "entries_section",
   "timesheet_entries",
