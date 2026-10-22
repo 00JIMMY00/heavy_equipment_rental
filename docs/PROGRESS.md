@@ -12,5 +12,7 @@ As of 2026-10-22:
 - Added a photo thumbnail column to the regular Crane List view without changing side-panel image upload.
 - Synced the Crane image to the linked Item's native image field and added a backfill patch for existing Items.
 - Fixed Crane DocType field arrangement validation by moving the list thumbnail flag from `Attach Image` to a mirrored hidden Data field; existing thumbnail URLs are backfilled.
+- Added Create actions on saved Cranes for Expense, Maintenance, Timesheet, and Sales Invoice. The invoice action groups submitted, unbilled work by Assignment.
+- The rental workflow test passed with two new draft invoices across two Assignments and no duplicate invoices on retry.
 
 For the next change: inspect `git status` first. Use the commands in [README.md](../README.md) for migration and tests, and update this page with meaningful new milestones.

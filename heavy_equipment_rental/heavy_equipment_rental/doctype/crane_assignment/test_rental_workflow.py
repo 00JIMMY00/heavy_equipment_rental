@@ -7,7 +7,7 @@ import frappe
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import getdate, today
 
-from heavy_equipment_rental.billing import generate_sales_invoice
+from heavy_equipment_rental.billing import generate_crane_sales_invoices, generate_sales_invoice
 
 
 class TestRentalWorkflow(FrappeTestCase):
@@ -150,3 +150,23 @@ class TestRentalWorkflow(FrappeTestCase):
         monthly_invoice = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=monthly.name)["name"])
         self.assertAlmostEqual(monthly_invoice.items[0].rate,
                                930 / monthrange(monthly_day.year, monthly_day.month)[1], delta=0.02)
+        second.submit()
+        next_monthly_day = monthly_day + timedelta(days=1)
+        monthly_followup = frappe.get_doc({
+            "doctype": "Crane Timesheet", "assignment": monthly.assignment,
+            "crane": crane.name, "period_start": next_monthly_day, "period_end": next_monthly_day,
+            "timesheet_entries": [{
+                "work_date": next_monthly_day, "employee": employee,
+                "start_time": "08:00", "end_time": "12:00",
+            }],
+        }).insert()
+        monthly_followup.submit()
+        created = generate_crane_sales_invoices(crane.name)
+        self.assertEqual(len(created["invoices"]), 2)
+        self.assertTrue(all(
+            all(row.item_code == crane.item for row in frappe.get_doc("Sales Invoice", name).items)
+            for name in created["invoices"]
+        ))
+        self.assertTrue(frappe.db.get_value("Crane Timesheet", second.name, "sales_invoice"))
+        self.assertTrue(frappe.db.get_value("Crane Timesheet", monthly_followup.name, "sales_invoice"))
+        self.assertFalse(generate_crane_sales_invoices(crane.name)["invoices"])

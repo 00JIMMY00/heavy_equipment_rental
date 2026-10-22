@@ -23,6 +23,33 @@ frappe.ui.form.on("Crane", {
             if (doctype === "Crane Assignment") continue;
             frm.add_custom_button(__(label), () => frappe.set_route("List", doctype, { crane: frm.doc.name }), __("View"));
         }
+        for (const [label, doctype] of [["Expense", "Expense Entry"],
+            ["Maintenance", "Crane Maintenance"], ["Timesheet", "Crane Timesheet"]]) {
+            if (frappe.model.can_create(doctype))
+                frm.add_custom_button(__(label), () => frappe.new_doc(doctype, { crane: frm.doc.name }), __("Create"));
+        }
+        if (frappe.model.can_create("Sales Invoice")) {
+            frm.add_custom_button(__("Sales Invoice"), () => frappe.call({
+                method: "heavy_equipment_rental.billing.generate_crane_sales_invoices",
+                args: { crane: frm.doc.name },
+                freeze: true,
+            }).then(({ message }) => {
+                const invoices = message?.invoices || [];
+                if (invoices.length === 1) {
+                    frappe.set_route("Form", "Sales Invoice", invoices[0]);
+                } else if (invoices.length > 1) {
+                    const links = invoices.map(name =>
+                        `<li><a href="/app/sales-invoice/${encodeURIComponent(name)}">${frappe.utils.escape_html(name)}</a></li>`
+                    ).join("");
+                    frappe.msgprint({ title: __("Draft Sales Invoices"),
+                        message: `<ul>${links}</ul>`, indicator: "green" });
+                } else {
+                    frappe.msgprint(message?.submitted_assignments
+                        ? __("All submitted work for this Crane is already billed.")
+                        : __("No submitted Timesheets found for this Crane."));
+                }
+            }), __("Create"));
+        }
         frm._calendar_month = frm._calendar_month || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
         frm.trigger("load_availability");
     },

@@ -278,7 +278,7 @@ def assignment_invoice_summary(assignment):
 
 
 @frappe.whitelist()
-def generate_sales_invoice(assignment=None, timesheet=None):
+def generate_sales_invoice(assignment=None, timesheet=None, crane=None):
     """Create a draft Sales Invoice directly from submitted crane work."""
     if bool(assignment) == bool(timesheet):
         frappe.throw(_("Choose an Assignment or one Timesheet."))
@@ -295,7 +295,8 @@ def generate_sales_invoice(assignment=None, timesheet=None):
     all_sheets = [frappe.get_doc("Crane Timesheet", name, for_update=True) for name in names]
     for sheet in all_sheets:
         sheet.check_permission("read")
-    selected = [sheet for sheet in all_sheets if not timesheet or sheet.name == timesheet]
+    selected = [sheet for sheet in all_sheets
+                if (not timesheet or sheet.name == timesheet) and (not crane or sheet.crane == crane)]
     if not selected:
         frappe.throw(_("Only submitted Crane Timesheets can be invoiced."))
     active = {sheet.name: sheet.sales_invoice for sheet in all_sheets
@@ -334,3 +335,23 @@ def generate_sales_invoice(assignment=None, timesheet=None):
     if invoice:
         return {"name": invoice.name, "timesheets": [sheet.name for sheet in billed]}
     return {"already_exists": True, "existing_invoices": _invoice_summaries(assignment, selected)}
+
+
+@frappe.whitelist()
+def generate_crane_sales_invoices(crane):
+    """Create one draft invoice per Assignment for this Crane's submitted work."""
+    frappe.get_doc("Crane", crane).check_permission("read")
+    if not frappe.has_permission("Sales Invoice", "create"):
+        frappe.throw(_("You cannot create Sales Invoices."), frappe.PermissionError)
+    assignments = frappe.db.sql(
+        """SELECT DISTINCT assignment FROM `tabCrane Timesheet`
+        WHERE crane=%s AND docstatus=1 AND assignment IS NOT NULL
+        ORDER BY assignment""",
+        crane, pluck=True,
+    )
+    invoices = []
+    for assignment in assignments:
+        result = generate_sales_invoice(assignment=assignment, crane=crane)
+        if result.get("name"):
+            invoices.append(result["name"])
+    return {"invoices": invoices, "submitted_assignments": len(assignments)}
