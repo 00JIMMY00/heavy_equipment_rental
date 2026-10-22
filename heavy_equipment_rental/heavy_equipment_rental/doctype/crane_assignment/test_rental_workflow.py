@@ -11,6 +11,36 @@ from heavy_equipment_rental.billing import generate_crane_sales_invoices, genera
 
 
 class TestRentalWorkflow(FrappeTestCase):
+    def test_completed_maintenance_uses_shared_expense_entry(self):
+        expense_type = next((row for row in frappe.get_all(
+            "Expense Entry Type", filters={"enabled": 1}, fields=["name", "company"],
+            limit_page_length=0,
+        ) if frappe.db.get_value("Mode of Payment Account", {"company": row.company}, "parent")), None)
+        if not expense_type:
+            self.skipTest("An enabled Expense Entry Type and Mode of Payment are required")
+        mode = frappe.db.get_value("Mode of Payment Account", {"company": expense_type.company}, "parent")
+        crane = frappe.get_doc({
+            "doctype": "Crane", "crane_name": "Expense test " + frappe.generate_hash(length=8),
+            "operational_condition": "Operational",
+        }).insert()
+        maintenance = frappe.get_doc({
+            "doctype": "Crane Maintenance", "crane": crane.name,
+            "maintenance_type": "Corrective", "description": "Expense integration test",
+            "status": "Planned",
+        }).insert()
+        maintenance.status = "Completed"
+        maintenance.cost = 125
+        maintenance.expense_type = expense_type.name
+        maintenance.mode_of_payment = mode
+        maintenance.save()
+        expense = frappe.get_doc("Expense Entry", maintenance.expense_entry)
+        self.assertEqual(expense.company, expense_type.company)
+        self.assertEqual(expense.crane, crane.name)
+        self.assertEqual(expense.docstatus, 1)
+        self.assertEqual(expense.expenses[0].expense_entry_type, expense_type.name)
+        self.assertEqual(expense.expenses[0].amount, 125)
+        self.assertTrue(expense.journal_entry)
+
     def test_assignment_first_and_timesheet_first(self):
         employee = frappe.db.get_value("Employee", {}, "name")
         other_employee = frappe.db.get_value("Employee", {"name": ["!=", employee]}, "name") if employee else None

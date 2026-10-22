@@ -218,7 +218,7 @@ function dateLabel(event) {
 <template>
   <div class="timeline-page">
     <header class="timeline-hero">
-      <div><span class="timeline-kicker"><img class="hero-mark" :src="'/assets/heavy_equipment_rental/branding/ar-monogram-classic.png'" alt="AR logo" /> FLEET OPERATIONS / COMPARISON VIEW</span><h1>Operations timeline</h1><p>See the records you select, with their related equipment and people beside each date.</p>
+      <div><span class="timeline-kicker">FLEET OPERATIONS / COMPARISON VIEW</span><h1>Operations timeline</h1><p>See the records you select, with their related equipment and people beside each date.</p>
         <div class="timeline-links"><a href="/rental-calendar">← Standard calendar</a><a href="/app/crane-operations">Crane Operations ↗</a></div>
       </div>
       <div class="timeline-hero-stat"><strong>{{ records.length }}</strong><span>{{ groupBy.toLowerCase() }} rows in view</span></div>

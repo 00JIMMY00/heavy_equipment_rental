@@ -85,7 +85,7 @@ function dateLabel(event) {
   <div class="rental-page">
     <header class="hero">
       <div class="hero-copy">
-        <div class="eyebrow"><img class="hero-mark" :src="'/assets/heavy_equipment_rental/branding/ar-monogram-classic.png'" alt="AR logo" /> FLEET OPERATIONS</div>
+        <div class="eyebrow">FLEET OPERATIONS</div>
         <h1>Rental calendar</h1>
         <p>One clear view of bookings, timesheets, and crane maintenance.</p>
         <div class="hero-links"><a href="/app/crane-operations">← Crane Operations</a><span>·</span><a :href="assignmentScope ? `/rental-calendar/timeline?assignment=${encodeURIComponent(assignmentScope)}` : '/rental-calendar/timeline'">Compare resource timeline ↗</a></div>

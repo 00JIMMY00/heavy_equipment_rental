@@ -1,6 +1,6 @@
 # Heavy Equipment Rental
 
-Crane rentals for Frappe/ERPNext. The **Crane Operations** workspace starts with a **Crane Assignment** or a **Crane Timesheet**. ERPNext's native Project is independent of this workflow.
+Crane rentals for Frappe/ERPNext. Install `arab_erp_theme` first; it supplies the site branding and shared expense models. The **Crane Operations** workspace starts with a **Crane Assignment** or a **Crane Timesheet**. ERPNext's native Project is independent of this workflow.
 
 ## Workflow
 
@@ -27,13 +27,15 @@ Extend the Assignment explicitly if work continues beyond its booked dates. The 
 - Timesheets use native Draft, Submitted, and Cancelled states. Work in a submitted Timesheet is the basis for billing. An active Sales Invoice must be cancelled before cancelling its source Timesheet.
 - Each shift records an Employee, work times, optional overtime hours, and calculated worked hours. Overlapping operators contribute to operator hours individually, while crane billable hours count the time only once. A submitted crane shift cannot overlap another submitted Timesheet for that crane.
 - Hourly billing uses the agreed rate times distinct crane hours. Daily billing charges each worked calendar day once per booked crane period. Monthly billing prorates distinct worked days by the number of days in each month. An active invoice prevents those hours or days from being billed again.
-- Crane Maintenance remains an operational, non-submittable record. Expense Entries post through standard ERPNext Journal Entries. The Crane form shows its bookings, Timesheets, Sales Invoices, and expenses.
+- Crane Maintenance remains an operational, non-submittable record. Select a shared **Expense Entry Type** and Mode of Payment when completing it; the shared **Expense Entry** posts through an ERPNext Journal Entry. The Crane form shows its bookings, Timesheets, Sales Invoices, and expenses.
 - Upload the Crane image from its side panel; these images are public and appear as thumbnails in the regular Crane List view. The linked ERPNext Item shows the same image, including later changes and removal. The form stores a license plate and Hour, Day, and Month reference prices in Crane Details. The Item displays the same prices read-only. After saving, Availability shows a compact month calendar with reserved dates; Connections links related documents.
 - From a saved Crane's **Create** menu, start an Expense, Maintenance record, or Timesheet with the Crane preselected. **Sales Invoice** creates draft invoices for the Crane's submitted, unbilled Timesheets, grouped by Assignment so each invoice has one customer.
 
 ## Existing records
 
 On migration, existing Crane Project or native Project references are used once to populate Assignment customer, company, and location, and to link historical Timesheets to Assignments. A legacy project name becomes the location when no separate location existed. Review those locations and any old overlapping bookings or zero rates before invoicing historical work. The custom Crane Project DocType is removed after migration; ERPNext's native Project DocType is unchanged. Existing signed Timesheet uploads move to the new hard-copy attachment field. Previous Year reference prices move to a hidden legacy field on Crane.
+
+Existing rental Expense Types migrate to `arab_erp_theme` Expense Entry Types, and existing Expense Entry amounts move into the shared expense rows. The app removes its own Expense Type and Expense Entry DocTypes and its branding assets. Site branding previously set by this app is handed to `arab_erp_theme`; unrelated custom branding is preserved.
 
 A database backup is recommended before migrating a site. Run:
 

@@ -23,8 +23,9 @@ frappe.ui.form.on("Crane", {
             if (doctype === "Crane Assignment") continue;
             frm.add_custom_button(__(label), () => frappe.set_route("List", doctype, { crane: frm.doc.name }), __("View"));
         }
-        for (const [label, doctype] of [["Expense", "Expense Entry"],
-            ["Maintenance", "Crane Maintenance"], ["Timesheet", "Crane Timesheet"]]) {
+        if (frappe.model.can_create("Expense Entry"))
+            frm.add_custom_button(__("Expense"), () => frappe.new_doc("Expense Entry", { crane: frm.doc.name }), __("Create"));
+        for (const [label, doctype] of [["Maintenance", "Crane Maintenance"], ["Timesheet", "Crane Timesheet"]]) {
             if (frappe.model.can_create(doctype))
                 frm.add_custom_button(__(label), () => frappe.new_doc(doctype, { crane: frm.doc.name }), __("Create"));
         }

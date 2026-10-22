@@ -75,8 +75,16 @@ def crane_availability(crane, date=None, to_date=None):
     invoices = sorted({s.sales_invoice for s in sheets if s.sales_invoice and
                        frappe.has_permission("Sales Invoice", "read", s.sales_invoice)})
     expenses = frappe.get_list("Expense Entry", filters={"crane": crane},
-                               fields=["name", "amount", "docstatus"], limit_page_length=0) \
+                               fields=["name", "docstatus"], limit_page_length=0) \
         if frappe.has_permission("Expense Entry", "read") else []
+    if expenses:
+        amounts = frappe.db.sql("""
+            SELECT parent, SUM(amount) AS amount FROM `tabExpense Entry Detail`
+            WHERE parenttype='Expense Entry' AND parent IN %s GROUP BY parent
+        """, (tuple(row.name for row in expenses),), as_dict=True)
+        amount_by_name = {row.parent: row.amount for row in amounts}
+        for row in expenses:
+            row.amount = amount_by_name.get(row.name, 0)
     maintenance = frappe.get_list("Crane Maintenance", filters={"crane": crane},
                                   fields=["name", "status", "cost", "planned_start_date"],
                                   limit_page_length=0) \

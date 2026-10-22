@@ -13,3 +13,4 @@ These reflect the latest user requests and current implementation (2026-10-22):
 9. Show the Crane's public image as a thumbnail in the regular List view through a hidden, read-only URL field. Frappe does not allow `In List View` on an `Attach Image` field. Keep the image upload field hidden on the form.
 10. The linked ERPNext Item uses its native image field to mirror the Crane image, including image changes and removal.
 11. On a saved Crane, the Create menu starts an Expense, Maintenance record, or Timesheet with the Crane preselected. Sales Invoice creates draft invoices from that Crane's submitted, unbilled Timesheets, one invoice per Assignment because Assignments may have different customers.
+12. `arab_erp_theme` owns site branding, Expense Entry, and Expense Entry Type. Heavy Equipment Rental depends on it, extends its expense records with crane links, and migrates the previous rental Expense Types and amounts into the shared models.

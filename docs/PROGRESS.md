@@ -14,5 +14,6 @@ As of 2026-10-22:
 - Fixed Crane DocType field arrangement validation by moving the list thumbnail flag from `Attach Image` to a mirrored hidden Data field; existing thumbnail URLs are backfilled.
 - Added Create actions on saved Cranes for Expense, Maintenance, Timesheet, and Sales Invoice. The invoice action groups submitted, unbilled work by Assignment.
 - The rental workflow test passed with two new draft invoices across two Assignments and no duplicate invoices on retry.
+- Removed rental-owned logo and theme assets/hooks and declared `arab_erp_theme` as a required app. Migrated historical Expense Types and Expense Entry amounts to the shared models, linked maintenance to shared types, and handed prior site branding to the base theme. Migrated `cranes-dev2.arab-erp.com`; both rental workflow tests, including completed maintenance expense posting, passed.
 
 For the next change: inspect `git status` first. Use the commands in [README.md](../README.md) for migration and tests, and update this page with meaningful new milestones.

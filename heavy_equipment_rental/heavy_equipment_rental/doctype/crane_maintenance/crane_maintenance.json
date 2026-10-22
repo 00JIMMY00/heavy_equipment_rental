@@ -133,9 +133,8 @@
   {
    "fieldname": "expense_type",
    "fieldtype": "Link",
-   "label": "Expense Type",
-   "options": "Expense Type",
-   "default": "EXT-MAINTENANCE",
+   "label": "Expense Entry Type",
+   "options": "Expense Entry Type",
    "mandatory_depends_on": "eval:doc.status=='Completed'"
   },
   {
