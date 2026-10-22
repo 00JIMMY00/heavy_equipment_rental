@@ -28,10 +28,11 @@ Extend the Assignment explicitly if work continues beyond its booked dates. The 
 - Each shift records an Employee, work times, optional overtime hours, and calculated worked hours. Overlapping operators contribute to operator hours individually, while crane billable hours count the time only once. A submitted crane shift cannot overlap another submitted Timesheet for that crane.
 - Hourly billing uses the agreed rate times distinct crane hours. Daily billing charges each worked calendar day once per booked crane period. Monthly billing prorates distinct worked days by the number of days in each month. An active invoice prevents those hours or days from being billed again.
 - Crane Maintenance remains an operational, non-submittable record. Expense Entries post through standard ERPNext Journal Entries. The Crane form shows its bookings, Timesheets, Sales Invoices, and expenses.
+- The Crane form stores an optional image and license plate. Its Hour, Day, and Month reference prices appear in Crane Details. Connections links related rental and operations documents; the availability overview uses today's date.
 
 ## Existing records
 
-On migration, existing Crane Project or native Project references are used once to populate Assignment customer, company, and location, and to link historical Timesheets to Assignments. A legacy project name becomes the location when no separate location existed. Review those locations and any old overlapping bookings or zero rates before invoicing historical work. The custom Crane Project DocType is removed after migration; ERPNext's native Project DocType is unchanged. Existing signed Timesheet uploads move to the new hard-copy attachment field.
+On migration, existing Crane Project or native Project references are used once to populate Assignment customer, company, and location, and to link historical Timesheets to Assignments. A legacy project name becomes the location when no separate location existed. Review those locations and any old overlapping bookings or zero rates before invoicing historical work. The custom Crane Project DocType is removed after migration; ERPNext's native Project DocType is unchanged. Existing signed Timesheet uploads move to the new hard-copy attachment field. Previous Year reference prices move to a hidden legacy field on Crane.
 
 A database backup is recommended before migrating a site. Run:
 

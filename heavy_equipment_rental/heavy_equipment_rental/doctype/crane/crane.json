@@ -83,11 +83,6 @@
    "no_copy": 1
   },
   {
-   "fieldname": "pricing_tab",
-   "fieldtype": "Tab Break",
-   "label": "Pricing"
-  },
-  {
    "fieldname": "pricing_section",
    "fieldtype": "Section Break",
    "label": "Period Prices"
@@ -109,15 +104,50 @@
    "label": "Activity and Reservations"
   },
   {
-   "fieldname": "availability_date",
-   "fieldtype": "Date",
-   "label": "Availability Date",
-   "default": "Today"
-  },
-  {
    "fieldname": "availability_overview",
    "fieldtype": "HTML",
    "label": "Availability Overview"
+  },
+  {
+   "fieldname": "license_plate",
+   "fieldtype": "Data",
+   "label": "License Plate",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "photo_section",
+   "fieldtype": "Section Break",
+   "label": "Crane Image"
+  },
+  {
+   "fieldname": "crane_image",
+   "fieldtype": "Attach Image",
+   "label": "Crane Image"
+  },
+  {
+   "fieldname": "crane_image_preview",
+   "fieldtype": "Image",
+   "label": "Image Preview",
+   "options": "crane_image"
+  },
+  {
+   "fieldname": "legacy_year_price",
+   "fieldtype": "Currency",
+   "label": "Legacy Year Price",
+   "hidden": 1,
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
+  },
+  {
+   "fieldname": "connections_section",
+   "fieldtype": "Section Break",
+   "label": "Linked Documents"
   }
  ],
  "field_order": [
@@ -125,20 +155,25 @@
   "identity_section",
   "naming_series",
   "crane_name",
-  "item",
   "model",
+  "license_plate",
   "specs_col",
   "capacity_tons",
   "ownership_type",
   "operational_condition",
   "maintenance_condition_managed",
-  "pricing_tab",
+  "photo_section",
+  "crane_image",
+  "crane_image_preview",
   "pricing_section",
   "period_prices",
+  "legacy_year_price",
   "availability_tab",
   "availability_section",
-  "availability_date",
-  "availability_overview"
+  "availability_overview",
+  "connections_tab",
+  "connections_section",
+  "item"
  ],
  "istable": 0,
  "is_submittable": 0,
@@ -184,5 +219,6 @@
  "naming_rule": "By \"Naming Series\" field",
  "title_field": "crane_name",
  "show_title_field_in_link": 1,
- "search_fields": "crane_name,model"
+ "search_fields": "crane_name,model",
+ "image_field": "crane_image"
 }

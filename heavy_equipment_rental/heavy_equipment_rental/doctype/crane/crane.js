@@ -1,7 +1,7 @@
 frappe.ui.form.on("Crane", {
     onload(frm) {
         if (frm.is_new()) {
-            for (const period of ["Hour", "Day", "Month", "Year"]) {
+            for (const period of ["Hour", "Day", "Month"]) {
                 if (!(frm.doc.period_prices || []).some(row => row.period === period))
                     frm.add_child("period_prices", { period, price: 0 });
             }
@@ -11,6 +11,9 @@ frappe.ui.form.on("Crane", {
         frm.fields_dict.period_prices.grid.cannot_delete_rows = true;
     },
     refresh(frm) {
+        frm.fields_dict.crane_image_preview.$wrapper.find("img").css({
+            width: "100%", maxWidth: "640px", maxHeight: "420px", objectFit: "contain"
+        });
         if (frm.is_new()) return;
         frm.add_custom_button(__("Resource Calendar"), () => {
             window.location.href = `/rental-calendar/timeline?crane=${encodeURIComponent(frm.doc.name)}`;
@@ -21,13 +24,19 @@ frappe.ui.form.on("Crane", {
             if (doctype === "Crane Assignment") continue;
             frm.add_custom_button(__(label), () => frappe.set_route("List", doctype, { crane: frm.doc.name }), __("View"));
         }
-        frm.trigger("availability_date");
+        frm.trigger("load_availability");
     },
-    availability_date(frm) {
+    crane_image(frm) {
+        frm.refresh_field("crane_image_preview");
+        frm.fields_dict.crane_image_preview.$wrapper.find("img").css({
+            width: "100%", maxWidth: "640px", maxHeight: "420px", objectFit: "contain"
+        });
+    },
+    load_availability(frm) {
         if (frm.is_new()) return;
         frappe.call({
             method: "heavy_equipment_rental.rental_queries.crane_availability",
-            args: { crane: frm.doc.name, date: frm.doc.availability_date || frappe.datetime.get_today() },
+            args: { crane: frm.doc.name, date: frappe.datetime.get_today() },
         }).then(({ message: data }) => {
             if (!data) return;
             const esc = value => frappe.utils.escape_html(String(value ?? ""));

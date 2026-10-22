@@ -104,7 +104,7 @@ Crane Timesheet {0} was not found.,لم يتم العثور على سجل ساع
 Crane Timesheets,سجلات ساعات المعدات
 Crane allocations can only be changed on an Open Project.,لا يمكن تغيير تخصيصات المعدات إلا في مشروع مفتوح.
 Crane maintenance expenses,مصروفات صيانة المعدات
-"Crane prices must contain Hour, Day, Month and Year exactly once.",يجب أن تتضمن أسعار المعدات الساعة واليوم والشهر والسنة مرة واحدة لكل منها.
+"Crane prices must contain Hour, Day and Month exactly once.",يجب أن تتضمن أسعار المعدات الساعة واليوم والشهر مرة واحدة لكل منها.
 Crane rental items rebuilt from Timesheets {0} by {1}. Reason: {2},أُعيد إنشاء بنود تأجير المعدات من سجلات الساعات {0} بواسطة {1}. السبب: {2}
 Crane reservations,حجوزات المعدات
 "Crane {0}, row {1}: {2} → {3} by {4}. Cancellation date: {5} → {6}. Reason: {7}",المعدة {0}، الصف {1}: {2} ← {3} بواسطة {4}. تاريخ الإلغاء: {5} ← {6}. السبب: {7}

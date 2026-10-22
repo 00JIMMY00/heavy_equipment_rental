@@ -25,8 +25,12 @@ class TestRentalWorkflow(FrappeTestCase):
         }).insert()
         crane = frappe.get_doc({
             "doctype": "Crane", "crane_name": "Rental test crane " + key,
-            "operational_condition": "Operational",
+            "operational_condition": "Operational", "license_plate": "TEST-" + key,
+            "crane_image": "/files/test-crane.jpg",
         }).insert()
+        self.assertEqual(crane.license_plate, "TEST-" + key)
+        self.assertEqual(crane.crane_image, "/files/test-crane.jpg")
+        self.assertEqual([row.period for row in crane.period_prices], ["Hour", "Day", "Month"])
         start = getdate(today()) - timedelta(days=120)
         day = start + timedelta(days=1)
         end = start + timedelta(days=9)
