@@ -4,14 +4,17 @@ from frappe.model.document import Document
 from frappe.model.naming import set_new_name
 
 from heavy_equipment_rental.rental_validation import check_non_negative, lock_cranes
+from heavy_equipment_rental.item_prices import sync_crane_item_prices
 
 
 class Crane(Document):
 	def after_insert(self):
 		self.ensure_sales_item()
+		sync_crane_item_prices(self)
 
 	def on_update(self):
 		self.ensure_sales_item()
+		sync_crane_item_prices(self)
 
 	def ensure_sales_item(self):
 		"""Create the service item in the same transaction as the crane."""
@@ -46,6 +49,8 @@ class Crane(Document):
 		return item.name
 
 	def validate(self):
+		if self.crane_image and "/private/files/" in self.crane_image:
+			frappe.throw(_("The Crane image must be public. Upload it from the sidebar."))
 		before = self.get_doc_before_save()
 		if before and self.item != before.item:
 			frappe.throw(_("The linked sales Item cannot be changed manually."))

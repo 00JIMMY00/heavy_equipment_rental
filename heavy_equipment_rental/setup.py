@@ -7,6 +7,7 @@ from frappe.permissions import add_permission, update_permission_property
 from heavy_equipment_rental.patches.default_rental_workspace import execute as set_default_workspace
 from heavy_equipment_rental.branding import apply_branding
 from heavy_equipment_rental.workspace import sync_operations_workspace
+from heavy_equipment_rental.item_prices import install_item_price_field
 
 
 def execute():
@@ -42,6 +43,7 @@ def execute():
 			"no_copy": 1,
 		}],
 	})
+	install_item_price_field()
 	set_default_workspace()
 	sync_operations_workspace()
 	apply_branding()

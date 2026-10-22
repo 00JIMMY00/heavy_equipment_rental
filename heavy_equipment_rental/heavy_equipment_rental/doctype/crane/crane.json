@@ -96,12 +96,13 @@
   {
    "fieldname": "availability_tab",
    "fieldtype": "Tab Break",
-   "label": "Availability"
+   "label": "Availability",
+   "depends_on": "eval:!doc.__islocal"
   },
   {
    "fieldname": "availability_section",
    "fieldtype": "Section Break",
-   "label": "Activity and Reservations"
+   "label": "Reservation Calendar"
   },
   {
    "fieldname": "availability_overview",
@@ -115,20 +116,11 @@
    "in_list_view": 1
   },
   {
-   "fieldname": "photo_section",
-   "fieldtype": "Section Break",
-   "label": "Crane Image"
-  },
-  {
    "fieldname": "crane_image",
    "fieldtype": "Attach Image",
-   "label": "Crane Image"
-  },
-  {
-   "fieldname": "crane_image_preview",
-   "fieldtype": "Image",
-   "label": "Image Preview",
-   "options": "crane_image"
+   "label": "Crane Image",
+   "hidden": 1,
+   "make_attachment_public": 1
   },
   {
    "fieldname": "legacy_year_price",
@@ -162,12 +154,10 @@
   "ownership_type",
   "operational_condition",
   "maintenance_condition_managed",
-  "photo_section",
-  "crane_image",
-  "crane_image_preview",
   "pricing_section",
   "period_prices",
   "legacy_year_price",
+  "crane_image",
   "availability_tab",
   "availability_section",
   "availability_overview",

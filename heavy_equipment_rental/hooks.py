@@ -5,7 +5,10 @@ app_description = "Crane assignments, timesheets, maintenance and direct invoici
 app_email = "j@gmail.com"
 app_license = "mit"
 app_logo_url = "/assets/heavy_equipment_rental/branding/ar-monogram-classic.png"
-app_include_css = "/assets/heavy_equipment_rental/css/brand-classic.css"
+app_include_css = [
+	"/assets/heavy_equipment_rental/css/brand-classic.css",
+	"/assets/heavy_equipment_rental/css/crane_availability.css",
+]
 web_include_css = "/assets/heavy_equipment_rental/css/login-brand-classic.css"
 website_context = {
     "favicon": "/assets/heavy_equipment_rental/branding/favicon-classic.ico",

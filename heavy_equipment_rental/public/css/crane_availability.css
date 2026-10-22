@@ -1,0 +1,21 @@
+.crane-calendar { max-width: 920px; }
+.crane-calendar__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.crane-calendar__head h3 { margin: 0; font-size: 18px; }
+.crane-calendar__nav { display: flex; align-items: center; gap: 8px; }
+.crane-calendar__nav button { border: 1px solid var(--border-color); border-radius: 6px; background: var(--card-bg); color: var(--text-color); padding: 5px 10px; }
+.crane-calendar__nav button:hover { background: var(--control-bg); }
+.crane-calendar__legend { display: flex; gap: 16px; margin: 0 0 12px; color: var(--text-muted); font-size: 12px; }
+.crane-calendar__legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 2px; background: var(--bg-light-gray); }
+.crane-calendar__legend .is-booked::before { background: var(--red-100); border: 1px solid var(--red-300); }
+.crane-calendar__grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.crane-calendar__weekday { padding: 7px 2px; text-align: center; color: var(--text-muted); font-size: 12px; font-weight: 600; }
+.crane-calendar__day { min-height: 54px; padding: 7px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--card-bg); font-size: 12px; }
+.crane-calendar__day.is-outside { background: var(--control-bg); opacity: .45; }
+.crane-calendar__day.is-today { border-color: var(--primary); font-weight: 700; }
+.crane-calendar__day.is-booked { background: var(--red-100); border-color: var(--red-300); }
+.crane-calendar__day small { display: block; margin-top: 6px; color: var(--red-500); font-weight: 600; }
+.crane-calendar__bookings { margin-top: 20px; }
+.crane-calendar__bookings h4 { margin-bottom: 10px; }
+.crane-calendar__bookings ul { padding-left: 20px; }
+.crane-calendar__bookings li { margin: 7px 0; }
+@media (max-width: 600px) { .crane-calendar__day { min-height: 42px; padding: 4px; } .crane-calendar__day small { font-size: 10px; } }

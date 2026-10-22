@@ -31,6 +31,18 @@ class TestRentalWorkflow(FrappeTestCase):
         self.assertEqual(crane.license_plate, "TEST-" + key)
         self.assertEqual(crane.crane_image, "/files/test-crane.jpg")
         self.assertEqual([row.period for row in crane.period_prices], ["Hour", "Day", "Month"])
+        item = frappe.get_doc("Item", crane.item)
+        self.assertEqual(
+            [(row.period, row.price) for row in item.period_prices],
+            [(row.period, row.price) for row in crane.period_prices],
+        )
+        crane.period_prices[0].price = 42
+        crane.save()
+        self.assertEqual(frappe.get_doc("Item", crane.item).period_prices[0].price, 42)
+        crane.crane_image = "/private/files/test-crane.jpg"
+        with self.assertRaises(frappe.ValidationError):
+            crane.save()
+        crane.reload()
         start = getdate(today()) - timedelta(days=120)
         day = start + timedelta(days=1)
         end = start + timedelta(days=9)
