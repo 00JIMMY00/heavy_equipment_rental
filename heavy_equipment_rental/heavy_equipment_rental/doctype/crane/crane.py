@@ -51,6 +51,7 @@ class Crane(Document):
 	def validate(self):
 		if self.crane_image and "/private/files/" in self.crane_image:
 			frappe.throw(_("The Crane image must be public. Upload it from the sidebar."))
+		self.crane_list_image = self.crane_image
 		before = self.get_doc_before_save()
 		if before and self.item != before.item:
 			frappe.throw(_("The linked sales Item cannot be changed manually."))

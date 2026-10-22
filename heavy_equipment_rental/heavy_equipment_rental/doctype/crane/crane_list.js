@@ -1,6 +1,6 @@
 frappe.listview_settings["Crane"] = {
     formatters: {
-        crane_image(value, df, doc) {
+        crane_list_image(value, df, doc) {
             if (!value) return `<span class="text-muted">—</span>`;
             const url = frappe.utils.escape_html(value);
             const title = frappe.utils.escape_html(doc.crane_name || doc.name || "");

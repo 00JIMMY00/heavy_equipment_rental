@@ -1,12 +1,35 @@
 {
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-10-13 00:00:00",
  "doctype": "DocType",
- "name": "Crane",
- "module": "Heavy Equipment Rental",
+ "editable_grid": 1,
  "engine": "InnoDB",
- "creation": "2026-10-13 00:00:00.000000",
- "modified": "2026-10-13 12:54:00.772895",
- "modified_by": "Administrator",
- "owner": "Administrator",
+ "field_order": [
+  "details_tab",
+  "identity_section",
+  "naming_series",
+  "crane_name",
+  "crane_image",
+  "crane_list_image",
+  "model",
+  "license_plate",
+  "specs_col",
+  "capacity_tons",
+  "ownership_type",
+  "column_break_mjyn",
+  "operational_condition",
+  "maintenance_condition_managed",
+  "pricing_section",
+  "period_prices",
+  "legacy_year_price",
+  "availability_tab",
+  "availability_section",
+  "availability_overview",
+  "connections_tab",
+  "connections_section",
+  "item"
+ ],
  "fields": [
   {
    "fieldname": "details_tab",
@@ -19,34 +42,34 @@
    "label": "Crane"
   },
   {
+   "default": "CR-.#####",
    "fieldname": "naming_series",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Series",
    "options": "CR-.#####",
-   "default": "CR-.#####",
-   "reqd": 1,
-   "hidden": 1
+   "reqd": 1
   },
   {
    "fieldname": "crane_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Crane Name",
-   "reqd": 1,
-   "in_list_view": 1
+   "reqd": 1
   },
   {
    "fieldname": "item",
    "fieldtype": "Link",
    "label": "Sales Item",
+   "no_copy": 1,
    "options": "Item",
-   "read_only": 1,
-   "no_copy": 1
+   "read_only": 1
   },
   {
    "fieldname": "model",
    "fieldtype": "Data",
-   "label": "Model",
-   "in_list_view": 1
+   "in_list_view": 1,
+   "label": "Model"
   },
   {
    "fieldname": "specs_col",
@@ -59,28 +82,29 @@
    "non_negative": 1
   },
   {
+   "default": "Owned",
    "fieldname": "ownership_type",
    "fieldtype": "Select",
    "label": "Ownership Type",
-   "options": "Owned\nRented\nOther",
-   "default": "Owned"
+   "options": "Owned\nRented\nOther"
   },
   {
+   "default": "Operational",
    "fieldname": "operational_condition",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Operational Condition",
    "options": "Operational\nMaintenance\nInactive",
-   "default": "Operational",
-   "reqd": 1,
-   "in_list_view": 1
+   "reqd": 1
   },
   {
+   "default": "0",
    "fieldname": "maintenance_condition_managed",
    "fieldtype": "Check",
-   "label": "Maintenance Condition Managed",
    "hidden": 1,
-   "read_only": 1,
-   "no_copy": 1
+   "label": "Maintenance Condition Managed",
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "fieldname": "pricing_section",
@@ -94,10 +118,10 @@
    "options": "Crane Period Price"
   },
   {
+   "depends_on": "eval:!doc.__islocal",
    "fieldname": "availability_tab",
    "fieldtype": "Tab Break",
-   "label": "Availability",
-   "depends_on": "eval:!doc.__islocal"
+   "label": "Availability"
   },
   {
    "fieldname": "availability_section",
@@ -112,25 +136,23 @@
   {
    "fieldname": "license_plate",
    "fieldtype": "Data",
-   "label": "License Plate",
-   "in_list_view": 1
+   "in_list_view": 1,
+   "label": "License Plate"
   },
   {
    "fieldname": "crane_image",
    "fieldtype": "Attach Image",
-   "label": "Photo",
    "hidden": 1,
-   "make_attachment_public": 1,
-   "in_list_view": 1,
-   "columns": 1
+   "label": "Crane Image",
+   "make_attachment_public": 1
   },
   {
    "fieldname": "legacy_year_price",
    "fieldtype": "Currency",
-   "label": "Legacy Year Price",
    "hidden": 1,
-   "read_only": 1,
-   "no_copy": 1
+   "label": "Legacy Year Price",
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "fieldname": "connections_tab",
@@ -142,75 +164,70 @@
    "fieldname": "connections_section",
    "fieldtype": "Section Break",
    "label": "Linked Documents"
+  },
+  {
+   "columns": 1,
+   "fieldname": "crane_list_image",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "in_list_view": 1,
+   "label": "Photo",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mjyn",
+   "fieldtype": "Column Break"
   }
  ],
- "field_order": [
-  "details_tab",
-  "identity_section",
-  "naming_series",
-  "crane_name",
-  "crane_image",
-  "model",
-  "license_plate",
-  "specs_col",
-  "capacity_tons",
-  "ownership_type",
-  "operational_condition",
-  "maintenance_condition_managed",
-  "pricing_section",
-  "period_prices",
-  "legacy_year_price",
-  "availability_tab",
-  "availability_section",
-  "availability_overview",
-  "connections_tab",
-  "connections_section",
-  "item"
- ],
- "istable": 0,
- "is_submittable": 0,
- "editable_grid": 1,
  "grid_page_length": 100,
- "rows_threshold_for_grid_search": 20,
- "sort_field": "modified",
- "sort_order": "DESC",
- "track_changes": 1,
+ "image_field": "crane_image",
+ "links": [],
+ "modified": "2026-10-22 15:01:14.069074",
+ "modified_by": "Administrator",
+ "module": "Heavy Equipment Rental",
+ "name": "Crane",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
  "permissions": [
   {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
    "role": "System Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "report": 1,
-   "export": 1,
-   "print": 1
+   "write": 1
   },
   {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
    "role": "Projects Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "report": 1,
-   "export": 1,
-   "print": 1
+   "write": 1
   },
   {
-   "role": "Projects User",
-   "read": 1,
-   "write": 1,
    "create": 1,
    "delete": 1,
-   "report": 1,
    "export": 1,
-   "print": 1
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Projects User",
+   "write": 1
   }
  ],
- "autoname": "naming_series:",
- "naming_rule": "By \"Naming Series\" field",
- "title_field": "crane_name",
- "show_title_field_in_link": 1,
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
  "search_fields": "crane_name,model",
- "image_field": "crane_image"
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "crane_name",
+ "track_changes": 1
 }

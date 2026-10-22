@@ -30,6 +30,7 @@ class TestRentalWorkflow(FrappeTestCase):
         }).insert()
         self.assertEqual(crane.license_plate, "TEST-" + key)
         self.assertEqual(crane.crane_image, "/files/test-crane.jpg")
+        self.assertEqual(crane.crane_list_image, crane.crane_image)
         self.assertEqual([row.period for row in crane.period_prices], ["Hour", "Day", "Month"])
         item = frappe.get_doc("Item", crane.item)
         self.assertEqual(item.image, crane.crane_image)
@@ -42,9 +43,11 @@ class TestRentalWorkflow(FrappeTestCase):
         self.assertEqual(frappe.get_doc("Item", crane.item).period_prices[0].price, 42)
         crane.crane_image = "/files/updated-test-crane.jpg"
         crane.save()
+        self.assertEqual(crane.crane_list_image, crane.crane_image)
         self.assertEqual(frappe.db.get_value("Item", crane.item, "image"), crane.crane_image)
         crane.crane_image = None
         crane.save()
+        self.assertFalse(crane.crane_list_image)
         self.assertFalse(frappe.db.get_value("Item", crane.item, "image"))
         crane.crane_image = "/private/files/test-crane.jpg"
         with self.assertRaises(frappe.ValidationError):
