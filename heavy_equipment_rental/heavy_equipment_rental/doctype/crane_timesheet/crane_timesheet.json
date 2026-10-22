@@ -1,12 +1,44 @@
 {
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-10-13 00:00:00",
  "doctype": "DocType",
- "name": "Crane Timesheet",
- "module": "Heavy Equipment Rental",
+ "editable_grid": 1,
  "engine": "InnoDB",
- "creation": "2026-10-13 00:00:00.000000",
- "modified": "2026-10-13 12:54:00.772613",
- "modified_by": "Administrator",
- "owner": "Administrator",
+ "field_order": [
+  "details_tab",
+  "context_section",
+  "naming_series",
+  "assignment",
+  "customer",
+  "location",
+  "crane",
+  "period_col",
+  "period_start",
+  "period_end",
+  "column_break_glue",
+  "driver",
+  "attachment",
+  "new_rental_section",
+  "rental_terms_column",
+  "rental_rate_unit",
+  "column_break_aqmn",
+  "rental_rate",
+  "entries_tab",
+  "entries_section",
+  "timesheet_entries",
+  "driver_hours_section",
+  "driver_hours",
+  "totals_section",
+  "total_operator_hours",
+  "total_crane_billable_hours",
+  "amount_col",
+  "total_amount",
+  "connections_tab",
+  "references_section",
+  "sales_invoice",
+  "amended_from"
+ ],
  "fields": [
   {
    "fieldname": "details_tab",
@@ -19,63 +51,63 @@
    "label": "Project and Crane"
   },
   {
+   "default": "TS-.#####",
    "fieldname": "naming_series",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Series",
    "options": "TS-.#####",
-   "default": "TS-.#####",
-   "reqd": 1,
-   "hidden": 1
+   "reqd": 1
   },
   {
    "fieldname": "assignment",
    "fieldtype": "Link",
-   "label": "Crane Assignment",
-   "options": "Crane Assignment",
    "in_list_view": 1,
-   "in_standard_filter": 1
+   "in_standard_filter": 1,
+   "label": "Crane Assignment",
+   "options": "Crane Assignment"
   },
   {
+   "fetch_from": "assignment.customer",
    "fieldname": "customer",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Customer",
    "options": "Customer",
-   "reqd": 1,
-   "in_list_view": 1,
-   "fetch_from": "assignment.customer"
+   "reqd": 1
   },
   {
+   "fetch_from": "assignment.location",
    "fieldname": "location",
    "fieldtype": "Data",
    "label": "Location",
-   "reqd": 1,
-   "fetch_from": "assignment.location"
+   "reqd": 1
   },
   {
    "fieldname": "crane",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Crane",
    "options": "Crane",
-   "reqd": 1,
-   "in_list_view": 1,
-   "in_standard_filter": 1
+   "reqd": 1
   },
   {
    "fieldname": "period_col",
    "fieldtype": "Column Break"
   },
   {
+   "description": "Also becomes the rental start date when this Timesheet creates an Assignment.",
    "fieldname": "period_start",
    "fieldtype": "Date",
    "label": "Period Start",
-   "description": "Also becomes the rental start date when this Timesheet creates an Assignment.",
    "reqd": 1
   },
   {
+   "description": "Also becomes the rental end date when this Timesheet creates an Assignment.",
    "fieldname": "period_end",
    "fieldtype": "Date",
    "label": "Period End",
-   "description": "Also becomes the rental end date when this Timesheet creates an Assignment.",
    "reqd": 1
   },
   {
@@ -85,35 +117,34 @@
    "options": "Employee"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "attachment",
    "fieldtype": "Attach",
-   "label": "Timesheet Hard Copy",
-   "allow_on_submit": 1
+   "label": "Timesheet Hard Copy"
   },
   {
+   "depends_on": "eval:!doc.assignment",
    "fieldname": "new_rental_section",
    "fieldtype": "Section Break",
-   "label": "New rental terms",
-   "depends_on": "eval:!doc.assignment"
+   "label": "New rental terms"
   },
   {
    "fieldname": "rental_terms_column",
-   "fieldtype": "Column Break",
-   "label": ""
+   "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval:!doc.assignment",
    "fieldname": "rental_rate_unit",
    "fieldtype": "Select",
    "label": "Billing unit",
-   "options": "\nHour\nDay\nMonth",
-   "depends_on": "eval:!doc.assignment",
-   "no_copy": 1
+   "no_copy": 1,
+   "options": "\nHour\nDay\nMonth"
   },
   {
+   "depends_on": "eval:!doc.assignment",
    "fieldname": "rental_rate",
    "fieldtype": "Currency",
    "label": "Agreed rate",
-   "depends_on": "eval:!doc.assignment",
    "no_copy": 1
   },
   {
@@ -153,15 +184,15 @@
    "fieldname": "total_operator_hours",
    "fieldtype": "Float",
    "label": "Total Driver Hours",
-   "read_only": 1,
-   "precision": "6"
+   "precision": "6",
+   "read_only": 1
   },
   {
    "fieldname": "total_crane_billable_hours",
    "fieldtype": "Float",
    "label": "Total Crane Billable Hours",
-   "read_only": 1,
-   "precision": "6"
+   "precision": "6",
+   "read_only": 1
   },
   {
    "fieldname": "amount_col",
@@ -185,105 +216,85 @@
    "label": "Documents"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "sales_invoice",
    "fieldtype": "Link",
    "label": "Sales Invoice",
-   "options": "Sales Invoice",
-   "read_only": 1,
    "no_copy": 1,
-   "allow_on_submit": 1
+   "options": "Sales Invoice",
+   "read_only": 1
   },
   {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
-   "options": "Crane Timesheet",
-   "read_only": 1,
    "no_copy": 1,
-   "print_hide": 1
+   "options": "Crane Timesheet",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_glue",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_aqmn",
+   "fieldtype": "Column Break"
   }
  ],
- "field_order": [
-  "details_tab",
-  "context_section",
-  "naming_series",
-  "assignment",
-  "customer",
-  "location",
-  "crane",
-  "period_col",
-  "period_start",
-  "period_end",
-  "driver",
-  "attachment",
-  "new_rental_section",
-  "rental_terms_column",
-  "rental_rate_unit",
-  "rental_rate",
-  "entries_tab",
-  "entries_section",
-  "timesheet_entries",
-  "driver_hours_section",
-  "driver_hours",
-  "totals_section",
-  "total_operator_hours",
-  "total_crane_billable_hours",
-  "amount_col",
-  "total_amount",
-  "connections_tab",
-  "references_section",
-  "sales_invoice",
-  "amended_from"
- ],
- "istable": 0,
- "is_submittable": 1,
- "editable_grid": 1,
  "grid_page_length": 100,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-10-22 13:19:50.114380",
+ "modified_by": "Administrator",
+ "module": "Heavy Equipment Rental",
+ "name": "Crane Timesheet",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Projects Manager",
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Projects User",
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
  "rows_threshold_for_grid_search": 20,
  "sort_field": "modified",
  "sort_order": "DESC",
- "track_changes": 1,
- "permissions": [
-  {
-   "role": "System Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "report": 1,
-   "export": 1,
-   "print": 1,
-   "submit": 1,
-   "cancel": 1,
-   "amend": 1
-  },
-  {
-   "role": "Projects Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "report": 1,
-   "export": 1,
-   "print": 1,
-   "submit": 1,
-   "cancel": 1,
-   "amend": 1
-  },
-  {
-   "role": "Projects User",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "report": 1,
-   "export": 1,
-   "print": 1,
-   "submit": 1,
-   "cancel": 0,
-   "amend": 1
-  }
- ],
- "autoname": "naming_series:",
- "naming_rule": "By \"Naming Series\" field"
+ "states": [],
+ "track_changes": 1
 }
