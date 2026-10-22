@@ -1,0 +1,34 @@
+{
+ "doctype": "DocType",
+ "name": "Driver Hours",
+ "module": "Heavy Equipment Rental",
+ "engine": "InnoDB",
+ "istable": 1,
+ "editable_grid": 1,
+ "field_order": ["driver_name", "employee", "total_hours"],
+ "fields": [
+  {
+   "fieldname": "driver_name",
+   "fieldtype": "Data",
+   "label": "Driver Name",
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Driver (Employee)",
+   "options": "Employee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_hours",
+   "fieldtype": "Float",
+   "label": "Hours Spent",
+   "in_list_view": 1,
+   "precision": "6",
+   "read_only": 1
+  }
+ ],
+ "permissions": []
+}

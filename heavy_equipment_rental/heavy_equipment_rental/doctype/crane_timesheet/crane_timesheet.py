@@ -59,6 +59,10 @@ def find_assignments(crane, customer, location, period_start, period_end):
 
 class CraneTimesheet(Document):
     def before_validate(self):
+        if self.driver:
+            for row in self.timesheet_entries:
+                if not row.employee:
+                    row.employee = self.driver
         if self.assignment:
             rental = assignment_doc(self.assignment, "read")
             self.customer = self.customer or rental.customer
@@ -74,20 +78,17 @@ class CraneTimesheet(Document):
             assignment_doc(matches[0], "read")
             self.assignment = matches[0]
             return
-        if not all((self.rental_start_date, self.rental_end_date, self.rental_rate_unit, self.rental_rate)):
-            frappe.throw(_("No assignment covers this work. Enter the full agreed rental dates, billing unit and rate."))
-        check_date_order(self.rental_start_date, self.rental_end_date, _("Agreed rental period"))
-        if (getdate(self.period_start) < getdate(self.rental_start_date)
-                or getdate(self.period_end) > getdate(self.rental_end_date)):
-            frappe.throw(_("Work dates must fit the agreed rental period; enter the full rental dates."))
+        if not self.rental_rate_unit or self.rental_rate is None:
+            frappe.throw(_("No assignment covers this work. Enter the billing unit and agreed rate."))
+        check_date_order(self.period_start, self.period_end, _("Rental period"))
         if not frappe.has_permission("Crane Assignment", "create"):
             frappe.throw(_("Creating a rental requires Crane Assignment create permission."), frappe.PermissionError)
         assignment = frappe.get_doc({
             "doctype": "Crane Assignment", "customer": self.customer,
             "location": self.location,
             "assigned_cranes": [{
-                "crane": self.crane, "start_date": self.rental_start_date,
-                "expected_end_date": self.rental_end_date,
+                "crane": self.crane, "start_date": self.period_start,
+                "expected_end_date": self.period_end,
                 "rental_rate_unit": self.rental_rate_unit,
                 "rental_rate": self.rental_rate,
             }],
@@ -103,7 +104,7 @@ class CraneTimesheet(Document):
     def validate(self):
         check_date_order(self.period_start, self.period_end, _("Timesheet period"))
         if not self.assignment:
-            frappe.throw(_("Select a Crane Assignment or enter full terms for a new rental."))
+            frappe.throw(_("Select a Crane Assignment or enter billing terms for a new rental."))
         lock_cranes([self.crane])
         assignment = assignment_doc(self.assignment, "read", lock=True)
         if self.customer != assignment.customer or self.location != assignment.location:
@@ -120,6 +121,13 @@ class CraneTimesheet(Document):
         if not self.timesheet_entries and self.docstatus == 1:
             frappe.throw(_("Add at least one shift before submitting the Timesheet."))
         intervals, operator_hours, flat_days, flat_rows = [], 0, {}, []
+        previous = self.get_doc_before_save()
+        submitted_update = bool(previous and previous.docstatus == 1 and self.docstatus == 1)
+        employees = {row.employee for row in self.timesheet_entries if row.employee}
+        driver_names = {row.name: row.employee_name for row in frappe.get_all(
+            "Employee", filters={"name": ["in", list(employees)]},
+            fields=["name", "employee_name"])} if employees else {}
+        hours_by_driver = {}
         start_period, end_period = getdate(self.period_start), getdate(self.period_end)
         for row in self.timesheet_entries:
             start, end = interval(row)
@@ -144,6 +152,9 @@ class CraneTimesheet(Document):
             booking = matching[0]
             row.price_per_hour = booking.rental_rate if booking.rental_rate_unit == "Hour" else 0
             row.worked_hours = hours
+            if not submitted_update:
+                row.driver_name = driver_names.get(row.employee)
+            hours_by_driver[row.employee] = hours_by_driver.get(row.employee, 0) + hours
             row.line_amount = hours * flt(row.price_per_hour)
             if booking.rental_rate_unit in ("Day", "Month"):
                 for day in days:
@@ -151,6 +162,14 @@ class CraneTimesheet(Document):
                 flat_rows.append(row)
             operator_hours += hours
             intervals.append((start, end, flt(row.price_per_hour)))
+        if not submitted_update:
+            self.set("driver_hours", [])
+            for employee, hours in hours_by_driver.items():
+                self.append("driver_hours", {
+                    "employee": employee,
+                    "driver_name": driver_names.get(employee),
+                    "total_hours": hours,
+                })
         self.total_operator_hours = operator_hours
         self.total_crane_billable_hours, hourly_amount = billable_totals(intervals)
         flat_amount = sum(

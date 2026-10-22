@@ -8,6 +8,7 @@
   "work_section",
   "work_date",
   "employee",
+  "driver_name",
   "time_col",
   "start_time",
   "end_time",
@@ -35,10 +36,17 @@
   {
    "fieldname": "employee",
    "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Operator (Employee)",
+   "label": "Driver (Employee)",
    "options": "Employee",
    "reqd": 1
+  },
+  {
+   "fieldname": "driver_name",
+   "fieldtype": "Data",
+   "label": "Driver Name",
+   "fetch_from": "employee.employee_name",
+   "read_only": 1,
+   "in_list_view": 1
   },
   {
    "fieldname": "time_col",

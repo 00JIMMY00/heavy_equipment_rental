@@ -13,12 +13,56 @@ function fill_default_days(frm) {
         let added = false;
         for (const values of defaults || []) {
             if (existing.has(values.work_date)) continue;
-            frm.add_child("timesheet_entries", values);
+            frm.add_child("timesheet_entries", { ...values, employee: frm.doc.driver || undefined });
             existing.add(values.work_date);
             added = true;
         }
-        if (added) frm.refresh_field("timesheet_entries");
+        if (added) {
+            frm.refresh_field("timesheet_entries");
+            load_driver_names(frm);
+            update_driver_hours(frm);
+        }
     });
+}
+
+async function load_driver_names(frm) {
+    const missing = [...new Set((frm.doc.timesheet_entries || [])
+        .filter((row) => row.employee && !row.driver_name).map((row) => row.employee))];
+    if (!missing.length) return;
+    const names = await frappe.db.get_list("Employee", {
+        filters: { name: ["in", missing] },
+        fields: ["name", "employee_name"],
+        limit: missing.length,
+    });
+    const by_id = Object.fromEntries(names.map((row) => [row.name, row.employee_name]));
+    for (const row of frm.doc.timesheet_entries || []) {
+        if (row.employee && !row.driver_name) row.driver_name = by_id[row.employee];
+    }
+    frm.refresh_field("timesheet_entries");
+    update_driver_hours(frm);
+}
+
+function shift_hours(row) {
+    if (!row.start_time || !row.end_time) return 0;
+    const seconds = (value) => value.split(":").map(Number).reduce((total, part) => total * 60 + part, 0);
+    let duration = seconds(row.end_time) - seconds(row.start_time);
+    if (row.ends_next_day) duration += 24 * 3600;
+    return duration > 0 ? duration / 3600 : 0;
+}
+
+function update_driver_hours(frm) {
+    if (frm.doc.docstatus !== 0) return;
+    const totals = new Map();
+    for (const row of frm.doc.timesheet_entries || []) {
+        if (!row.employee) continue;
+        const current = totals.get(row.employee) || { employee: row.employee, driver_name: row.driver_name, total_hours: 0 };
+        current.driver_name = row.driver_name || current.driver_name;
+        current.total_hours += shift_hours(row);
+        totals.set(row.employee, current);
+    }
+    frm.clear_table("driver_hours");
+    for (const values of totals.values()) frm.add_child("driver_hours", values);
+    frm.refresh_field("driver_hours");
 }
 
 function suggest_assignment(frm) {
@@ -68,6 +112,20 @@ frappe.ui.form.on("Crane Timesheet", {
     location: suggest_assignment,
     period_start(frm) { fill_default_days(frm); suggest_assignment(frm); },
     period_end(frm) { fill_default_days(frm); suggest_assignment(frm); },
+    driver(frm) {
+        if (!frm.doc.driver) return;
+        let changed = false;
+        for (const row of frm.doc.timesheet_entries || []) {
+            if (row.employee) continue;
+            row.employee = frm.doc.driver;
+            changed = true;
+        }
+        if (changed) {
+            frm.refresh_field("timesheet_entries");
+            load_driver_names(frm);
+            update_driver_hours(frm);
+        }
+    },
     refresh(frm) {
         if (frm.doc.docstatus === 0 && !(frm.doc.timesheet_entries || []).length) fill_default_days(frm);
         if (frm.doc.docstatus === 1 && frappe.model.can_create("Sales Invoice"))
@@ -80,4 +138,19 @@ frappe.ui.form.on("Crane Timesheet", {
                 },
             }), __("Create"));
     },
+});
+
+frappe.ui.form.on("Timesheet Entry", {
+    async employee(frm, cdt, cdn) {
+        const row = locals[cdt][cdn];
+        row.driver_name = null;
+        if (row.employee) await load_driver_names(frm);
+        update_driver_hours(frm);
+    },
+    driver_name: update_driver_hours,
+    start_time: update_driver_hours,
+    end_time: update_driver_hours,
+    ends_next_day: update_driver_hours,
+    timesheet_entries_add: update_driver_hours,
+    timesheet_entries_remove: update_driver_hours,
 });

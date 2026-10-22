@@ -10,3 +10,5 @@ heavy_equipment_rental.patches.default_rental_workspace
 
 heavy_equipment_rental.patches.simplify_rental_workflow
 heavy_equipment_rental.patches.backfill_native_project_assignments
+heavy_equipment_rental.patches.move_timesheet_hard_copy
+heavy_equipment_rental.patches.backfill_driver_hours

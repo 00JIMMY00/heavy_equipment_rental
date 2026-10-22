@@ -68,38 +68,33 @@
    "fieldname": "period_start",
    "fieldtype": "Date",
    "label": "Period Start",
+   "description": "Also becomes the rental start date when this Timesheet creates an Assignment.",
    "reqd": 1
   },
   {
    "fieldname": "period_end",
    "fieldtype": "Date",
    "label": "Period End",
+   "description": "Also becomes the rental end date when this Timesheet creates an Assignment.",
    "reqd": 1
   },
   {
-   "fieldname": "signed_timesheet",
+   "fieldname": "driver",
+   "fieldtype": "Link",
+   "label": "Default Driver",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "attachment",
    "fieldtype": "Attach",
-   "label": "Signed Timesheet"
+   "label": "Timesheet Hard Copy",
+   "allow_on_submit": 1
   },
   {
    "fieldname": "new_rental_section",
    "fieldtype": "Section Break",
    "label": "New rental terms",
    "depends_on": "eval:!doc.assignment"
-  },
-  {
-   "fieldname": "rental_start_date",
-   "fieldtype": "Date",
-   "label": "Agreed rental start",
-   "depends_on": "eval:!doc.assignment",
-   "no_copy": 1
-  },
-  {
-   "fieldname": "rental_end_date",
-   "fieldtype": "Date",
-   "label": "Agreed rental end",
-   "depends_on": "eval:!doc.assignment",
-   "no_copy": 1
   },
   {
    "fieldname": "rental_terms_column",
@@ -138,6 +133,18 @@
    "options": "Timesheet Entry"
   },
   {
+   "fieldname": "driver_hours_section",
+   "fieldtype": "Section Break",
+   "label": "Driver Hours"
+  },
+  {
+   "fieldname": "driver_hours",
+   "fieldtype": "Table",
+   "label": "Hours by Driver",
+   "options": "Driver Hours",
+   "read_only": 1
+  },
+  {
    "fieldname": "totals_section",
    "fieldtype": "Section Break",
    "label": "Totals"
@@ -167,9 +174,10 @@
    "read_only": 1
   },
   {
-   "fieldname": "references_tab",
+   "fieldname": "connections_tab",
    "fieldtype": "Tab Break",
-   "label": "References"
+   "label": "Connections",
+   "show_dashboard": 1
   },
   {
    "fieldname": "references_section",
@@ -206,22 +214,23 @@
   "period_col",
   "period_start",
   "period_end",
-  "signed_timesheet",
+  "driver",
+  "attachment",
   "new_rental_section",
-  "rental_start_date",
-  "rental_end_date",
   "rental_terms_column",
   "rental_rate_unit",
   "rental_rate",
   "entries_tab",
   "entries_section",
   "timesheet_entries",
+  "driver_hours_section",
+  "driver_hours",
   "totals_section",
   "total_operator_hours",
   "total_crane_billable_hours",
   "amount_col",
   "total_amount",
-  "references_tab",
+  "connections_tab",
   "references_section",
   "sales_invoice",
   "amended_from"

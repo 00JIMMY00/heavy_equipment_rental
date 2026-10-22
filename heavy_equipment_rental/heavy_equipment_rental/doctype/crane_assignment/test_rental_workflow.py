@@ -13,6 +13,7 @@ from heavy_equipment_rental.billing import generate_sales_invoice
 class TestRentalWorkflow(FrappeTestCase):
     def test_assignment_first_and_timesheet_first(self):
         employee = frappe.db.get_value("Employee", {}, "name")
+        other_employee = frappe.db.get_value("Employee", {"name": ["!=", employee]}, "name") if employee else None
         group = frappe.db.get_value("Customer Group", {"is_group": 0}, "name")
         territory = frappe.db.get_value("Territory", {"is_group": 0}, "name")
         if not all((employee, group, territory)):
@@ -47,12 +48,22 @@ class TestRentalWorkflow(FrappeTestCase):
         sheet = frappe.get_doc({
             "doctype": "Crane Timesheet", "assignment": rental.name,
             "crane": crane.name, "period_start": day, "period_end": day,
+            "driver": employee,
             "timesheet_entries": [
-                {"work_date": day, "employee": employee, "start_time": "08:00", "end_time": "12:00"},
-                {"work_date": day, "employee": employee, "start_time": "10:00", "end_time": "14:00"},
+                {"work_date": day, "start_time": "08:00", "end_time": "12:00"},
+                {"work_date": day, "employee": other_employee or employee,
+                 "start_time": "10:00", "end_time": "14:00"},
             ],
         }).insert()
+        self.assertEqual(sheet.timesheet_entries[0].employee, employee)
+        self.assertEqual(sheet.timesheet_entries[1].employee, other_employee or employee)
+        self.assertEqual(sum(row.total_hours for row in sheet.driver_hours), 8)
+        self.assertTrue(all(row.driver_name for row in sheet.driver_hours))
+        self.assertTrue(all(row.driver_name for row in sheet.timesheet_entries))
         sheet.submit()
+        sheet.attachment = "/private/files/rental-timesheet-test.pdf"
+        sheet.save()
+        self.assertEqual(frappe.db.get_value("Crane Timesheet", sheet.name, "attachment"), sheet.attachment)
         self.assertEqual(sheet.customer, customer.name)
         self.assertEqual(sheet.location, "Test yard")
         self.assertEqual(sheet.total_operator_hours, 8)
@@ -75,14 +86,17 @@ class TestRentalWorkflow(FrappeTestCase):
         later = start + timedelta(days=20)
         first = frappe.get_doc({
             "doctype": "Crane Timesheet", "crane": crane.name, "customer": customer.name,
-            "location": "Second yard", "period_start": later, "period_end": later,
-            "rental_start_date": later, "rental_end_date": later + timedelta(days=9),
+            "location": "Second yard", "period_start": later,
+            "period_end": later + timedelta(days=9),
             "rental_rate_unit": "Hour", "rental_rate": 120,
             "timesheet_entries": [{
                 "work_date": later, "employee": employee, "start_time": "08:00", "end_time": "12:00",
             }],
         }).insert()
         self.assertTrue(first.assignment)
+        booking = frappe.get_doc("Crane Assignment", first.assignment).assigned_cranes[0]
+        self.assertEqual(getdate(booking.start_date), later)
+        self.assertEqual(getdate(booking.expected_end_date), later + timedelta(days=9))
         second_day = later + timedelta(days=1)
         second = frappe.get_doc({
             "doctype": "Crane Timesheet", "crane": crane.name, "customer": customer.name,
@@ -99,8 +113,8 @@ class TestRentalWorkflow(FrappeTestCase):
         monthly_day = later + timedelta(days=20)
         monthly = frappe.get_doc({
             "doctype": "Crane Timesheet", "crane": crane.name, "customer": customer.name,
-            "location": "Monthly yard", "period_start": monthly_day, "period_end": monthly_day,
-            "rental_start_date": monthly_day, "rental_end_date": monthly_day + timedelta(days=9),
+            "location": "Monthly yard", "period_start": monthly_day,
+            "period_end": monthly_day + timedelta(days=9),
             "rental_rate_unit": "Month", "rental_rate": 930,
             "timesheet_entries": [{
                 "work_date": monthly_day, "employee": employee, "start_time": "08:00", "end_time": "12:00",
