@@ -30,6 +30,7 @@ Extend the Assignment explicitly if work continues beyond its booked dates. The 
 - Crane Maintenance remains an operational, non-submittable record. Select a shared **Expense Entry Type** and Mode of Payment when completing it; the shared **Expense Entry** posts through an ERPNext Journal Entry. The Crane form shows its bookings, Timesheets, Sales Invoices, and expenses.
 - Upload the Crane image from its side panel; these images are public and appear as thumbnails in the regular Crane List view. The linked ERPNext Item shows the same image, including later changes and removal. The form stores a license plate and Hour, Day, and Month reference prices in Crane Details. The Item displays the same prices read-only. After saving, Availability shows a compact month calendar with reserved dates; Connections links related documents.
 - From a saved Crane's **Create** menu, start an Expense, Maintenance record, or Timesheet with the Crane preselected. **Sales Invoice** creates draft invoices for the Crane's submitted, unbilled Timesheets, grouped by Assignment so each invoice has one customer.
+- The shared Expense Entry has optional Crane and Crane Assignment links supplied by this app. **Create → Expense** on a saved Crane or Crane Assignment opens a new Expense Entry with the corresponding link filled in; neither link is required for other expenses.
 
 ## Existing records
 

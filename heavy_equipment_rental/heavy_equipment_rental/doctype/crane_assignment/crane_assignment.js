@@ -1,6 +1,9 @@
 frappe.ui.form.on("Crane Assignment", {
     refresh(frm) {
         if (frm.is_new()) return;
+        if (frappe.model.can_create("Expense Entry"))
+            frm.add_custom_button(__("Expense"), () =>
+                frappe.new_doc("Expense Entry", { crane_assignment: frm.doc.name }), __("Create"));
         frm.add_custom_button(__("New Timesheet"), () => {
             frappe.new_doc("Crane Timesheet", {
                 assignment: frm.doc.name,
