@@ -9,5 +9,7 @@ As of 2026-10-22:
 - Migrated `cranes-dev2.arab-erp.com` and passed the rental workflow test after the Crane changes.
 - Moved Crane image controls to the side panel, defaulted uploads to public, added a public-image migration, synced reference prices to a read-only Item table, and replaced Availability with a compact monthly reservation view hidden on new Cranes.
 - Migrated `cranes-dev2.arab-erp.com` and passed the rental workflow test for the Item price sync and public image requirement.
+- Added a photo thumbnail column to the regular Crane List view without changing side-panel image upload.
+- Synced the Crane image to the linked Item's native image field and added a backfill patch for existing Items.
 
 For the next change: inspect `git status` first. Use the commands in [README.md](../README.md) for migration and tests, and update this page with meaningful new milestones.

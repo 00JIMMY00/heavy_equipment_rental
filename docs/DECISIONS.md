@@ -10,3 +10,5 @@ These reflect the latest user requests and current implementation (2026-10-22):
 6. Retain migration patches for legacy records and uploads. Older design documents in the repository can conflict with these decisions; the latest user instruction and current code take precedence.
 7. Crane master data includes a license plate. Its active reference prices are Hour, Day, and Month within Crane Details. Historical Year prices are archived in a hidden field during migration. Connections uses Frappe's native dashboard.
 8. The Crane image is uploaded from the side panel and must be public; the form has no image section. The linked ERPNext Item shows a read-only copy of Crane period prices. Availability uses a compact monthly reservation calendar and appears only after the Crane is saved.
+9. Show the Crane's public image as a thumbnail in the regular List view while keeping its upload field hidden on the form.
+10. The linked ERPNext Item uses its native image field to mirror the Crane image, including image changes and removal.

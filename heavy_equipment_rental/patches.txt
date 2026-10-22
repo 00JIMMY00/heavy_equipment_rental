@@ -15,3 +15,4 @@ heavy_equipment_rental.patches.backfill_driver_hours
 heavy_equipment_rental.patches.archive_year_crane_prices
 heavy_equipment_rental.patches.sync_crane_item_prices
 heavy_equipment_rental.patches.make_crane_images_public
+heavy_equipment_rental.patches.sync_crane_item_images

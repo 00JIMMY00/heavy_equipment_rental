@@ -1,4 +1,4 @@
-"""Show Crane reference prices on its linked ERPNext Item."""
+"""Mirror Crane reference prices and image on its linked ERPNext Item."""
 
 import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
@@ -30,9 +30,13 @@ def sync_crane_item_prices(crane):
 		return
 	item = frappe.get_doc("Item", crane.item)
 	prices = [(row.period, row.price) for row in crane.period_prices]
-	if [(row.period, row.price) for row in item.get("period_prices", [])] == prices:
+	image = crane.crane_image or None
+	prices_changed = [(row.period, row.price) for row in item.get("period_prices", [])] != prices
+	if not prices_changed and (item.image or None) == image:
 		return
-	item.set("period_prices", [
-		{"period": period, "price": price} for period, price in prices
-	])
+	if prices_changed:
+		item.set("period_prices", [
+			{"period": period, "price": price} for period, price in prices
+		])
+	item.image = image
 	item.save(ignore_permissions=True)

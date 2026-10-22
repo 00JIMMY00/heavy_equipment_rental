@@ -118,9 +118,11 @@
   {
    "fieldname": "crane_image",
    "fieldtype": "Attach Image",
-   "label": "Crane Image",
+   "label": "Photo",
    "hidden": 1,
-   "make_attachment_public": 1
+   "make_attachment_public": 1,
+   "in_list_view": 1,
+   "columns": 1
   },
   {
    "fieldname": "legacy_year_price",
@@ -147,6 +149,7 @@
   "identity_section",
   "naming_series",
   "crane_name",
+  "crane_image",
   "model",
   "license_plate",
   "specs_col",
@@ -157,7 +160,6 @@
   "pricing_section",
   "period_prices",
   "legacy_year_price",
-  "crane_image",
   "availability_tab",
   "availability_section",
   "availability_overview",
