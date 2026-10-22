@@ -16,5 +16,6 @@ As of 2026-10-22:
 - The rental workflow test passed with two new draft invoices across two Assignments and no duplicate invoices on retry.
 - Removed rental-owned logo and theme assets/hooks and declared `arab_erp_theme` as a required app. Migrated historical Expense Types and Expense Entry amounts to the shared models, linked maintenance to shared types, and handed prior site branding to the base theme. Migrated `cranes-dev2.arab-erp.com`; both rental workflow tests, including completed maintenance expense posting, passed.
 - Added an optional Crane Assignment link to the shared Expense Entry alongside the existing optional Crane link. A saved Crane Assignment now offers Create → Expense with its Assignment prefilled.
+- Enabled title display for the shared Expense Entry Type links so Expense Entry expense rows show the type name instead of its ID.
 
 For the next change: inspect `git status` first. Use the commands in [README.md](../README.md) for migration and tests, and update this page with meaningful new milestones.

@@ -10,6 +10,14 @@ from heavy_equipment_rental.item_prices import install_item_price_field
 
 
 def execute():
+	if not frappe.get_meta("Expense Entry Type").show_title_field_in_link:
+		frappe.make_property_setter({
+			"doctype": "Expense Entry Type",
+			"doctype_or_field": "DocType",
+			"property": "show_title_field_in_link",
+			"value": "1",
+			"property_type": "Check",
+		}, module="Heavy Equipment Rental")
 	for role in ("Projects Manager", "Projects User"):
 		if not frappe.db.exists(
 			"Custom DocPerm", {"parent": "Mode of Payment", "role": role, "permlevel": 0, "if_owner": 0}

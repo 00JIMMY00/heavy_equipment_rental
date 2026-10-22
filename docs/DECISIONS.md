@@ -15,3 +15,4 @@ These reflect the latest user requests and current implementation (2026-10-22):
 11. On a saved Crane, the Create menu starts an Expense, Maintenance record, or Timesheet with the Crane preselected. Sales Invoice creates draft invoices from that Crane's submitted, unbilled Timesheets, one invoice per Assignment because Assignments may have different customers.
 12. `arab_erp_theme` owns site branding, Expense Entry, and Expense Entry Type. Heavy Equipment Rental depends on it, extends its expense records with crane links, and migrates the previous rental Expense Types and amounts into the shared models.
 13. Expense Entry has optional Crane and Crane Assignment links supplied by Heavy Equipment Rental. Create → Expense on either saved record opens the shared Expense Entry with its source link prefilled.
+14. Show Expense Entry Type titles in links, including the Expense Entry child table; keep the type ID as the stored link value.
