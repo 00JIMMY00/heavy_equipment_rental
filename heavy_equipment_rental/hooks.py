@@ -26,6 +26,9 @@ after_install = ["heavy_equipment_rental.setup.execute", "heavy_equipment_rental
 after_migrate = ["heavy_equipment_rental.setup.execute", "heavy_equipment_rental.branding.apply_branding"]
 
 doc_events = {
+	"Purchase Invoice": {
+		"on_cancel": "heavy_equipment_rental.purchasing.allow_timesheet_invoice_cancel",
+	},
 	"Journal Entry": {
 		"on_cancel": "heavy_equipment_rental.billing.clear_direct_driver_payment_link",
 	},

@@ -1,6 +1,6 @@
 # Progress
 
-As of 2026-10-27:
+As of 2026-10-30:
 
 - Simplified Assignment/Timesheet entry, removed the custom `Crane Project` DocType, and migrated historical links while leaving native ERPNext `Project` intact.
 - Removed duplicate rental date entry on Timesheets; a new Assignment uses the Timesheet period. Added optional default driver, per-row driver overrides, hard-copy attachment, native Connections dashboard, and a calculated Hours by Driver table.
@@ -23,5 +23,9 @@ As of 2026-10-27:
 - Set the supplied yellow mobile crane PNG as the main Desk/login/app logo under a distinct `mobile-crane-logo.png` URL so browsers request the correct image instead of reusing the earlier logo URL.
 
 - Refined native form tabs to share a continuous bar background in both themes, removing the alternating white blocks. Active tabs use a consistent yellow underline; hover and keyboard focus keep the shared surface intact.
+
+- Added Supplier to rented Cranes and a conditional Supplier Purchase section on Timesheets with Hour/Day/Month, quantity, and price per unit for the existing service period. Submitting creates and submits a native Purchase Invoice for the linked Crane Item, using the Assignment company currency and normal accounting permissions. Historical submitted work is not retroactively invoiced.
+- Added Create → Payment on saved Cranes and submitted, invoiced Timesheets. It opens a draft native supplier Payment Entry against an unpaid submitted invoice, offering invoice selection when needed. Added Purchase Invoice to Timesheet Connections, protected invoice links, and invoice-first cancellation while preserving the historical reference.
+- Migrated `cranes-dev2.arab-erp.com`. All four purchasing integration tests and both existing rental workflow tests passed, covering unit pricing, submitted invoices/GL entries, duplicate prevention, payment creation/posting, paid-invoice exclusion, cancellation/amendment, and accounting permissions. Browser checks passed for conditional Supplier/purchase fields, required terms, payment helper loading, desktop/mobile form widths, and no JavaScript errors. Python/JavaScript syntax and whitespace checks passed. Restored the site's original disabled test setting after verification.
 
 For the next change: inspect `git status` first. Use the commands in [README.md](../README.md) for migration and tests, and update this page with meaningful new milestones.

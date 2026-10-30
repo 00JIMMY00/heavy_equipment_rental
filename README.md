@@ -32,6 +32,15 @@ Extend the Assignment explicitly if work continues beyond its booked dates. The 
 - From a saved Crane's **Create** menu, start an Expense, Maintenance record, or Timesheet with the Crane preselected. **Sales Invoice** creates draft invoices for the Crane's submitted, unbilled Timesheets, grouped by Assignment so each invoice has one customer.
 - The shared Expense Entry has optional Crane and Crane Assignment links supplied by this app. **Create → Expense** on a saved Crane or Crane Assignment opens a new Expense Entry with the corresponding link filled in; neither link is required for other expenses.
 
+## Rented cranes and supplier payments
+
+1. Set the Crane's Ownership Type to **Rented** and select its ERPNext **Supplier**.
+2. On its Timesheet, enter **Purchase Unit** (Hour, Day, or Month), **Purchase Quantity**, and **Purchase Price per Unit** in **Supplier Purchase**. The existing Period Start/End are the service dates; prices use the Assignment company's currency. Sales rental terms remain separate.
+3. Submitting the Timesheet automatically creates and submits one **Purchase Invoice** for the Crane's linked Item. Users need normal ERPNext Purchase Invoice create and submit permissions. The Item must allow purchases, and standard supplier/company accounting must be configured. Failed invoice posting rolls back Timesheet submission.
+4. Use **Create → Payment** on a saved Crane or submitted, invoiced Timesheet. Choose an unpaid invoice if several are available. Review the draft native **Payment Entry**, choose bank/payment details and amount, then save and submit it. ERPNext Payment Entry create permission is required; this action does not submit a payment automatically.
+
+Cancel the Purchase Invoice before cancelling its Timesheet. To correct submitted work, cancel both and amend the Timesheet; its replacement gets a new invoice. Existing submitted Timesheets do not create retroactive Purchase Invoices. Existing rented Cranes need their Supplier selected before their next save or new Timesheet.
+
 ## Existing records
 
 On migration, existing Crane Project or native Project references are used once to populate Assignment customer, company, and location, and to link historical Timesheets to Assignments. A legacy project name becomes the location when no separate location existed. Review those locations and any old overlapping bookings or zero rates before invoicing historical work. The custom Crane Project DocType is removed after migration; ERPNext's native Project DocType is unchanged. Existing signed Timesheet uploads move to the new hard-copy attachment field. Previous Year reference prices move to a hidden legacy field on Crane.
@@ -60,6 +69,12 @@ With tests enabled on a development site:
 
 ```bash
 bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.test_rental_workflow
+```
+
+Purchasing integration tests:
+
+```bash
+bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet
 ```
 
 ## Industrial theme

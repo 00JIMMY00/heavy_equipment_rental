@@ -14,6 +14,12 @@ frappe.ui.form.on("Crane", {
     refresh(frm) {
         frm.toggle_display("availability_tab", !frm.is_new());
         if (frm.is_new()) return;
+        if (frappe.model.can_create("Payment Entry")) {
+            frm.add_custom_button(__("Payment"), async () => {
+                await frappe.require("/assets/heavy_equipment_rental/js/rental_payments.js");
+                return heavy_equipment_rental.create_supplier_payment(frm);
+            }, __("Create"));
+        }
         frm.add_custom_button(__("Resource Calendar"), () => {
             window.location.href = `/rental-calendar/timeline?crane=${encodeURIComponent(frm.doc.name)}`;
         }, __("View"));

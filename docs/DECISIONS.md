@@ -1,6 +1,6 @@
 # Current decisions
 
-These reflect the latest user requests and current implementation (2026-10-27):
+These reflect the latest user requests and current implementation (2026-10-30):
 
 1. Keep the rental workflow centered on **Crane Assignment** and **Crane Timesheet**. Do not restore the custom `Crane Project` or its old status workflow.
 2. A Timesheet has one crane. When no Assignment covers its period, saving creates one using `period_start` and `period_end`; users enter the billing unit and rate once.
@@ -17,3 +17,5 @@ These reflect the latest user requests and current implementation (2026-10-27):
 13. Expense Entry has optional Crane and Crane Assignment links supplied by Heavy Equipment Rental. Create → Expense on either saved record opens the shared Expense Entry with its source link prefilled.
 14. Show Expense Entry Type titles in links, including the Expense Entry child table; keep the type ID as the stored link value.
 15. HER owns its premium industrial theme and all branding assets. Keep theme changes within this app, with yellow/graphite/steel light and dark modes, the supplied crane PNG as logo/favicon, and the supplied GIF for native loading states. Keep workspace structure/order, business logic, DocTypes, and permissions unchanged. Do not modify `arab_erp_theme` or Frappe core. Preserve unrelated custom site branding; apply HER defaults through a separate, idempotent presentation-only hook.
+16. Rented Cranes require an ERPNext Supplier. Their Timesheets show Supplier Purchase terms: Hour/Day/Month, quantity, and positive price per unit, covering the existing Timesheet period. Prices use the Assignment company currency. Submission creates and submits one native Purchase Invoice using the Crane's linked service Item in the same transaction; normal Purchase Invoice create/submit permissions apply. Hour charges retain quantity/rate; Day and Month charges use a single service line with the entered quantity, unit and price in its description, consistent with sales billing. Owned Cranes keep the existing workflow.
+17. Create → Payment on a saved Crane or an invoiced, submitted Timesheet opens an unsaved native supplier Payment Entry against an unpaid submitted Purchase Invoice. Choose an invoice when a Crane has several; ERPNext handles bank details, partial payments, and payment submission. Cancel the Purchase Invoice before cancelling its Timesheet; retain the historical link and use a Timesheet amendment for corrected work. Existing submitted Timesheets are not retroactively purchased, and historical master data is retained.

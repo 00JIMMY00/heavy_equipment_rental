@@ -42,6 +42,7 @@ class Crane(Document):
 			"stock_uom": "Hour",
 			"is_stock_item": 0,
 			"is_sales_item": 1,
+			"is_purchase_item": 1,
 		})
 		item.insert(ignore_permissions=True)
 		self.item = item.name
@@ -49,6 +50,8 @@ class Crane(Document):
 		return item.name
 
 	def validate(self):
+		if self.ownership_type == "Rented" and not self.supplier:
+			frappe.throw(_("Select a Supplier for a rented Crane."))
 		if self.crane_image and "/private/files/" in self.crane_image:
 			frappe.throw(_("The Crane image must be public. Upload it from the sidebar."))
 		self.crane_list_image = self.crane_image

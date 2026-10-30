@@ -59,6 +59,13 @@ def find_assignments(crane, customer, location, period_start, period_end):
 
 class CraneTimesheet(Document):
     def before_validate(self):
+        previous = self.get_doc_before_save()
+        if not previous or previous.docstatus == 0:
+            crane = frappe.get_doc("Crane", self.crane) if self.crane else None
+            if crane:
+                crane.check_permission("read")
+            self.crane_ownership_type = crane.ownership_type if crane else None
+            self.purchase_supplier = crane.supplier if crane and crane.ownership_type == "Rented" else None
         if self.driver:
             for row in self.timesheet_entries:
                 if not row.employee:
@@ -100,8 +107,21 @@ class CraneTimesheet(Document):
         before = self.get_doc_before_save()
         if before and self.sales_invoice != before.sales_invoice:
             frappe.throw(_("The Sales Invoice link is managed by Generate Sales Invoice."))
+        if before and self.purchase_invoice != before.purchase_invoice:
+            frappe.throw(_("The Purchase Invoice link is managed automatically."))
 
     def validate(self):
+        previous = self.get_doc_before_save()
+        if (self.purchase_invoice or None) != (previous.purchase_invoice if previous else None):
+            frappe.throw(_("The Purchase Invoice link is managed automatically."))
+        if self.crane_ownership_type == "Rented" and self.docstatus != 2 and not (
+            previous and previous.docstatus == 1
+        ):
+            if not self.purchase_supplier:
+                frappe.throw(_("Select a Supplier on the rented Crane first."))
+            if (self.purchase_rate_unit not in ("Hour", "Day", "Month")
+                    or flt(self.purchase_qty) <= 0 or flt(self.purchase_rate) <= 0):
+                frappe.throw(_("Enter a Purchase Unit, positive Purchase Quantity and Purchase Price per Unit."))
         check_date_order(self.period_start, self.period_end, _("Timesheet period"))
         if not self.assignment:
             frappe.throw(_("Select a Crane Assignment or enter billing terms for a new rental."))
@@ -121,7 +141,6 @@ class CraneTimesheet(Document):
         if not self.timesheet_entries and self.docstatus == 1:
             frappe.throw(_("Add at least one shift before submitting the Timesheet."))
         intervals, operator_hours, flat_days, flat_rows = [], 0, {}, []
-        previous = self.get_doc_before_save()
         submitted_update = bool(previous and previous.docstatus == 1 and self.docstatus == 1)
         employees = {row.employee for row in self.timesheet_entries if row.employee}
         driver_names = {row.name: row.employee_name for row in frappe.get_all(
@@ -196,9 +215,17 @@ class CraneTimesheet(Document):
                     frappe.throw(_("Crane {0}: shift overlaps submitted Timesheet {1}.").format(
                         crane_display_name(self.crane), other.timesheet))
 
+    def on_submit(self):
+        if self.crane_ownership_type == "Rented":
+            from heavy_equipment_rental.purchasing import create_purchase_invoice
+
+            create_purchase_invoice(self)
+
     def before_cancel(self):
         lock_cranes([self.crane])
         assignment_doc(self.assignment, "read", lock=True)
+        if self.purchase_invoice and frappe.db.get_value("Purchase Invoice", self.purchase_invoice, "docstatus") != 2:
+            frappe.throw(_("Cancel Purchase Invoice {0} before cancelling this Timesheet.").format(self.purchase_invoice))
         invoice = frappe.db.get_value("Crane Timesheet", self.name, "sales_invoice")
         if invoice and frappe.db.exists("Sales Invoice", invoice):
             if frappe.db.get_value("Sales Invoice", invoice, "docstatus") != 2:

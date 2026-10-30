@@ -17,6 +17,7 @@
   "specs_col",
   "capacity_tons",
   "ownership_type",
+  "supplier",
   "column_break_mjyn",
   "operational_condition",
   "maintenance_condition_managed",
@@ -178,6 +179,14 @@
   {
    "fieldname": "column_break_mjyn",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier",
+   "depends_on": "eval:doc.ownership_type=='Rented'",
+   "mandatory_depends_on": "eval:doc.ownership_type=='Rented'"
   }
  ],
  "grid_page_length": 100,

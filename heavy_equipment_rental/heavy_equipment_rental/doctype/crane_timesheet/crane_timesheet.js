@@ -107,7 +107,19 @@ frappe.ui.form.on("Crane Timesheet", {
             await frm.set_value({ customer: message.customer, location: message.location });
         }
     },
-    crane: suggest_assignment,
+    async crane(frm) {
+        if (frm.doc.docstatus === 0) {
+            const name = frm.doc.crane;
+            const crane = name ? (await frappe.db.get_value("Crane", name,
+                ["ownership_type", "supplier"])).message : null;
+            if (frm.doc.crane !== name) return;
+            await frm.set_value({
+                crane_ownership_type: crane?.ownership_type || "",
+                purchase_supplier: crane?.ownership_type === "Rented" ? crane.supplier : "",
+            });
+        }
+        suggest_assignment(frm);
+    },
     customer: suggest_assignment,
     location: suggest_assignment,
     period_start(frm) { fill_default_days(frm); suggest_assignment(frm); },
@@ -127,6 +139,12 @@ frappe.ui.form.on("Crane Timesheet", {
         }
     },
     refresh(frm) {
+        if (frm.doc.docstatus === 1 && frm.doc.purchase_invoice && frappe.model.can_create("Payment Entry")) {
+            frm.add_custom_button(__("Payment"), async () => {
+                await frappe.require("/assets/heavy_equipment_rental/js/rental_payments.js");
+                return heavy_equipment_rental.create_supplier_payment(frm);
+            }, __("Create"));
+        }
         if (frm.doc.docstatus === 0 && !(frm.doc.timesheet_entries || []).length) fill_default_days(frm);
         if (frm.doc.docstatus === 1 && frappe.model.can_create("Sales Invoice"))
             frm.add_custom_button(__("Generate Sales Invoice"), () => frappe.call({
