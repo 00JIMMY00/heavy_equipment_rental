@@ -1,0 +1,46 @@
+/* Only the login surface is restyled; authentication markup and actions stay native. */
+html body:has(#page-login) {
+  color: var(--her-ink);
+  background:
+    radial-gradient(ellipse at 15% 0%, rgb(245 197 24 / 10%), transparent 52%),
+    linear-gradient(135deg, var(--her-canvas), var(--her-subtle));
+}
+html body:has(#page-login) .navbar {
+  background: #171d22;
+  border-bottom: 2px solid var(--her-yellow);
+  box-shadow: 0 3px 14px rgb(0 0 0 / 12%);
+}
+html body:has(#page-login) .navbar a,
+html body:has(#page-login) .navbar .icon { color: #e2e7eb; stroke: #e2e7eb; }
+html body:has(#page-login) .navbar-brand img { height: 36px; width: 46px; object-fit: contain; background: #fff; border-radius: 6px; padding: 2px; }
+html #page-login .page-card-head .app-logo {
+  width: 144px;
+  height: 116px;
+  max-width: 144px;
+  max-height: 116px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 10px rgb(0 0 0 / 10%));
+}
+html #page-login .page-card-head h4 { color: var(--her-heading); font-size: 22px; font-weight: 750; letter-spacing: -.03em; }
+html #page-login .page-card-head p { color: var(--her-muted); }
+html #page-login .page-card,
+html #page-login .login-content.page-card {
+  background: var(--her-surface);
+  border: 1px solid var(--her-line);
+  border-top: 3px solid var(--her-yellow);
+  border-radius: 14px;
+  box-shadow: var(--her-shadow-raised);
+}
+html #page-login .form-control { background: var(--her-field); color: var(--her-ink); border: 1px solid var(--her-line); border-radius: 8px; }
+html #page-login .form-control:focus { background: var(--her-surface); border-color: var(--her-accent-text); box-shadow: var(--her-focus); }
+html #page-login .form-control::placeholder { color: var(--her-muted); }
+html #page-login .btn-primary { background: var(--her-yellow); color: var(--her-on-yellow); border: 1px solid var(--her-yellow); border-radius: 8px; font-weight: 700; }
+html #page-login .btn-primary:hover { background: var(--her-yellow-hover); }
+html #page-login a { color: var(--her-accent-text); }
+html #page-login :focus-visible { outline: 2px solid var(--her-accent-text); outline-offset: 3px; }
+html #page-login .text-muted,
+html #page-login .forgot-password-message { color: var(--her-muted) !important; }
+@media (max-width: 400px) {
+  html #page-login .page-card { padding: 24px 18px; }
+  html #page-login .page-card-head h4 { font-size: 20px; }
+}

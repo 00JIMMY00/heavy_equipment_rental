@@ -1,0 +1,105 @@
+/* Calendar and timeline share HER tokens with Desk. No calendar data or layout changes. */
+html { background: var(--her-canvas); color: var(--her-ink); }
+body { background: var(--her-canvas); color: var(--her-ink); -webkit-font-smoothing: antialiased; }
+.rental-page, .timeline-page { color: var(--her-ink); }
+.hero, .timeline-hero {
+  background: radial-gradient(ellipse at 85% 5%, rgb(245 197 24 / 12%), transparent 58%), #20262b;
+  border: 1px solid #39434b;
+  border-bottom: 3px solid var(--her-yellow);
+  border-radius: 16px;
+  box-shadow: var(--her-shadow);
+}
+.eyebrow, .timeline-kicker { color: #f5ce4b; }
+.hero p, .timeline-hero p { color: #c0cad2; }
+.hero-links, .hero-links a, .timeline-links a { color: #dce2e6; }
+.hero-links a:hover, .timeline-links a:hover { color: #ffe079; }
+.hero-date, .timeline-hero-stat { border-radius: 10px; background: rgb(255 255 255 / 5%); }
+.hero-date span, .timeline-hero-stat span { color: #c0cad2; }
+.art-ring { border-color: rgb(245 197 24 / 10%); }
+.art-bar.a, .art-bar.b, .art-bar.c { background: rgb(245 197 24 / 10%); }
+.summary-card, .timeline-summary-card, .calendar-panel, .timeline-panel {
+  background: var(--her-surface);
+  border-color: var(--her-line);
+  border-radius: 12px;
+  box-shadow: var(--her-shadow);
+}
+.summary-card strong, .timeline-summary-card strong,
+.panel-heading h2, .timeline-head h2 { color: var(--her-heading); }
+.summary-card span:not(.summary-icon), .timeline-summary-card span,
+.panel-heading p, .timeline-head p, .calendar-footnote, .timeline-footer { color: var(--her-muted); }
+.summary-icon { background: color-mix(in srgb, var(--accent) 12%, var(--her-surface)); }
+.total-card { --accent: var(--her-accent-text); }
+.panel-eyebrow, .timeline-overline { color: var(--her-accent-text); }
+.refresh-button, .filter-pill, .timeline-filters button,
+.timeline-nav button, .timeline-switch button, .timeline-combobox-input,
+.timeline-combobox-list, .timeline-inline-dates input {
+  background: var(--her-surface);
+  color: var(--her-ink);
+  border-color: var(--her-line-strong);
+}
+.refresh-button:hover, .filter-pill:hover, .timeline-nav button:hover,
+.timeline-switch button:hover { background: var(--her-hover); }
+.filter-pill small, .timeline-switch { background: var(--her-hover); color: var(--her-muted); }
+.search, .timeline-search, .timeline-control-row .timeline-search {
+  background: var(--her-surface);
+  border-color: var(--her-line-strong);
+  color: var(--her-muted);
+}
+.search input, .timeline-search input, .timeline-combobox-input input { color: var(--her-ink); }
+.search input::placeholder, .timeline-search input::placeholder,
+.timeline-combobox-input input::placeholder { color: var(--her-muted); }
+.search:focus-within, .timeline-search:focus-within,
+.timeline-combobox-input:focus-within { outline: 2px solid var(--her-accent-text); outline-offset: 2px; }
+.calendar-frame, .timeline-scroll { border-color: var(--her-line); background: var(--her-surface); }
+.calendar-scope, .timeline-switch button.active { background: var(--her-accent-soft); border-color: var(--her-line); color: var(--her-accent-text); }
+.calendar-scope strong, .calendar-scope button { color: var(--her-accent-text); }
+.timeline-toolbar { background: var(--her-subtle); border-color: var(--her-line); }
+.timeline-category-row { border-color: var(--her-line); }
+.timeline-control-label, .timeline-combobox > label,
+.timeline-inline-dates label { color: var(--her-muted); }
+.timeline-combobox-list { box-shadow: var(--her-shadow-raised); }
+.timeline-combobox-option { color: var(--her-ink); }
+.timeline-combobox-option:hover, .timeline-combobox-option.active { background: var(--her-accent-soft); color: var(--her-accent-text); }
+.timeline-combobox-option small, .timeline-combobox-empty { color: var(--her-muted); }
+.timeline-inline-dates button { background: var(--her-yellow); color: var(--her-on-yellow); }
+.timeline-inline-dates button:hover { background: var(--her-yellow-hover); }
+.timeline-row, .timeline-resource, .timeline-resource-head,
+.timeline-group-name, .timeline-day, .timeline-cell { border-color: var(--her-line); }
+.timeline-header, .timeline-dates, .timeline-resource-head,
+.timeline-day.weekend, .timeline-cell.weekend { background: var(--her-subtle); color: var(--her-muted); }
+.timeline-day, .timeline-day small, .timeline-resource-head span { color: var(--her-muted); }
+.timeline-group, .timeline-group-name, .timeline-group .timeline-track { background: var(--her-hover); color: var(--her-ink); }
+.timeline-resource, .timeline-lane { background: var(--her-surface); color: var(--her-ink); }
+.timeline-resource small, .timeline-group-name small, .timeline-empty { color: var(--her-muted); }
+.timeline-data-row:nth-child(even) .timeline-resource,
+.timeline-data-row:nth-child(even) .timeline-lane { background: var(--her-subtle); }
+.timeline-data-row:hover .timeline-resource,
+.timeline-data-row:hover .timeline-lane { background: var(--her-hover); }
+.timeline-day.today, .timeline-cell.today { background: var(--her-accent-soft); color: var(--her-accent-text); border-inline-start-color: var(--her-yellow); }
+.event-detail, .event-detail h3, .timeline-detail h3 { color: var(--her-heading); }
+.detail-row strong, .timeline-detail dd { color: var(--her-ink); }
+.detail-row span, .detail-status, .detail-close,
+.timeline-detail dt, .timeline-detail-status, .timeline-close { color: var(--her-muted); }
+.timeline-detail { background: var(--her-surface-raised); border: 1px solid var(--her-line); box-shadow: var(--her-shadow-raised); }
+.timeline-detail dl div { border-color: var(--her-line); }
+.open-record, .timeline-detail > a { background: var(--her-accent-soft); color: var(--her-accent-text); }
+.open-record:hover, .timeline-detail > a:hover { background: var(--her-hover); }
+.her-loading-mark {
+  display: inline-block;
+  width: 30px;
+  height: 25px;
+  background: var(--her-loader-image) center / contain no-repeat;
+  vertical-align: middle;
+}
+button:focus-visible, a:focus-visible { outline: 2px solid var(--her-accent-text); outline-offset: 3px; }
+@media (max-width: 650px) {
+  .timeline-toolbar > * { min-width: 0; }
+  .timeline-views { flex-wrap: wrap; }
+  .timeline-inline-dates label { min-width: 0; }
+}
+@media (max-width: 400px) {
+  .timeline-head { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

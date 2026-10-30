@@ -1,6 +1,6 @@
 # Current decisions
 
-These reflect the latest user requests and current implementation (2026-10-22):
+These reflect the latest user requests and current implementation (2026-10-27):
 
 1. Keep the rental workflow centered on **Crane Assignment** and **Crane Timesheet**. Do not restore the custom `Crane Project` or its old status workflow.
 2. A Timesheet has one crane. When no Assignment covers its period, saving creates one using `period_start` and `period_end`; users enter the billing unit and rate once.
@@ -13,6 +13,7 @@ These reflect the latest user requests and current implementation (2026-10-22):
 9. Show the Crane's public image as a thumbnail in the regular List view through a hidden, read-only URL field. Frappe does not allow `In List View` on an `Attach Image` field. Keep the image upload field hidden on the form.
 10. The linked ERPNext Item uses its native image field to mirror the Crane image, including image changes and removal.
 11. On a saved Crane, the Create menu starts an Expense, Maintenance record, or Timesheet with the Crane preselected. Sales Invoice creates draft invoices from that Crane's submitted, unbilled Timesheets, one invoice per Assignment because Assignments may have different customers.
-12. `arab_erp_theme` owns site branding, Expense Entry, and Expense Entry Type. Heavy Equipment Rental depends on it, extends its expense records with crane links, and migrates the previous rental Expense Types and amounts into the shared models.
+12. `arab_erp_theme` owns Expense Entry and Expense Entry Type. Heavy Equipment Rental depends on it, extends its expense records with crane links, and migrates the previous rental Expense Types and amounts into the shared models. Site branding is now owned by HER (decision 15).
 13. Expense Entry has optional Crane and Crane Assignment links supplied by Heavy Equipment Rental. Create → Expense on either saved record opens the shared Expense Entry with its source link prefilled.
 14. Show Expense Entry Type titles in links, including the Expense Entry child table; keep the type ID as the stored link value.
+15. HER owns its premium industrial theme and all branding assets. Keep theme changes within this app, with yellow/graphite/steel light and dark modes, the supplied crane PNG as logo/favicon, and the supplied GIF for native loading states. Keep workspace structure/order, business logic, DocTypes, and permissions unchanged. Do not modify `arab_erp_theme` or Frappe core. Preserve unrelated custom site branding; apply HER defaults through a separate, idempotent presentation-only hook.

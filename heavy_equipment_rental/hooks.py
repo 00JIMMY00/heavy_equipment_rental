@@ -4,10 +4,26 @@ app_publisher = "jimmy"
 app_description = "Crane assignments, timesheets, maintenance and direct invoicing"
 app_email = "j@gmail.com"
 app_license = "mit"
-app_include_css = ["/assets/heavy_equipment_rental/css/crane_availability.css"]
+app_logo_url = "/assets/heavy_equipment_rental/branding/mobile-crane-logo.png"
+app_include_css = [
+	"/assets/heavy_equipment_rental/css/crane_availability.css",
+	"/assets/heavy_equipment_rental/css/industrial_tokens.css",
+	"/assets/heavy_equipment_rental/css/industrial_desk.css",
+	"/assets/heavy_equipment_rental/css/industrial_loading.css",
+]
+web_include_css = [
+	"/assets/heavy_equipment_rental/css/industrial_tokens.css",
+	"/assets/heavy_equipment_rental/css/industrial_loading.css",
+	"/assets/heavy_equipment_rental/css/industrial_web.css",
+]
+web_include_js = ["/assets/heavy_equipment_rental/js/industrial_login.js"]
+website_context = {
+	"favicon": "/assets/heavy_equipment_rental/branding/favicon.ico",
+	"splash_image": "/assets/heavy_equipment_rental/branding/loader.gif",
+}
 required_apps = ["erpnext", "arab_erp_theme"]
-after_install = "heavy_equipment_rental.setup.execute"
-after_migrate = "heavy_equipment_rental.setup.execute"
+after_install = ["heavy_equipment_rental.setup.execute", "heavy_equipment_rental.branding.apply_branding"]
+after_migrate = ["heavy_equipment_rental.setup.execute", "heavy_equipment_rental.branding.apply_branding"]
 
 doc_events = {
 	"Journal Entry": {

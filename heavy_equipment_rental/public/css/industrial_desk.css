@@ -1,0 +1,206 @@
+/* Presentation only. Keep native workspace grids, routes, controls and breakpoints. */
+html body {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Graphite masthead with a small machinery badge. */
+html .navbar {
+  background: var(--navbar-bg);
+  border-bottom: 2px solid var(--her-yellow);
+  box-shadow: 0 3px 14px rgb(0 0 0 / 12%);
+}
+html .navbar .navbar-home { gap: 10px; }
+html .navbar .navbar-home::after {
+  content: "HER";
+  color: #f2f4f5;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+html .navbar .navbar-home .app-logo {
+  width: 43px;
+  height: 36px;
+  max-height: 36px;
+  padding: 2px;
+  border: 1px solid #48515a;
+  border-radius: 6px;
+  background: #fff;
+  object-fit: contain;
+  filter: none;
+}
+html .navbar #navbar-breadcrumbs a,
+html .navbar #navbar-breadcrumbs li,
+html .navbar .navbar-nav > .nav-item > .nav-link,
+html .navbar .navbar-nav > .nav-item > .nav-link.text-muted { color: #dce2e6 !important; }
+html .navbar #navbar-breadcrumbs a:hover,
+html .navbar .navbar-nav > .nav-item > .nav-link:hover { color: var(--her-yellow) !important; }
+html .navbar .navbar-nav > .nav-item > .nav-link svg,
+html .navbar .search-bar svg { stroke: #c4ced5 !important; --icon-stroke: #c4ced5; }
+html .navbar .search-bar input {
+  background: #2b333a !important;
+  color: #f2f4f5 !important;
+  border: 1px solid #46515a !important;
+  border-radius: 8px;
+}
+html .navbar .search-bar input::placeholder { color: #b9c3cb !important; }
+html .navbar .search-bar input:focus { border-color: var(--her-yellow) !important; box-shadow: var(--her-focus); }
+html .navbar .vertical-bar { border-color: #46515a; }
+
+/* The existing sidebar retains every item and its ordering. */
+html .desk-sidebar {
+  background: var(--her-sidebar);
+  border: 1px solid #39434b;
+  border-top: 3px solid var(--her-yellow);
+  border-radius: 12px;
+  padding: 14px 12px;
+  box-shadow: var(--her-shadow);
+}
+html .desk-sidebar .standard-sidebar-label,
+html .desk-sidebar .standard-sidebar-label .section-title,
+html .desk-sidebar .standard-sidebar-label .text-muted { color: var(--her-sidebar-muted) !important; }
+html .desk-sidebar .standard-sidebar-label { font-size: 10px; letter-spacing: .1em; font-weight: 700; }
+html .desk-sidebar .standard-sidebar-item { color: var(--her-sidebar-text); border-radius: 7px; transition: background-color .15s ease; }
+html .desk-sidebar .standard-sidebar-item a,
+html .desk-sidebar .standard-sidebar-item .sidebar-item-label { color: inherit; }
+html .desk-sidebar .standard-sidebar-item svg,
+html .desk-sidebar .standard-sidebar-label svg { --icon-stroke: var(--her-sidebar-muted); stroke: var(--her-sidebar-muted); }
+html .desk-sidebar .standard-sidebar-item:hover { background: var(--her-sidebar-hover); color: #fff; }
+html .desk-sidebar .standard-sidebar-item.selected {
+  background: #3d3823;
+  color: #ffe079;
+  box-shadow: inset 3px 0 var(--her-yellow);
+}
+html[dir="rtl"] .desk-sidebar .standard-sidebar-item.selected { box-shadow: inset -3px 0 var(--her-yellow); }
+html .desk-sidebar .standard-sidebar-item.selected svg { --icon-stroke: #ffe079; stroke: #ffe079; }
+html .desk-sidebar .dropdown-menu { background: var(--her-sidebar); color: var(--her-sidebar-text); border-color: #53616b; }
+html .desk-sidebar .dropdown-item { color: var(--her-sidebar-text); }
+html .desk-sidebar .dropdown-item:hover { background: var(--her-sidebar-hover); }
+
+/* Quiet surfaces, stronger headings, and restrained accent details. */
+html .page-head { background: var(--her-canvas); }
+html .page-head .title-text { color: var(--her-heading); font-weight: 750; letter-spacing: -.025em; }
+html .layout-main-section.frappe-card,
+html .frappe-card { border: 1px solid var(--her-line); box-shadow: var(--her-shadow); border-radius: 12px; }
+html .widget { border-radius: 12px; border-color: var(--her-line); }
+html .widget.shortcut-widget-box,
+html .widget.links-widget-box,
+html .widget.number-widget-box,
+html .widget.dashboard-widget-box {
+  border: 1px solid var(--her-line);
+  box-shadow: var(--her-shadow);
+  padding: 14px;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+html .widget.shortcut-widget-box:hover,
+html .widget.links-widget-box:hover { border-color: var(--her-line-strong); box-shadow: 0 5px 18px rgb(0 0 0 / 8%); }
+html .widget.shortcut-widget-box .widget-head .widget-title { font-weight: 650; }
+html .widget.links-widget-box .widget-head .widget-title { color: var(--her-heading); font-weight: 700; }
+html .widget.number-widget-box .widget-body .number { font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
+html .widget-group .widget-group-head .widget-group-title { letter-spacing: -.02em; }
+html .widget.links-widget-box .link-item:hover { background: var(--her-subtle); border-radius: 6px; }
+
+/* Yellow commands keep dark text and icons, including pressed states. */
+html .btn { border-radius: 7px; font-weight: 550; transition: background-color .14s ease, box-shadow .14s ease; }
+html .btn.btn-primary,
+html .btn.btn-primary:focus,
+html .btn.btn-primary:hover {
+  background: var(--her-yellow);
+  color: var(--her-on-yellow);
+  border-color: var(--her-yellow);
+  box-shadow: 0 2px 3px rgb(53 42 0 / 12%);
+  filter: none;
+  font-weight: 700;
+  --icon-stroke: var(--her-on-yellow);
+}
+html .btn.btn-primary:hover { background: var(--her-yellow-hover); }
+html .btn.btn-primary:active,
+html[data-theme="dark"] .btn.btn-primary:active {
+  background: var(--her-yellow-hover) !important;
+  color: var(--her-on-yellow) !important;
+}
+html .btn.btn-primary:disabled,
+html .btn.btn-primary.disabled { opacity: .55; box-shadow: none; }
+html .btn.btn-default,
+html .btn.btn-secondary { border: 1px solid var(--her-line); background: var(--her-field); color: var(--her-ink); }
+html .btn:focus-visible,
+html .form-control:focus-visible,
+html a:focus-visible,
+html .icon-btn:focus-visible { outline: 2px solid var(--her-accent-text); outline-offset: 2px; box-shadow: var(--her-focus); }
+
+/* Controls retain native heights, field types, validation and read-only behavior. */
+html .form-control { border-radius: 7px; border: 1px solid transparent; color: var(--her-ink); }
+html .form-control:hover:not(:disabled):not([readonly]) { border-color: var(--her-line-strong); }
+html .form-control:focus { border-color: var(--her-accent-text); background: var(--her-surface); box-shadow: var(--her-focus); }
+html .frappe-control .control-label { color: var(--her-ink); font-size: 12px; font-weight: 600; }
+html .frappe-control .help-box { color: var(--her-muted); line-height: 1.5; }
+html .form-section .section-head { color: var(--her-heading); font-weight: 700; letter-spacing: -.01em; }
+html .form-section .section-head:not(.empty-section) { border-inline-start: 3px solid var(--her-yellow); padding-inline-start: 10px; }
+html .form-dashboard-section { border-color: var(--her-line); border-radius: 10px; }
+html .form-tabs-list { background: var(--her-subtle); border-bottom-color: var(--her-line); }
+/* Native links use card-bg; keep every tab transparent over the continuous bar. */
+html .form-tabs-list .form-tabs,
+html .form-tabs-list .form-tabs .nav-item { background: transparent; }
+html .form-tabs-list .form-tabs .nav-item .nav-link {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+html .form-tabs-list .form-tabs .nav-item .nav-link:hover { color: var(--her-heading); background: transparent; }
+html .form-tabs-list .form-tabs .nav-item .nav-link:focus-visible {
+  outline: 2px solid var(--her-accent-text);
+  outline-offset: -3px;
+}
+html .nav-tabs .nav-link.active,
+html .form-tabs-list .form-tabs .nav-item .nav-link.active { color: var(--her-accent-text); border-bottom-color: var(--her-yellow); font-weight: 700; }
+html .form-tabs-list .form-tabs .nav-item .nav-link.active {
+  background: transparent;
+  border-bottom: 2px solid var(--her-yellow);
+}
+html .form-sidebar .sidebar-image-section { border: 1px solid var(--her-line); padding: 4px; background: var(--her-surface); }
+
+/* Lists, child grids, and reports: precision without hiding status semantics. */
+html .list-row-head,
+html .grid-heading-row { background: var(--her-subtle); color: var(--her-muted); font-size: 12px; font-weight: 650; }
+html .list-row-container { border-radius: 0; border-bottom-color: var(--her-line); }
+html .list-row-container:hover { background: var(--her-subtle); }
+html .list-row-container .list-row:hover { background: transparent; }
+html .list-row-container:has(.list-row-checkbox:checked) { background: var(--her-accent-soft); }
+html .list-row .level-right,
+html .grid-body .grid-row .data-field,
+html .dt-cell--col-right { font-variant-numeric: tabular-nums; }
+html .form-grid { border-color: var(--her-line); border-radius: 9px; }
+html .grid-heading-row { border-radius: 9px 9px 0 0; }
+html .grid-body .grid-row:hover { background: var(--her-subtle); }
+html .datatable { --dt-border-color: var(--her-line); --dt-cell-bg: var(--her-surface); --dt-header-cell-bg: var(--her-subtle); --dt-text-color: var(--her-ink); }
+html .datatable .dt-row-header .dt-cell { background: var(--her-subtle); color: var(--her-muted); font-weight: 650; }
+html .datatable .dt-cell--highlight { background: var(--her-accent-soft); }
+
+/* Floating UI shares the same surface language. */
+html .modal-content,
+html .dropdown-menu,
+html .awesomplete > ul,
+html .popover { border: 1px solid var(--her-line); border-radius: 11px; box-shadow: var(--her-shadow-raised); }
+html .modal-header { border-bottom: 1px solid var(--her-line); }
+html .modal-title { color: var(--her-heading); font-weight: 700; letter-spacing: -.02em; }
+html .modal-footer { background: var(--her-subtle); border-top: 1px solid var(--her-line); border-radius: 0 0 11px 11px; }
+html .dropdown-item:hover,
+html .dropdown-item:focus { background: var(--her-hover); color: var(--her-ink); }
+html .awesomplete > ul > li[aria-selected="true"] { background: var(--her-accent-soft); color: var(--her-ink); }
+
+@media (max-width: 767px) {
+  html .navbar .navbar-home::after { font-size: 12px; letter-spacing: .08em; }
+  html .navbar .navbar-home { gap: 6px; }
+  html .navbar .navbar-home .app-logo { width: 35px; height: 30px; }
+  html .desk-sidebar { border-radius: 0 12px 12px 0; }
+  html[dir="rtl"] .desk-sidebar { border-radius: 12px 0 0 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html .btn, html .widget, html .desk-sidebar .standard-sidebar-item { transition: none; }
+}
+@media print {
+  html body { background: #fff; color: #000; }
+  html .frappe-card, html .layout-main-section.frappe-card { box-shadow: none; }
+}

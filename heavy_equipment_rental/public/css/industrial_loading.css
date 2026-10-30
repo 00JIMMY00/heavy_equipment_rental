@@ -1,0 +1,45 @@
+/* Native Frappe owns loader insertion/removal and freeze_count. No timers or overrides. */
+body > .splash {
+  padding: 22px 28px;
+  background: var(--her-surface);
+  border: 1px solid var(--her-line);
+  border-bottom: 3px solid var(--her-yellow);
+  border-radius: 14px;
+  box-shadow: var(--her-shadow-raised);
+}
+body > .splash img {
+  width: min(200px, 55vw);
+  height: auto;
+  max-width: 200px !important;
+  max-height: 170px !important;
+  object-fit: contain;
+}
+/* grid-form is a child-row editor backdrop, not a loading operation. */
+#freeze:not(.grid-form) { background: rgb(15 21 25 / 48%); backdrop-filter: blur(3px); }
+#freeze:not(.grid-form).in { opacity: 1; }
+#freeze:not(.grid-form) .freeze-message-container { padding: 20px; background: transparent; color: var(--her-ink); }
+#freeze:not(.grid-form) .freeze-message {
+  width: min(320px, calc(100vw - 40px));
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  padding: 24px;
+  text-align: center;
+  background: var(--her-surface);
+  border: 1px solid var(--her-line);
+  border-bottom: 3px solid var(--her-yellow);
+  border-radius: 14px;
+  box-shadow: var(--her-shadow-raised);
+}
+#freeze:not(.grid-form) .freeze-message::before {
+  content: "";
+  display: block;
+  width: min(190px, 100%);
+  aspect-ratio: 480 / 405;
+  margin: 0 auto 12px;
+  background: var(--her-loader-image) center / contain no-repeat;
+}
+#freeze:not(.grid-form) .freeze-message .lead { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.6; overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) {
+  body > .splash img { content: url("/assets/heavy_equipment_rental/branding/loader-still.png"); }
+  #freeze { transition: none; }
+}

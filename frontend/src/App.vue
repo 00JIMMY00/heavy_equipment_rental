@@ -104,7 +104,7 @@ function dateLabel(event) {
     <section class="calendar-panel">
       <div class="panel-heading">
         <div><div class="panel-eyebrow">SCHEDULE</div><h2>Plan at a glance</h2><p>Switch between month, week, day, and agenda views.</p></div>
-        <button class="refresh-button" type="button" :disabled="loading" @click="loadRange()"><span aria-hidden="true">↻</span> {{ loading ? 'Loading…' : 'Refresh' }}</button>
+        <button class="refresh-button" type="button" :disabled="loading" @click="loadRange()"><span v-if="loading" class="her-loading-mark" aria-hidden="true"></span><span v-else aria-hidden="true">↻</span> {{ loading ? 'Loading…' : 'Refresh' }}</button>
       </div>
       <div class="toolbar">
         <div v-if="assignmentScope" class="calendar-scope">Assignment: <strong>{{ assignmentScopeLabel }}</strong><button type="button" aria-label="Clear assignment filter" @click="clearAssignmentScope">×</button></div>
