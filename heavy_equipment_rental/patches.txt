@@ -19,3 +19,4 @@ heavy_equipment_rental.patches.sync_crane_item_images
 heavy_equipment_rental.patches.backfill_crane_list_images
 heavy_equipment_rental.patches.use_theme_expense_types
 heavy_equipment_rental.patches.hand_off_branding
+heavy_equipment_rental.patches.use_timesheet_purchase_interval

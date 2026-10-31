@@ -114,14 +114,17 @@ class CraneTimesheet(Document):
         previous = self.get_doc_before_save()
         if (self.purchase_invoice or None) != (previous.purchase_invoice if previous else None):
             frappe.throw(_("The Purchase Invoice link is managed automatically."))
+        # Submitted amounts are snapshots. Attachment edits must not recalculate them.
+        # Frappe still rejects changes to fields that do not allow edits after submission.
+        if previous and previous.docstatus == self.docstatus == 1:
+            return
         if self.crane_ownership_type == "Rented" and self.docstatus != 2 and not (
             previous and previous.docstatus == 1
         ):
             if not self.purchase_supplier:
                 frappe.throw(_("Select a Supplier on the rented Crane first."))
-            if (self.purchase_rate_unit not in ("Hour", "Day", "Month")
-                    or flt(self.purchase_qty) <= 0 or flt(self.purchase_rate) <= 0):
-                frappe.throw(_("Enter a Purchase Unit, positive Purchase Quantity and Purchase Price per Unit."))
+            if flt(self.purchase_rate) <= 0:
+                frappe.throw(_("Enter a positive Purchase Price per Unit."))
         check_date_order(self.period_start, self.period_end, _("Timesheet period"))
         if not self.assignment:
             frappe.throw(_("Select a Crane Assignment or enter billing terms for a new rental."))
@@ -133,6 +136,22 @@ class CraneTimesheet(Document):
                     if row.crane == self.crane and not row.cancelled]
         if not bookings:
             frappe.throw(_("Crane {0} is not in this Assignment.").format(crane_display_name(self.crane)))
+        if not previous or previous.docstatus == 0:
+            covering = [row for row in bookings if getdate(row.start_date) <= getdate(self.period_start)
+                        and getdate(row.expected_end_date) >= getdate(self.period_end)]
+            if len(covering) == 1:
+                self.rental_rate_unit = covering[0].rental_rate_unit
+                self.rental_rate = covering[0].rental_rate
+            elif self.crane_ownership_type == "Rented":
+                frappe.throw(_("The supplier rental interval must fit one booked Crane period. Adjust the dates or extend the Assignment."))
+            if self.crane_ownership_type == "Rented" and self.docstatus == 1:
+                overlap = frappe.db.sql("""SELECT s.name FROM `tabCrane Timesheet` s
+                    JOIN `tabPurchase Invoice` p ON p.name=s.purchase_invoice AND p.docstatus != 2
+                    WHERE s.crane=%s AND s.docstatus=1 AND s.name!=%s
+                    AND s.period_start<=%s AND s.period_end>=%s LIMIT 1""",
+                    (self.crane, self.name, self.period_end, self.period_start), pluck=True)
+                if overlap:
+                    frappe.throw(_("This supplier rental interval overlaps purchased Timesheet {0}. Use non-overlapping rental dates.").format(overlap[0]))
         if self.amended_from:
             source = frappe.get_doc("Crane Timesheet", self.amended_from, for_update=True)
             source.check_permission("amend")
@@ -201,7 +220,9 @@ class CraneTimesheet(Document):
         if flat_operator_hours:
             for row in flat_rows:
                 row.line_amount = float(flat_amount) * row.worked_hours / flat_operator_hours
-        self.total_amount = hourly_amount + float(flat_amount)
+        for row in self.timesheet_entries:
+            row.line_amount = flt(row.line_amount, row.precision("line_amount"))
+        self.total_amount = flt(hourly_amount + float(flat_amount), self.precision("total_amount"))
         if intervals:
             existing = frappe.db.sql("""SELECT e.*, s.name AS timesheet FROM `tabTimesheet Entry` e
                 JOIN `tabCrane Timesheet` s ON s.name=e.parent

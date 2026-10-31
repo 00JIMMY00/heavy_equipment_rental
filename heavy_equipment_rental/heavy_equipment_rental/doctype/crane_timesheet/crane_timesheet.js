@@ -65,6 +65,21 @@ function update_driver_hours(frm) {
     frm.refresh_field("driver_hours");
 }
 
+async function load_rental_terms(frm) {
+    if (frm.doc.docstatus !== 0 || !frm.doc.assignment) return;
+    const { assignment, crane, period_start, period_end } = frm.doc;
+    if (![crane, period_start, period_end].every(Boolean)) return;
+    const rental = await frappe.db.get_doc("Crane Assignment", assignment);
+    if ([assignment, crane, period_start, period_end].join("|") !==
+        [frm.doc.assignment, frm.doc.crane, frm.doc.period_start, frm.doc.period_end].join("|")) return;
+    const rows = rental.assigned_cranes.filter(row => row.crane === crane && !row.cancelled &&
+        row.start_date <= period_start && row.expected_end_date >= period_end);
+    await frm.set_value({
+        rental_rate_unit: rows.length === 1 ? rows[0].rental_rate_unit : "",
+        rental_rate: rows.length === 1 ? rows[0].rental_rate : 0,
+    });
+}
+
 function suggest_assignment(frm) {
     if (frm.doc.assignment || !frm.is_new()) return;
     const { crane, customer, location, period_start, period_end } = frm.doc;
@@ -106,6 +121,7 @@ frappe.ui.form.on("Crane Timesheet", {
         if (message) {
             await frm.set_value({ customer: message.customer, location: message.location });
         }
+        await load_rental_terms(frm);
     },
     async crane(frm) {
         if (frm.doc.docstatus === 0) {
@@ -118,12 +134,13 @@ frappe.ui.form.on("Crane Timesheet", {
                 purchase_supplier: crane?.ownership_type === "Rented" ? crane.supplier : "",
             });
         }
+        await load_rental_terms(frm);
         suggest_assignment(frm);
     },
     customer: suggest_assignment,
     location: suggest_assignment,
-    period_start(frm) { fill_default_days(frm); suggest_assignment(frm); },
-    period_end(frm) { fill_default_days(frm); suggest_assignment(frm); },
+    period_start(frm) { fill_default_days(frm); suggest_assignment(frm); load_rental_terms(frm); },
+    period_end(frm) { fill_default_days(frm); suggest_assignment(frm); load_rental_terms(frm); },
     driver(frm) {
         if (!frm.doc.driver) return;
         let changed = false;
@@ -139,6 +156,7 @@ frappe.ui.form.on("Crane Timesheet", {
         }
     },
     refresh(frm) {
+        load_rental_terms(frm);
         if (frm.doc.docstatus === 1 && frm.doc.purchase_invoice && frappe.model.can_create("Payment Entry")) {
             frm.add_custom_button(__("Payment"), async () => {
                 await frappe.require("/assets/heavy_equipment_rental/js/rental_payments.js");

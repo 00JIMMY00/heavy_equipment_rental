@@ -1,9 +1,32 @@
 """Supplier invoices and native ERPNext payments for rented cranes."""
 
+from calendar import monthrange
+from datetime import timedelta
+from decimal import Decimal
+
 import erpnext
 import frappe
 from frappe import _
-from frappe.utils import flt, today
+from frappe.utils import getdate, today
+
+
+def purchase_interval(sheet):
+    """Inclusive hired dates, independently of driver shifts or worked days."""
+    start, end = getdate(sheet.period_start), getdate(sheet.period_end)
+    if end < start:
+        frappe.throw(_("Period End cannot precede Period Start."))
+    days = (end - start).days + 1
+    unit = sheet.rental_rate_unit
+    if unit == "Hour":
+        return days * 24, 1
+    if unit == "Day":
+        return days, 24
+    if unit == "Month":
+        quantity = sum((Decimal(1) / Decimal(monthrange(day.year, day.month)[1])
+                        for day in (start + timedelta(days=index) for index in range(days))), Decimal(0))
+        # Calendar months vary; this invoice's conversion represents its actual hired hours.
+        return float(quantity), float(Decimal(days * 24) / quantity)
+    frappe.throw(_("Select an Hour, Day or Month Billing Unit."))
 
 
 def create_purchase_invoice(sheet):
@@ -19,7 +42,7 @@ def create_purchase_invoice(sheet):
     if item.disabled or item.is_stock_item or not item.is_purchase_item or item.stock_uom != "Hour":
         frappe.throw(_("The Crane Item must be an enabled, non-stock Hour service with Allow Purchase enabled."))
     currency = frappe.get_cached_value("Company", company, "default_currency")
-    hourly = sheet.purchase_rate_unit == "Hour"
+    quantity, conversion_factor = purchase_interval(sheet)
     invoice = frappe.get_doc({
         "doctype": "Purchase Invoice", "company": company, "supplier": sheet.purchase_supplier,
         "currency": currency, "conversion_rate": 1,
@@ -27,14 +50,11 @@ def create_purchase_invoice(sheet):
         "remarks": _("Crane Timesheet {0}; Assignment {1}; service period {2} to {3}").format(
             sheet.name, sheet.assignment, sheet.period_start, sheet.period_end),
         "items": [{
-            "item_code": item.name, "uom": item.stock_uom, "conversion_factor": 1,
-            # As in sales billing, flat periods are a single service charge;
-            # do not invent a fixed number of hours in a calendar month.
-            "qty": sheet.purchase_qty if hourly else 1,
-            "rate": sheet.purchase_rate if hourly else flt(sheet.purchase_qty) * flt(sheet.purchase_rate),
+            "item_code": item.name, "uom": sheet.rental_rate_unit, "conversion_factor": conversion_factor,
+            "qty": quantity, "rate": sheet.purchase_rate,
             "description": _("Crane {0}; Timesheet {1}; {2} to {3}; {4} {5} at {6} per {5}").format(
                 crane.crane_name, sheet.name, sheet.period_start, sheet.period_end,
-                sheet.purchase_qty, sheet.purchase_rate_unit, sheet.purchase_rate),
+                quantity, sheet.rental_rate_unit, sheet.purchase_rate),
         }],
     })
     invoice.insert()

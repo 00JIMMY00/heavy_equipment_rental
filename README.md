@@ -15,7 +15,7 @@ Crane rentals for Frappe/ERPNext. Install `arab_erp_theme` first for the shared 
 
 1. Select the crane, customer, location, and period start and end dates. These dates also become the rental dates if a new Assignment is created.
 2. The form finds an existing Assignment that covers the work. If several match, choose one.
-3. If none matches, enter the billing unit and rate in the new rental terms section. Saving creates a single-crane Assignment for the Timesheet period and links it in the same transaction.
+3. If none matches, enter the billing unit and rate in the Rental Terms section. Saving creates a single-crane Assignment for the Timesheet period and links it in the same transaction.
 4. Later Timesheets with the same customer, location, crane, and covered dates reuse that Assignment.
 
 Extend the Assignment explicitly if work continues beyond its booked dates. The Timesheet Connections tab uses Frappe's standard related-document dashboard.
@@ -35,11 +35,17 @@ Extend the Assignment explicitly if work continues beyond its booked dates. The 
 ## Rented cranes and supplier payments
 
 1. Set the Crane's Ownership Type to **Rented** and select its ERPNext **Supplier**.
-2. On its Timesheet, enter **Purchase Unit** (Hour, Day, or Month), **Purchase Quantity**, and **Purchase Price per Unit** in **Supplier Purchase**. The existing Period Start/End are the service dates; prices use the Assignment company's currency. Sales rental terms remain separate.
+2. Set the Timesheet's **Period Start/End** to the inclusive supplier hire interval and enter **Purchase Price per Unit** in **Supplier Purchase**. The invoice uses the existing **Billing Unit** in Rental Terms (Hour, Day, or Month); a linked Assignment supplies it read-only. There is no separate purchase quantity or purchase unit. Prices use the Assignment company's currency; the supplier purchase price remains separate from the customer agreed rate.
 3. Submitting the Timesheet automatically creates and submits one **Purchase Invoice** for the Crane's linked Item. Users need normal ERPNext Purchase Invoice create and submit permissions. The Item must allow purchases, and standard supplier/company accounting must be configured. Failed invoice posting rolls back Timesheet submission.
 4. Use **Create → Payment** on a saved Crane or submitted, invoiced Timesheet. Choose an unpaid invoice if several are available. Review the draft native **Payment Entry**, choose bank/payment details and amount, then save and submit it. ERPNext Payment Entry create permission is required; this action does not submit a payment automatically.
 
-Cancel the Purchase Invoice before cancelling its Timesheet. To correct submitted work, cancel both and amend the Timesheet; its replacement gets a new invoice. Existing submitted Timesheets do not create retroactive Purchase Invoices. Existing rented Cranes need their Supplier selected before their next save or new Timesheet.
+- **Day:** 13–16 October produces **4 Day × purchase price** regardless of how many days have shifts.
+- **Hour:** the same interval produces **96 Hour × purchase price** (24 hours for each inclusive rental date).
+- **Month:** each hired date contributes 1 / calendar days in its month; a full calendar month produces **1 Month × purchase price**.
+
+The hired interval must fit one booked crane period and cannot overlap another purchased Timesheet for that crane. The invoice displays the actual Billing Unit and calculated quantity. Its stock-UOM conversion represents the interval's actual hours, including different calendar-month lengths. Customer Sales Invoices continue to use recorded work.
+
+Cancel the Purchase Invoice before cancelling its Timesheet. To correct submitted work, cancel both and amend the Timesheet; its replacement gets a new invoice. Existing submitted Timesheets do not create retroactive Purchase Invoices. Existing rented Cranes need their Supplier selected before their next save or new Timesheet. Migration archives the removed manual purchase unit/quantity values without modifying existing Purchase Invoices; correct posted work through cancellation and amendment.
 
 ## Existing records
 

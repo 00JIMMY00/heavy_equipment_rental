@@ -10,6 +10,16 @@ from heavy_equipment_rental.item_prices import install_item_price_field
 
 
 def execute():
+	for unit in ("Hour", "Day", "Month"):
+		if not frappe.db.exists("UOM", unit):
+			frappe.get_doc({"doctype": "UOM", "uom_name": unit, "must_be_whole_number": 0}).insert(ignore_permissions=True)
+	# Keep calendar-month fractions accurate on native Purchase Invoice lines.
+	for field, precision in (("qty", 6), ("conversion_factor", 9)):
+		if int(frappe.get_meta("Purchase Invoice Item").get_field(field).precision or 0) < precision:
+			frappe.make_property_setter({
+				"doctype": "Purchase Invoice Item", "fieldname": field,
+				"property": "precision", "value": str(precision), "property_type": "Select",
+			}, module="Heavy Equipment Rental")
 	if not frappe.get_meta("Expense Entry Type").show_title_field_in_link:
 		frappe.make_property_setter({
 			"doctype": "Expense Entry Type",

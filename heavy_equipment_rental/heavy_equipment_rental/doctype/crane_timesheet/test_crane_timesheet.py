@@ -1,5 +1,6 @@
 """Rented crane purchasing uses native ERPNext invoices and payments."""
 
+from calendar import monthrange
 from datetime import timedelta
 
 import erpnext
@@ -36,7 +37,7 @@ class TestCraneTimesheet(FrappeTestCase):
             "ownership_type": "Rented", "supplier": self.supplier.name,
             "operational_condition": "Operational",
         }).insert()
-        self.day = getdate(today()) - timedelta(days=30)
+        self.day = getdate(today()) - timedelta(days=120)
         self.assignment = frappe.get_doc({
             "doctype": "Crane Assignment", "company": self.company,
             "customer": self.customer.name, "location": "Supplier test yard " + self.key,
@@ -47,19 +48,34 @@ class TestCraneTimesheet(FrappeTestCase):
             }],
         }).insert()
 
-    def make_sheet(self, offset=0, unit="Hour", qty=4, rate=25):
+    def make_sheet(self, offset=0, rate=25, length=1, assignment=None):
         day = self.day + timedelta(days=offset)
         return frappe.get_doc({
-            "doctype": "Crane Timesheet", "assignment": self.assignment.name,
-            "crane": self.crane.name, "period_start": day, "period_end": day,
-            "purchase_rate_unit": unit, "purchase_qty": qty, "purchase_rate": rate,
+            "doctype": "Crane Timesheet", "assignment": assignment or self.assignment.name,
+            "crane": self.crane.name, "period_start": day, "period_end": day + timedelta(days=length-1),
+            "purchase_rate": rate,
             "driver": self.employee,
             "timesheet_entries": [{"work_date": day, "start_time": "08:00", "end_time": "12:00"}],
         })
 
     def test_invoice_posting_units_payments_and_cancellation(self):
-        for offset, (unit, qty, rate) in enumerate((("Hour", 4, 25), ("Day", 2, 80), ("Month", 0.5, 900))):
-            sheet = self.make_sheet(offset, unit, qty, rate).insert()
+        monthly_start = (self.day + timedelta(days=60)).replace(day=1)
+        month_days = monthrange(monthly_start.year, monthly_start.month)[1]
+        cases = ((0, "Hour", 1, 24, 25), (20, "Day", 4, 4, 80),
+                 ((monthly_start - self.day).days, "Month", month_days, 1, 900))
+        for offset, unit, length, qty, rate in cases:
+            assignment = self.assignment
+            if offset:
+                assignment = frappe.get_doc({
+                    "doctype": "Crane Assignment", "company": self.company,
+                    "customer": self.customer.name, "location": "Unit test yard " + unit + self.key,
+                    "assigned_cranes": [{
+                        "crane": self.crane.name, "start_date": self.day + timedelta(days=offset),
+                        "expected_end_date": self.day + timedelta(days=offset+length+2),
+                        "rental_rate_unit": unit, "rental_rate": 100,
+                    }],
+                }).insert()
+            sheet = self.make_sheet(offset, rate, length, assignment.name).insert()
             self.assertFalse(sheet.purchase_invoice)
             self.assertEqual(sheet.purchase_supplier, self.supplier.name)
             sheet.submit()
@@ -68,7 +84,12 @@ class TestCraneTimesheet(FrappeTestCase):
             self.assertEqual(invoice.supplier, self.supplier.name)
             self.assertEqual(invoice.company, self.company)
             self.assertEqual(invoice.currency, frappe.get_cached_value("Company", self.company, "default_currency"))
+            self.assertEqual(sheet.rental_rate_unit, unit)
             self.assertEqual(invoice.items[0].item_code, self.crane.item)
+            self.assertEqual(invoice.items[0].uom, unit)
+            self.assertAlmostEqual(invoice.items[0].qty, qty)
+            self.assertAlmostEqual(invoice.items[0].rate, rate)
+            self.assertAlmostEqual(invoice.items[0].stock_qty, length * 24, places=3)
             self.assertAlmostEqual(invoice.items[0].amount, qty * rate)
             self.assertIn(unit, invoice.items[0].description)
             self.assertTrue(frappe.db.exists("GL Entry", {"voucher_type": "Purchase Invoice", "voucher_no": invoice.name}))
@@ -108,7 +129,7 @@ class TestCraneTimesheet(FrappeTestCase):
         with self.assertRaises(frappe.ValidationError):
             self.crane.save()
         self.crane.reload()
-        for values in ({"purchase_qty": 0}, {"purchase_rate": -1}, {"purchase_rate_unit": "Year"},
+        for values in ({"purchase_rate": 0}, {"purchase_rate": -1},
                        {"purchase_invoice": "FAKE-INVOICE"}):
             sheet = self.make_sheet()
             sheet.update(values)
@@ -155,3 +176,60 @@ class TestCraneTimesheet(FrappeTestCase):
         sheet.reload()
         self.assertEqual(sheet.docstatus, 0)
         self.assertFalse(sheet.purchase_invoice)
+
+    def test_rental_interval_and_overlap_are_validated(self):
+        sheet = self.make_sheet(length=4).insert()
+        sheet.submit()
+        self.assertEqual(frappe.get_doc("Purchase Invoice", sheet.purchase_invoice).items[0].qty, 96)
+        overlap = self.make_sheet(offset=3).insert()
+        overlap.timesheet_entries[0].start_time = "14:00"
+        overlap.timesheet_entries[0].end_time = "15:00"
+        with self.assertRaisesRegex(frappe.ValidationError, "supplier rental interval overlaps"):
+            overlap.submit()
+        outside = self.make_sheet(length=12)
+        with self.assertRaisesRegex(frappe.ValidationError, "supplier rental interval must fit"):
+            outside.insert()
+        adjacent = self.make_sheet(offset=4).insert()
+        adjacent.submit()
+        self.assertTrue(adjacent.purchase_invoice)
+
+    def test_monthly_interval_prorates_across_calendar_months(self):
+        start = (self.day + timedelta(days=60)).replace(day=1) - timedelta(days=2)
+        end = start + timedelta(days=3)
+        self.assignment.assigned_cranes[0].start_date = start
+        self.assignment.assigned_cranes[0].expected_end_date = end
+        self.assignment.assigned_cranes[0].rental_rate_unit = "Month"
+        self.assignment.save()
+        sheet = self.make_sheet(offset=(start-self.day).days, length=4, rate=1000).insert()
+        sheet.submit()
+        invoice = frappe.get_doc("Purchase Invoice", sheet.purchase_invoice)
+        expected = 2 / monthrange(start.year, start.month)[1] + 2 / monthrange(end.year, end.month)[1]
+        self.assertEqual(invoice.items[0].uom, "Month")
+        self.assertAlmostEqual(invoice.items[0].qty, expected, places=5)
+        self.assertAlmostEqual(invoice.items[0].amount, expected * 1000, delta=0.02)
+        self.assertAlmostEqual(invoice.items[0].stock_qty, 96, delta=0.001)
+
+    def test_removed_manual_terms_are_archived_without_repricing(self):
+        from heavy_equipment_rental.patches.use_timesheet_purchase_interval import execute
+
+        if not frappe.db.has_column("Crane Timesheet", "purchase_qty"):
+            self.skipTest("Legacy purchase columns exist only on upgraded sites")
+        sheet = self.make_sheet().insert()
+        sheet.submit()
+        invoice = frappe.get_doc("Purchase Invoice", sheet.purchase_invoice)
+        frappe.db.set_value("Crane Timesheet", sheet.name, {"purchase_qty": 7, "purchase_rate_unit": "Day"},
+                            update_modified=False)
+        execute()
+        sheet.reload()
+        self.assertEqual(frappe.parse_json(sheet.legacy_purchase_terms), {
+            "purchase_qty": 7, "purchase_rate_unit": "Day", "purchase_rate": sheet.purchase_rate,
+        })
+        original_archive = sheet.legacy_purchase_terms
+        execute()
+        sheet.reload()
+        self.assertEqual(sheet.legacy_purchase_terms, original_archive)
+        invoice.reload()
+        self.assertEqual(invoice.docstatus, 1)
+        self.assertEqual(invoice.items[0].uom, "Hour")
+        self.assertEqual(invoice.items[0].qty, 24)
+        self.assertEqual(sheet.purchase_invoice, invoice.name)
