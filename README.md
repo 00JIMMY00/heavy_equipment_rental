@@ -56,6 +56,28 @@ Saving keeps a draft. **Submit** automatically creates and submits one native Jo
 
 Cancel the Treasury Transaction to cancel its Journal Entry and reverse the transfer. Direct cancellation of the linked journal is blocked while its Treasury Transaction is submitted. The cancelled record retains the journal link; amend it for a corrected transfer. Existing records are unaffected.
 
+## Rental income and expenses
+
+Open **Crane Operations → Rental Profitability** (or search **Crane Rental Profitability**).
+Choose Company and posting-date range; optionally filter by Assignment or Crane. The report
+shows Total Income, Total Expenses, and **Net Sales = Income − Expenses**, with linked
+documents and the actual cash/custody source account for expenses.
+
+Income is submitted Sales Invoice item net amounts linked through submitted rental Timesheets.
+Costs are linked submitted Purchase Invoice item net amounts plus submitted rental Expense
+Entries. Native invoice returns reduce the corresponding amounts. Drafts, cancelled records,
+payments, and treasury transfers are excluded. Invoice values exclude taxes and use company
+currency. This is recorded rental margin, not cash receipts or a complete company profit and loss.
+Unbilled Timesheets are excluded. An Assignment filter requires an explicit Assignment link on
+expenses; a Crane filter requires an explicit Crane link. Users need read access to the rental and
+accounting source documents; the report does not grant accounting permissions.
+Historical expenses with a missing, draft, cancelled, or wrong-company Journal Entry are
+excluded with a visible warning listing their IDs. Review those records before relying on totals;
+opening the report never changes or reposts them.
+
+See [the simulated rental cycle](docs/SIMULATED_RENTAL.md) for the development-site example
+and the explicit, repeatable demo command. Demo records are never created by migration.
+
 ## Existing records
 
 On migration, existing Crane Project or native Project references are used once to populate Assignment customer, company, and location, and to link historical Timesheets to Assignments. A legacy project name becomes the location when no separate location existed. Review those locations and any old overlapping bookings or zero rates before invoicing historical work. The custom Crane Project DocType is removed after migration; ERPNext's native Project DocType is unchanged. Existing signed Timesheet uploads move to the new hard-copy attachment field. Previous Year reference prices move to a hidden legacy field on Crane.
@@ -103,6 +125,14 @@ Treasury accounting integration tests:
 ```bash
 bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.test_treasury_transaction
 ```
+
+Rental report and simulated cycle integration tests:
+
+```bash
+bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment_rental.report.crane_rental_profitability.test_crane_rental_profitability
+```
+
+These report tests use the development fixture company `cranes company` and roll back their records.
 
 ## Industrial theme
 
