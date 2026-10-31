@@ -25,6 +25,11 @@ required_apps = ["erpnext", "arab_erp_theme"]
 after_install = ["heavy_equipment_rental.setup.execute", "heavy_equipment_rental.branding.apply_branding"]
 after_migrate = ["heavy_equipment_rental.setup.execute", "heavy_equipment_rental.branding.apply_branding"]
 
+override_doctype_class = {
+	"Expense Entry": "heavy_equipment_rental.expenses.RentalExpenseEntry",
+	"Journal Entry": "heavy_equipment_rental.expenses.RentalJournalEntry",
+}
+
 doc_events = {
 	"Purchase Invoice": {
 		"on_cancel": "heavy_equipment_rental.purchasing.allow_timesheet_invoice_cancel",

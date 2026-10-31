@@ -1,6 +1,6 @@
 # Progress
 
-As of 2026-10-30:
+As of 2026-10-31:
 
 - Simplified Assignment/Timesheet entry, removed the custom `Crane Project` DocType, and migrated historical links while leaving native ERPNext `Project` intact.
 - Removed duplicate rental date entry on Timesheets; a new Assignment uses the Timesheet period. Added optional default driver, per-row driver overrides, hard-copy attachment, native Connections dashboard, and a calculated Hours by Driver table.
@@ -31,5 +31,8 @@ As of 2026-10-30:
 - Replaced manual purchase quantity/unit entry with the Timesheet's inclusive supplier rental interval and existing Billing Unit. Purchase Invoices now show their real Hour/Day/Month UOM, calculated quantity, and entered purchase rate: 13–16 October is 4 Day or 96 Hour; monthly hires use calendar-month fractions. Linked Assignment terms are visible read-only, and the full supplier hire interval must fit its booked crane period. Overlapping purchased intervals are rejected.
 - Added an idempotent migration to archive retired manual purchase terms without repricing existing invoices. Setup ensures rental UOMs exist and configures native Purchase Invoice quantity/conversion precision for monthly proration. Monetary Timesheet calculations use currency precision; submitted attachment edits preserve stored totals.
 - Migrated `cranes-dev2.arab-erp.com`; all seven purchasing tests and both existing rental workflow tests passed. Coverage includes real invoice UOM/quantity/rate, inclusive rental dates independent of shifts, whole/partial months, hired-hour conversions, overlap/boundary checks, legacy archives, payments, cancellation/amendment, and permissions. Browser checks passed for removed purchase fields, visible/read-only Assignment Billing Unit, supplier fields, invoice quantity precision, and desktop/mobile form widths with no JavaScript errors. Python/JavaScript syntax and whitespace checks passed; restored the site's original disabled test setting.
+
+- Added employee attribution to expense Journal Entry debit rows using the linked Expense Entry's Crane Driver. Native ledger expense rows retain no party, preserving ERPNext's account-party validation, posting, and cancellation rules. Expenses without a driver and ordinary journals keep native behavior.
+- Migrated `cranes-dev2.arab-erp.com` and repaired missing Journal Entry parties for historical employee expenses, including `EXPE-00004` / `ACC-JV-2026-00004`. Amounts and ledger balances remain unchanged. Expense integration checks cover posting, cancellation, blank employees, repeatable backfill, conflicting parties, and ordinary journal validation; the existing rental workflow tests also pass. Restored the site's original disabled test setting.
 
 For the next change: inspect `git status` first. Use the commands in [README.md](../README.md) for migration and tests, and update this page with meaningful new milestones.

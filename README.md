@@ -31,6 +31,7 @@ Extend the Assignment explicitly if work continues beyond its booked dates. The 
 - Upload the Crane image from its side panel; these images are public and appear as thumbnails in the regular Crane List view. The linked ERPNext Item shows the same image, including later changes and removal. The form stores a license plate and Hour, Day, and Month reference prices in Crane Details. The Item displays the same prices read-only. After saving, Availability shows a compact month calendar with reserved dates; Connections links related documents.
 - From a saved Crane's **Create** menu, start an Expense, Maintenance record, or Timesheet with the Crane preselected. **Sales Invoice** creates draft invoices for the Crane's submitted, unbilled Timesheets, grouped by Assignment so each invoice has one customer.
 - The shared Expense Entry has optional Crane and Crane Assignment links supplied by this app. **Create → Expense** on a saved Crane or Crane Assignment opens a new Expense Entry with the corresponding link filled in; neither link is required for other expenses.
+- Selecting a Crane Driver (Employee) on Expense Entry fills Party Type **Employee** and that employee's ID on its Journal Entry expense debit rows. These identify the expense recipient on the journal; General Ledger expense rows remain without a party under ERPNext's native accounting rules. Migration fills missing parties on matching historical journals without changing posted amounts or ledger balances.
 
 ## Rented cranes and supplier payments
 
@@ -81,6 +82,12 @@ Purchasing integration tests:
 
 ```bash
 bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet
+```
+
+Employee expense accounting tests:
+
+```bash
+bench --site YOUR_SITE run-tests --module heavy_equipment_rental.test_expenses
 ```
 
 ## Industrial theme

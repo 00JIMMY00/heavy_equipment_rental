@@ -1,6 +1,6 @@
 # Current decisions
 
-These reflect the latest user requests and current implementation (2026-10-30):
+These reflect the latest user requests and current implementation (2026-10-31):
 
 1. Keep the rental workflow centered on **Crane Assignment** and **Crane Timesheet**. Do not restore the custom `Crane Project` or its old status workflow.
 2. A Timesheet has one crane. When no Assignment covers its period, saving creates one using `period_start` and `period_end`; users enter the billing unit and rate once.
@@ -22,3 +22,5 @@ These reflect the latest user requests and current implementation (2026-10-30):
 17. Create → Payment on a saved Crane or an invoiced, submitted Timesheet opens an unsaved native supplier Payment Entry against an unpaid submitted Purchase Invoice. Choose an invoice when a Crane has several; ERPNext handles bank details, partial payments, and payment submission. Cancel the Purchase Invoice before cancelling its Timesheet; retain the historical link and use a Timesheet amendment for corrected work. Existing submitted Timesheets are not retroactively purchased, and historical master data is retained.
 
 18. Removed manual purchase quantity/unit fields are archived in hidden Legacy Purchase Terms by an idempotent migration patch. Preserve existing submitted invoices and historical Timesheets; apply interval purchasing to new submissions and amendments.
+
+19. An Expense Entry's selected Crane Driver (Employee) supplies `Employee` Party Type and that employee's ID on each expense debit row of its Journal Entry. This is Journal Entry attribution only: native General Ledger expense accounts retain no party, and cash/bank rows remain unchanged. HER extends the shared Expense Entry and native Journal Entry controllers within this app; ordinary journals keep native party validation. An idempotent patch fills missing attribution on matching submitted historical journals without changing amounts, ledger entries, or conflicting parties.
