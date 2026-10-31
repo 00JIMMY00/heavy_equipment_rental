@@ -35,6 +35,7 @@ doc_events = {
 		"on_cancel": "heavy_equipment_rental.purchasing.allow_timesheet_invoice_cancel",
 	},
 	"Journal Entry": {
+		"before_cancel": "heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.treasury_transaction.guard_journal_cancel",
 		"on_cancel": "heavy_equipment_rental.billing.clear_direct_driver_payment_link",
 	},
 	"Sales Invoice": {

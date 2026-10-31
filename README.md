@@ -48,6 +48,14 @@ The hired interval must fit one booked crane period and cannot overlap another p
 
 Cancel the Purchase Invoice before cancelling its Timesheet. To correct submitted work, cancel both and amend the Timesheet; its replacement gets a new invoice. Existing submitted Timesheets do not create retroactive Purchase Invoices. Existing rented Cranes need their Supplier selected before their next save or new Timesheet. Migration archives the removed manual purchase unit/quantity values without modifying existing Purchase Invoices; correct posted work through cancellation and amendment.
 
+## Treasury transfers
+
+Open **Treasury Transaction** from Desk search or the **Treasury Transactions** shortcut in Crane Operations. Select the Company, Posting Date, and Mode of Payment; its company-specific default account is the source. Choose another Cash or Bank account and enter a positive Amount. Both accounts must be enabled, non-group accounts in the company currency. Foreign-currency transfers are not supported.
+
+Saving keeps a draft. **Submit** automatically creates and submits one native Journal Entry, crediting the source and debiting the destination. The form retains the Journal Entry link; optional reference number/date and description are copied to it. Normal Treasury Transaction and Journal Entry accounting permissions apply. Posting failures roll back the submission.
+
+Cancel the Treasury Transaction to cancel its Journal Entry and reverse the transfer. Direct cancellation of the linked journal is blocked while its Treasury Transaction is submitted. The cancelled record retains the journal link; amend it for a corrected transfer. Existing records are unaffected.
+
 ## Existing records
 
 On migration, existing Crane Project or native Project references are used once to populate Assignment customer, company, and location, and to link historical Timesheets to Assignments. A legacy project name becomes the location when no separate location existed. Review those locations and any old overlapping bookings or zero rates before invoicing historical work. The custom Crane Project DocType is removed after migration; ERPNext's native Project DocType is unchanged. Existing signed Timesheet uploads move to the new hard-copy attachment field. Previous Year reference prices move to a hidden legacy field on Crane.
@@ -88,6 +96,12 @@ Employee expense accounting tests:
 
 ```bash
 bench --site YOUR_SITE run-tests --module heavy_equipment_rental.test_expenses
+```
+
+Treasury accounting integration tests:
+
+```bash
+bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.test_treasury_transaction
 ```
 
 ## Industrial theme
