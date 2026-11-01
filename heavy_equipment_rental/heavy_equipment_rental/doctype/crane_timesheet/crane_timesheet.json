@@ -26,6 +26,7 @@
   "rental_rate",
   "crane_ownership_type",
   "purchase_section",
+  "rented",
   "purchase_supplier",
   "purchase_column",
   "purchase_rate",
@@ -104,14 +105,14 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "Defines the supplier rental interval for rented cranes. Also used when creating a new Assignment.",
+   "description": "Work period. Also used when creating a new Assignment.",
    "fieldname": "period_start",
    "fieldtype": "Date",
    "label": "Period Start",
    "reqd": 1
   },
   {
-   "description": "Defines the supplier rental interval for rented cranes. Also used when creating a new Assignment.",
+   "description": "Work period. Also used when creating a new Assignment.",
    "fieldname": "period_end",
    "fieldtype": "Date",
    "label": "Period End",
@@ -260,7 +261,15 @@
    "fieldtype": "Section Break",
    "label": "Supplier Purchase",
    "depends_on": "eval:doc.crane_ownership_type=='Rented'",
-   "description": "Supplier rental covers Period Start through Period End, inclusive. The Purchase Invoice uses the Billing Unit above. Prices use the Assignment company currency."
+   "description": "When Rented is checked, submission buys the actual crane worked hours at the purchase price per hour. Prices use the Assignment company currency."
+  },
+  {
+   "fieldname": "rented",
+   "fieldtype": "Check",
+   "label": "Rented",
+   "default": "1",
+   "depends_on": "eval:doc.crane_ownership_type=='Rented'",
+   "description": "Uncheck to submit this Timesheet without creating a supplier Purchase Invoice."
   },
   {
    "fieldname": "purchase_supplier",
@@ -269,20 +278,20 @@
    "options": "Supplier",
    "fetch_from": "crane.supplier",
    "read_only": 1,
-   "depends_on": "eval:doc.crane_ownership_type=='Rented'"
+   "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented"
   },
   {
    "fieldname": "purchase_column",
    "fieldtype": "Column Break",
-   "depends_on": "eval:doc.crane_ownership_type=='Rented'"
+   "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented"
   },
   {
    "fieldname": "purchase_rate",
    "fieldtype": "Currency",
-   "label": "Purchase Price per Unit",
-   "depends_on": "eval:doc.crane_ownership_type=='Rented'",
-   "mandatory_depends_on": "eval:doc.crane_ownership_type=='Rented'",
-   "description": "Supplier price per Billing Unit shown above."
+   "label": "Purchase Price per Hour",
+   "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
+   "mandatory_depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
+   "description": "Supplier price per worked crane hour, independent of the customer Billing Unit."
   },
   {
    "fieldname": "purchase_invoice",

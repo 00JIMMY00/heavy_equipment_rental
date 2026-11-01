@@ -131,6 +131,7 @@ frappe.ui.form.on("Crane Timesheet", {
             if (frm.doc.crane !== name) return;
             await frm.set_value({
                 crane_ownership_type: crane?.ownership_type || "",
+                rented: crane?.ownership_type === "Rented" ? 1 : 0,
                 purchase_supplier: crane?.ownership_type === "Rented" ? crane.supplier : "",
             });
         }

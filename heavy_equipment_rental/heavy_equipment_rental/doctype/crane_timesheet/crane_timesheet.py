@@ -66,6 +66,8 @@ class CraneTimesheet(Document):
                 crane.check_permission("read")
             self.crane_ownership_type = crane.ownership_type if crane else None
             self.purchase_supplier = crane.supplier if crane and crane.ownership_type == "Rented" else None
+            if self.crane_ownership_type != "Rented":
+                self.rented = 0
         if self.driver:
             for row in self.timesheet_entries:
                 if not row.employee:
@@ -118,13 +120,13 @@ class CraneTimesheet(Document):
         # Frappe still rejects changes to fields that do not allow edits after submission.
         if previous and previous.docstatus == self.docstatus == 1:
             return
-        if self.crane_ownership_type == "Rented" and self.docstatus != 2 and not (
+        if self.crane_ownership_type == "Rented" and self.rented and self.docstatus != 2 and not (
             previous and previous.docstatus == 1
         ):
             if not self.purchase_supplier:
                 frappe.throw(_("Select a Supplier on the rented Crane first."))
             if flt(self.purchase_rate) <= 0:
-                frappe.throw(_("Enter a positive Purchase Price per Unit."))
+                frappe.throw(_("Enter a positive Purchase Price per Hour."))
         check_date_order(self.period_start, self.period_end, _("Timesheet period"))
         if not self.assignment:
             frappe.throw(_("Select a Crane Assignment or enter billing terms for a new rental."))
@@ -142,16 +144,6 @@ class CraneTimesheet(Document):
             if len(covering) == 1:
                 self.rental_rate_unit = covering[0].rental_rate_unit
                 self.rental_rate = covering[0].rental_rate
-            elif self.crane_ownership_type == "Rented":
-                frappe.throw(_("The supplier rental interval must fit one booked Crane period. Adjust the dates or extend the Assignment."))
-            if self.crane_ownership_type == "Rented" and self.docstatus == 1:
-                overlap = frappe.db.sql("""SELECT s.name FROM `tabCrane Timesheet` s
-                    JOIN `tabPurchase Invoice` p ON p.name=s.purchase_invoice AND p.docstatus != 2
-                    WHERE s.crane=%s AND s.docstatus=1 AND s.name!=%s
-                    AND s.period_start<=%s AND s.period_end>=%s LIMIT 1""",
-                    (self.crane, self.name, self.period_end, self.period_start), pluck=True)
-                if overlap:
-                    frappe.throw(_("This supplier rental interval overlaps purchased Timesheet {0}. Use non-overlapping rental dates.").format(overlap[0]))
         if self.amended_from:
             source = frappe.get_doc("Crane Timesheet", self.amended_from, for_update=True)
             source.check_permission("amend")
@@ -237,7 +229,7 @@ class CraneTimesheet(Document):
                         crane_display_name(self.crane), other.timesheet))
 
     def on_submit(self):
-        if self.crane_ownership_type == "Rented":
+        if self.crane_ownership_type == "Rented" and self.rented:
             from heavy_equipment_rental.purchasing import create_purchase_invoice
 
             create_purchase_invoice(self)

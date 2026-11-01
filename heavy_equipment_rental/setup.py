@@ -13,7 +13,7 @@ def execute():
 	for unit in ("Hour", "Day", "Month"):
 		if not frappe.db.exists("UOM", unit):
 			frappe.get_doc({"doctype": "UOM", "uom_name": unit, "must_be_whole_number": 0}).insert(ignore_permissions=True)
-	# Keep calendar-month fractions accurate on native Purchase Invoice lines.
+	# Retain fractional worked hours and existing invoice conversion precision.
 	for field, precision in (("qty", 6), ("conversion_factor", 9)):
 		if int(frappe.get_meta("Purchase Invoice Item").get_field(field).precision or 0) < precision:
 			frappe.make_property_setter({
