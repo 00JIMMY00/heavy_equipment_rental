@@ -1,9 +1,27 @@
 """Supplier invoices and native ERPNext payments for rented cranes."""
 
+from calendar import monthrange
+from decimal import Decimal
+
 import erpnext
 import frappe
 from frappe import _
 from frappe.utils import flt, today
+
+from heavy_equipment_rental.rental_validation import interval, work_days
+
+
+def purchase_work_quantity(sheet):
+    """Use actual work, independent of idle dates and customer billing terms."""
+    hours = flt(sheet.total_crane_billable_hours, sheet.precision("total_crane_billable_hours"))
+    if sheet.purchase_uom == "Hour":
+        return hours, 1
+    if sheet.purchase_uom not in ("Day", "Month"):
+        frappe.throw(_("Select an Hour, Day or Month Supplier Billing UOM."))
+    days = {day for row in sheet.timesheet_entries for day in work_days(*interval(row))}
+    quantity = len(days) if sheet.purchase_uom == "Day" else float(sum(
+        (Decimal(1) / Decimal(monthrange(day.year, day.month)[1]) for day in days), Decimal(0)))
+    return quantity, hours / quantity if quantity else 1
 
 
 def create_purchase_invoice(sheet):
@@ -13,9 +31,9 @@ def create_purchase_invoice(sheet):
         return existing
     if sheet.crane_ownership_type != "Rented" or not sheet.rented:
         return None
-    quantity = flt(sheet.total_crane_billable_hours, sheet.precision("total_crane_billable_hours"))
+    quantity, conversion_factor = purchase_work_quantity(sheet)
     if quantity <= 0 or flt(sheet.purchase_rate) <= 0:
-        frappe.throw(_("Rented Timesheets require positive worked crane hours and a Purchase Price per Hour."))
+        frappe.throw(_("Rented Timesheets require positive recorded work and a positive Purchase Price per Unit."))
     company = frappe.db.get_value("Crane Assignment", sheet.assignment, "company") or erpnext.get_default_company()
     if not company:
         frappe.throw(_("Set a Company on the Assignment or a default Company."))
@@ -31,11 +49,11 @@ def create_purchase_invoice(sheet):
         "remarks": _("Crane Timesheet {0}; Assignment {1}; service period {2} to {3}").format(
             sheet.name, sheet.assignment, sheet.period_start, sheet.period_end),
         "items": [{
-            "item_code": item.name, "uom": "Hour", "conversion_factor": 1,
+            "item_code": item.name, "uom": sheet.purchase_uom, "conversion_factor": conversion_factor,
             "qty": quantity, "rate": sheet.purchase_rate,
             "description": _("Crane {0}; Timesheet {1}; {2} to {3}; {4} {5} at {6} per {5}").format(
                 crane.crane_name, sheet.name, sheet.period_start, sheet.period_end,
-                quantity, "Hour", sheet.purchase_rate),
+                quantity, sheet.purchase_uom, sheet.purchase_rate),
         }],
     })
     invoice.insert()

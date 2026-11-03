@@ -29,6 +29,7 @@
   "rented",
   "purchase_supplier",
   "purchase_column",
+  "purchase_uom",
   "purchase_rate",
   "entries_tab",
   "entries_section",
@@ -261,7 +262,7 @@
    "fieldtype": "Section Break",
    "label": "Supplier Purchase",
    "depends_on": "eval:doc.crane_ownership_type=='Rented'",
-   "description": "When Rented is checked, submission buys the actual crane worked hours at the purchase price per hour. Prices use the Assignment company currency."
+   "description": "When Rented is checked, submission purchases actual recorded work using the Supplier Billing UOM and purchase price. Prices use the Assignment company currency."
   },
   {
    "fieldname": "rented",
@@ -286,12 +287,21 @@
    "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented"
   },
   {
-   "fieldname": "purchase_rate",
-   "fieldtype": "Currency",
-   "label": "Purchase Price per Hour",
+   "fieldname": "purchase_uom",
+   "fieldtype": "Select",
+   "label": "Supplier Billing UOM",
+   "options": "\nHour\nDay\nMonth",
    "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
    "mandatory_depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
-   "description": "Supplier price per worked crane hour, independent of the customer Billing Unit."
+   "description": "Defaults from Heavy Equipment Rental Settings and is saved with this Timesheet."
+  },
+  {
+   "fieldname": "purchase_rate",
+   "fieldtype": "Currency",
+   "label": "Purchase Price per Unit",
+   "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
+   "mandatory_depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
+   "description": "Supplier price per Supplier Billing UOM selected here."
   },
   {
    "fieldname": "purchase_invoice",

@@ -57,9 +57,38 @@ def find_assignments(crane, customer, location, period_start, period_end):
     return [name for name in names if frappe.has_permission("Crane Assignment", "read", name)]
 
 
+@frappe.whitelist()
+def get_timesheet_defaults(crane=None, selling_uom=None):
+    if not frappe.has_permission("Crane Timesheet", "create"):
+        frappe.throw(_("You cannot create Crane Timesheets."), frappe.PermissionError)
+    settings = frappe.get_single("Heavy Equipment Rental Settings")
+    settings.check_permission("read")
+    unit = selling_uom or settings.default_selling_uom or "Hour"
+    if unit not in ("Hour", "Day", "Month"):
+        frappe.throw(_("Select an Hour, Day or Month Billing Unit."))
+    defaults = {
+        "rental_rate_unit": unit,
+        "purchase_uom": settings.default_supplier_uom or "Hour",
+    }
+    if crane:
+        equipment = frappe.get_doc("Crane", crane)
+        equipment.check_permission("read")
+        defaults["rental_rate"] = next((row.price for row in equipment.period_prices
+                                        if row.period == unit), 0)
+    return defaults
+
+
 class CraneTimesheet(Document):
     def before_validate(self):
         previous = self.get_doc_before_save()
+        if self.is_new():
+            defaults = get_timesheet_defaults(self.crane, self.rental_rate_unit)
+            self.purchase_uom = self.purchase_uom or defaults["purchase_uom"]
+            if not self.assignment:
+                default_price = self.rental_rate is None or (not self.rental_rate and not self.rental_rate_unit)
+                self.rental_rate_unit = self.rental_rate_unit or defaults["rental_rate_unit"]
+                if default_price:
+                    self.rental_rate = defaults.get("rental_rate", 0)
         if not previous or previous.docstatus == 0:
             crane = frappe.get_doc("Crane", self.crane) if self.crane else None
             if crane:
@@ -125,8 +154,10 @@ class CraneTimesheet(Document):
         ):
             if not self.purchase_supplier:
                 frappe.throw(_("Select a Supplier on the rented Crane first."))
+            if self.purchase_uom not in ("Hour", "Day", "Month"):
+                frappe.throw(_("Select an Hour, Day or Month Supplier Billing UOM."))
             if flt(self.purchase_rate) <= 0:
-                frappe.throw(_("Enter a positive Purchase Price per Hour."))
+                frappe.throw(_("Enter a positive Purchase Price per {0}.").format(self.purchase_uom))
         check_date_order(self.period_start, self.period_end, _("Timesheet period"))
         if not self.assignment:
             frappe.throw(_("Select a Crane Assignment or enter billing terms for a new rental."))

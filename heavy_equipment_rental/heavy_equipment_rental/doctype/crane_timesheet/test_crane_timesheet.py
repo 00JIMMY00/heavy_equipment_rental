@@ -58,6 +58,109 @@ class TestCraneTimesheet(FrappeTestCase):
             "timesheet_entries": [{"work_date": day, "start_time": "08:00", "end_time": "12:00"}],
         })
 
+    def set_billing_defaults(self, selling="Hour", supplier="Hour"):
+        settings = frappe.get_single("Heavy Equipment Rental Settings")
+        original = {field: settings.get(field) for field in ("default_selling_uom", "default_supplier_uom")}
+        self.addCleanup(frappe.db.set_single_value, settings.doctype, original)
+        settings.default_selling_uom, settings.default_supplier_uom = selling, supplier
+        settings.save()
+
+    def test_new_timesheet_defaults_create_assignment_and_preserve_snapshot(self):
+        from heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.crane_timesheet import get_timesheet_defaults
+
+        self.set_billing_defaults(selling="Day", supplier="Month")
+        self.crane.period_prices[1].price = 350
+        self.crane.save()
+        defaults = get_timesheet_defaults(self.crane.name)
+        self.assertEqual(defaults, {"rental_rate_unit": "Day", "rental_rate": 350, "purchase_uom": "Month"})
+        day = self.day + timedelta(days=20)
+        sheet = frappe.get_doc({
+            "doctype": "Crane Timesheet", "crane": self.crane.name,
+            "customer": self.customer.name, "location": "Default terms " + self.key,
+            "period_start": day, "period_end": day, "driver": self.employee,
+            "purchase_rate": 900, "timesheet_entries": [{
+                "work_date": day, "start_time": "08:00", "end_time": "12:00",
+            }],
+        }).insert()
+        self.assertEqual(sheet.rental_rate_unit, "Day")
+        self.assertEqual(sheet.rental_rate, 350)
+        self.assertEqual(sheet.purchase_uom, "Month")
+        booking = frappe.get_doc("Crane Assignment", sheet.assignment).assigned_cranes[0]
+        self.assertEqual((booking.rental_rate_unit, booking.rental_rate), ("Day", 350))
+        frappe.db.set_single_value("Heavy Equipment Rental Settings", {
+            "default_selling_uom": "Hour", "default_supplier_uom": "Hour",
+        })
+        sheet.save()
+        sheet.submit()
+        invoice = frappe.get_doc("Purchase Invoice", sheet.purchase_invoice)
+        self.assertEqual(invoice.items[0].uom, "Month")
+        self.assertAlmostEqual(invoice.items[0].qty, 1 / monthrange(day.year, day.month)[1], places=5)
+        self.assertAlmostEqual(invoice.items[0].stock_qty, 4, places=3)
+        self.assertEqual((sheet.rental_rate_unit, sheet.rental_rate), ("Day", 350))
+
+    def test_assignment_and_explicit_terms_override_settings(self):
+        self.set_billing_defaults(selling="Month", supplier="Day")
+        linked = self.make_sheet().insert()
+        self.assertEqual((linked.rental_rate_unit, linked.rental_rate), ("Hour", 100))
+        self.assertEqual(linked.purchase_uom, "Day")
+        explicit = self.make_sheet(offset=20)
+        explicit.assignment = None
+        explicit.customer = self.customer.name
+        explicit.location = "Override defaults " + self.key
+        explicit.rental_rate_unit, explicit.rental_rate = "Hour", 123
+        explicit.purchase_uom = "Hour"
+        explicit.insert()
+        self.assertEqual((explicit.rental_rate_unit, explicit.rental_rate), ("Hour", 123))
+        self.assertEqual(explicit.purchase_uom, "Hour")
+
+    def test_supplier_day_and_month_use_worked_dates_not_period_span(self):
+        self.set_billing_defaults(supplier="Day")
+        for offset, unit in ((0, "Day"), (5, "Month")):
+            frappe.db.set_single_value("Heavy Equipment Rental Settings", "default_supplier_uom", unit)
+            sheet = self.make_sheet(offset=offset, length=4, rate=900)
+            day = self.day + timedelta(days=offset)
+            sheet.append("timesheet_entries", {"work_date": day, "employee": self.employee,
+                "start_time": "10:00", "end_time": "14:00"})
+            sheet.append("timesheet_entries", {"work_date": day + timedelta(days=2), "employee": self.employee,
+                "start_time": "08:00", "end_time": "10:00"})
+            sheet.insert()
+            sheet.submit()
+            invoice = frappe.get_doc("Purchase Invoice", sheet.purchase_invoice)
+            expected = 2 if unit == "Day" else sum(1 / monthrange(date.year, date.month)[1]
+                for date in (day, day + timedelta(days=2)))
+            self.assertEqual(invoice.items[0].uom, unit)
+            self.assertAlmostEqual(invoice.items[0].qty, expected, places=5)
+            self.assertAlmostEqual(invoice.items[0].amount, expected * 900, delta=0.02)
+            self.assertAlmostEqual(invoice.items[0].stock_qty, 8, places=3)
+            self.assertEqual(sheet.rental_rate_unit, "Hour")
+
+    def test_uom_migration_preserves_existing_terms_and_settings(self):
+        from heavy_equipment_rental.patches.default_timesheet_billing_uoms import execute
+
+        self.set_billing_defaults(selling="Month", supplier="Day")
+        old = self.make_sheet().insert()
+        old.purchase_uom = "Hour"
+        old.submit()
+        invoice = frappe.get_doc("Purchase Invoice", old.purchase_invoice)
+        draft = self.make_sheet(offset=1).insert()
+        frappe.db.set_value("Crane Timesheet", old.name, "purchase_uom", None, update_modified=False)
+        frappe.db.set_value("Crane Timesheet", draft.name, "purchase_uom", None, update_modified=False)
+        execute()
+        old.reload()
+        draft.reload()
+        self.assertEqual(old.purchase_uom, "Hour")
+        self.assertEqual(draft.purchase_uom, "Hour")
+        self.assertEqual(draft.purchase_rate, 25)
+        draft.purchase_uom = "Month"
+        draft.save()
+        execute()
+        draft.reload()
+        invoice.reload()
+        self.assertEqual(draft.purchase_uom, "Month")
+        self.assertEqual(invoice.items[0].uom, "Hour")
+        self.assertEqual(invoice.items[0].amount, 100)
+        self.assertEqual(frappe.db.get_single_value("Heavy Equipment Rental Settings", "default_supplier_uom"), "Day")
+
     def test_invoice_posting_units_payments_and_cancellation(self):
         monthly_start = (self.day + timedelta(days=60)).replace(day=1)
         month_days = monthrange(monthly_start.year, monthly_start.month)[1]

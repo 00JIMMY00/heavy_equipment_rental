@@ -15,10 +15,16 @@ Crane rentals for Frappe/ERPNext. Install `arab_erp_theme` first for the shared 
 
 1. Select the crane, customer, location, and period start and end dates. These dates also become the rental dates if a new Assignment is created.
 2. The form finds an existing Assignment that covers the work. If several match, choose one.
-3. If none matches, enter the billing unit and rate in the Rental Terms section. Saving creates a single-crane Assignment for the Timesheet period and links it in the same transaction.
+3. If none matches, Rental Terms defaults the billing unit from Settings and the agreed rate from the selected Crane's reference price for that unit. Review or override these defaults as needed. Saving creates a single-crane Assignment for the Timesheet period and links it in the same transaction.
 4. Later Timesheets with the same customer, location, crane, and covered dates reuse that Assignment.
 
 Extend the Assignment explicitly if work continues beyond its booked dates. The Timesheet Connections tab uses Frappe's standard related-document dashboard.
+
+## Billing defaults
+
+Open **Heavy Equipment Rental Settings → Billing Defaults**. Set **Default Selling UOM** and **Default Supplier Billing UOM** to Hour, Day, or Month; both initially default to Hour.
+
+New Timesheets prefill their selling Billing Unit and Supplier Billing UOM from these settings. Selecting a Crane fills its matching reference price into Agreed Rate. Changing the selling unit updates an automatically filled price; manually entered rates remain yours to edit. Set the Crane's Hour/Day/Month reference prices to avoid repeatedly entering selling rates. Purchase prices remain entered separately. An existing Assignment supplies its agreed selling unit/rate and takes precedence over defaults. Settings changes affect new Timesheets; saved purchase units and agreed terms remain unchanged.
 
 ## Booking and work rules
 
@@ -36,8 +42,8 @@ Extend the Assignment explicitly if work continues beyond its booked dates. The 
 ## Rented cranes and supplier payments
 
 1. Set the Crane's Ownership Type to **Rented** and select its ERPNext **Supplier**.
-2. Selecting a rented Crane on a Timesheet shows **Rented**, checked by default. Enter a positive **Purchase Price per Hour**. Uncheck **Rented** when this Timesheet should not create a supplier invoice; the choice is saved. Prices use the Assignment company currency and remain separate from the customer agreed rate.
-3. Submitting with **Rented** checked automatically creates and submits one **Purchase Invoice** for the Crane's linked Item: **UOM = Hour**, **Quantity = Total Crane Billable Hours**, **Rate = Purchase Price per Hour**. This is actual worked crane time from Operator Shifts, counting overlapping drivers only once. Idle dates add no purchase quantity. For example, 8 worked hours at 250 per hour produces **8 Hour × 250 = 2,000**, regardless of the Timesheet's date span or customer Billing Unit.
+2. Selecting a rented Crane on a Timesheet shows **Rented**, checked by default. The **Supplier Billing UOM** defaults from Settings; review it and enter a positive **Purchase Price** per that unit. Uncheck **Rented** when this Timesheet should not create a supplier invoice; the choice is saved. Prices use the Assignment company currency and remain separate from the customer agreed rate.
+3. Submitting with **Rented** checked automatically creates and submits one **Purchase Invoice** for the Crane's linked Item: **UOM = Supplier Billing UOM** and **Rate = the entered Purchase Price per that unit**. Hour uses **Total Crane Billable Hours**, counting overlapping drivers only once. Day counts distinct worked calendar dates; Month sums each worked date's fraction of its calendar month. Idle dates add no purchase quantity. The invoice conversion to the Item's Hour stock UOM represents actual distinct crane hours. For example, 8 worked hours at 250 per hour produces **8 Hour × 250 = 2,000**, regardless of the Timesheet's date span or customer Billing Unit.
 4. Users need normal ERPNext Purchase Invoice create and submit permissions. The Item must allow purchases, and standard supplier/company accounting must be configured. Failed invoice posting rolls back Timesheet submission.
 5. Use **Create → Payment** on a saved Crane or submitted, invoiced Timesheet. Choose an unpaid invoice if several are available. Review the draft native **Payment Entry**, choose bank/payment details and amount, then save and submit it. ERPNext Payment Entry create permission is required; this action does not submit a payment automatically.
 

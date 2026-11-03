@@ -65,6 +65,41 @@ function update_driver_hours(frm) {
     frm.refresh_field("driver_hours");
 }
 
+async function load_timesheet_defaults(frm) {
+    if (!frm.is_new() || frm.doc.docstatus !== 0 || frm._setting_rental_defaults) return;
+    const crane = frm.doc.crane;
+    const rate = frm.doc.rental_rate;
+    const unit = frm.doc.rental_rate_unit;
+    const request = (frm._rental_defaults_request || 0) + 1;
+    frm._rental_defaults_request = request;
+    const { message: defaults } = await frappe.call({
+        method: "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.crane_timesheet.get_timesheet_defaults",
+        args: { crane, selling_uom: unit },
+    });
+    if (request !== frm._rental_defaults_request || frm.doc.crane !== crane ||
+        frm.doc.rental_rate_unit !== unit || !frm.is_new() || frm.doc.docstatus !== 0) return;
+    const values = {};
+    if (!frm.doc.purchase_uom) values.purchase_uom = defaults.purchase_uom;
+    if (!frm.doc.assignment) {
+        if (!frm.doc.rental_rate_unit) values.rental_rate_unit = defaults.rental_rate_unit;
+        if (defaults.rental_rate !== undefined && frm.doc.rental_rate === rate &&
+            (!rate || rate === frm._default_selling_rate)) {
+            values.rental_rate = defaults.rental_rate;
+            frm._default_selling_rate = defaults.rental_rate;
+        }
+    }
+    frm._setting_rental_defaults = true;
+    try {
+        await frm.set_value(values);
+    } finally {
+        frm._setting_rental_defaults = false;
+    }
+}
+
+function purchase_price_label(frm) {
+    frm.set_df_property("purchase_rate", "label", __("Purchase Price per {0}", [frm.doc.purchase_uom || "Hour"]));
+}
+
 async function load_rental_terms(frm) {
     if (frm.doc.docstatus !== 0 || !frm.doc.assignment) return;
     const { assignment, crane, period_start, period_end } = frm.doc;
@@ -110,6 +145,9 @@ function suggest_assignment(frm) {
 }
 
 frappe.ui.form.on("Crane Timesheet", {
+    onload: load_timesheet_defaults,
+    rental_rate_unit: load_timesheet_defaults,
+    purchase_uom: purchase_price_label,
     setup(frm) {
         frm.set_query("assignment", () => ({ filters: Object.fromEntries([
             ["customer", frm.doc.customer], ["location", frm.doc.location],
@@ -135,6 +173,7 @@ frappe.ui.form.on("Crane Timesheet", {
                 purchase_supplier: crane?.ownership_type === "Rented" ? crane.supplier : "",
             });
         }
+        await load_timesheet_defaults(frm);
         await load_rental_terms(frm);
         suggest_assignment(frm);
     },
@@ -157,6 +196,7 @@ frappe.ui.form.on("Crane Timesheet", {
         }
     },
     refresh(frm) {
+        purchase_price_label(frm);
         load_rental_terms(frm);
         if (frm.doc.docstatus === 1 && frm.doc.purchase_invoice && frappe.model.can_create("Payment Entry")) {
             frm.add_custom_button(__("Payment"), async () => {
