@@ -11,9 +11,10 @@ def get_data():
             "Sales Invoice": "sales_invoice",
             "Purchase Invoice": "purchase_invoice",
             "Crane Timesheet": "amended_from",
+            "Crane Profit Settlement": "profit_settlement",
         },
         "transactions": [
             {"label": _("Rental"), "items": ["Crane Assignment", "Crane", "Customer"]},
-            {"label": _("Documents"), "items": ["Sales Invoice", "Purchase Invoice", "Crane Timesheet"]},
+            {"label": _("Documents"), "items": ["Sales Invoice", "Purchase Invoice", "Crane Timesheet", "Crane Profit Settlement"]},
         ],
     }

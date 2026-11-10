@@ -51,13 +51,40 @@ Timesheet periods may overlap when their actual crane shifts do not overlap. Exi
 
 Cancel the Purchase Invoice before cancelling its Timesheet. To correct submitted work, cancel both and amend the Timesheet; its replacement gets a new invoice when **Rented** is checked. Existing submitted Timesheets do not create retroactive Purchase Invoices, and historical invoices keep their original quantities, units, rates, and amounts. Migration archives previous purchase terms; Day/Month purchase prices on existing drafts are cleared so users enter an hourly price before submission. Rented Cranes still require their Supplier on the master record.
 
+## Crane ownership and profit sharing
+
+Crane supports **Shared Ownership**, **Operated for Owner**, and **Operated by
+Partner**, with separate ownership and remaining balance percentages. Enter the
+operator, operating percentage and dated agreement once. Submitting a sharing
+Timesheet creates its settlement; submitting the Sales Invoice approves/posts it
+automatically. The settlement takes its allocated Sales Invoice **Grand Total**, deducts
+the operating share first, then costs, and distributes the remainder. A deficit
+blocks saving/submission with its numerical explanation. Exactly zero remainder
+is allowed. External partners use native **Shareholders** and a company-specific
+**Partners** Payable account. Native Journal Entries recognize entitlements;
+Partner Payment opens a Pay Payment Entry for the selected unpaid partner,
+including partial payments. Historical supplier postings remain unchanged.
+
+**Change Agreement** dates new operating, ownership and distribution terms;
+submitted snapshots retain their original values. Historical net-profit versions
+are preserved by migration. Optional Crane attribution on native invoice items
+and journal rows covers other revenue/costs. Rental Profitability retains its
+net-sales basis. See [configuration and accounting](docs/PROFIT_SHARING.md) and
+[the full numerical development example](docs/OPERATING_FIRST_DEMO.md).
+
 ## Treasury transfers
 
-Open **Treasury Transaction** from Desk search or the **Treasury Transactions** shortcut in Crane Operations. Select the Company, Posting Date, and Mode of Payment; its company-specific default account is the source. Choose another Cash or Bank account and enter a positive Amount. Both accounts must be enabled, non-group accounts in the company currency. Foreign-currency transfers are not supported.
+Open **Treasury Transaction** from Desk search or the **Treasury Transactions** shortcut in Crane Operations. Select the Company, Posting Date, and Mode of Payment; its company-specific default account is the source. Choose another Cash or Bank account and enter a positive Amount. Both accounts must be enabled, non-group accounts in the company currency. In addition to Cash/Bank, an Account explicitly designated through **Treasury Balance Type** may represent custody, employee advances (Asset) or current balances (Liability); Receivable/Payable accounts remain excluded. Foreign-currency transfers are not supported.
 
-Saving keeps a draft. **Submit** automatically creates and submits one native Journal Entry, crediting the source and debiting the destination. The form retains the Journal Entry link; optional reference number/date and description are copied to it. Normal Treasury Transaction and Journal Entry accounting permissions apply. Posting failures roll back the submission.
+Select an optional **Cost Center** from enabled, non-group centers in the selected company; it is copied to both Journal Entry rows. Saving keeps a draft. **Submit** automatically creates and submits one native Journal Entry, crediting the source and debiting the destination. The form retains the Journal Entry link; optional reference number/date and description are copied to it. Normal Treasury Transaction and Journal Entry accounting permissions apply. Posting failures roll back the submission.
+
+Optionally select **Party Type** and **Party** to identify the recipient (for example, an Employee, Supplier or Customer). Select both together or leave both blank. They are copied to the destination debit row of the generated Journal Entry. They identify the recipient on the journal only; treasury GL balances retain no party under native accounting rules. Existing submitted transfers and journals are preserved.
 
 Cancel the Treasury Transaction to cancel its Journal Entry and reverse the transfer. Direct cancellation of the linked journal is blocked while its Treasury Transaction is submitted. The cancelled record retains the journal link; amend it for a corrected transfer. Existing records are unaffected.
+
+## Treasury workbook and custody statements
+
+Open **Crane Operations → Treasury Workbook** for the seven-column RTL treasury/custody statement, source document links, a company-specific **Cost Center** filter, period opening balance and print/Excel output in the workbook layout. With a Cost Center selected, balances and totals apply to that center only. The report reads posted native General Ledger movements, includes advances/current-account transfers, and opens the latest accessible import without changing user company defaults. See [the LYD workbook reconciliation and audited development reset](docs/TREASURY_WORKBOOK.md). Imports/resets are explicit commands, never migration hooks.
 
 ## Rental income and expenses
 
@@ -135,7 +162,13 @@ Rental report and simulated cycle integration tests:
 bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment_rental.report.crane_rental_profitability.test_crane_rental_profitability
 ```
 
-These report tests use the development fixture company `cranes company` and roll back their records.
+Ownership, profit settlements and partner accounting integration tests:
+
+```bash
+bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement
+```
+
+The report and settlement tests use the development fixture company `cranes company` and roll back their records.
 
 ## Industrial theme
 
@@ -163,3 +196,12 @@ For deployment details, see [deploy/README.md](deploy/README.md).
 ## License
 
 MIT
+
+
+Sharing Timesheets automatically create linked settlements; Sales Invoice submission automatically approves/posts partner entitlements. Partners are native **Shareholders** with a company-specific **Partners** payable default. Use **Crane Operations → Crane Partner Statement / Crane Partner Summary** for movements, totals, invoice values, payment status and aging. Open a settlement's **Create → Partner Payment** to choose an unpaid partner and prepare a native Pay entry. [Current sharing workflow](docs/PROFIT_SHARING.md).
+
+Automatic settlement and Shareholder/report tests:
+
+```bash
+bench --site YOUR_SITE run-tests --module heavy_equipment_rental.test_partner_settlements
+```

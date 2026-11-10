@@ -1,0 +1,14 @@
+<style>
+.her-workbook{direction:rtl;font: bold 12pt Calibri,Arial,sans-serif;color:#000}
+.her-workbook table{width:100%;border-collapse:collapse;table-layout:fixed}
+.her-workbook td,.her-workbook th{border:1px solid #000;text-align:center;vertical-align:middle;padding:2px}
+.her-workbook th,.her-workbook .balance{background:#f4b183!important}
+.her-workbook h2,.her-workbook h3{font: bold 12pt Calibri,Arial,sans-serif;text-align:right}
+</style>
+<div class="her-workbook">
+<h2>حركة الخزينة</h2><h3>لسنة {%= String(filters.to_date).slice(0,4) %}</h3>
+<table><colgroup><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:15%"><col style="width:18%"><col style="width:30%"></colgroup>
+<thead><tr><th>التاربخ</th><th>الوارد</th><th>المنصرف</th><th>الرصيد</th><th>الإسم</th><th>مركز التكلفة</th><th>البيان</th></tr></thead>
+<tbody>{% for (var i=0;i<data.length;i++) { var r=data[i]; %}
+<tr><td>{%= frappe.utils.escape_html(r.display_date || "") %}</td><td>{%= format_number(r.incoming, null, 2) %}</td><td>{%= format_number(r.outgoing, null, 2) %}</td><td class="balance">{%= format_number(r.balance, null, 2) %}</td><td>{%= frappe.utils.escape_html(r.party_name || "") %}</td><td>{%= frappe.utils.escape_html(r.category || "") %}</td><td>{%= frappe.utils.escape_html(r.description || "") %}</td></tr>
+{% } %}</tbody></table></div>

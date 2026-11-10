@@ -1,0 +1,129 @@
+{
+  "company": "شركة المعدات الثقيلة - ليبيا",
+  "currency": "LYD",
+  "batch": "HER-528e8003b9ecfbfbdd6f",
+  "sha256": "528e8003b9ecfbfbdd6fa41cd6c287eea91b2debee1b59a838fe9ae313ed4760",
+  "rows": 172,
+  "counts": {
+    "Treasury Transaction": 79,
+    "Expense Entry": 93
+  },
+  "journals": 172,
+  "totals": {
+    "incoming": 46200.0,
+    "outgoing": 46180.0,
+    "closing_balance": 20.0
+  },
+  "opening_balances": "All zero as approved; no zero-value journal posted",
+  "balances": [
+    {
+      "account": "المصرف - شيت الخزينة - HER-LY",
+      "balance": -4500.0
+    },
+    {
+      "account": "جاري محمد خيري - HER-LY",
+      "balance": -38100.0
+    },
+    {
+      "account": "جاري مرعي وائل - HER-LY",
+      "balance": -1620.0
+    },
+    {
+      "account": "خزنة مرعي وائل - HER-LY",
+      "balance": 20.0
+    },
+    {
+      "account": "سلف وعهد - احمد ريشا - HER-LY",
+      "balance": 2870.0
+    },
+    {
+      "account": "سلف وعهد - احمد سليمان - HER-LY",
+      "balance": 180.0
+    },
+    {
+      "account": "سلف وعهد - اشرف - HER-LY",
+      "balance": 2150.0
+    },
+    {
+      "account": "سلف وعهد - رامي - HER-LY",
+      "balance": 355.0
+    },
+    {
+      "account": "سلف وعهد - محمود خيري - HER-LY",
+      "balance": 535.0
+    },
+    {
+      "account": "سلف وعهد - مرعي وائل - HER-LY",
+      "balance": 741.0
+    },
+    {
+      "account": "مصروف - (DS-18)45Tتركس اسلام - HER-LY",
+      "balance": 747.0
+    },
+    {
+      "account": "مصروف - (F-1)18Mفوركلفت - HER-LY",
+      "balance": 1215.0
+    },
+    {
+      "account": "مصروف - (F-4)18Mفوركلفت دوران - HER-LY",
+      "balance": 1165.0
+    },
+    {
+      "account": "مصروف - الجراش - HER-LY",
+      "balance": 560.0
+    },
+    {
+      "account": "مصروف - تركس امريكي(DS-12)T35 - HER-LY",
+      "balance": 3785.0
+    },
+    {
+      "account": "مصروف - تركس امريكي(DS-15)T55 - HER-LY",
+      "balance": 3620.0
+    },
+    {
+      "account": "مصروف - تركس ايطالي(DS-13)T35 - HER-LY",
+      "balance": 8155.0
+    },
+    {
+      "account": "مصروف - تركس ايطالي(DS-13)T36 - HER-LY",
+      "balance": 600.0
+    },
+    {
+      "account": "مصروف - تركس ايطالي(DS-13)T37 - HER-LY",
+      "balance": 6500.0
+    },
+    {
+      "account": "مصروف - تركس ايطالي(DS-14)T60 - HER-LY",
+      "balance": 5340.0
+    },
+    {
+      "account": "مصروف - تركس ايطالي(DS-16)T45 - HER-LY",
+      "balance": 3415.0
+    },
+    {
+      "account": "مصروف - سيزرلفت(F-3)M14 - HER-LY",
+      "balance": 750.0
+    },
+    {
+      "account": "مصروف - عربية(HT) - HER-LY",
+      "balance": 132.0
+    },
+    {
+      "account": "مصروف - مان لفت(F-2)M26 - HER-LY",
+      "balance": 800.0
+    },
+    {
+      "account": "مصروف - نسريات - HER-LY",
+      "balance": 585.0
+    }
+  ],
+  "date_rules": "Flip 2026-12-10 / 2026-06-10 only; fill blank dates from preceding resolved row",
+  "filters": {
+    "company": "شركة المعدات الثقيلة - ليبيا",
+    "account": "خزنة مرعي وائل - HER-LY",
+    "from_date": "2026-09-10",
+    "to_date": "2026-10-31",
+    "batch": "HER-528e8003b9ecfbfbdd6f",
+    "workbook_order": 1
+  }
+}

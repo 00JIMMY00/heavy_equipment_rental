@@ -216,6 +216,7 @@ def _invoice_line(sheets, allocation, charged_days):
     if not item or item.is_stock_item or not item.is_sales_item or item.stock_uom != "Hour" or item.disabled:
         frappe.throw(_("Crane {0}: linked Item must be an enabled non-stock Hour sales service.").format(crane.crane_name))
     return [{
+        "crane": crane.name,
         "item_code": crane.item,
         "item_name": crane.crane_name,
         "uom": item.stock_uom,
@@ -327,8 +328,14 @@ def generate_sales_invoice(assignment=None, timesheet=None, crane=None):
                                     update_modified=False)
         for name, existing_invoice in covered.items():
             if existing_invoice:
+                if frappe.db.exists("Crane Profit Settlement", {"sales_invoice": existing_invoice, "docstatus": 1}):
+                    frappe.throw(_("Invoice {0} has settled partner entitlements. Cancel its settlements before adding work.").format(existing_invoice))
                 frappe.db.set_value("Crane Timesheet", name, "sales_invoice", existing_invoice,
                                     update_modified=False)
+        from heavy_equipment_rental.timesheet_settlement import ensure_settlement
+
+        for sheet in unbilled:
+            ensure_settlement(sheet.reload())
     except Exception:
         frappe.db.rollback(save_point="crane_sales_invoice")
         raise

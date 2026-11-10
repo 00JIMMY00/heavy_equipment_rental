@@ -24,10 +24,16 @@ def create_rental_cycle(company, start_date="2026-10-25"):
     return result
 
 
-def _create_cycle(company, start_date):
+def _create_cycle(company, start_date, *, location=None, daily_rate=5000,
+                  tax_amount=0, expense_amounts=None, rental_days=3):
     company_doc = frappe.get_doc("Company", company)
     start = getdate(start_date)
-    end = add_days(start, 2)
+    if not isinstance(rental_days, int) or rental_days < 1:
+        frappe.throw("The demo rental duration must be a positive whole number of days.")
+    end = add_days(start, rental_days - 1)
+    amounts = expense_amounts or (1500, 500, 1200, 300)
+    if len(amounts) != 4:
+        frappe.throw("The demo requires four expense amounts.")
     cash_parent = frappe.db.get_value("Account", {
         "company": company, "account_type": "Cash", "is_group": 1,
     }, "name")
@@ -58,20 +64,28 @@ def _create_cycle(company, start_date):
         date_of_joining="2020-01-01", status="Active")).insert()
     crane = frappe.get_doc(dict(doctype="Crane", crane_name="HER DEMO 50 Ton Crane",
         capacity_tons=50, ownership_type="Owned", operational_condition="Operational",
-        license_plate="HER-DEMO-001", period_prices=[dict(period="Day", price=5000)])).insert()
+        license_plate="HER-DEMO-001", period_prices=[dict(period="Day", price=daily_rate)])).insert()
     assignment = frappe.get_doc(dict(doctype="Crane Assignment", company=company,
-        customer=customer.name, location=DEMO_LOCATION, assigned_cranes=[dict(crane=crane.name,
-            start_date=start, expected_end_date=end, rental_rate_unit="Day", rental_rate=5000)])).insert()
+        customer=customer.name, location=location or DEMO_LOCATION, assigned_cranes=[dict(crane=crane.name,
+            start_date=start, expected_end_date=end, rental_rate_unit="Day", rental_rate=daily_rate)])).insert()
     sheet = frappe.get_doc(dict(doctype="Crane Timesheet", assignment=assignment.name, crane=crane.name,
         driver=employee.name, period_start=start, period_end=end, timesheet_entries=[
             dict(work_date=add_days(start, offset), start_time="08:00", end_time="16:00")
-            for offset in range(3)])).insert()
+            for offset in range(rental_days)])).insert()
     sheet.submit()
     invoice = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=sheet.name)["name"])
     invoice.set_posting_time = 1
     invoice.posting_date = end
     invoice.due_date = end
     invoice.set("taxes", [])
+    if tax_amount:
+        account = frappe.db.get_value("Account", {"company": company, "account_type": "Tax",
+            "is_group": 0, "disabled": 0}, "name")
+        if not account:
+            frappe.throw("Configure a Tax account before creating the taxed operating demo.")
+        invoice.append("taxes", dict(charge_type="Actual", account_head=account,
+            tax_amount=tax_amount, description="HER DEMO contractual Grand Total example",
+            cost_center=company_doc.cost_center))
     invoice.save()
     invoice.submit()
     from erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry
@@ -83,12 +97,11 @@ def _create_cycle(company, start_date):
     receipt.insert()
     receipt.submit()
     transfer = frappe.get_doc(dict(doctype="Treasury Transaction", company=company, posting_date=end,
-        mode_of_payment=modes["Cash"], destination_account=accounts["Driver Custody"], amount=3000,
+        mode_of_payment=modes["Cash"], destination_account=accounts["Driver Custody"], amount=sum(amounts[2:]) + 1500,
         description="HER DEMO custody funding; transfer, not an expense")).insert()
     transfer.submit()
-    for title, kind, amount in (("Fuel", "Cash", 1500), ("Transport", "Cash", 500),
-                               ("Operator Allowance", "Driver Custody", 1200),
-                               ("Site Supplies", "Driver Custody", 300)):
+    for (title, kind), amount in zip((("Fuel", "Cash"), ("Transport", "Cash"),
+                                    ("Operator Allowance", "Driver Custody"), ("Site Supplies", "Driver Custody")), amounts):
         expense_type = frappe.db.get_value("Expense Entry Type", {"company": company, "title": "HER DEMO " + title}, "name")
         if not expense_type:
             expense_type = frappe.get_doc(dict(doctype="Expense Entry Type", company=company,
@@ -98,9 +111,11 @@ def _create_cycle(company, start_date):
             description="HER DEMO " + title + " paid from " + kind, mode_of_payment=modes[kind],
             expenses=[dict(expense_entry_type=expense_type, amount=amount)])).insert()
         expense.submit()
-    assignment.add_comment("Info", "Simulated rental cycle: 3 days × 5,000; cash expenses 2,000; custody expenses 1,500. "
-                           "Custody funded with 3,000; unspent custody 1,500. All amounts in company currency.")
-    return describe_cycle(assignment.name)
+    assignment.add_comment("Info", f"Simulated rental cycle: {rental_days} days × {daily_rate}; invoice Grand Total "
+                           f"{invoice.base_grand_total}; costs {sum(amounts)}. Treasury transfers are not costs.")
+    result = describe_cycle(assignment.name)
+    result.update(customer_receipt=receipt.name, treasury_transfer=transfer.name)
+    return result
 
 
 def describe_cycle(assignment):

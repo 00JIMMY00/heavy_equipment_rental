@@ -1,5 +1,7 @@
 # Simulated crane rental cycle
 
+> Historical development example: its transactional records were removed in the user-approved 2026-11-06 company reset. Master records remain; see [the LYD workbook import and backup audit](TREASURY_WORKBOOK.md). These numbers document the earlier verification.
+
 Created on `cranes-dev2.arab-erp.com` for `cranes company` in EGP. All records marked
 **HER DEMO** are simulated, but their submitted documents post normal development-site
 accounting entries. No live site was populated.

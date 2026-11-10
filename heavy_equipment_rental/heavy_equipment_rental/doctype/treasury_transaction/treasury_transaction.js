@@ -1,18 +1,24 @@
 frappe.ui.form.on("Treasury Transaction", {
 	setup(frm) {
+		frm.set_query("cost_center", () => ({
+			filters: {company: frm.doc.company, is_group: 0, disabled: 0},
+		}));
+		frm.set_query("party_type", () => ({
+			query: "erpnext.setup.doctype.party_type.party_type.get_party_type",
+		}));
 		frm.set_query("mode_of_payment", () => ({ filters: { enabled: 1 } }));
 		frm.set_query("destination_account", () => ({
+			query: "heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.treasury_transaction.treasury_account_query",
 			filters: {
 				company: frm.doc.company,
-				is_group: 0,
-				disabled: 0,
-				account_type: ["in", ["Cash", "Bank"]],
-				account_currency: frm.doc.currency,
-				name: ["!=", frm.doc.source_account || ""],
 			},
 		}));
 	},
+	party_type(frm) {
+		frm.set_value("party", null);
+	},
 	company(frm) {
+		frm.set_value("cost_center", null);
 		frm.set_value("destination_account", null);
 		frm.set_value("source_account", null);
 		frm.set_value("currency", null);

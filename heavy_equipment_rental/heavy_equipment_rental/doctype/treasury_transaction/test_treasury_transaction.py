@@ -92,6 +92,118 @@ class TestTreasuryTransaction(FrappeTestCase):
         self.assertEqual(rows[self.accounts[0]].debit, transfer.amount)
         self.assertEqual(journal.cheque_no, "TR-123")
 
+    def test_cost_center_validation_and_journal_attribution(self):
+        center = frappe.db.get_value("Company", self.company, "cost_center")
+        transfer = self.transaction(cost_center=center).insert()
+        transfer.submit()
+        journal = frappe.get_doc("Journal Entry", transfer.journal_entry)
+        self.assertTrue(all(row.cost_center == center for row in journal.accounts))
+        group = frappe.db.get_value("Cost Center", center, "parent_cost_center")
+        foreign = frappe.db.get_value("Cost Center", {"company": ["!=", self.company], "is_group": 0}, "name")
+        self.assertTrue(foreign)
+        for invalid in (group, foreign):
+            with self.subTest(center=invalid), self.assertRaises(frappe.ValidationError):
+                self.transaction(cost_center=invalid).insert()
+        frappe.db.set_value("Cost Center", center, "disabled", 1)
+        try:
+            with self.assertRaises(frappe.ValidationError):
+                self.transaction(cost_center=center).insert()
+        finally:
+            frappe.db.set_value("Cost Center", center, "disabled", 0)
+
+    def assert_journal_party(self, transfer):
+        journal = frappe.get_doc("Journal Entry", transfer.journal_entry)
+        self.assertEqual(journal.docstatus, 1)
+        self.assertEqual(journal.total_debit, transfer.amount)
+        self.assertEqual(journal.total_credit, transfer.amount)
+        for row in journal.accounts:
+            expected = (transfer.party_type, transfer.party) if row.account == transfer.destination_account else (None, None)
+            self.assertEqual((row.party_type or None, row.party or None), expected)
+        # Reposts use the persisted source and retain native GL party rules.
+        self.assertTrue(all(not row.party_type and not row.party for row in journal.build_gl_map()))
+        ledger = frappe.get_all("GL Entry", filters={
+            "voucher_type": "Journal Entry", "voucher_no": journal.name, "is_cancelled": 0,
+        }, fields=["account", "debit", "credit", "party_type", "party"])
+        self.assertEqual(len(ledger), 2)
+        self.assertTrue(all(not row.party_type and not row.party for row in ledger))
+        self.assertEqual(sum(row.debit for row in ledger), transfer.amount)
+        self.assertEqual(sum(row.credit for row in ledger), transfer.amount)
+        return journal
+
+    def test_party_is_copied_to_destination_journal_row(self):
+        parties = {
+            "Customer": frappe.get_doc({
+                "doctype": "Customer", "customer_name": "Treasury customer " + self.key,
+                "customer_type": "Company",
+                "customer_group": frappe.db.get_value("Customer Group", {"is_group": 0}, "name"),
+            }).insert().name,
+            "Supplier": frappe.get_doc({
+                "doctype": "Supplier", "supplier_name": "Treasury supplier " + self.key,
+                "supplier_type": "Company",
+            }).insert().name,
+            "Employee": frappe.get_doc({
+                "doctype": "Employee", "first_name": "Treasury " + self.key,
+                "company": self.company, "status": "Active",
+                "date_of_joining": today(), "date_of_birth": "1990-01-01",
+                "gender": "Male",
+            }).insert().name,
+        }
+        for party_type, party in parties.items():
+            with self.subTest(party_type=party_type):
+                transfer = self.transaction(party_type=party_type, party=party).insert()
+                transfer.submit()
+                transfer.reload()
+                journal = self.assert_journal_party(transfer)
+                # A copied journal has no treasury source and keeps native validation.
+                unrelated = frappe.copy_doc(journal)
+                unrelated.docstatus = 0
+                unrelated.insert()
+                with self.assertRaises(frappe.ValidationError):
+                    unrelated.submit()
+                transfer.cancel()
+                self.assertFalse(self.ledger(journal.name))
+                amendment = frappe.copy_doc(transfer, ignore_no_copy=False)
+                amendment.docstatus = 0
+                amendment.amended_from = transfer.name
+                amendment.insert()
+                amendment.submit()
+                self.assert_journal_party(amendment)
+
+    def test_party_on_designated_balance_accounts(self):
+        supplier = frappe.get_doc({
+            "doctype": "Supplier", "supplier_name": "Treasury balance party " + self.key,
+            "supplier_type": "Company",
+        }).insert().name
+        for kind in ("Custody", "Employee Advance", "Owner Current"):
+            parent = frappe.db.get_value("Account", {
+                "company": self.company, "root_type": "Liability" if kind == "Owner Current" else "Asset",
+                "is_group": 1,
+            }, "name")
+            account = frappe.get_doc({
+                "doctype": "Account", "company": self.company,
+                "account_name": "Treasury " + kind + self.key,
+                "parent_account": parent, "account_currency": self.currency,
+                "her_treasury_kind": kind,
+            }).insert()
+            with self.subTest(kind=kind):
+                transfer = self.transaction(
+                    destination_account=account.name, party_type="Supplier", party=supplier,
+                ).insert()
+                transfer.submit()
+                self.assert_journal_party(transfer)
+                transfer.cancel()
+                self.assertFalse(self.ledger(transfer.journal_entry))
+
+    def test_reject_invalid_or_incomplete_party(self):
+        for values in (
+            {"party_type": "Employee"},
+            {"party": "missing-party"},
+            {"party_type": "Company", "party": self.company},
+            {"party_type": "Employee", "party": "missing-party"},
+        ):
+            with self.subTest(values=values), self.assertRaises(frappe.ValidationError):
+                self.transaction(**values).insert()
+
     def test_reject_invalid_amount_accounts_and_manual_journal(self):
         for values in ({"amount": 0}, {"amount": -1}, {"amount": 0.000001},
                        {"destination_account": self.accounts[0]},

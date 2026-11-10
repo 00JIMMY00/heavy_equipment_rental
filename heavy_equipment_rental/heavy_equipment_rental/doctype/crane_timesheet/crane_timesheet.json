@@ -44,6 +44,7 @@
   "connections_tab",
   "references_section",
   "sales_invoice",
+  "profit_settlement",
   "purchase_invoice",
   "amended_from",
   "legacy_purchase_terms"
@@ -320,6 +321,16 @@
    "hidden": 1,
    "read_only": 1,
    "no_copy": 1
+  },
+  {
+   "fieldname": "profit_settlement",
+   "fieldtype": "Link",
+   "label": "Profit Settlement",
+   "options": "Crane Profit Settlement",
+   "read_only": 1,
+   "allow_on_submit": 1,
+   "no_copy": 1,
+   "in_standard_filter": 1
   }
  ],
  "grid_page_length": 100,

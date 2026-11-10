@@ -79,5 +79,8 @@ class Crane(Document):
 		self.period_prices.sort(key=lambda row: ("Hour", "Day", "Month").index(row.period))
 		for index, row in enumerate(self.period_prices, 1):
 			row.idx = index
+		from heavy_equipment_rental.profit_sharing import validate_agreement
+
+		validate_agreement(self)
 		# Physical condition remains independent of bookings, including when
 		# maintenance starts during an existing contract. New activation is blocked.

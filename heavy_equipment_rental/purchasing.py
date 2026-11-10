@@ -49,6 +49,7 @@ def create_purchase_invoice(sheet):
         "remarks": _("Crane Timesheet {0}; Assignment {1}; service period {2} to {3}").format(
             sheet.name, sheet.assignment, sheet.period_start, sheet.period_end),
         "items": [{
+            "crane": sheet.crane,
             "item_code": item.name, "uom": sheet.purchase_uom, "conversion_factor": conversion_factor,
             "qty": quantity, "rate": sheet.purchase_rate,
             "description": _("Crane {0}; Timesheet {1}; {2} to {3}; {4} {5} at {6} per {5}").format(

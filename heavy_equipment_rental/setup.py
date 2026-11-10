@@ -116,5 +116,13 @@ def execute():
 		}],
 	})
 	install_item_price_field()
+	from heavy_equipment_rental.profit_sharing import install_fields
+
+	install_fields()
+	from heavy_equipment_rental.partner_accounts import install as install_partner_accounts
+	install_partner_accounts()
+	from heavy_equipment_rental.treasury_workbook import install_fields as install_workbook_fields
+
+	install_workbook_fields()
 	set_default_workspace()
 	sync_operations_workspace()

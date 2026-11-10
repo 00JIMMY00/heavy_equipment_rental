@@ -9,5 +9,6 @@ def get_data():
 		"transactions": [
 			{"label": _("Rental"), "items": ["Crane Assignment", "Crane Timesheet"]},
 			{"label": _("Operations"), "items": ["Crane Maintenance", "Expense Entry"]},
+			{"label": _("Profit Sharing"), "items": ["Crane Profit Settlement"]},
 		],
 	}

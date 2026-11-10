@@ -28,6 +28,13 @@
    "in_standard_filter": 1
   },
   {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Cost Center",
+   "options": "Cost Center",
+   "in_standard_filter": 1
+  },
+  {
    "fieldname": "posting_date",
    "fieldtype": "Date",
    "label": "Posting Date",
@@ -85,6 +92,31 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "party_section",
+   "fieldtype": "Section Break",
+   "label": "Party Details"
+  },
+  {
+   "fieldname": "party_type",
+   "fieldtype": "Link",
+   "label": "Party Type",
+   "options": "DocType",
+   "mandatory_depends_on": "eval:doc.party"
+  },
+  {
+   "fieldname": "party_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "party",
+   "fieldtype": "Dynamic Link",
+   "label": "Party",
+   "options": "party_type",
+   "depends_on": "party_type",
+   "mandatory_depends_on": "eval:doc.party_type",
+   "description": "The recipient of this transfer."
+  },
+  {
    "fieldname": "reference_section",
    "fieldtype": "Section Break",
    "label": "Reference"
@@ -124,6 +156,7 @@
  "field_order": [
   "naming_series",
   "company",
+  "cost_center",
   "posting_date",
   "currency",
   "transfer_section",
@@ -132,6 +165,10 @@
   "transfer_column",
   "destination_account",
   "amount",
+  "party_section",
+  "party_type",
+  "party_column",
+  "party",
   "reference_section",
   "reference_no",
   "reference_date",

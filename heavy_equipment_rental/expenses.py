@@ -50,7 +50,12 @@ class RentalExpenseEntry(ExpenseEntry):
 
 class RentalJournalEntry(JournalEntry):
     def build_gl_map(self):
+        from heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.treasury_transaction import (
+            clear_treasury_gl_party,
+        )
+
         gl_map = super().build_gl_map()
+        clear_treasury_gl_party(self, gl_map)
         employee = frappe.db.get_value("Expense Entry", {
             "journal_entry": self.name, "docstatus": 1, "company": self.company,
         }, "employee")

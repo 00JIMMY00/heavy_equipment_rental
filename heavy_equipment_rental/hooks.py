@@ -31,17 +31,40 @@ override_doctype_class = {
 }
 
 doc_events = {
+    "Shareholder": {"validate": "heavy_equipment_rental.partner_accounts.validate_shareholder"},
+	"Crane Timesheet": {
+		"before_submit": "heavy_equipment_rental.timesheet_settlement.guard_timesheet",
+		"before_cancel": "heavy_equipment_rental.timesheet_settlement.guard_timesheet",
+		"on_submit": "heavy_equipment_rental.timesheet_settlement.ensure_settlement",
+	},
+	"Payment Entry": {
+		"validate": "heavy_equipment_rental.partner_reporting.validate_payment",
+		"before_submit": "heavy_equipment_rental.partner_reporting.lock_payment_settlements",
+	},
 	"Purchase Invoice": {
+		"before_submit": "heavy_equipment_rental.profit_sharing.guard_closed_period",
+		"before_cancel": "heavy_equipment_rental.profit_sharing.guard_closed_period",
 		"on_cancel": "heavy_equipment_rental.purchasing.allow_timesheet_invoice_cancel",
 	},
+	"Expense Entry": {
+		"before_submit": "heavy_equipment_rental.profit_sharing.guard_closed_period",
+		"before_cancel": "heavy_equipment_rental.profit_sharing.guard_closed_period",
+	},
 	"Journal Entry": {
-		"before_cancel": "heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.treasury_transaction.guard_journal_cancel",
+		"before_submit": "heavy_equipment_rental.profit_sharing.guard_closed_period",
+		"before_cancel": [
+			"heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.treasury_transaction.guard_journal_cancel",
+			"heavy_equipment_rental.profit_sharing.guard_closed_period",
+		],
 		"on_cancel": "heavy_equipment_rental.billing.clear_direct_driver_payment_link",
 	},
 	"Sales Invoice": {
+		"on_submit": "heavy_equipment_rental.timesheet_settlement.invoice_submitted",
 		"before_save": "heavy_equipment_rental.billing.set_invoice_driver_shares",
-		"before_submit": "heavy_equipment_rental.billing.set_invoice_driver_shares",
-		"before_cancel": "heavy_equipment_rental.billing.guard_direct_driver_payment_cancel",
+		"before_submit": ["heavy_equipment_rental.billing.set_invoice_driver_shares",
+			"heavy_equipment_rental.profit_sharing.guard_closed_period"],
+		"before_cancel": ["heavy_equipment_rental.billing.guard_direct_driver_payment_cancel",
+			"heavy_equipment_rental.profit_sharing.guard_closed_period"],
 	},
 }
 

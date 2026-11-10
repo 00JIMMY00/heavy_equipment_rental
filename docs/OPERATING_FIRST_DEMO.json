@@ -1,0 +1,373 @@
+{
+  "site": "cranes-dev2.arab-erp.com",
+  "company": "cranes company",
+  "cases": [
+    {
+      "case": "Single Owner",
+      "periods": [
+        {
+          "settlement": "CPS-00004",
+          "crane": "CR-00063",
+          "from_date": "2026-11-01",
+          "to_date": "2026-11-01",
+          "currency": "EGP",
+          "revenue": 100000.0,
+          "operating_percentage": 10.0,
+          "operating_fee": 10000.0,
+          "balance_after_operating": 90000.0,
+          "expenses": 20000.0,
+          "residual": 70000.0,
+          "company_retained": 10000.0,
+          "partner_payable": 70000.0,
+          "journal": "ACC-JV-2026-00030",
+          "journal_debit": 70000.0,
+          "journal_credit": 70000.0,
+          "conservation_total": 100000.0,
+          "shares": [
+            {
+              "company": false,
+              "supplier": "HER OPERATING FIRST DEMO v2 No Tax - Single Owner / Partner 1",
+              "ownership_percentage": 100.0,
+              "residual_percentage": 100.0,
+              "operating_amount": 0.0,
+              "residual_amount": 70000.0,
+              "total": 70000.0,
+              "outstanding": 0.0
+            },
+            {
+              "company": true,
+              "supplier": null,
+              "ownership_percentage": 0.0,
+              "residual_percentage": 0.0,
+              "operating_amount": 10000.0,
+              "residual_amount": 0.0,
+              "total": 10000.0,
+              "outstanding": 0
+            }
+          ],
+          "payments": [
+            {
+              "parent": "ACC-PAY-2026-00016",
+              "allocated_amount": 50000.0
+            },
+            {
+              "parent": "ACC-PAY-2026-00015",
+              "allocated_amount": 20000.0
+            }
+          ],
+          "sources": [
+            {
+              "doctype": "Expense Entry",
+              "expenses": 8000.0,
+              "journal": "ACC-JV-2026-00026",
+              "name": "EXPE-00017",
+              "posting_date": "2026-11-01"
+            },
+            {
+              "doctype": "Expense Entry",
+              "expenses": 2000.0,
+              "journal": "ACC-JV-2026-00027",
+              "name": "EXPE-00018",
+              "posting_date": "2026-11-01"
+            },
+            {
+              "doctype": "Expense Entry",
+              "expenses": 8000.0,
+              "journal": "ACC-JV-2026-00028",
+              "name": "EXPE-00019",
+              "posting_date": "2026-11-01"
+            },
+            {
+              "doctype": "Expense Entry",
+              "expenses": 2000.0,
+              "journal": "ACC-JV-2026-00029",
+              "name": "EXPE-00020",
+              "posting_date": "2026-11-01"
+            },
+            {
+              "basis": "Grand Total allocation",
+              "detail": "1assnqrevc",
+              "doctype": "Sales Invoice",
+              "name": "ACC-SINV-2026-00015",
+              "posting_date": "2026-11-01",
+              "revenue": 100000.0
+            }
+          ],
+          "invoice_headers": [
+            {
+              "name": "ACC-SINV-2026-00015",
+              "base_net_total": 100000.0,
+              "base_total_taxes_and_charges": 0.0,
+              "base_grand_total": 100000.0,
+              "outstanding_amount": 0.0
+            }
+          ],
+          "ledger_reconciliation": {
+            "income": 100000.0,
+            "operating_expenses": 20000.0,
+            "allocation_expense": 70000.0,
+            "result_after_allocation": 10000.0,
+            "sales_tax_credit": 0
+          },
+          "customer_receipt": "ACC-PAY-2026-00014",
+          "treasury_transfer": "TRE-2026-00005"
+        }
+      ]
+    },
+    {
+      "case": "Three Partners",
+      "periods": [
+        {
+          "settlement": "CPS-00005",
+          "crane": "CR-00064",
+          "from_date": "2026-11-01",
+          "to_date": "2026-11-01",
+          "currency": "EGP",
+          "revenue": 100000.0,
+          "operating_percentage": 10.0,
+          "operating_fee": 10000.0,
+          "balance_after_operating": 90000.0,
+          "expenses": 20000.0,
+          "residual": 70000.0,
+          "company_retained": 10000.0,
+          "partner_payable": 70000.0,
+          "journal": "ACC-JV-2026-00036",
+          "journal_debit": 70000.0,
+          "journal_credit": 70000.0,
+          "conservation_total": 100000.0,
+          "shares": [
+            {
+              "company": false,
+              "supplier": "HER OPERATING FIRST DEMO v2 No Tax - Three Partners / Partner 1",
+              "ownership_percentage": 60.0,
+              "residual_percentage": 50.0,
+              "operating_amount": 0.0,
+              "residual_amount": 35000.0,
+              "total": 35000.0,
+              "outstanding": 0.0
+            },
+            {
+              "company": false,
+              "supplier": "HER OPERATING FIRST DEMO v2 No Tax - Three Partners / Partner 2",
+              "ownership_percentage": 25.0,
+              "residual_percentage": 30.0,
+              "operating_amount": 0.0,
+              "residual_amount": 21000.0,
+              "total": 21000.0,
+              "outstanding": 0.0
+            },
+            {
+              "company": false,
+              "supplier": "HER OPERATING FIRST DEMO v2 No Tax - Three Partners / Partner 3",
+              "ownership_percentage": 15.0,
+              "residual_percentage": 20.0,
+              "operating_amount": 0.0,
+              "residual_amount": 14000.0,
+              "total": 14000.0,
+              "outstanding": 0.0
+            },
+            {
+              "company": true,
+              "supplier": null,
+              "ownership_percentage": 0.0,
+              "residual_percentage": 0.0,
+              "operating_amount": 10000.0,
+              "residual_amount": 0.0,
+              "total": 10000.0,
+              "outstanding": 0
+            }
+          ],
+          "payments": [
+            {
+              "parent": "ACC-PAY-2026-00020",
+              "allocated_amount": 14000.0
+            },
+            {
+              "parent": "ACC-PAY-2026-00019",
+              "allocated_amount": 21000.0
+            },
+            {
+              "parent": "ACC-PAY-2026-00018",
+              "allocated_amount": 35000.0
+            }
+          ],
+          "sources": [
+            {
+              "doctype": "Expense Entry",
+              "expenses": 8000.0,
+              "journal": "ACC-JV-2026-00032",
+              "name": "EXPE-00021",
+              "posting_date": "2026-11-01"
+            },
+            {
+              "doctype": "Expense Entry",
+              "expenses": 2000.0,
+              "journal": "ACC-JV-2026-00033",
+              "name": "EXPE-00022",
+              "posting_date": "2026-11-01"
+            },
+            {
+              "doctype": "Expense Entry",
+              "expenses": 8000.0,
+              "journal": "ACC-JV-2026-00034",
+              "name": "EXPE-00023",
+              "posting_date": "2026-11-01"
+            },
+            {
+              "doctype": "Expense Entry",
+              "expenses": 2000.0,
+              "journal": "ACC-JV-2026-00035",
+              "name": "EXPE-00024",
+              "posting_date": "2026-11-01"
+            },
+            {
+              "basis": "Grand Total allocation",
+              "detail": "1cd7mseg6v",
+              "doctype": "Sales Invoice",
+              "name": "ACC-SINV-2026-00016",
+              "posting_date": "2026-11-01",
+              "revenue": 100000.0
+            }
+          ],
+          "invoice_headers": [
+            {
+              "name": "ACC-SINV-2026-00016",
+              "base_net_total": 100000.0,
+              "base_total_taxes_and_charges": 0.0,
+              "base_grand_total": 100000.0,
+              "outstanding_amount": 0.0
+            }
+          ],
+          "ledger_reconciliation": {
+            "income": 100000.0,
+            "operating_expenses": 20000.0,
+            "allocation_expense": 70000.0,
+            "result_after_allocation": 10000.0,
+            "sales_tax_credit": 0
+          },
+          "customer_receipt": "ACC-PAY-2026-00017",
+          "treasury_transfer": "TRE-2026-00006"
+        },
+        {
+          "settlement": "CPS-00006",
+          "crane": "CR-00064",
+          "from_date": "2026-11-02",
+          "to_date": "2026-11-02",
+          "currency": "EGP",
+          "revenue": 100000.0,
+          "operating_percentage": 12.0,
+          "operating_fee": 12000.0,
+          "balance_after_operating": 88000.0,
+          "expenses": 20000.0,
+          "residual": 68000.0,
+          "company_retained": 12000.0,
+          "partner_payable": 68000.0,
+          "journal": "ACC-JV-2026-00038",
+          "journal_debit": 68000.0,
+          "journal_credit": 68000.0,
+          "conservation_total": 100000.0,
+          "shares": [
+            {
+              "company": false,
+              "supplier": "HER OPERATING FIRST DEMO v2 No Tax - Three Partners / Partner 1",
+              "ownership_percentage": 50.0,
+              "residual_percentage": 40.0,
+              "operating_amount": 0.0,
+              "residual_amount": 27200.0,
+              "total": 27200.0,
+              "outstanding": 0.0
+            },
+            {
+              "company": false,
+              "supplier": "HER OPERATING FIRST DEMO v2 No Tax - Three Partners / Partner 2",
+              "ownership_percentage": 30.0,
+              "residual_percentage": 35.0,
+              "operating_amount": 0.0,
+              "residual_amount": 23800.0,
+              "total": 23800.0,
+              "outstanding": 0.0
+            },
+            {
+              "company": false,
+              "supplier": "HER OPERATING FIRST DEMO v2 No Tax - Three Partners / Partner 3",
+              "ownership_percentage": 20.0,
+              "residual_percentage": 25.0,
+              "operating_amount": 0.0,
+              "residual_amount": 17000.0,
+              "total": 17000.0,
+              "outstanding": 0.0
+            },
+            {
+              "company": true,
+              "supplier": null,
+              "ownership_percentage": 0.0,
+              "residual_percentage": 0.0,
+              "operating_amount": 12000.0,
+              "residual_amount": 0.0,
+              "total": 12000.0,
+              "outstanding": 0
+            }
+          ],
+          "payments": [
+            {
+              "parent": "ACC-PAY-2026-00024",
+              "allocated_amount": 17000.0
+            },
+            {
+              "parent": "ACC-PAY-2026-00023",
+              "allocated_amount": 23800.0
+            },
+            {
+              "parent": "ACC-PAY-2026-00022",
+              "allocated_amount": 27200.0
+            }
+          ],
+          "sources": [
+            {
+              "detail": "1dg27ngdi4",
+              "doctype": "Journal Entry",
+              "expenses": 20000.0,
+              "name": "ACC-JV-2026-00037",
+              "posting_date": "2026-11-02"
+            },
+            {
+              "basis": "Grand Total allocation",
+              "detail": "1dbe8hl9lu",
+              "doctype": "Sales Invoice",
+              "name": "ACC-SINV-2026-00017",
+              "posting_date": "2026-11-02",
+              "revenue": 100000.0
+            }
+          ],
+          "invoice_headers": [
+            {
+              "name": "ACC-SINV-2026-00017",
+              "base_net_total": 100000.0,
+              "base_total_taxes_and_charges": 0.0,
+              "base_grand_total": 100000.0,
+              "outstanding_amount": 0.0
+            }
+          ],
+          "ledger_reconciliation": {
+            "income": 100000.0,
+            "operating_expenses": 20000.0,
+            "allocation_expense": 68000.0,
+            "result_after_allocation": 12000.0,
+            "sales_tax_credit": 0
+          },
+          "customer_receipt": "ACC-PAY-2026-00021"
+        }
+      ]
+    },
+    {
+      "case": "Deficit Rejected",
+      "revenue": 100000,
+      "operating_fee": 10000,
+      "balance_after_operating": 90000,
+      "expenses": 91000,
+      "shortfall": 1000,
+      "posted": false,
+      "error": "Settlement stopped: revenue 100,000.00, operating share 10,000.00, balance after operating 90,000.00, expenses 91,000.00, historical loss 0.00, shortfall 1,000.00 EGP. Expenses and historical losses exceed the balance after the operating share. No settlement or partner payable was posted."
+    }
+  ]
+}

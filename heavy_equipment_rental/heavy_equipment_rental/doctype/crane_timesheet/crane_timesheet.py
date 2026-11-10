@@ -136,6 +136,8 @@ class CraneTimesheet(Document):
 
     def before_update_after_submit(self):
         before = self.get_doc_before_save()
+        if before and self.profit_settlement != before.profit_settlement:
+            frappe.throw(_("The Profit Settlement link is managed automatically."))
         if before and self.sales_invoice != before.sales_invoice:
             frappe.throw(_("The Sales Invoice link is managed by Generate Sales Invoice."))
         if before and self.purchase_invoice != before.purchase_invoice:

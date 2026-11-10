@@ -1,0 +1,33 @@
+{
+  "site": "cranes-dev2.arab-erp.com",
+  "company": "cranes company",
+  "deleted": {
+    "Payment Entry": 24,
+    "GL Entry": 165,
+    "Journal Entry": 38,
+    "Payment Ledger Entry": 51,
+    "Sales Invoice": 17,
+    "Purchase Invoice": 4,
+    "Expense Entry": 30,
+    "Treasury Transaction": 6,
+    "Crane Profit Settlement": 6,
+    "Crane Assignment": 30,
+    "Lead": 5,
+    "Opportunity": 1,
+    "Task": 1,
+    "Project": 6,
+    "Sales Order": 0,
+    "Purchase Order": 0,
+    "Delivery Note": 0,
+    "Purchase Receipt": 0,
+    "Stock Entry": 0,
+    "Stock Ledger Entry": 0,
+    "Crane Timesheet": 27,
+    "Crane Maintenance": 4
+  },
+  "fingerprint": "4f41e69a8fbce07feb28c589b5a5780f6a4639f536df1390ba84c3c61ee486f6",
+  "backup": "/home/xxx/bench1/my-bench/sites/cranes-dev2.arab-erp.com/private/backups/20261106_212210-cranes-dev2_arab-erp_com-database.sql.gz",
+  "backup_sha256": "b6b56aa16dca53d96e304d608ca3b966a2347a33446c9b0947fc22d1e022238c",
+  "master_data_preserved": true,
+  "other_company_ledgers_preserved": true
+}

@@ -1,0 +1,57 @@
+{
+ "doctype": "DocType",
+ "name": "Crane Partner",
+ "module": "Heavy Equipment Rental",
+ "engine": "InnoDB",
+ "field_order": [
+  "is_company",
+  "supplier",
+  "shareholder",
+  "ownership_percentage",
+  "profit_percentage"
+ ],
+ "fields": [
+  {
+   "fieldname": "is_company",
+   "fieldtype": "Check",
+   "label": "Our Company",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Legacy Partner Supplier",
+   "options": "Supplier",
+   "in_list_view": 0,
+   "depends_on": "eval:!doc.is_company",
+   "mandatory_depends_on": "",
+   "hidden": 1
+  },
+  {
+   "fieldname": "ownership_percentage",
+   "fieldtype": "Percent",
+   "label": "Ownership %",
+   "precision": "6",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "profit_percentage",
+   "fieldtype": "Percent",
+   "label": "Remaining Balance %",
+   "precision": "6",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "shareholder",
+   "fieldtype": "Link",
+   "label": "Partner (Shareholder)",
+   "options": "Shareholder",
+   "in_list_view": 1,
+   "depends_on": "eval:!doc.is_company",
+   "mandatory_depends_on": "eval:!doc.is_company"
+  }
+ ],
+ "permissions": [],
+ "istable": 1,
+ "editable_grid": 1
+}

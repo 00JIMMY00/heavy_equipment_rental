@@ -198,6 +198,8 @@ frappe.ui.form.on("Crane Timesheet", {
     refresh(frm) {
         purchase_price_label(frm);
         load_rental_terms(frm);
+        if (frm.doc.profit_settlement) frm.add_custom_button(__("Profit Settlement"), () =>
+            frappe.set_route("Form", "Crane Profit Settlement", frm.doc.profit_settlement), __("View"));
         if (frm.doc.docstatus === 1 && frm.doc.purchase_invoice && frappe.model.can_create("Payment Entry")) {
             frm.add_custom_button(__("Payment"), async () => {
                 await frappe.require("/assets/heavy_equipment_rental/js/rental_payments.js");

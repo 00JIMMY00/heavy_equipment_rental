@@ -341,3 +341,87 @@ driver hours,ساعات السائق
 {0}: shift is outside the timesheet period.,{0}: الوردية خارج فترة سجل الساعات.
 {0}: terminal booking history cannot be rewritten.,{0}: لا يمكن إعادة كتابة سجل الحجز النهائي.
 {0}: use an Actions button to change booking state.,{0}: استخدم زر الإجراءات لتغيير حالة الحجز.
+Operating & Distribution Agreement,اتفاق التشغيل وتوزيع المتبقي
+Calculation Method,طريقة الحساب
+Operating First,نسبة التشغيل أولًا
+Legacy Net Profit,صافي الربح - اتفاق سابق
+Operating Share of Grand Total %,نسبة التشغيل من إجمالي الفاتورة %
+Remaining Balance %,نسبة توزيع المتبقي %
+Operating Share,مستحق التشغيل
+Operating Share %,نسبة التشغيل %
+Balance After Operating Share,المتبقي بعد نسبة التشغيل
+Balance After Operating Share & Expenses,المتبقي بعد التشغيل والمصاريف
+Remaining Balance to Distribute,المتبقي القابل للتوزيع
+Remaining Balance Share,نصيب المتبقي
+Total Entitlement,إجمالي المستحق
+Total Retained by Our Company,إجمالي مستحق شركتنا
+Change Agreement,تعديل الاتفاق
+Effective From,ساري من تاريخ
+Edit Terms,تعديل الشروط
+Revenue / Allocated Grand Total,الإيراد / النصيب من إجمالي الفاتورة
+Operating Share & Remaining Balance Distribution,مستحق التشغيل وتوزيع المتبقي
+Accounting Setup,الإعدادات المحاسبية
+"Settlement stopped: revenue {0}, operating share {1}, balance after operating {2}, expenses {3}, historical loss {4}, shortfall {5} {6}. Expenses and historical losses exceed the balance after the operating share. No settlement or partner payable was posted.",تم إيقاف التسوية: الإيراد {0}، مستحق التشغيل {1}، المتبقي بعد التشغيل {2}، المصاريف {3}، خسائر سابقة {4}، العجز {5} {6}. المصاريف والخسائر السابقة تتجاوز المتبقي بعد خصم التشغيل. لم يتم ترحيل تسوية أو مستحقات للشركاء.
+Cannot settle negative revenue: {0} {1}. Review returns and source adjustments.,لا يمكن إتمام التسوية بإيراد سالب: {0} {1}. راجع المرتجعات والتعديلات.
+Deduct this share before expenses. Distribute the remaining balance using the table below.,تُخصم هذه النسبة قبل المصاريف، ثم يوزع المتبقي حسب الجدول أدناه.
+Ownership and remaining balance percentages each total 100%. Add our Company only if it shares ownership or the remaining balance. The operator receives its operating share separately.,مجموع نسب الملكية 100% ومجموع نسب توزيع المتبقي 100% بشكل مستقل. أضف شركتنا إذا كان لها ملكية أو نصيب من المتبقي. مستحق التشغيل يُحسب بصورة مستقلة.
+"Edit the operating percentage, operator and remaining balance shares, then save. Previous agreements and submitted settlements retain their original terms.",عدّل نسبة التشغيل وجهة التشغيل ونسب توزيع المتبقي ثم احفظ. تحتفظ الاتفاقات السابقة والتسويات المعتمدة بشروطها الأصلية.
+"Save to calculate: allocated invoice Grand Total, less operating share, less expenses, then distribute the remaining balance. A deficit stops the settlement. Submit to close the period and create partner payables. Historical agreements retain their original revenue basis.",احفظ لحساب إجمالي الفاتورة المخصص للونش، ثم خصم مستحق التشغيل والمصاريف وتوزيع المتبقي. العجز يوقف التسوية. اعتمد لإقفال الفترة وترحيل مستحقات الشركاء. الاتفاقات القديمة تحتفظ بأساس الإيراد السابق.
+Ownership Type changed to Shared Ownership because Our Company owns a share. Operating and remaining balance percentages are kept.,تم تغيير نوع الملكية إلى ملكية مشتركة لأن لشركتنا حصة في الونش. نسبة التشغيل ونسب توزيع المتبقي محفوظة.
+"Select Shared Ownership when Our Company owns a share, then select the operator.",اختَر ملكية مشتركة عندما يكون لشركتنا حصة في الونش، ثم حدد جهة التشغيل.
+Treasury Workbook,حركة الخزينة والعهد
+Treasury / Custody Account,حساب الخزنة أو العهدة
+Treasury Workbook Batch,دفعة استيراد الخزينة
+Workbook Order,ترتيب الشيت
+Download Workbook Layout,تحميل بنفس تنسيق الشيت
+Treasury Balance Type,نوع حساب الخزنة والعهد
+Custody,عهدة
+Employee Advance,سلف العاملين
+Owner Current,حساب جارٍ
+"Select enabled company-currency Cash, Bank or explicitly designated custody/current accounts.",اختر حساب نقدية أو بنك أو عهدة أو حسابًا جاريًا محددًا بعملة الشركة.
+Party Details,بيانات الطرف
+The recipient of this transfer.,الطرف المستلم لهذه الحركة.
+"Select both Party Type and Party, or leave both empty.",اختر نوع الطرف والطرف معًا أو اتركهما فارغين.
+Select a registered Party Type.,اختر نوع طرف مسجلًا.
+Legacy Profit Allocation Account,حساب توزيع الأرباح للاتفاقات القديمة
+Revenue Account,حساب الإيراد
+Historical net-profit agreements only. Operating First settlements use the revenue accounts of their source invoices automatically.,للاتفاقات القديمة فقط. تسويات التشغيل أولًا تستخدم حسابات إيراد الفواتير المصدر تلقائيًا.
+Partner entitlements reduce the revenue accounts of the source documents. Cash or bank payment is recorded separately through Partner Payment.,تُخصم مستحقات الشركاء من حسابات إيراد المستندات المصدر. يُسجل الصرف من الخزينة أو البنك بشكل مستقل عبر دفعة الشريك.
+"Set the agreement Company, payable account and cost center.",حدد شركة الاتفاق وحساب مستحقات الشركاء ومركز التكلفة.
+Crane Partner Statement,كشف حركات الشركاء التفصيلي
+Crane Partner Summary,ملخص مستحقات الشركاء
+Default Crane Partners Account,حساب الشركاء الافتراضي
+Partner (Shareholder),الشريك (مساهم)
+Operating Partner (Shareholder),الشريك المشغل (مساهم)
+Profit Settlement,تسوية المستحقات
+Crane Profit Settlement,تسوية مستحقات الكرين
+Partner Entitlements and Payments,مستحقات الشركاء وقيود الدفع
+Partners,الشركاء
+Shareholders,المساهمون
+Shareholder,المساهم
+Partner Accounts,حسابات الشريك
+Posted Entitlement,المستحق المرحل
+Pending Entitlement,مستحق تحت الاعتماد
+Paid / Adjusted,المدفوع / المسوى
+Outstanding,المتبقي
+Entitlement Status,حالة الاستحقاق
+Awaiting Invoice,بانتظار اعتماد الفاتورة
+Unpaid,غير مدفوع
+Partly Paid,مدفوع جزئيًا
+Paid,مدفوع
+No Entitlement,لا توجد مستحقات
+Allocated Invoice Value,قيمة الفواتير الموزعة
+Settlement Invoice Total,إجمالي فواتير التسوية
+Partner Name,اسم الشريك
+Movement,الحركة
+Entitlement,استحقاق
+Payment / Adjustment,دفع / تسوية
+Partner Payment,دفع مستحقات شريك
+Create Payment,إنشاء قيد دفع
+0-30 Days,٠–٣٠ يوم
+31-60 Days,٣١–٦٠ يوم
+61-90 Days,٦١–٩٠ يوم
+91+ Days,أكثر من ٩٠ يوم
+All partner entitlements are paid.,تم سداد جميع مستحقات الشركاء.
+Invoice Value is allocated across external partners so shared invoices are not counted twice. Payments and balances use the native payment ledger as of Report Date. Draft amounts are not posted entitlements.,قيمة الفواتير موزعة بين الشركاء الخارجيين لمنع تكرار الإجمالي. المدفوعات والأرصدة من دفتر الدفع حتى تاريخ التقرير، ومبالغ المسودات غير مرحلة.
+Partner entitlements are posted automatically when the linked Sales Invoice is submitted. Use Partner Payment to pay the outstanding balance.,تُرحّل مستحقات الشركاء تلقائيًا عند اعتماد فاتورة المبيعات المرتبطة. استخدم دفع مستحقات شريك لسداد المتبقي.
