@@ -92,3 +92,19 @@ def guard_expense(expense):
             if frappe.db.get_value("Crane Timesheet", row.timesheet, "assignment") != expense.crane_assignment:
                 continue
         frappe.throw(_("Work expenses are closed by settlement {0}. Cancel the affected settlement before posting or cancelling this expense.").format(row.name))
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def assignment_cranes(doctype, txt, searchfield, start, page_len, filters):
+    filters = frappe._dict(frappe.parse_json(filters) if isinstance(filters, str) else filters or {})
+    if not filters.assignment:
+        return []
+    assignment = frappe.get_doc("Crane Assignment", filters.assignment)
+    assignment.check_permission("read")
+    names = list({r.crane for r in assignment.assigned_cranes if not r.cancelled and r.crane})
+    if not names:
+        return []
+    return frappe.get_list("Crane", filters={"name": ["in", names]},
+        or_filters={"name": ["like", "%" + txt + "%"], "crane_name": ["like", "%" + txt + "%"]},
+        fields=["name", "crane_name"], order_by="crane_name, name", start=start, page_length=page_len, as_list=True)

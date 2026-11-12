@@ -1,5 +1,24 @@
 # Progress
 
+## 2026-11-13 — Assigned Cranes within Assignment Details
+
+- Removed the separate Assigned Cranes tab; the table now occupies a full-width section in Assignment Details. Connections and existing table records/behavior are preserved.
+- Migrated `cranes-dev2.arab-erp.com`; verified field/tab order and passed all 3 rental workflow tests and whitespace checks. Restored the disabled test setting.
+
+## 2026-11-13 — Assignment Connections tab
+
+- Added the native Connections tab/dashboard to Crane Assignment for assigned Cranes, Customer, Crane Timesheets and Expense Entries, with correct internal/Assignment field mappings. Invoice/settlement connections remain on their source Timesheet.
+- Migrated `cranes-dev2.arab-erp.com`; verified native counts on ASG-00081 (one Crane, Customer, Timesheet and Expense). All 3 rental workflow tests passed, plus Python syntax and whitespace checks. Restored the disabled test setting.
+
+## 2026-11-13 — Read-only expense service dates
+
+- Made Service From Date and Service To Date read-only through HER field setup, preserving automatic Assignment defaults, saved dates and allocation rules. Migrated `cranes-dev2.arab-erp.com` and verified both field definitions. All 3 rental workflow tests passed; restored the disabled test setting.
+
+## 2026-11-12 — Expense Crane filtering and inline rows
+
+- Expense Entry now restricts Crane search to the selected Assignment’s active bookings, respects source/Crane permissions, and clears incompatible selections on Assignment changes. Enabled inline expense Type/Amount entry with HER-owned Property Setters on the shared child grid; retained automatic Account lookup.
+- Migrated `cranes-dev2.arab-erp.com`; all 3 rental workflow tests passed. Verified Crane filtering, text search, permission rejection, and migrated editable-grid/column metadata. JavaScript/Python syntax and whitespace checks passed; restored the disabled test setting.
+
 ## 2026-11-12 — Editable Driver in Timesheet Entries
 
 - Replaced the read-only Driver Name grid column with the editable Driver (Employee) Link. Kept the fetched name hidden for summaries/history. Verified Driver, Work Date, Start/End Time, Worked Hours, Overtime and Ends Next Day are editable inputs on draft rows.

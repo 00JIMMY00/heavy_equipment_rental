@@ -28,6 +28,17 @@ def execute():
 			"value": "1",
 			"property_type": "Check",
 		}, module="Heavy Equipment Rental")
+	# HER enables inline editing on the shared expense rows without modifying its owner app.
+	frappe.make_property_setter({
+		"doctype": "Expense Entry Detail", "doctype_or_field": "DocType",
+		"property": "editable_grid", "value": "1", "property_type": "Check",
+	}, module="Heavy Equipment Rental")
+	for field, columns in (("expense_entry_type", 5), ("expense_entry_account", 3), ("amount", 2)):
+		frappe.make_property_setter({
+			"doctype": "Expense Entry Detail", "fieldname": field,
+			"property": "columns", "value": str(columns), "property_type": "Int",
+		}, module="Heavy Equipment Rental")
+
 	for role in ("Projects Manager", "Projects User"):
 		if not frappe.db.exists(
 			"Custom DocPerm", {"parent": "Mode of Payment", "role": role, "permlevel": 0, "if_owner": 0}
@@ -72,6 +83,7 @@ def execute():
 			"fieldname": "service_from_date",
 			"fieldtype": "Date",
 			"label": "Service From Date",
+			"read_only": 1,
 			"insert_after": "crane_assignment",
 			"depends_on": "crane",
 			"description": "Work period charged by this expense, independent of Posting Date. Assignment bookings supply the default period.",
@@ -79,6 +91,7 @@ def execute():
 			"fieldname": "service_to_date",
 			"fieldtype": "Date",
 			"label": "Service To Date",
+			"read_only": 1,
 			"insert_after": "service_from_date",
 			"depends_on": "crane",
 		}, {

@@ -111,3 +111,19 @@ Timesheet Entry Worked Hours is editable and authoritative for operating/hourly 
 ## 2026-11-12 — Editable Driver selector in the shift grid
 
 Show the editable Employee Link as Driver (Employee) in Timesheet Entries instead of the read-only fetched Driver Name. Keep the cached driver name hidden for driver summaries and historical display data. Individual draft rows retain independent drivers; changing a row's Employee refreshes its name and driver-hours summary. Native submitted-document protections remain in place.
+
+## 2026-11-12 — Assignment-filtered expense cranes and inline expense rows
+
+Filter Expense Entry's Crane Link using a permission-checked Assignment query, listing only its distinct active booked cranes. With no Assignment, retain normal Crane selection. On an Assignment change, clear an incompatible Crane (or select its sole available Crane); retain server membership validation. Enable the shared Expense Entry Detail editable grid through HER-owned Property Setters and explicitly size Type/Account/Amount columns. Type and Amount edit inline; Account remains auto-derived from Type. Do not modify arab_erp_theme source, submitted accounting or existing expense data.
+
+## 2026-11-13 — Read-only expense service dates
+
+Expense Entry Service From Date and Service To Date remain visible but read-only. Keep their existing automatic Assignment-booking defaults and saved values; changing field editability does not change settlement allocation, posting dates or historical accounting.
+
+## 2026-11-13 — Assignment Connections
+
+Use Frappe's native Connections tab/dashboard on Crane Assignment for its assigned Cranes, Customer, linked Crane Timesheets and Expense Entries. Map Timesheets through `assignment` and expenses through `crane_assignment`; use native internal links for the Customer and assigned-crane child rows. Invoice/settlement links remain available through the Timesheet Connections. Preserve native document permissions and existing links without data migration.
+
+## 2026-11-13 — Assignment form layout
+
+Keep Assigned Cranes in its own full-width section within Assignment Details, removing the separate Assigned Cranes tab. Retain the native Connections tab and all table data and behavior.

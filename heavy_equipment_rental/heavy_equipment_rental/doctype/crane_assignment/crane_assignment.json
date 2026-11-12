@@ -55,11 +55,6 @@
    "options": "Company"
   },
   {
-   "fieldname": "cranes_tab",
-   "fieldtype": "Tab Break",
-   "label": "Assigned Cranes"
-  },
-  {
    "fieldname": "cranes_section",
    "fieldtype": "Section Break",
    "label": "Cranes"
@@ -69,6 +64,17 @@
    "fieldtype": "Table",
    "label": "Assigned Cranes",
    "options": "Assigned Crane"
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
+  },
+  {
+   "fieldname": "connections_section",
+   "fieldtype": "Section Break",
+   "label": "Linked Documents"
   }
  ],
  "field_order": [
@@ -79,9 +85,10 @@
   "location",
   "dates_col",
   "company",
-  "cranes_tab",
   "cranes_section",
-  "assigned_cranes"
+  "assigned_cranes",
+  "connections_tab",
+  "connections_section"
  ],
  "istable": 0,
  "is_submittable": 0,
