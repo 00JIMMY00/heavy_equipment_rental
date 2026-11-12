@@ -182,6 +182,8 @@ def validate_agreement(doc):
             version["partners"].append(dict(is_company=int(bool(row.is_company)), supplier=row.supplier or None,
                 shareholder=row.shareholder or None,
                 ownership_percentage=row.ownership_percentage, profit_percentage=row.profit_percentage))
+            if row.get("allow_zero_profit_share") and row.ownership_percentage > 0 and not row.profit_percentage:
+                version["partners"][-1]["allow_zero_profit_share"] = 1
         if not any(not p["is_company"] for p in version["partners"]):
             frappe.throw(_("Include at least one external partner. Add our Company only if it shares ownership or the remaining balance."))
         for field in ("ownership_percentage", "profit_percentage"):
@@ -229,6 +231,13 @@ def validate_agreement(doc):
             frappe.throw(_("Change the agreement terms before setting a new effective date."))
         return
     frappe.only_for(("Accounts Manager", "System Manager"))
+    if doc.enable_profit_sharing:
+        for row in doc.ownership_partners:
+            if row.ownership_percentage > 0 and not row.profit_percentage and not row.get("allow_zero_profit_share"):
+                frappe.throw(_("Row {0}: this owner has {1}% ownership but 0% Remaining Balance. "
+                    "Enter their agreed profit share, or select Confirm Owner Receives No Remaining Profit "
+                    "only if this is intentional. Ownership % does not determine payment by itself.").format(
+                        row.idx, row.ownership_percentage), title=_("Owner Has No Profit Share"))
     if version["calculation_method"] != OPERATING_FIRST:
         frappe.throw(_("Changed agreements must use Operating First. Use Change Agreement to enter new terms."))
     if history and effective <= history[-1]["effective_from"]:

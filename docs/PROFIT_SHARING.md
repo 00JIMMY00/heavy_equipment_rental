@@ -2,6 +2,8 @@
 
 Configure the sharing Crane once. Select Company, native **Shareholder** partners, ownership/residual percentages and operator. The Company **Partners** Payable account and cost center default automatically; choose a different enabled company-currency Payable account if necessary. Shareholders receive their default party account too. This does not issue company shares or alter share capital.
 
+The partner table's **Remaining Balance %** determines payment after the operating share and expenses. On the form, it follows changes to Ownership % while the two match; manually entered different splits remain unchanged. For new or changed agreements, an owner with positive ownership and 0% Remaining Balance must either receive an agreed profit share or have **Confirm Owner Receives No Remaining Profit** explicitly selected on that row. Each percentage column still totals 100%. Existing dated agreements and posted settlements keep their saved terms; changing the Crane does not recalculate a submitted settlement.
+
 1. Submit the Timesheet: one draft settlement is created with Timesheet, Crane and work dates.
 2. Generate its Sales Invoice: the settlement displays the linked invoice.
 3. Submit the Sales Invoice: its settlement is automatically approved and the native entitlement Journal Entry is posted in the same transaction. A deficit, invalid agreement, missing permission or failed journal rejects invoice submission. This automatic posting was explicitly selected by the user.

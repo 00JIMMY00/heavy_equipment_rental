@@ -1,5 +1,11 @@
 # Progress
 
+## 2026-11-12 — Owner profit-share validation
+
+- Crane partner rows now default matching Remaining Balance % values as ownership changes, preserving manually different profit splits. New or changed agreements block positive ownership with zero remaining-profit entitlement unless the row explicitly confirms it. The confirmation is captured in the dated agreement; percentage totals and existing agreement-date/permission controls still apply.
+- Added the confirmation checkbox/help text and migrated `cranes-dev2.arab-erp.com`. Verified the current accidental zero-share setup is blocked when changing terms, while unchanged historical agreements remain saveable. CPS-00010 and all its submitted amounts/snapshots remain unchanged; no corrective journal or payment was posted.
+- Passed 39 distinct integration tests: 28 settlement/accounting tests (including new rejection/confirmation and 1,080 EGP payable regressions), 9 automatic settlement/payment/report tests and 2 rental workflow tests. Intentional zero-share fixtures explicitly confirm their terms; three affected cases passed on rerun. Form behavior checks cover 60/40 defaults, custom splits, confirmed zero shares and clearing stale confirmations. Python/JavaScript syntax, JSON field order and whitespace checks passed; the site's disabled test setting was restored.
+
 ## 2026-11-12 — Removed invoice driver-payment workflow
 
 - Removed invoice operator rows, direct-payment checkbox/journal link, proportional driver shares, customer-to-driver journal action/API and hooks, the Crane Invoice Driver DocType, and driver-payment Settings accounts. Timesheet driver/hour tracking and employee expense attribution remain available.

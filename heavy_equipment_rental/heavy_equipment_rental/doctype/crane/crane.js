@@ -42,10 +42,12 @@ frappe.ui.form.on("Crane", {
     },
     enable_profit_sharing(frm) {
         if (frm.doc.enable_profit_sharing && !(frm.doc.ownership_partners || []).length) {
-            frm.add_child("ownership_partners", {
+            const row = frm.add_child("ownership_partners", {
                 is_company: 1, ownership_percentage: frm.doc.ownership_type === "Operated for Owner" ? 0 : 100,
                 profit_percentage: 100,
             });
+            frm._partner_ownership = frm._partner_ownership || {};
+            frm._partner_ownership[row.name] = flt(row.ownership_percentage);
             frm.refresh_field("ownership_partners");
         }
     },
@@ -62,6 +64,8 @@ frappe.ui.form.on("Crane", {
         frm.toggle_display("availability_tab", !frm.is_new());
     },
     refresh(frm) {
+        frm._partner_ownership = Object.fromEntries((frm.doc.ownership_partners || []).map(
+            row => [row.name, flt(row.ownership_percentage)]));
         frm.toggle_display("availability_tab", !frm.is_new());
         if (frm.is_new()) return;
         if (frm.doc.agreement_history && frappe.user.has_role(["Accounts Manager", "System Manager"])) {
@@ -197,8 +201,24 @@ frappe.ui.form.on("Crane", {
 });
 
 frappe.ui.form.on("Crane Partner", {
-    ownership_percentage(frm) {
+    ownership_partners_add(frm, cdt, cdn) {
+        frm._partner_ownership = frm._partner_ownership || {};
+        frm._partner_ownership[cdn] = 0;
+    },
+    async ownership_percentage(frm, cdt, cdn) {
+        const row = locals[cdt][cdn];
+        frm._partner_ownership = frm._partner_ownership || {};
+        const previous = frm._partner_ownership[cdn] ?? 0;
+        frm._partner_ownership[cdn] = flt(row.ownership_percentage);
+        if (!row.allow_zero_profit_share && flt(row.profit_percentage) === previous) {
+            await frappe.model.set_value(cdt, cdn, "profit_percentage", row.ownership_percentage);
+        }
         return frm.trigger("sync_company_ownership_type");
+    },
+    profit_percentage(frm, cdt, cdn) {
+        if (flt(locals[cdt][cdn].profit_percentage) > 0) {
+            return frappe.model.set_value(cdt, cdn, "allow_zero_profit_share", 0);
+        }
     },
     is_company(frm) {
         return frm.trigger("sync_company_ownership_type");
