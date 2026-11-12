@@ -74,32 +74,6 @@
    "default": 8,
    "precision": "2",
    "description": "Calculated from the default start and end times."
-  },
-  {
-   "fieldname": "accounts_tab",
-   "fieldtype": "Tab Break",
-   "label": "Driver Payment"
-  },
-  {
-   "fieldname": "accounts_section",
-   "fieldtype": "Section Break",
-   "label": "Accounts"
-  },
-  {
-   "fieldname": "driver_payment_expense_account",
-   "fieldtype": "Link",
-   "label": "Direct Driver Payment Expense Account",
-   "options": "Account"
-  },
-  {
-   "fieldname": "payable_col",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "driver_payment_payable_account",
-   "fieldtype": "Link",
-   "label": "Direct Driver Payment Employee Payable Account",
-   "options": "Account"
   }
  ],
  "field_order": [
@@ -113,12 +87,7 @@
   "day_shift_start_time",
   "day_shift_end_time",
   "hours_col",
-  "day_shift_hours",
-  "accounts_tab",
-  "accounts_section",
-  "driver_payment_expense_account",
-  "payable_col",
-  "driver_payment_payable_account"
+  "day_shift_hours"
  ],
  "permissions": [
   {

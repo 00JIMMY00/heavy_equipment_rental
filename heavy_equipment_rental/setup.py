@@ -90,30 +90,6 @@ def execute():
 			"label": "Receipt",
 			"insert_after": "description",
 		}],
-		"Sales Invoice": [{
-			"fieldname": "crane_drivers",
-			"fieldtype": "Table",
-			"label": "Crane Operators",
-			"options": "Crane Invoice Driver",
-			"insert_after": "items",
-			"read_only": 1,
-		}, {
-			"fieldname": "customer_pays_drivers_directly",
-			"fieldtype": "Check",
-			"label": "Customer Pays Drivers Directly",
-			"description": "Record the actual customer-to-operator payment after submitting the invoice.",
-			"insert_after": "crane_drivers",
-			"default": 0,
-		}, {
-			"fieldname": "driver_direct_payment_journal_entry",
-			"fieldtype": "Link",
-			"label": "Driver Direct Payment Journal Entry",
-			"options": "Journal Entry",
-			"insert_after": "customer_pays_drivers_directly",
-			"read_only": 1,
-			"allow_on_submit": 1,
-			"no_copy": 1,
-		}],
 	})
 	install_item_price_field()
 	from heavy_equipment_rental.profit_sharing import install_fields

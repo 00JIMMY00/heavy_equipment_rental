@@ -1,5 +1,11 @@
 # Progress
 
+## 2026-11-12 — Removed invoice driver-payment workflow
+
+- Removed invoice operator rows, direct-payment checkbox/journal link, proportional driver shares, customer-to-driver journal action/API and hooks, the Crane Invoice Driver DocType, and driver-payment Settings accounts. Timesheet driver/hour tracking and employee expense attribution remain available.
+- Migrated `cranes-dev2.arab-erp.com`. The pre-model-sync patch archived two historical invoices' retired details in hidden read-only JSON, with Settings accounts archived when configured. No invoice amounts, submitted journals or ledger postings were changed. Verified removed metadata and repeat execution preserving the archives.
+- Passed both rental workflow tests and all nine automatic partner-settlement/report tests (11 total), plus Python syntax and whitespace checks. Restored the site's disabled test setting.
+
 As of 2026-11-03:
 
 - Simplified Assignment/Timesheet entry, removed the custom `Crane Project` DocType, and migrated historical links while leaving native ERPNext `Project` intact.

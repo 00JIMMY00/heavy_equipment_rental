@@ -1,4 +1,5 @@
 [pre_model_sync]
+heavy_equipment_rental.patches.remove_direct_driver_payments
 heavy_equipment_rental.patches.rename_crane_operator
 heavy_equipment_rental.patches.rename_crane_workspace
 

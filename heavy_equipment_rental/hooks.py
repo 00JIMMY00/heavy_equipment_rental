@@ -56,20 +56,12 @@ doc_events = {
 			"heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.treasury_transaction.guard_journal_cancel",
 			"heavy_equipment_rental.profit_sharing.guard_closed_period",
 		],
-		"on_cancel": "heavy_equipment_rental.billing.clear_direct_driver_payment_link",
 	},
 	"Sales Invoice": {
 		"on_submit": "heavy_equipment_rental.timesheet_settlement.invoice_submitted",
-		"before_save": "heavy_equipment_rental.billing.set_invoice_driver_shares",
-		"before_submit": ["heavy_equipment_rental.billing.set_invoice_driver_shares",
-			"heavy_equipment_rental.profit_sharing.guard_closed_period"],
-		"before_cancel": ["heavy_equipment_rental.billing.guard_direct_driver_payment_cancel",
-			"heavy_equipment_rental.profit_sharing.guard_closed_period"],
+		"before_submit": "heavy_equipment_rental.profit_sharing.guard_closed_period",
+		"before_cancel": "heavy_equipment_rental.profit_sharing.guard_closed_period",
 	},
-}
-
-doctype_js = {
-	"Sales Invoice": "public/js/crane_sales_invoice.js",
 }
 
 
