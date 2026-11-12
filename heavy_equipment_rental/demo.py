@@ -108,6 +108,7 @@ def _create_cycle(company, start_date, *, location=None, daily_rate=5000,
                 title="HER DEMO " + title, enabled=1, account=company_doc.default_expense_account)).insert().name
         expense = frappe.get_doc(dict(doctype="Expense Entry", company=company, posting_date=end,
             crane=crane.name, crane_assignment=assignment.name, employee=employee.name,
+            service_from_date=end, service_to_date=end,
             description="HER DEMO " + title + " paid from " + kind, mode_of_payment=modes[kind],
             expenses=[dict(expense_entry_type=expense_type, amount=amount)])).insert()
         expense.submit()

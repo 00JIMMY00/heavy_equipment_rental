@@ -239,3 +239,84 @@ class TestPartnerSettlements(FrappeTestCase):
         settlement = frappe.get_doc("Crane Profit Settlement", sheet.profit_settlement)
         amounts = {r.shareholder: r.amount for r in settlement.shares if not r.is_company}
         self.assertEqual(amounts, {self.partners[0].name: 1800, self.partners[1].name: 2600})
+
+    def rental_expense(self, amount=900, **values):
+        template = frappe.get_doc("Expense Entry", self.cycle["expenses"][0])
+        doc = frappe.get_doc(dict(doctype="Expense Entry", company=self.company.name,
+            posting_date=today(), crane=self.crane.name, crane_assignment=self.assignment.name,
+            description="HER work expense " + self.key, mode_of_payment=template.mode_of_payment,
+            expenses=[dict(expense_entry_type=template.expenses[0].expense_entry_type, amount=amount)]))
+        doc.update(values)
+        return doc
+
+    def test_late_assignment_expense_is_allocated_only_once_by_worked_hours(self):
+        first, second = self.sheet(hours=8), self.sheet(offset=1, hours=4)
+        expense = self.rental_expense().insert()
+        self.assertEqual(str(expense.service_from_date), str(self.start))
+        expense.submit()
+        self.invoice().submit()
+        settlements = [frappe.get_doc("Crane Profit Settlement", s.profit_settlement) for s in (first, second)]
+        self.assertEqual([s.operating_expenses for s in settlements], [600, 300])
+        for doc in settlements:
+            sources = [r for r in json.loads(doc.source_snapshot) if r["name"] == expense.name]
+            self.assertEqual(len(sources), 1)
+            self.assertEqual(sources[0]["rental_assignment"], self.assignment.name)
+            self.assertEqual(sources[0]["posting_date"], today())
+        with self.assertRaisesRegex(frappe.ValidationError, "closed"):
+            self.rental_expense(100).insert().submit()
+        with self.assertRaises(frappe.ValidationError):
+            self.sheet(offset=2)
+        with self.assertRaises(frappe.ValidationError):
+            expense.cancel()
+
+    def test_service_dates_and_assignment_isolate_expenses(self):
+        first, second = self.sheet(), self.sheet(offset=1)
+        expense = self.rental_expense(250, service_from_date=self.start, service_to_date=self.start).insert()
+        expense.submit()
+        unrelated = self.rental_expense(1000, crane_assignment=self.cycle["assignment"]).insert()
+        unrelated.submit()
+        self.invoice().submit()
+        self.assertEqual(frappe.get_doc("Crane Profit Settlement", first.profit_settlement).operating_expenses, 250)
+        self.assertEqual(frappe.get_doc("Crane Profit Settlement", second.profit_settlement).operating_expenses, 0)
+
+    def test_expense_work_terms_validate_and_company_matches(self):
+        for values in [dict(service_from_date=self.start),
+                       dict(service_from_date=add_days(self.start, 1), service_to_date=self.start),
+                       dict(service_from_date=add_days(self.start, -1), service_to_date=self.start),
+                       dict(crane=self.crane.name + "-missing")]:
+            with self.assertRaises(frappe.ValidationError):
+                self.rental_expense(**values).insert()
+
+    def test_period_expense_service_proration(self):
+        from heavy_equipment_rental.profit_sharing import collect_sources
+        expense = self.rental_expense(100, crane_assignment=None,
+            service_from_date=self.start, service_to_date=add_days(self.start, 3)).insert()
+        expense.submit()
+        totals = []
+        for offset in (0, 2):
+            sources = collect_sources(self.crane.name, self.company.name,
+                add_days(self.start, offset), add_days(self.start, offset + 1))
+            totals.append(sum(r.get("expenses", 0) for r in sources if r["name"] == expense.name))
+        self.assertEqual(totals, [50, 50])
+
+    def test_period_expense_rounding_and_consecutive_closure(self):
+        from heavy_equipment_rental.profit_sharing import collect_sources
+        from heavy_equipment_rental.timesheet_settlement import validate_source_allocations
+        expense = self.rental_expense(0.01, crane_assignment=None,
+            service_from_date=self.start, service_to_date=add_days(self.start, 2)).insert()
+        expense.submit()
+        parts = []
+        for offset in range(3):
+            day = add_days(self.start, offset)
+            parts.extend(r for r in collect_sources(self.crane.name, self.company.name, day, day)
+                if r["name"] == expense.name)
+        self.assertEqual([r["expenses"] for r in parts], [0.01, 0, 0])
+        # Model a previously closed period without changing its posted ledgers.
+        doc = frappe.get_doc(dict(doctype="Crane Profit Settlement", crane=self.crane.name,
+            settlement_basis="Period", name="new-period"))
+        old = frappe._dict(name="earlier-period", settlement_basis="Period", timesheet=None,
+            source_snapshot=json.dumps([parts[0]]))
+        with patch("heavy_equipment_rental.timesheet_settlement.frappe.get_all", return_value=[old]):
+            validate_source_allocations(doc, [parts[1]])
+            with self.assertRaisesRegex(frappe.ValidationError, "already covered"):
+                validate_source_allocations(doc, [parts[0]])

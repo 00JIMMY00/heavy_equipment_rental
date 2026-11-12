@@ -69,3 +69,6 @@ website_route_rules = [
     {"from_route": "/rental-calendar", "to_route": "rental_calendar"},
     {"from_route": "/rental-calendar/<path:app_path>", "to_route": "rental_calendar"},
 ]
+
+
+doctype_js = {"Expense Entry": "public/js/rental_expense.js"}

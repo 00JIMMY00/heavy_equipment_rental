@@ -1,5 +1,12 @@
 # Progress
 
+## 2026-11-12 — Rental expense attribution by work period
+
+- Added Service From/To Date on Expense Entry, Assignment booking defaults, single-crane inference, paired/ordered date and company/Crane/booking validation. Accounting Posting Date remains independent. Expense forms prefill the work dates while preserving manual edits during pending requests.
+- Automatic settlements now select posted expenses by Crane, optional Assignment and overlapping service period; shared expenses allocate once by submitted crane hours with captured candidates/weights. Period settlements prorate by calendar days with fixed-date currency rounding and nonoverlapping allocation slices. Excluded linked expense journals from separate source totals. New expense journals carry Crane on both sides, with existing employee attribution preserved.
+- Closed service-period costs and captured work allocations require reopening the affected settlements before changes. Existing submitted settlements/ledgers were preserved. Migrated `cranes-dev2.arab-erp.com`; verified EXPE-00118 resolves to 250 EGP for CR-00070 / ASG-00081, 1–3 November despite its 12 November posting. Submitted CPS-00013 retains its original zero expenses and needs cancellation/amendment to apply this cost.
+- Passed 50 distinct integration tests: 14 automatic settlement/expense allocation tests, 29 settlement/accounting tests, 2 rental workflow tests and 5 employee-expense tests. The last suite used a temporary missing Employee fixture inside its rolled-back transaction. Covered late postings, Assignment/date isolation, shared allocations, closure guards, period rounding/proration, permissions and historical preservation. JavaScript default/manual-edit checks, syntax and whitespace checks passed; restored the site's disabled test setting.
+
 ## 2026-11-12 — External partners only under Operated for Owner
 
 - Operated for Owner now keeps every partner row's Our Company flag unchecked and disabled in the form, including when opening an older form or changing the type. New owner-operated agreements default to an external owner. Server validation rejects company rows regardless of ownership percentage and no longer converts the type to Shared Ownership. Company operating fees continue to appear separately in settlement results.

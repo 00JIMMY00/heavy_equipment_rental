@@ -9,9 +9,12 @@ from erpnext.accounts.doctype.journal_entry.journal_entry import JournalEntry
 
 
 class RentalExpenseEntry(ExpenseEntry):
+    def validate(self):
+        super().validate()
+        from heavy_equipment_rental.rental_expenses import validate_expense
+        validate_expense(self)
+
     def on_submit(self):
-        if not self.employee:
-            return super().on_submit()
         # Keep the shared expense validation/cancellation behavior. Party belongs
         # on the expense lines; the cash/bank line has no employee balance.
         if self.journal_entry:
@@ -25,11 +28,15 @@ class RentalExpenseEntry(ExpenseEntry):
                 "debit_in_account_currency": row.amount,
                 "cost_center": self.cost_center,
             }
-            account.update(party_type="Employee", party=self.employee)
+            if self.crane:
+                account["crane"] = self.crane
+            if self.employee:
+                account.update(party_type="Employee", party=self.employee)
             accounts.append(account)
         accounts.append({
             "account": payment_account,
             "credit_in_account_currency": sum(flt(row.amount) for row in self.expenses),
+            "crane": self.crane,
         })
         journal = frappe.get_doc({
             "doctype": "Journal Entry",

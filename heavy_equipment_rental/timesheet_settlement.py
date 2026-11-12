@@ -57,6 +57,12 @@ def invoice_submitted(invoice, method=None):
 
 def guard_timesheet(sheet, method=None):
     lock_cranes([sheet.crane])
+    from heavy_equipment_rental.rental_expenses import matches
+    for closed in frappe.get_all("Crane Profit Settlement", filters={"crane": sheet.crane, "docstatus": 1, "settlement_basis": "Timesheet"},
+            fields=["name", "source_snapshot"]):
+        for source in json.loads(closed.source_snapshot or "[]"):
+            if source["doctype"] == "Expense Entry" and source.get("service_from_date") and matches(source, sheet):
+                frappe.throw(_("Expense allocation is closed by settlement {0}. Cancel the affected settlement before changing its work.").format(closed.name))
     settled = frappe.db.get_value("Crane Profit Settlement", {"crane": sheet.crane, "docstatus": 1,
         "from_date": ["<=", sheet.period_end], "to_date": [">=", sheet.period_start]}, "name")
     if settled:
@@ -68,7 +74,13 @@ def collect_timesheet_sources(sheet, company, grand_total):
         return []
     invoice_day = frappe.db.get_value("Sales Invoice", sheet.sales_invoice, "posting_date")
     sources = collect_sources(sheet.crane, company, min(getdate(sheet.period_start), getdate(invoice_day)),
-        max(getdate(today()), getdate(invoice_day), getdate(sheet.period_end)), grand_total=grand_total)
+        max(getdate(today()), getdate(invoice_day), getdate(sheet.period_end)), grand_total=grand_total, include_expenses=False)
+    from heavy_equipment_rental.rental_expenses import expense_sources, matches, check_posted
+    expense_docs = {}
+    for expense, source in expense_sources(sheet.crane, company):
+        if matches(source, sheet):
+            sources.append(source)
+            expense_docs[expense.name] = expense
     all_sheets = frappe.get_all("Crane Timesheet", filters={"crane": sheet.crane, "docstatus": 1},
         fields=["name", "assignment", "period_start", "period_end", "sales_invoice", "purchase_invoice", "total_amount", "total_crane_billable_hours"],
         order_by="name")
@@ -81,6 +93,10 @@ def collect_timesheet_sources(sheet, company, grand_total):
             original = frappe.db.get_value(kind, source["name"], "return_against") or source["name"]
             candidates = [s for s in all_sheets if s[link] == original]
             weight = "total_amount" if kind == "Sales Invoice" else "total_crane_billable_hours"
+        elif kind == "Expense Entry":
+            candidates = [s for s in all_sheets if matches(source, s)]
+            check_posted(expense_docs[source["name"]])
+            weight = "total_crane_billable_hours"
         else:
             day = getdate(source["posting_date"])
             candidates = [s for s in all_sheets if getdate(s.period_start) <= day <= getdate(s.period_end)]
@@ -124,7 +140,17 @@ def validate_source_allocations(doc, sources):
                 if (old["doctype"], old["name"], old.get("detail")) != key:
                     continue
                 if doc.settlement_basis != "Timesheet" or row.settlement_basis != "Timesheet":
-                    frappe.throw(_("Source {0} is already covered by settlement {1}.").format(source["name"], row.name))
+                    separate_expense_periods = (source["doctype"] == "Expense Entry" and
+                        doc.settlement_basis != "Timesheet" and row.settlement_basis != "Timesheet" and
+                        source.get("allocation_from_date") and old.get("allocation_from_date") and
+                        (getdate(source["allocation_from_date"]) > getdate(old["allocation_to_date"]) or
+                         getdate(source["allocation_to_date"]) < getdate(old["allocation_from_date"])))
+                    if not separate_expense_periods:
+                        frappe.throw(_("Source {0} is already covered by settlement {1}.").format(source["name"], row.name))
+                if (source.get("allocation_timesheets") and old.get("allocation_timesheets") and
+                        (source["allocation_timesheets"] != old["allocation_timesheets"] or
+                         source["allocation_weights"] != old["allocation_weights"])):
+                    frappe.throw(_("Allocation of {0} changed after settlement {1}. Cancel the affected settlement first.").format(source["name"], row.name))
                 used += flt(old.get(side))
         total = flt(source.get("source_amount", source.get(side)))
         if abs(flt(used + source.get(side, 0), doc.precision("revenue"))) > abs(total):

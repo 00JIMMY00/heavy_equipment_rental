@@ -74,6 +74,8 @@ and journal rows covers other revenue/costs. Rental Profitability retains its
 net-sales basis. See [configuration and accounting](docs/PROFIT_SHARING.md) and
 [the full numerical development example](docs/OPERATING_FIRST_DEMO.md).
 
+Rental expenses can select **Crane**, **Crane Assignment**, and **Service From/To Date**. The Assignment defaults its Crane booking period; service dates can narrow that period. Settlement uses that work attribution even if the expense is posted later, allocating it once among eligible submitted Timesheets by billable hours. Enter expenses before invoice submission automatically approves the settlement. Reopen affected settlements before adding costs for closed work. Posted accounting dates and existing submitted settlements are preserved. See [expense allocation rules](docs/PROFIT_SHARING.md).
+
 ## Treasury transfers
 
 Open **Treasury Transaction** from Desk search or the **Treasury Transactions** shortcut in Crane Operations. Select the Company, Posting Date, and Mode of Payment; its company-specific default account is the source. Choose another Cash or Bank account and enter a positive Amount. Both accounts must be enabled, non-group accounts in the company currency. In addition to Cash/Bank, an Account explicitly designated through **Treasury Balance Type** may represent custody, employee advances (Asset) or current balances (Liability); Receivable/Payable accounts remain excluded. Foreign-currency transfers are not supported.

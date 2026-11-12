@@ -337,6 +337,16 @@ def guard_closed_period(doc, method=None):
     lock_cranes(cranes)
     from heavy_equipment_rental.timesheet_settlement import guard_source_snapshots
     guard_source_snapshots(doc, cranes)
+    if doc.doctype == "Expense Entry":
+        from heavy_equipment_rental.rental_expenses import guard_expense
+        guard_expense(doc)
+        return
+    if doc.doctype == "Journal Entry":
+        expense_name = frappe.db.get_value("Expense Entry", {"journal_entry": doc.name, "docstatus": ["in", [1, 2]]}, "name")
+        if expense_name:
+            from heavy_equipment_rental.rental_expenses import guard_expense
+            guard_expense(frappe.get_doc("Expense Entry", expense_name))
+            return
     for crane in sorted(cranes):
         agreement_company, history = frappe.db.get_value("Crane", crane,
                                                         ["sharing_company", "agreement_history"])
@@ -358,7 +368,7 @@ def guard_closed_period(doc, method=None):
                 frappe.throw(_("Work costs are closed by settlement {0}. Cancel the settlement first.").format(closed_work))
 
 
-def collect_sources(crane, company, start, end, *, grand_total=False):
+def collect_sources(crane, company, start, end, *, grand_total=False, include_expenses=True):
     """Accrual margin in company currency; explicit crane allocation only.
 
     Fetch complete candidates and check document permissions individually: an
@@ -408,19 +418,29 @@ def collect_sources(crane, company, start, end, *, grand_total=False):
                                             dimensions=revenue_dimensions(row, invoice))
                                        if doctype == "Sales Invoice" else {}),
                                     **{side: amount}))
-    expense_journals = set()
-    for name in frappe.get_all("Expense Entry", filters={"company": company, "crane": crane,
-                              "docstatus": 1, "posting_date": dates}, pluck="name"):
-        expense = frappe.get_doc("Expense Entry", name)
-        expense.check_permission("read")
-        journal = frappe.get_doc("Journal Entry", expense.journal_entry) if expense.journal_entry else None
-        if not journal or journal.docstatus != 1 or journal.company != company:
-            frappe.throw(_("Expense {0} has no valid posted Journal Entry; resolve it before settlement.").format(name))
-        journal.check_permission("read")
-        expense_journals.add(journal.name)
-        sources.append(dict(doctype="Expense Entry", name=name, journal=journal.name,
-                            posting_date=str(expense.posting_date),
-                            expenses=sum(flt(r.amount) for r in expense.expenses)))
+    from heavy_equipment_rental.rental_expenses import expense_sources, check_posted
+    expense_journals = set(filter(None, frappe.get_all("Expense Entry", filters={
+        "company": company, "crane": crane, "docstatus": 1}, pluck="journal_entry")))
+    if include_expenses:
+        for expense, source in expense_sources(crane, company):
+            first, last = getdate(source["service_from_date"]), getdate(source["service_to_date"])
+            overlap = (min(getdate(end), last) - max(getdate(start), first)).days + 1
+            if overlap <= 0:
+                continue
+            check_posted(expense)
+            total = source["expenses"]
+            days = (last - first).days + 1
+            source["source_amount"] = total
+            source["allocation_from_date"] = str(max(getdate(start), first))
+            source["allocation_to_date"] = str(min(getdate(end), last))
+            # Allocate rounding cents to fixed calendar dates so separate period
+            # settlements cannot each receive the same rounding remainder.
+            daily = allocate_amount(total, [1] * days,
+                frappe.get_precision("Crane Profit Settlement", "revenue", currency=frappe.get_cached_value("Company", company, "default_currency")))
+            offset = (max(getdate(start), first) - first).days
+            source["expenses"] = flt(sum(daily[offset:offset + overlap]),
+                frappe.get_precision("Crane Profit Settlement", "revenue", currency=frappe.get_cached_value("Company", company, "default_currency")))
+            sources.append(source)
     settlement_journals = set(frappe.get_all("Crane Profit Settlement", filters={"docstatus": 1}, pluck="journal_entry"))
     for name in frappe.get_all("Journal Entry", filters=[
             ["Journal Entry", "company", "=", company], ["Journal Entry", "docstatus", "=", 1],

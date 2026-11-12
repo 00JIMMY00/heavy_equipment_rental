@@ -37,14 +37,17 @@ frappe.ui.form.on("Crane Profit Settlement", {
         }
         const esc = value => frappe.utils.escape_html(String(value ?? ""));
         const rows = [...grouped.values()].map(row => `<tr>
-            <td>${esc(row.posting_date)}</td><td>${esc(__(row.doctype))}</td>
+            <td>${esc(row.posting_date)}</td>
+            <td>${esc(row.rental_assignment || "")}</td>
+            <td>${row.service_from_date ? `${esc(row.service_from_date)} → ${esc(row.service_to_date)}` : ""}</td>
+            <td>${esc(__(row.doctype))}</td>
             <td><a href="/app/${encodeURIComponent(frappe.router.slug(row.doctype))}/${encodeURIComponent(row.name)}">${esc(row.name)}</a></td>
             <td>${[...row.income_accounts].map(account => `<a href="/app/account/${encodeURIComponent(account)}">${esc(account)}</a>`).join("<br>")}</td>
             <td class="text-right">${format_currency(row.revenue, frm.doc.currency)}</td>
             <td class="text-right">${format_currency(row.expenses, frm.doc.currency)}</td></tr>`).join("");
         frm.fields_dict.source_details.$wrapper.html(rows
             ? `<div class="table-responsive"><table class="table table-bordered"><thead><tr>
-                ${["Posting Date", "Document Type", "Document", "Revenue Account", "Revenue", "Operating Expenses"].map(label => `<th>${esc(__(label))}</th>`).join("")}
+                ${["Posting Date", "Crane Assignment", "Service Period", "Document Type", "Document", "Revenue Account", "Revenue", "Operating Expenses"].map(label => `<th>${esc(__(label))}</th>`).join("")}
                 </tr></thead><tbody>${rows}</tbody></table></div>`
             : `<p class="text-muted">${__("No posted revenue or costs in this period.")}</p>`);
         frm.set_intro(__("Save to calculate: allocated invoice Grand Total, less operating share, less expenses, then distribute the remaining balance. A deficit stops the settlement. Submit to close the period and create partner payables. Historical agreements retain their original revenue basis."));

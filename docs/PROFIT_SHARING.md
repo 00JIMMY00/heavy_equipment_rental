@@ -15,6 +15,16 @@ Open **Crane Operations → Crane Partner Statement** for detailed entitlement/p
 
 Migration creates account/identity defaults and links historical Timesheets to their existing settlements when evidence is unambiguous. Historical supplier journals, payments, agreements and amounts remain unchanged. A historical period settlement keeps Period basis even if its single Timesheet is displayed. Existing historical records are not automatically posted again.
 
+## Rental expenses by Assignment and service period (2026-11-12)
+
+Use Expense Entry's Crane and optional Crane Assignment to identify the work bearing the cost. Service From Date and Service To Date describe that work, independently of Posting Date. A single-crane Assignment can fill Crane automatically; the booking supplies the default service dates. An explicit period must fit the selected Crane's booking. A Crane without an Assignment may have an explicit service period. Without either an Assignment or service dates, the posting date remains the work date.
+
+Automatic Timesheet settlements allocate each posted expense only across submitted Timesheets of that Crane whose periods overlap its service dates. An Assignment link further restricts this to that Assignment. Allocate proportionally to distinct crane billable hours with deterministic currency rounding, retaining the full expense, work period, Assignment, candidates and weights in the source snapshot. Expense journals are excluded from separate journal-source totals. Dates outside the Timesheet's work period do not become eligible merely because the expense was posted on its invoice date. New or cancelled work that would change a captured expense allocation requires reopening its affected settlements first.
+
+Period settlements prorate service-period expenses by calendar days, with rounding cents assigned to fixed dates. Existing submitted settlements retain their original allocations. A late expense for closed work must be entered after cancelling the affected settlement(s), then included when they are approved again. Paid settlements retain the existing payment cancellation/unreconciliation safeguards. Do not edit historical ledgers to retrofit expense dates. Legacy submitted Assignment expenses without service dates resolve their booking period at calculation time; migration does not rewrite them.
+
+The settlement source table displays both Posting Date and Service Period/Assignment. Native accounting and Rental Profitability continue using Posting Date. Crane remains the rental cost dimension; existing native company Cost Centers remain available independently.
+
 The earlier calculation/period notes below describe the retained accounting rules; their manual creation/approval and Supplier identity instructions are superseded above.
 
 ---
