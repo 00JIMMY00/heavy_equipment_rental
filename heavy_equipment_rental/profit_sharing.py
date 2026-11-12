@@ -162,6 +162,9 @@ def validate_agreement(doc):
             frappe.throw(_("Select an enabled, non-group Cost Center in the agreement Company."))
         seen = set()
         for row in doc.ownership_partners:
+            if doc.ownership_type == "Operated for Owner" and row.is_company:
+                frappe.throw(_("Row {0}: Our Company cannot be a partner under Operated for Owner. "
+                    "Select an external Shareholder, or use Shared Ownership when our company is a partner.").format(row.idx))
             if not row.is_company and not row.shareholder and row.supplier:
                 from heavy_equipment_rental.partner_accounts import shareholder_for_supplier
                 row.shareholder = shareholder_for_supplier(row.supplier, company.name)
@@ -189,15 +192,6 @@ def validate_agreement(doc):
         for field in ("ownership_percentage", "profit_percentage"):
             if sum(Decimal(str(p[field])) for p in version["partners"]) != 100:
                 frappe.throw(_("Ownership percentages and Profit Share percentages must each total 100%."))
-        company_share = next((p for p in version["partners"] if p["is_company"]), {})
-        if doc.ownership_type == "Operated for Owner" and company_share.get("ownership_percentage"):
-            if doc.operator_type == "Our Company":
-                # Adding company ownership changes the classification, not the
-                # operator's independent fee or residual entitlement. Keep the
-                # normal dated-version checks below for this change as well.
-                doc.ownership_type = version["ownership_type"] = "Shared Ownership"
-            else:
-                frappe.throw(_("Select Shared Ownership when Our Company owns a share, then select the operator."))
         if doc.ownership_type == "Operated by Partner":
             doc.operator_type = version["operator_type"] = "External Operator"
         if doc.operator_type == "External Operator":

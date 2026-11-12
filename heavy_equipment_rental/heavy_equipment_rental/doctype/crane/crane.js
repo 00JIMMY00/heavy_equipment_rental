@@ -22,7 +22,7 @@ frappe.ui.form.on("Crane", {
         const { message } = await frappe.call({ method: "heavy_equipment_rental.partner_accounts.agreement_defaults", args: { company } });
         if (frm.doc.sharing_company === company) await frm.set_value(message);
     },
-    ownership_type(frm) {
+    async ownership_type(frm) {
         if (["Shared Ownership", "Operated for Owner", "Operated by Partner"].includes(frm.doc.ownership_type)) {
             frm.set_value("enable_profit_sharing", 1);
             frm.set_value("operator_type", frm.doc.ownership_type === "Operated by Partner"
@@ -30,20 +30,21 @@ frappe.ui.form.on("Crane", {
         } else if (frm.doc.ownership_type === "Rented") {
             frm.set_value("enable_profit_sharing", 0);
         }
-        frm.trigger("sync_company_ownership_type");
+        return frm.trigger("set_partner_company_rules");
     },
-    sync_company_ownership_type(frm) {
-        if (frm.doc.ownership_type !== "Operated for Owner" || frm.doc.operator_type !== "Our Company"
-            || !(frm.doc.ownership_partners || []).some(row => row.is_company && flt(row.ownership_percentage) > 0)) return;
-        return frm.set_value("ownership_type", "Shared Ownership").then(() => {
-            frappe.show_alert({ message: __("Ownership Type changed to Shared Ownership because Our Company owns a share. Operating and remaining balance percentages are kept."),
-                indicator: "blue" });
-        });
+    async set_partner_company_rules(frm) {
+        const external_only = frm.doc.ownership_type === "Operated for Owner";
+        frm.fields_dict.ownership_partners.grid.update_docfield_property("is_company", "read_only", external_only);
+        if (external_only) {
+            for (const row of frm.doc.ownership_partners || []) {
+                if (row.is_company) await frappe.model.set_value(row.doctype, row.name, "is_company", 0);
+            }
+        }
     },
     enable_profit_sharing(frm) {
         if (frm.doc.enable_profit_sharing && !(frm.doc.ownership_partners || []).length) {
             const row = frm.add_child("ownership_partners", {
-                is_company: 1, ownership_percentage: frm.doc.ownership_type === "Operated for Owner" ? 0 : 100,
+                is_company: frm.doc.ownership_type === "Operated for Owner" ? 0 : 1, ownership_percentage: 100,
                 profit_percentage: 100,
             });
             frm._partner_ownership = frm._partner_ownership || {};
@@ -64,6 +65,7 @@ frappe.ui.form.on("Crane", {
         frm.toggle_display("availability_tab", !frm.is_new());
     },
     refresh(frm) {
+        frm.trigger("set_partner_company_rules");
         frm._partner_ownership = Object.fromEntries((frm.doc.ownership_partners || []).map(
             row => [row.name, flt(row.ownership_percentage)]));
         frm.toggle_display("availability_tab", !frm.is_new());
@@ -204,6 +206,7 @@ frappe.ui.form.on("Crane Partner", {
     ownership_partners_add(frm, cdt, cdn) {
         frm._partner_ownership = frm._partner_ownership || {};
         frm._partner_ownership[cdn] = 0;
+        return frm.trigger("is_company", cdt, cdn);
     },
     async ownership_percentage(frm, cdt, cdn) {
         const row = locals[cdt][cdn];
@@ -213,14 +216,16 @@ frappe.ui.form.on("Crane Partner", {
         if (!row.allow_zero_profit_share && flt(row.profit_percentage) === previous) {
             await frappe.model.set_value(cdt, cdn, "profit_percentage", row.ownership_percentage);
         }
-        return frm.trigger("sync_company_ownership_type");
     },
     profit_percentage(frm, cdt, cdn) {
         if (flt(locals[cdt][cdn].profit_percentage) > 0) {
             return frappe.model.set_value(cdt, cdn, "allow_zero_profit_share", 0);
         }
     },
-    is_company(frm) {
-        return frm.trigger("sync_company_ownership_type");
+    is_company(frm, cdt, cdn) {
+        if (frm.doc.ownership_type === "Operated for Owner" && locals[cdt][cdn].is_company) {
+            frappe.msgprint(__("Operated for Owner allows external partners only. Our Company receives its operating share separately."));
+            return frappe.model.set_value(cdt, cdn, "is_company", 0);
+        }
     },
 });

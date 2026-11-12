@@ -37,12 +37,14 @@ Each percentage column must independently total 100%. Include Our Company only
 when it owns a share or receives some of the remaining balance. An operator with
 no ownership/residual share does not need a company row: its operating entitlement
 appears automatically in settlement results. External operators must be selected
-from the partner Suppliers. Operated for Owner means our company operates with
-zero ownership (it may still have an agreed residual share). If our company is
-also assigned positive ownership, the form and server classify the agreement as
-**Shared Ownership** automatically, preserving its operating rate and all ownership/
-remaining-balance percentages. Normal effective-date and history controls still
-apply; this does not change earlier agreement versions or settlements.
+from the partner Suppliers. **Operated for Owner** allows external Shareholder
+rows only: **Our Company** is unchecked and disabled in the partner table, and
+server validation rejects company rows even when their ownership is zero.
+Our Company receives its operating entitlement automatically without an owner
+row. Use **Shared Ownership** when Our Company is a partner. Changing type does
+not automatically reclassify the agreement; normal effective-date and history
+controls still apply. Historical agreement snapshots and submitted settlements
+are preserved.
 
 For a sole owner with 10% operating entitlement to our company: operating rate
 10%, one Supplier row with ownership 100% and remaining balance 100%. For several

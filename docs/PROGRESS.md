@@ -1,5 +1,11 @@
 # Progress
 
+## 2026-11-12 — External partners only under Operated for Owner
+
+- Operated for Owner now keeps every partner row's Our Company flag unchecked and disabled in the form, including when opening an older form or changing the type. New owner-operated agreements default to an external owner. Server validation rejects company rows regardless of ownership percentage and no longer converts the type to Shared Ownership. Company operating fees continue to appear separately in settlement results.
+- Preserved agreement snapshots, posted settlements, percentages and normal effective-date controls. No schema or bulk data migration was needed. Cleared cache on `cranes-dev2.arab-erp.com`.
+- Passed all 29 settlement/accounting tests and 2 rental workflow tests (31 total). Form behavior checks cover external defaults, clearing/rejecting company flags, disabled checkbox, preserved ownership type and Shared Ownership allowing company partners. Python/JavaScript syntax and whitespace checks passed; restored the site's disabled test setting.
+
 ## 2026-11-12 — Owner profit-share validation
 
 - Crane partner rows now default matching Remaining Balance % values as ownership changes, preserving manually different profit splits. New or changed agreements block positive ownership with zero remaining-profit entitlement unless the row explicitly confirms it. The confirmation is captured in the dated agreement; percentage totals and existing agreement-date/permission controls still apply.

@@ -225,8 +225,8 @@ class TestCraneProfitSettlement(FrappeTestCase):
         self.crane.reload()
         self.crane.agreement_effective_from = add_days(self.cycle["to_date"], 1)
         self.crane.ownership_type = "Operated for Owner"
-        self.crane.ownership_partners[0].ownership_percentage = 0
-        self.crane.ownership_partners[1].ownership_percentage = 100
+        self.crane.set("ownership_partners", [dict(supplier=self.supplier.name,
+            ownership_percentage=100, profit_percentage=100)])
         self.crane.save()
         self.crane.agreement_effective_from = add_days(self.cycle["to_date"], 2)
         self.crane.ownership_type = "Operated by Partner"
@@ -447,9 +447,8 @@ class TestCraneProfitSettlement(FrappeTestCase):
 
     def test_company_can_receive_both_operating_share_and_residual(self):
         original_history = json.loads(self.crane.agreement_history)
-        # Adding company ownership to an owner-operated agreement should
-        # classify it as shared without dropping either entitlement.
-        self.crane.ownership_type = "Operated for Owner"
+        # Company ownership/residual entitlement requires Shared Ownership.
+        self.crane.ownership_type = "Shared Ownership"
         day = self.configure_operating(company_residual=20)
         self.crane.reload()
         self.assertEqual(self.crane.ownership_type, "Shared Ownership")
@@ -469,24 +468,37 @@ class TestCraneProfitSettlement(FrappeTestCase):
         doc.submit()
         self.assertEqual(frappe.get_doc("Journal Entry", doc.journal_entry).total_debit, 8000)
 
-    def test_company_ownership_classification_still_requires_a_new_effective_date(self):
+    def test_operated_for_owner_rejects_company_rows_even_without_ownership(self):
         original_history = self.crane.agreement_history
+        for owned in (0, 25):
+            self.crane.reload()
+            self.crane.agreement_effective_from = add_days(self.cycle["from_date"], 1)
+            self.crane.ownership_type = "Operated for Owner"
+            self.crane.ownership_partners[0].ownership_percentage = owned
+            self.crane.ownership_partners[1].ownership_percentage = 100 - owned
+            with self.assertRaisesRegex(frappe.ValidationError, "Our Company cannot be a partner"):
+                self.crane.save()
+            self.assertEqual(self.crane.ownership_type, "Operated for Owner")
+            self.assertEqual(frappe.db.get_value("Crane", self.crane.name, "agreement_history"), original_history)
+
+    def test_switching_owner_operation_to_shared_still_requires_new_effective_date(self):
         self.crane.agreement_effective_from = add_days(self.cycle["from_date"], 1)
         self.crane.ownership_type = "Operated for Owner"
-        self.crane.ownership_partners[0].ownership_percentage = 0
-        self.crane.ownership_partners[1].ownership_percentage = 100
+        self.crane.set("ownership_partners", [dict(supplier=self.supplier.name,
+            ownership_percentage=100, profit_percentage=100)])
         self.crane.operating_percentage = 10
         self.crane.save()
         external_history = self.crane.agreement_history
-        self.assertEqual(self.crane.ownership_type, "Operated for Owner")
-        self.crane.ownership_partners[0].ownership_percentage = 25
-        self.crane.ownership_partners[1].ownership_percentage = 75
+        self.crane.ownership_type = "Shared Ownership"
+        self.crane.ownership_partners[0].ownership_percentage = 75
+        self.crane.ownership_partners[0].profit_percentage = 80
+        self.crane.append("ownership_partners", dict(is_company=1,
+            ownership_percentage=25, profit_percentage=20))
         with self.assertRaisesRegex(frappe.ValidationError, "effective date"):
             self.crane.save()
         self.crane.reload()
         self.assertEqual(self.crane.ownership_type, "Operated for Owner")
         self.assertEqual(self.crane.agreement_history, external_history)
-        self.assertEqual(json.loads(external_history)[:-1], json.loads(original_history))
 
     def test_external_operator_receives_operating_and_residual_in_one_payable(self):
         day = self.configure_operating(external=True, company_residual=60)
