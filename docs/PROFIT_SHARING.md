@@ -15,6 +15,12 @@ Open **Crane Operations → Crane Partner Statement** for detailed entitlement/p
 
 Migration creates account/identity defaults and links historical Timesheets to their existing settlements when evidence is unambiguous. Historical supplier journals, payments, agreements and amounts remain unchanged. A historical period settlement keeps Period basis even if its single Timesheet is displayed. Existing historical records are not automatically posted again.
 
+## Choosing rental work for costs (2026-11-13)
+
+Maintenance and Expense Entry show **Crane Assignment** and **Crane Timesheet** directly on the form. Choose Crane first. Assignment is required when work matches; Timesheet becomes required when that Assignment has matching non-cancelled Timesheets. Select links using the filtered native searches. Timesheet selection fills Assignment automatically and targets the cost to that Timesheet. With no matching bookings, Crane-only costs remain valid. Assignment-level costs entered before Timesheets exist keep the shared-work allocation rules.
+
+Maintenance uses Actual Start/End only; its removed planned dates are archived privately on the record. Completing maintenance carries rental links and the matching actual work period into its generated expense. Those links and financial dates cannot change after expense creation. For late-posted expenses, select the earlier Assignment or Timesheet directly: its work dates populate read-only service dates without changing Posting Date. Normal source permissions, settlement closures, payment protections and historical records remain preserved.
+
 ## Rental expenses by Assignment and service period (2026-11-12)
 
 Use Expense Entry's Crane and optional Crane Assignment to identify the work bearing the cost. Service From Date and Service To Date describe that work, independently of Posting Date. A single-crane Assignment can fill Crane automatically; the booking supplies the default service dates. An explicit period must fit the selected Crane's booking. A Crane without an Assignment may have an explicit service period. Without either an Assignment or service dates, the posting date remains the work date.

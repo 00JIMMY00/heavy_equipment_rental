@@ -6,12 +6,22 @@ frappe.ui.form.on("Expense Entry", {
         } : {});
         frm.set_query("crane_assignment", () => ({ filters: { company: frm.doc.company } }));
     },
-    crane_assignment: rental_expense_defaults,
-    crane: rental_expense_defaults,
+    async crane_assignment(frm) {
+        await rental_expense_defaults(frm);
+        return expense_rental_context(frm, "assignment_changed");
+    },
+    async crane_timesheet(frm) {
+        if (!frm.doc.crane_timesheet) await rental_expense_defaults(frm);
+        return expense_rental_context(frm, "timesheet_changed");
+    },
+    crane(frm) { return expense_rental_context(frm, "changed"); },
+    company(frm) { return expense_rental_context(frm, "changed"); },
+    posting_date(frm) { return expense_rental_context(frm, "changed"); },
+    refresh(frm) { return expense_rental_context(frm, "setup"); },
 });
 
 async function rental_expense_defaults(frm) {
-    if (frm.doc.docstatus !== 0) return;
+    if (frm.doc.docstatus !== 0 || frm._setting_rental_context) return;
     const assignment = frm.doc.crane_assignment;
     const crane = frm.doc.crane;
     const request = frm._rental_expense_request = (frm._rental_expense_request || 0) + 1;
@@ -30,4 +40,13 @@ async function rental_expense_defaults(frm) {
         service_from_date: rows.map(r => r.start_date).sort()[0],
         service_to_date: rows.map(r => r.expected_end_date).sort().at(-1),
     });
+}
+
+async function expense_rental_context(frm, method) {
+    if (frm._setting_rental_context) return;
+    if (["changed", "setup"].includes(method) && frm.doc.crane_assignment && !frm.doc.service_from_date) {
+        await rental_expense_defaults(frm);
+    }
+    await frappe.require("/assets/heavy_equipment_rental/js/rental_context.js");
+    return heavy_equipment_rental.rental_context[method](frm);
 }

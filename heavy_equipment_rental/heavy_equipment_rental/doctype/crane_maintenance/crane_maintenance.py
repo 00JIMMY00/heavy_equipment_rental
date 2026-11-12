@@ -25,7 +25,7 @@ class CraneMaintenance(Document):
 			frappe.throw(_("A started maintenance record cannot move to another crane."))
 		if before and before.expense_entry and any(
 			self.get(field) != before.get(field)
-			for field in ("crane", "cost", "expense_type", "mode_of_payment", "credit_account", "actual_end_date")
+			for field in ("crane", "crane_assignment", "crane_timesheet", "cost", "expense_type", "mode_of_payment", "credit_account", "actual_start_date", "actual_end_date")
 		):
 			frappe.throw(_("Expense details cannot change after expense creation."))
 		if flt(self.cost) < 0:
@@ -40,8 +40,6 @@ class CraneMaintenance(Document):
 			company = frappe.db.get_value("Account", debit_name, "company") if debit_name else None
 			if company:
 				self.credit_account = payment_account(self.mode_of_payment, company)
-		if self.planned_start_date and self.planned_end_date and getdate(self.planned_end_date) < getdate(self.planned_start_date):
-			frappe.throw(_("Planned end date cannot precede the start date."))
 		if self.status in ("In Progress", "Completed") and not self.actual_start_date:
 			self.actual_start_date = today()
 		if self.status == "Completed" and not self.actual_end_date:
@@ -50,6 +48,9 @@ class CraneMaintenance(Document):
 			frappe.throw(_("Set the actual start date before the end date."))
 		if self.actual_start_date and self.actual_end_date and getdate(self.actual_end_date) < getdate(self.actual_start_date):
 			frappe.throw(_("Actual end date cannot precede the start date."))
+		from heavy_equipment_rental.rental_context import validate_context
+		validate_context(self)
+
 		if before and before.crane != self.crane:
 			frappe.db.sql("SELECT name FROM `tabCrane` WHERE name IN %s ORDER BY name FOR UPDATE", (tuple(sorted((before.crane, self.crane))),))
 		else:
@@ -97,15 +98,28 @@ class CraneMaintenance(Document):
 		)
 		if not expense_type or not expense_type.enabled:
 			frappe.throw(_("Select an enabled Expense Entry Type."))
+		service_dates = {}
+		if self.crane_assignment:
+			from heavy_equipment_rental.rental_expenses import work_window
+			if self.crane_timesheet:
+				sheet = frappe.get_doc("Crane Timesheet", self.crane_timesheet)
+				first, last = getdate(sheet.period_start), getdate(sheet.period_end)
+			else:
+				first, last = work_window(frappe._dict(crane=self.crane, crane_assignment=self.crane_assignment))
+			service_dates = dict(service_from_date=max(first, getdate(self.actual_start_date or self.actual_end_date)),
+				service_to_date=min(last, getdate(self.actual_end_date)))
 		expense = frappe.get_doc({
 			"doctype": "Expense Entry",
 			"company": expense_type.company,
 			"crane": self.crane,
 			"crane_maintenance": self.name,
+			"crane_assignment": self.crane_assignment,
+			"crane_timesheet": self.crane_timesheet,
 			"expenses": [{"expense_entry_type": self.expense_type, "amount": self.cost}],
 			"mode_of_payment": self.mode_of_payment,
 			"posting_date": self.actual_end_date,
 			"description": _("Crane Maintenance {0}: {1}").format(self.name, self.description),
+			**service_dates,
 		}).insert()
 		# Keep completion and expense submission in the same transaction.
 		expense.submit()

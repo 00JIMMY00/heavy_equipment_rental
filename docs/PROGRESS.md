@@ -1,5 +1,17 @@
 # Progress
 
+## 2026-11-13 — Inline required rental links; removed maintenance planning dates
+
+- Removed planned date fields and active calendar/query references. A repeatable post-sync patch archives historical planned dates in hidden Legacy Planned Dates without changing actual work dates or record timestamps. Maintenance matching now uses Actual Start/End only.
+- Replaced the shared dialog/button with direct editable Assignment/Timesheet Link fields. Native searches filter rental work and show conditional mandatory markers; server validation requires matching Assignment and, when available, matching Timesheet. Expense Assignment searches allow earlier work for late postings. Timesheet selection fills Assignment/read-only service dates. Preserved unchanged historical records and crane-only cases without matches.
+- Migrated `cranes-dev2.arab-erp.com`; verified removed fields and archive repeatability. All 3 rental workflow and 16 automatic settlement/context tests passed, including the new required-Timesheet case. JavaScript checks verified editable links, requirements, defaults and no-match fallback; syntax and whitespace checks passed. Restored the disabled test setting.
+
+## 2026-11-13 — Shared rental-work selector
+
+- Maintenance and Expense Entry now share Choose Rental Work: choose Crane/work dates and explicitly select an overlapping Assignment or non-cancelled Timesheet when work matches. Allow Crane-only records when nothing matches. Timesheet selection fills Assignment; the managed link fields prevent conflicting form edits. Expense matching defaults to Posting Date and supports choosing earlier work dates without making service dates editable.
+- Added maintenance Assignment/Timesheet links and an expense Timesheet link. Completing maintenance carries its links and actual work period (clipped to selected work) into the native expense; locks linked financial attribution after creation. Timesheet-linked costs allocate only to that Timesheet, with existing source/period/ledger safeguards. Native Assignment and Timesheet Connections expose linked maintenance/expenses. Historical unchanged records and posted sources are preserved.
+- Migrated `cranes-dev2.arab-erp.com`; verified live candidates, fields and dashboard mappings. Passed 48 distinct integration tests (3 rental workflow, 16 automatic settlement/context, 29 accounting/settlement), including mandatory selection, crane-only fallback, direct Timesheet allocation and maintenance expense propagation/locks. Final targeted cases passed after date/locking refinements. JavaScript selector behavior, syntax and whitespace checks passed; restored the disabled test setting.
+
 ## 2026-11-13 — Assigned Cranes within Assignment Details
 
 - Removed the separate Assigned Cranes tab; the table now occupies a full-width section in Assignment Details. Connections and existing table records/behavior are preserved.

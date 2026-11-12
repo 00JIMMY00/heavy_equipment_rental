@@ -80,15 +80,11 @@ def get_calendar_events(start_date, end_date):
             })
     if frappe.has_permission("Crane Maintenance", "read"):
         rows = frappe.get_list("Crane Maintenance", fields=[
-            "name", "crane", "maintenance_type", "status", "technician", "planned_start_date",
-            "planned_end_date", "actual_start_date", "actual_end_date"], limit_page_length=0)
+            "name", "crane", "maintenance_type", "status", "technician", "actual_start_date", "actual_end_date"], limit_page_length=0)
         for row in rows:
-            for phase, first, last in (("planned", row.planned_start_date, row.planned_end_date),
-                                       ("actual", row.actual_start_date, row.actual_end_date)):
+            for phase, first, last in (("actual", row.actual_start_date, row.actual_end_date),):
                 last = last or first
                 if not first or getdate(first) > end or getdate(last) < start:
-                    continue
-                if phase == "actual" and first == row.planned_start_date and last == (row.planned_end_date or first):
                     continue
                 events.append({
                     "id": f"maintenance:{row.name}:{phase}", "type": "maintenance",

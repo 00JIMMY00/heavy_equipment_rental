@@ -23,6 +23,8 @@ def work_window(expense):
 
 
 def validate_expense(expense):
+    from heavy_equipment_rental.rental_context import validate_context
+    validate_context(expense)
     if expense.get("crane_assignment"):
         assignment = frappe.get_doc("Crane Assignment", expense.crane_assignment)
         assignment.check_permission("read")
@@ -53,7 +55,7 @@ def validate_expense(expense):
 
 
 def matches(source, sheet):
-    return (not source.get("rental_assignment") or source["rental_assignment"] == sheet.assignment) and (
+    return (not source.get("rental_timesheet") or source["rental_timesheet"] == sheet.name) and (not source.get("rental_assignment") or source["rental_assignment"] == sheet.assignment) and (
         getdate(sheet.period_start) <= getdate(source["service_to_date"]) and
         getdate(sheet.period_end) >= getdate(source["service_from_date"]))
 
@@ -65,6 +67,7 @@ def expense_sources(crane, company):
         start, end = work_window(expense)
         yield expense, dict(doctype="Expense Entry", name=name, journal=expense.journal_entry,
             posting_date=str(expense.posting_date), rental_assignment=expense.crane_assignment,
+            rental_timesheet=expense.get("crane_timesheet"),
             service_from_date=str(start), service_to_date=str(end),
             basis="Assignment / service period" if expense.crane_assignment or expense.get("service_from_date") else "Posting date",
             expenses=sum(flt(r.amount) for r in expense.expenses))
@@ -88,6 +91,8 @@ def guard_expense(expense):
     for row in frappe.get_all("Crane Profit Settlement", filters={"crane": expense.crane,
             "company": expense.company, "docstatus": 1, "from_date": ["<=", end],
             "to_date": [">=", start]}, fields=["name", "timesheet", "settlement_basis"]):
+        if row.settlement_basis == "Timesheet" and expense.get("crane_timesheet") and row.timesheet != expense.crane_timesheet:
+            continue
         if row.settlement_basis == "Timesheet" and expense.crane_assignment:
             if frappe.db.get_value("Crane Timesheet", row.timesheet, "assignment") != expense.crane_assignment:
                 continue

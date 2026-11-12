@@ -74,7 +74,9 @@ and journal rows covers other revenue/costs. Rental Profitability retains its
 net-sales basis. See [configuration and accounting](docs/PROFIT_SHARING.md) and
 [the full numerical development example](docs/OPERATING_FIRST_DEMO.md).
 
-Rental expenses can select **Crane**, **Crane Assignment**, and **Service From/To Date**. The Assignment defaults its Crane booking period; service dates can narrow that period. Settlement uses that work attribution even if the expense is posted later, allocating it once among eligible submitted Timesheets by billable hours. Enter expenses before invoice submission automatically approves the settlement. Reopen affected settlements before adding costs for closed work. Posted accounting dates and existing submitted settlements are preserved. See [expense allocation rules](docs/PROFIT_SHARING.md).
+Maintenance and expenses show editable **Crane Assignment** and **Crane Timesheet** links directly. Choose Crane first; Assignment is required when rental work matches, and Timesheet is required when matching Timesheets exist for that Assignment. Maintenance uses Actual Start/End dates only. A Timesheet fills its Assignment automatically; Crane-only records are allowed when no work matches. Maintenance carries its selection into the generated expense.
+
+Rental expenses display **Crane**, **Crane Assignment**, optional **Crane Timesheet**, and read-only **Service From/To Date**. The Assignment defaults its Crane booking period; select a Timesheet to use its work period. Settlement uses that work attribution even if the expense is posted later, allocating it once among eligible submitted Timesheets by billable hours. Enter expenses before invoice submission automatically approves the settlement. Reopen affected settlements before adding costs for closed work. Posted accounting dates and existing submitted settlements are preserved. See [expense allocation rules](docs/PROFIT_SHARING.md).
 
 ## Treasury transfers
 

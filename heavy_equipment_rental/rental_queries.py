@@ -86,7 +86,7 @@ def crane_availability(crane, date=None, to_date=None):
         for row in expenses:
             row.amount = amount_by_name.get(row.name, 0)
     maintenance = frappe.get_list("Crane Maintenance", filters={"crane": crane},
-                                  fields=["name", "status", "cost", "planned_start_date"],
+                                  fields=["name", "status", "cost", "actual_start_date"],
                                   limit_page_length=0) \
         if frappe.has_permission("Crane Maintenance", "read") else []
     return {

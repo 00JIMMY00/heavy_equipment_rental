@@ -250,10 +250,10 @@ class TestPartnerSettlements(FrappeTestCase):
         return doc
 
     def test_late_assignment_expense_is_allocated_only_once_by_worked_hours(self):
-        first, second = self.sheet(hours=8), self.sheet(offset=1, hours=4)
         expense = self.rental_expense().insert()
         self.assertEqual(str(expense.service_from_date), str(self.start))
         expense.submit()
+        first, second = self.sheet(hours=8), self.sheet(offset=1, hours=4)
         self.invoice().submit()
         settlements = [frappe.get_doc("Crane Profit Settlement", s.profit_settlement) for s in (first, second)]
         self.assertEqual([s.operating_expenses for s in settlements], [600, 300])
@@ -263,7 +263,7 @@ class TestPartnerSettlements(FrappeTestCase):
             self.assertEqual(sources[0]["rental_assignment"], self.assignment.name)
             self.assertEqual(sources[0]["posting_date"], today())
         with self.assertRaisesRegex(frappe.ValidationError, "closed"):
-            self.rental_expense(100).insert().submit()
+            self.rental_expense(100, crane_timesheet=first.name).insert().submit()
         with self.assertRaises(frappe.ValidationError):
             self.sheet(offset=2)
         with self.assertRaises(frappe.ValidationError):
@@ -271,9 +271,9 @@ class TestPartnerSettlements(FrappeTestCase):
 
     def test_service_dates_and_assignment_isolate_expenses(self):
         first, second = self.sheet(), self.sheet(offset=1)
-        expense = self.rental_expense(250, service_from_date=self.start, service_to_date=self.start).insert()
+        expense = self.rental_expense(250, crane_timesheet=first.name, service_from_date=self.start, service_to_date=self.start).insert()
         expense.submit()
-        unrelated = self.rental_expense(1000, crane_assignment=self.cycle["assignment"]).insert()
+        unrelated = self.rental_expense(1000, crane_assignment=self.cycle["assignment"], crane_timesheet=self.cycle["timesheets"][0].name).insert()
         unrelated.submit()
         self.invoice().submit()
         self.assertEqual(frappe.get_doc("Crane Profit Settlement", first.profit_settlement).operating_expenses, 250)
@@ -289,7 +289,7 @@ class TestPartnerSettlements(FrappeTestCase):
 
     def test_period_expense_service_proration(self):
         from heavy_equipment_rental.profit_sharing import collect_sources
-        expense = self.rental_expense(100, crane_assignment=None,
+        expense = self.rental_expense(100,
             service_from_date=self.start, service_to_date=add_days(self.start, 3)).insert()
         expense.submit()
         totals = []
@@ -302,7 +302,7 @@ class TestPartnerSettlements(FrappeTestCase):
     def test_period_expense_rounding_and_consecutive_closure(self):
         from heavy_equipment_rental.profit_sharing import collect_sources
         from heavy_equipment_rental.timesheet_settlement import validate_source_allocations
-        expense = self.rental_expense(0.01, crane_assignment=None,
+        expense = self.rental_expense(0.01,
             service_from_date=self.start, service_to_date=add_days(self.start, 2)).insert()
         expense.submit()
         parts = []
@@ -320,3 +320,49 @@ class TestPartnerSettlements(FrappeTestCase):
             validate_source_allocations(doc, [parts[1]])
             with self.assertRaisesRegex(frappe.ValidationError, "already covered"):
                 validate_source_allocations(doc, [parts[0]])
+
+    def test_rental_context_requires_selection_and_timesheet_cost_is_direct(self):
+        from heavy_equipment_rental.rental_context import rental_work_options
+        first, second = self.sheet(), self.sheet(offset=1)
+        options = rental_work_options(self.crane.name, self.start, self.start, self.company.name)
+        self.assertIn(self.assignment.name, [r['name'] for r in options['assignments']])
+        self.assertIn(first.name, [r['name'] for r in options['timesheets']])
+        self.assertNotIn(second.name, [r['name'] for r in options['timesheets']])
+        with self.assertRaisesRegex(frappe.ValidationError, 'Select a Crane Timesheet'):
+            self.rental_expense().insert()
+        standalone = self.rental_expense(50, crane_assignment=None, posting_date=add_days(self.start, 10)).insert()
+        standalone.submit()
+        self.assertFalse(standalone.crane_assignment)
+        self.assertFalse(standalone.crane_timesheet)
+        with self.assertRaisesRegex(frappe.ValidationError, 'Select its Assignment or Timesheet'):
+            self.rental_expense(crane_assignment=None, posting_date=self.start).insert()
+        expense = self.rental_expense(250, crane_assignment=None, crane_timesheet=first.name).insert()
+        self.assertEqual(expense.crane_assignment, self.assignment.name)
+        expense.submit()
+        self.invoice().submit()
+        self.assertEqual(frappe.get_doc('Crane Profit Settlement', first.profit_settlement).operating_expenses,250)
+        self.assertEqual(frappe.get_doc('Crane Profit Settlement', second.profit_settlement).operating_expenses,0)
+
+    def test_maintenance_rental_context_carries_to_expense(self):
+        first = self.sheet()
+        template = self.rental_expense()
+        with self.assertRaisesRegex(frappe.ValidationError, 'Select its Assignment or Timesheet'):
+            frappe.get_doc(dict(doctype='Crane Maintenance', crane=self.crane.name,
+                maintenance_type='Corrective', description='Missing rental selection',
+                actual_start_date=self.start, actual_end_date=self.start)).insert()
+        maintenance = frappe.get_doc(dict(doctype='Crane Maintenance', crane=self.crane.name,
+            crane_timesheet=first.name, maintenance_type='Corrective', description='Selected rental maintenance',
+            actual_start_date=self.start, actual_end_date=self.start,
+            expense_type=template.expenses[0].expense_entry_type, mode_of_payment=template.mode_of_payment,
+            cost=100)).insert()
+        self.assertEqual(maintenance.crane_assignment,self.assignment.name)
+        maintenance.status='Completed'
+        maintenance.save()
+        expense=frappe.get_doc('Expense Entry',maintenance.expense_entry)
+        self.assertEqual((expense.crane_assignment,expense.crane_timesheet,expense.docstatus),
+            (self.assignment.name,first.name,1))
+        self.assertEqual(str(expense.service_from_date), str(self.start))
+        self.assertEqual(str(expense.service_to_date), str(self.start))
+        with self.assertRaisesRegex(frappe.ValidationError,'Expense details cannot change'):
+            maintenance.crane_timesheet=None
+            maintenance.save()

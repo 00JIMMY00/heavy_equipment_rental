@@ -6,7 +6,7 @@
  "autoname": "naming_series:",
  "naming_rule": "By \"Naming Series\" field",
  "title_field": "crane",
- "search_fields": "crane,project,maintenance_type,technician",
+ "search_fields": "crane,crane_assignment,crane_timesheet,maintenance_type,technician",
  "fields": [
   {
    "fieldname": "details_tab",
@@ -62,16 +62,6 @@
    "fieldname": "schedule_section",
    "fieldtype": "Section Break",
    "label": "Schedule"
-  },
-  {
-   "fieldname": "planned_start_date",
-   "fieldtype": "Date",
-   "label": "Planned Start Date"
-  },
-  {
-   "fieldname": "planned_end_date",
-   "fieldtype": "Date",
-   "label": "Planned End Date"
   },
   {
    "fieldname": "actual_dates_column",
@@ -163,6 +153,26 @@
    "options": "Expense Entry",
    "read_only": 1,
    "no_copy": 1
+  },
+  {
+   "fieldname": "crane_assignment",
+   "fieldtype": "Link",
+   "label": "Crane Assignment",
+   "options": "Crane Assignment"
+  },
+  {
+   "fieldname": "crane_timesheet",
+   "fieldtype": "Link",
+   "label": "Crane Timesheet",
+   "options": "Crane Timesheet"
+  },
+  {
+   "fieldname": "legacy_planned_dates",
+   "fieldtype": "Long Text",
+   "label": "Legacy Planned Dates",
+   "hidden": 1,
+   "read_only": 1,
+   "no_copy": 1
   }
  ],
  "field_order": [
@@ -170,12 +180,12 @@
   "maintenance_section",
   "naming_series",
   "crane",
+  "crane_assignment",
+  "crane_timesheet",
   "maintenance_column",
   "maintenance_type",
   "status",
   "schedule_section",
-  "planned_start_date",
-  "planned_end_date",
   "actual_dates_column",
   "actual_start_date",
   "actual_end_date",
@@ -191,7 +201,8 @@
   "payment_column",
   "mode_of_payment",
   "credit_account",
-  "expense_entry"
+  "expense_entry",
+  "legacy_planned_dates"
  ],
  "istable": 0,
  "is_submittable": 0,

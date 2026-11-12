@@ -80,11 +80,18 @@ def execute():
 			"insert_after": "crane",
 			"in_standard_filter": 1,
 		}, {
+			"fieldname": "crane_timesheet",
+			"fieldtype": "Link",
+			"label": "Crane Timesheet",
+			"options": "Crane Timesheet",
+			"insert_after": "crane_assignment",
+			"in_standard_filter": 1,
+		}, {
 			"fieldname": "service_from_date",
 			"fieldtype": "Date",
 			"label": "Service From Date",
 			"read_only": 1,
-			"insert_after": "crane_assignment",
+			"insert_after": "crane_timesheet",
 			"depends_on": "crane",
 			"description": "Work period charged by this expense, independent of Posting Date. Assignment bookings supply the default period.",
 		}, {
