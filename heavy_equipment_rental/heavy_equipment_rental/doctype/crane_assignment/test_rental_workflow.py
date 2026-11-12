@@ -154,6 +154,7 @@ class TestRentalWorkflow(FrappeTestCase):
         invoice = frappe.get_doc("Sales Invoice", result["name"])
         self.assertEqual(invoice.customer, customer.name)
         self.assertEqual(invoice.items[0].rate, 90)
+        self.assertEqual((sheet.timesheet_entries[0].rental_rate, sheet.timesheet_entries[0].rental_rate_unit), (90, "Day"))
         self.assertFalse(invoice.items[0].sales_order)
         same_day = frappe.get_doc({
             "doctype": "Crane Timesheet", "assignment": rental.name, "crane": crane.name,
@@ -187,10 +188,22 @@ class TestRentalWorkflow(FrappeTestCase):
             }],
         }).insert()
         self.assertEqual(second.assignment, first.assignment)
+        first.timesheet_entries[0].worked_hours = 0
+        first.save()
+        self.assertEqual(first.timesheet_entries[0].worked_hours, 0)
+        self.assertEqual(first.total_crane_billable_hours, 0)
+        first.timesheet_entries[0].worked_hours = 2
+        first.save()
+        first.timesheet_entries[0].end_time = "14:00"
+        first.save()
+        self.assertEqual(first.timesheet_entries[0].worked_hours, 2)
+        self.assertEqual(first.total_crane_billable_hours, 2)
+        self.assertEqual(first.total_amount, 240)
         first.submit()
         hourly_invoice = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=first.name)["name"])
-        self.assertEqual(hourly_invoice.items[0].qty, 4)
+        self.assertEqual(hourly_invoice.items[0].qty, 2)
         self.assertEqual(hourly_invoice.items[0].rate, 120)
+        self.assertEqual((first.timesheet_entries[0].rental_rate, first.timesheet_entries[0].rental_rate_unit), (120, "Hour"))
         monthly_day = later + timedelta(days=20)
         monthly = frappe.get_doc({
             "doctype": "Crane Timesheet", "crane": crane.name, "customer": customer.name,
@@ -202,6 +215,7 @@ class TestRentalWorkflow(FrappeTestCase):
             }],
         }).insert()
         monthly.submit()
+        self.assertEqual((monthly.timesheet_entries[0].rental_rate, monthly.timesheet_entries[0].rental_rate_unit), (930, "Month"))
         monthly_invoice = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=monthly.name)["name"])
         self.assertAlmostEqual(monthly_invoice.items[0].rate,
                                930 / monthrange(monthly_day.year, monthly_day.month)[1], delta=0.02)

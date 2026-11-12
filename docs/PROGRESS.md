@@ -1,9 +1,24 @@
 # Progress
 
+## 2026-11-12 — Editable Driver in Timesheet Entries
+
+- Replaced the read-only Driver Name grid column with the editable Driver (Employee) Link. Kept the fetched name hidden for summaries/history. Verified Driver, Work Date, Start/End Time, Worked Hours, Overtime and Ends Next Day are editable inputs on draft rows.
+- Migrated `cranes-dev2.arab-erp.com`; the 3 rental workflow tests passed. Verified migrated field metadata and whitespace checks. Restored the disabled test setting.
+
+## 2026-11-12 — Editable operating hours
+
+- Unlocked Timesheet Entry Worked Hours. Entered values, including zero, survive saves and clock-time edits; driver summaries, hourly sales/purchases and line amounts use entered operating hours. Preserved overlap deduplication, booking checks and historical values. Zero-hour rows are excluded from billable work dates.
+- Migrated `cranes-dev2.arab-erp.com`; all 3 rental workflow and 14 purchasing/defaults tests passed. Regression checks cover zero downtime, entered 2 hours surviving a 6-hour clock window, and a 2-hour Sales Invoice. Python/JavaScript syntax and whitespace checks passed; restored the disabled test setting.
+
+## 2026-11-12 — Rental terms in Timesheet Entries
+
+- Added visible Rental Rate and Rental Rate Unit columns to Timesheet Entries, using the matching Assignment crane booking. Draft forms populate them on row/date/Assignment/Crane changes; the controller enforces them when saving or submitting. Retained the previous hourly field internally, existing billing calculations and submitted history.
+- Migrated `cranes-dev2.arab-erp.com`; all 3 rental workflow tests passed with entry-rate/unit assertions for Hour, Day and Month. JavaScript behavior checks passed for booking/date defaults and submitted-history protection; syntax and whitespace checks passed. Restored the disabled test setting.
+
 ## 2026-11-12 — Assignment rates and Timesheet crane chooser
 
 - Assigned Crane grid now displays Rental Rate and Rental Rate Unit alongside Crane and booking dates. New rows default to Settings Default Selling UOM and the matching Crane reference price in the form and on server save. Removed Frappe's implicit first-option Hour default; retain editable overrides, protect pending/stale responses, and leave saved agreement terms unchanged when settings/prices change.
-- Create → New Timesheet prompts for one of the Assignment's distinct active cranes when several are booked; a single crane is preselected directly. Require saving Assignment edits first and exclude cancelled bookings. New Timesheets now default editable period dates from the chosen booking, with a rental-period chooser for multiple bookings of the same crane. Verified single/multiple-crane and multiple-period defaults with JavaScript behavior checks; no schema change was needed.
+- Create → New Timesheet prompts for one of the Assignment's distinct active cranes when several are booked; a single crane is preselected directly. Require saving Assignment edits first and exclude cancelled bookings. New Timesheets now default editable period dates plus Rental Rate/Unit from the chosen booking, with a rental-period chooser for multiple bookings of the same crane. Verified single/multiple-crane and multiple-period defaults with JavaScript behavior checks; no schema change was needed.
 - Migrated `cranes-dev2.arab-erp.com`. All 3 rental workflow tests passed, including Day defaults, Month reference pricing and preservation after Settings changes. JavaScript behavior checks passed for defaults, manual/pending edits, crane selection and single-crane creation; syntax and whitespace checks passed. Restored the site's disabled test setting.
 
 ## 2026-11-12 — Rental expense attribution by work period

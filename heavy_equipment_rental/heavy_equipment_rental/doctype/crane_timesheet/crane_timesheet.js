@@ -42,14 +42,6 @@ async function load_driver_names(frm) {
     update_driver_hours(frm);
 }
 
-function shift_hours(row) {
-    if (!row.start_time || !row.end_time) return 0;
-    const seconds = (value) => value.split(":").map(Number).reduce((total, part) => total * 60 + part, 0);
-    let duration = seconds(row.end_time) - seconds(row.start_time);
-    if (row.ends_next_day) duration += 24 * 3600;
-    return duration > 0 ? duration / 3600 : 0;
-}
-
 function update_driver_hours(frm) {
     if (frm.doc.docstatus !== 0) return;
     const totals = new Map();
@@ -57,7 +49,7 @@ function update_driver_hours(frm) {
         if (!row.employee) continue;
         const current = totals.get(row.employee) || { employee: row.employee, driver_name: row.driver_name, total_hours: 0 };
         current.driver_name = row.driver_name || current.driver_name;
-        current.total_hours += shift_hours(row);
+        current.total_hours += flt(row.worked_hours);
         totals.set(row.employee, current);
     }
     frm.clear_table("driver_hours");
@@ -160,6 +152,7 @@ frappe.ui.form.on("Crane Timesheet", {
             await frm.set_value({ customer: message.customer, location: message.location });
         }
         await load_rental_terms(frm);
+        await fill_entry_rental_terms(frm);
     },
     async crane(frm) {
         if (frm.doc.docstatus === 0) {
@@ -175,6 +168,7 @@ frappe.ui.form.on("Crane Timesheet", {
         }
         await load_timesheet_defaults(frm);
         await load_rental_terms(frm);
+        await fill_entry_rental_terms(frm);
         suggest_assignment(frm);
     },
     customer: suggest_assignment,
@@ -196,6 +190,7 @@ frappe.ui.form.on("Crane Timesheet", {
         }
     },
     refresh(frm) {
+        fill_entry_rental_terms(frm);
         purchase_price_label(frm);
         load_rental_terms(frm);
         if (frm.doc.profit_settlement) frm.add_custom_button(__("Profit Settlement"), () =>
@@ -227,9 +222,29 @@ frappe.ui.form.on("Timesheet Entry", {
         update_driver_hours(frm);
     },
     driver_name: update_driver_hours,
+    worked_hours: update_driver_hours,
     start_time: update_driver_hours,
     end_time: update_driver_hours,
     ends_next_day: update_driver_hours,
-    timesheet_entries_add: update_driver_hours,
+    timesheet_entries_add(frm) { update_driver_hours(frm); fill_entry_rental_terms(frm); },
+    work_date: fill_entry_rental_terms,
     timesheet_entries_remove: update_driver_hours,
 });
+
+
+async function fill_entry_rental_terms(frm) {
+    if (frm.doc.docstatus !== 0 || !frm.doc.assignment || !frm.doc.crane) return;
+    const assignment = frm.doc.assignment, crane = frm.doc.crane;
+    const request = frm._entry_terms_request = (frm._entry_terms_request || 0) + 1;
+    const doc = await frappe.db.get_doc("Crane Assignment", assignment);
+    if (request !== frm._entry_terms_request || frm.doc.assignment !== assignment || frm.doc.crane !== crane || frm.doc.docstatus !== 0) return;
+    for (const row of frm.doc.timesheet_entries || []) {
+        const day = row.work_date || frm.doc.period_start;
+        const bookings = (doc.assigned_cranes || []).filter(r => !r.cancelled && r.crane === crane &&
+            day && r.start_date <= day && day <= r.expected_end_date);
+        await frappe.model.set_value(row.doctype, row.name, {
+            rental_rate: bookings.length === 1 ? bookings[0].rental_rate : null,
+            rental_rate_unit: bookings.length === 1 ? bookings[0].rental_rate_unit : "",
+        });
+    }
+}

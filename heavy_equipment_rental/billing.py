@@ -47,7 +47,7 @@ def _invoice_summaries(assignment, sheets):
 
 
 def _work_days(sheet):
-    return {day for entry in sheet.timesheet_entries for day in work_days(*interval(entry))}
+    return {day for entry in sheet.timesheet_entries if flt(entry.worked_hours) > 0 for day in work_days(*interval(entry))}
 
 
 def _rental_allocation(sheet, days):

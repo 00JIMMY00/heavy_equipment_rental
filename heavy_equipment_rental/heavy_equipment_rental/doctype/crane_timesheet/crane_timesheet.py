@@ -9,7 +9,7 @@ from frappe.utils import flt, getdate, today
 
 from heavy_equipment_rental.rental_validation import (
     assignment_doc,
-    billable_totals,
+    entered_hour_totals,
     check_date_order,
     check_non_negative,
     crane_display_name,
@@ -34,6 +34,7 @@ def default_timesheet_entries(period_start, period_end):
         "start_time": str(settings.day_shift_start_time or "08:00:00"),
         "end_time": str(settings.day_shift_end_time or "16:00:00"),
         "ends_next_day": 0,
+        "worked_hours": flt(settings.day_shift_hours or 8),
     } for offset in range((end - start).days + 1)]
 
 
@@ -185,6 +186,7 @@ class CraneTimesheet(Document):
         if not self.timesheet_entries and self.docstatus == 1:
             frappe.throw(_("Add at least one shift before submitting the Timesheet."))
         intervals, operator_hours, flat_days, flat_rows = [], 0, {}, []
+        entered_intervals = []
         submitted_update = bool(previous and previous.docstatus == 1 and self.docstatus == 1)
         employees = {row.employee for row in self.timesheet_entries if row.employee}
         driver_names = {row.name: row.employee_name for row in frappe.get_all(
@@ -203,7 +205,14 @@ class CraneTimesheet(Document):
                 if not any(getdate(booking.start_date) <= day <= getdate(booking.expected_end_date)
                            for booking in bookings):
                     frappe.throw(_("Row {0}: work falls outside the agreed rental dates. Extend the Assignment deliberately.").format(row.idx))
-            hours = (end - start).total_seconds() / 3600
+            # Initialize omitted legacy/API values once; explicit values, including
+            # zero downtime rows, are never derived again from clock times.
+            if row.worked_hours is None:
+                row.worked_hours = (end - start).total_seconds() / 3600
+            hours = flt(row.worked_hours)
+            from math import isfinite
+            if not isfinite(hours) or hours < 0:
+                frappe.throw(_("Row {0}: Worked Hours must be a finite non-negative number.").format(row.idx))
             check_non_negative(row.overtime_hours, _("Row {0} overtime").format(row.idx))
             if flt(row.overtime_hours) > hours:
                 frappe.throw(_("Row {0}: overtime cannot exceed worked hours.").format(row.idx))
@@ -213,18 +222,21 @@ class CraneTimesheet(Document):
             if len(matching) != 1:
                 frappe.throw(_("Row {0}: a shift must fit exactly one booked crane period.").format(row.idx))
             booking = matching[0]
+            if not submitted_update:
+                row.rental_rate = booking.rental_rate
+                row.rental_rate_unit = booking.rental_rate_unit
             row.price_per_hour = booking.rental_rate if booking.rental_rate_unit == "Hour" else 0
-            row.worked_hours = hours
             if not submitted_update:
                 row.driver_name = driver_names.get(row.employee)
             hours_by_driver[row.employee] = hours_by_driver.get(row.employee, 0) + hours
             row.line_amount = hours * flt(row.price_per_hour)
-            if booking.rental_rate_unit in ("Day", "Month"):
+            if hours > 0 and booking.rental_rate_unit in ("Day", "Month"):
                 for day in days:
                     flat_days[(booking.name, day)] = booking
                 flat_rows.append(row)
             operator_hours += hours
             intervals.append((start, end, flt(row.price_per_hour)))
+            entered_intervals.append((start, end, flt(row.price_per_hour), hours))
         if not submitted_update:
             self.set("driver_hours", [])
             for employee, hours in hours_by_driver.items():
@@ -234,7 +246,7 @@ class CraneTimesheet(Document):
                     "total_hours": hours,
                 })
         self.total_operator_hours = operator_hours
-        self.total_crane_billable_hours, hourly_amount = billable_totals(intervals)
+        self.total_crane_billable_hours, hourly_amount = entered_hour_totals(entered_intervals)
         flat_amount = sum(
             Decimal(str(booking.rental_rate)) * (
                 Decimal(1) if booking.rental_rate_unit == "Day" else

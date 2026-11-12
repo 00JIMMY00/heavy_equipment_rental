@@ -14,6 +14,8 @@ frappe.ui.form.on("Crane Assignment", {
                     location: frm.doc.location, crane,
                     period_start: booking.start_date,
                     period_end: booking.expected_end_date,
+                    rental_rate: booking.rental_rate,
+                    rental_rate_unit: booking.rental_rate_unit,
                 });
                 if (bookings.length === 1) return open(bookings[0]);
                 frappe.prompt([{

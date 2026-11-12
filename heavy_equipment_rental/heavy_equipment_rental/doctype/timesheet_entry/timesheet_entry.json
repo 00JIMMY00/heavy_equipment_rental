@@ -15,6 +15,8 @@
   "overtime_hours",
   "ends_next_day",
   "calculation_section",
+  "rental_rate",
+  "rental_rate_unit",
   "price_per_hour",
   "worked_hours",
   "amount_col",
@@ -31,14 +33,18 @@
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Work Date",
-   "reqd": 1
+   "reqd": 1,
+   "columns": 2
   },
   {
    "fieldname": "employee",
    "fieldtype": "Link",
    "label": "Driver (Employee)",
    "options": "Employee",
-   "reqd": 1
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2,
+   "read_only": 0
   },
   {
    "fieldname": "driver_name",
@@ -46,7 +52,9 @@
    "label": "Driver Name",
    "fetch_from": "employee.employee_name",
    "read_only": 1,
-   "in_list_view": 1
+   "in_list_view": 0,
+   "columns": 2,
+   "hidden": 1
   },
   {
    "fieldname": "time_col",
@@ -56,13 +64,15 @@
    "fieldname": "start_time",
    "fieldtype": "Time",
    "in_list_view": 1,
-   "label": "Start Time"
+   "label": "Start Time",
+   "columns": 1
   },
   {
    "fieldname": "end_time",
    "fieldtype": "Time",
    "in_list_view": 1,
-   "label": "End Time"
+   "label": "End Time",
+   "columns": 1
   },
   {
    "fieldname": "overtime_hours",
@@ -85,9 +95,11 @@
   {
    "fieldname": "price_per_hour",
    "fieldtype": "Currency",
-   "in_list_view": 1,
+   "in_list_view": 0,
    "label": "Price / Hour",
-   "non_negative": 1
+   "non_negative": 1,
+   "hidden": 1,
+   "read_only": 1
   },
   {
    "fieldname": "worked_hours",
@@ -95,7 +107,9 @@
    "in_list_view": 1,
    "label": "Worked Hours",
    "precision": "6",
-   "read_only": 1
+   "read_only": 0,
+   "columns": 1,
+   "description": "Actual operating hours entered by the user. Exclude downtime. Changing shift times does not overwrite this value."
   },
   {
    "fieldname": "amount_col",
@@ -106,6 +120,23 @@
    "fieldtype": "Currency",
    "label": "Driver Amount (Informational)",
    "read_only": 1
+  },
+  {
+   "fieldname": "rental_rate",
+   "fieldtype": "Currency",
+   "label": "Rental Rate",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "rental_rate_unit",
+   "fieldtype": "Select",
+   "label": "Rental Rate Unit",
+   "options": "\nHour\nDay\nMonth",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1
   }
  ],
  "grid_page_length": 100,

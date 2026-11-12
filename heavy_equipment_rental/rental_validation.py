@@ -148,6 +148,40 @@ def billable_totals(intervals):
 	return float(hours), float(amount)
 
 
+
+def entered_hour_totals(intervals):
+    """Deduplicate operators' reported hours over overlapping scheduled windows.
+
+    Within a window, distribute its entered hours evenly; simultaneous operators
+    use the highest operating fraction rather than charging the crane twice.
+    Entered hours have no upper bound tied to the scheduled duration.
+    """
+    events = defaultdict(list)
+    for key, (start, end, rate, hours) in enumerate(intervals):
+        density = Decimal(str(hours)) * Decimal(3600) / Decimal(str((end - start).total_seconds()))
+        events[start].append((key, (density, Decimal(str(rate)))))
+        events[end].append((key, None))
+    active, previous, hours, amount = {}, None, Decimal(0), Decimal(0)
+    for timestamp in sorted(events):
+        if previous is not None and active:
+            operating = [value for value in active.values() if value[0] > 0]
+            if operating:
+                rates = {rate for _, rate in operating}
+                if len(rates) > 1:
+                    frappe.throw(_("Overlapping driver intervals have different hourly prices."))
+                duration = Decimal(str((timestamp - previous).total_seconds())) / Decimal(3600)
+                quantity = duration * max(density for density, _ in operating)
+                hours += quantity
+                amount += quantity * next(iter(rates))
+        for key, value in events[timestamp]:
+            if value is None:
+                active.pop(key, None)
+            else:
+                active[key] = value
+        previous = timestamp
+    return float(hours), float(amount)
+
+
 def recorded_work(assignment, cranes):
 	if not cranes:
 		return []
