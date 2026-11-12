@@ -7,8 +7,8 @@ Crane rentals for Frappe/ERPNext. Install `arab_erp_theme` first for the shared 
 ### Start with an Assignment
 
 1. Create a Crane Assignment with a customer and location.
-2. Add one or more cranes. Give each crane its full agreed rental dates, billing unit (Hour, Day, or Month), and rate. Saving the Assignment books those dates.
-3. Create one or more Crane Timesheets for each crane. A Timesheet has one Assignment, one crane, and dated operator shifts. Select an optional default Driver (ERPNext Employee) to fill new shifts, then change individual rows as needed. The form shows each driver's name and total shift hours below Operator Shifts. Attach a hard copy if available; it remains accessible and can be updated after submission. Record overtime hours within each shift when applicable.
+2. Add one or more cranes. Billing unit defaults from HER Settings and rate from the Crane reference price; both are visible in the table and editable. Give each crane its full agreed rental dates. Saving the Assignment books those dates.
+3. Use Create → New Timesheet; choose a crane when the Assignment has several active cranes. Create one or more Crane Timesheets for each crane. A Timesheet has one Assignment, one crane, and dated operator shifts. Select an optional default Driver (ERPNext Employee) to fill new shifts, then change individual rows as needed. The form shows each driver's name and total shift hours below Operator Shifts. Attach a hard copy if available; it remains accessible and can be updated after submission. Record overtime hours within each shift when applicable.
 4. Submit Timesheets when work is approved. Use **Generate Sales Invoice** from a submitted Timesheet or its Assignment. Review and submit the resulting draft Sales Invoice in ERPNext.
 
 Customer payments use ERPNext's normal invoice/payment workflow. Sales Invoices do not allocate amounts to drivers or record customer-to-driver payments. Driver names and hours remain on Timesheets. Migration preserves previously saved direct-payment details in a hidden legacy archive and leaves posted invoices/journals unchanged.

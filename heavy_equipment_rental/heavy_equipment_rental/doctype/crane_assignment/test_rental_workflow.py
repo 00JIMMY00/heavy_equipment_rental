@@ -11,6 +11,31 @@ from heavy_equipment_rental.billing import generate_crane_sales_invoices, genera
 
 
 class TestRentalWorkflow(FrappeTestCase):
+    def test_assignment_defaults_use_settings_and_crane_prices(self):
+        original = frappe.db.get_single_value("Heavy Equipment Rental Settings", "default_selling_uom")
+        try:
+            settings = frappe.get_single("Heavy Equipment Rental Settings")
+            settings.default_selling_uom = "Day"
+            settings.save()
+            crane = frappe.get_doc(dict(doctype="Crane", crane_name="Assignment defaults " + frappe.generate_hash(length=8),
+                operational_condition="Operational")).insert()
+            for row in crane.period_prices:
+                row.price = {"Hour": 100, "Day": 700, "Month": 15000}[row.period]
+            crane.save()
+            day = getdate(today()) + timedelta(days=400)
+            assignment = frappe.get_doc(dict(doctype="Crane Assignment",
+                customer=frappe.db.get_value("Customer", {}, "name"), location="Defaults test",
+                assigned_cranes=[dict(crane=crane.name, start_date=day, expected_end_date=day)])).insert()
+            self.assertEqual((assignment.assigned_cranes[0].rental_rate_unit, assignment.assigned_cranes[0].rental_rate), ("Day", 700))
+            from heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.crane_assignment import get_assignment_defaults
+            self.assertEqual(get_assignment_defaults(crane.name, "Month")["rental_rate"], 15000)
+            settings.default_selling_uom = "Month"
+            settings.save()
+            assignment.save()
+            self.assertEqual((assignment.assigned_cranes[0].rental_rate_unit, assignment.assigned_cranes[0].rental_rate), ("Day", 700))
+        finally:
+            frappe.db.set_single_value("Heavy Equipment Rental Settings", "default_selling_uom", original)
+
     def test_completed_maintenance_uses_shared_expense_entry(self):
         expense_type = next((row for row in frappe.get_all(
             "Expense Entry Type", filters={"enabled": 1}, fields=["name", "company"],

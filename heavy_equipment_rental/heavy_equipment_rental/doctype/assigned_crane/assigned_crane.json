@@ -19,7 +19,8 @@
    "label": "Crane",
    "options": "Crane",
    "reqd": 1,
-   "in_list_view": 1
+   "in_list_view": 1,
+   "columns": 3
   },
   {
    "fieldname": "assignment_col",
@@ -38,14 +39,16 @@
    "fieldtype": "Date",
    "label": "Start Date",
    "reqd": 1,
-   "in_list_view": 1
+   "in_list_view": 1,
+   "columns": 2
   },
   {
    "fieldname": "expected_end_date",
    "fieldtype": "Date",
    "label": "End Date",
    "reqd": 1,
-   "in_list_view": 1
+   "in_list_view": 1,
+   "columns": 2
   },
   {
    "fieldname": "rate_section",
@@ -56,15 +59,18 @@
    "fieldname": "rental_rate",
    "fieldtype": "Currency",
    "label": "Rental Rate",
-   "non_negative": 1
+   "non_negative": 1,
+   "in_list_view": 1,
+   "columns": 2
   },
   {
    "fieldname": "rental_rate_unit",
    "fieldtype": "Select",
    "label": "Rental Rate Unit",
-   "options": "Hour\nDay\nMonth",
-   "default": "Hour",
-   "reqd": 1
+   "options": "\nHour\nDay\nMonth",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 1
   }
  ],
  "field_order": [

@@ -1,5 +1,11 @@
 # Progress
 
+## 2026-11-12 — Assignment rates and Timesheet crane chooser
+
+- Assigned Crane grid now displays Rental Rate and Rental Rate Unit alongside Crane and booking dates. New rows default to Settings Default Selling UOM and the matching Crane reference price in the form and on server save. Removed Frappe's implicit first-option Hour default; retain editable overrides, protect pending/stale responses, and leave saved agreement terms unchanged when settings/prices change.
+- Create → New Timesheet prompts for one of the Assignment's distinct active cranes when several are booked; a single crane is preselected directly. Require saving Assignment edits first and exclude cancelled bookings. New Timesheets now default editable period dates from the chosen booking, with a rental-period chooser for multiple bookings of the same crane. Verified single/multiple-crane and multiple-period defaults with JavaScript behavior checks; no schema change was needed.
+- Migrated `cranes-dev2.arab-erp.com`. All 3 rental workflow tests passed, including Day defaults, Month reference pricing and preservation after Settings changes. JavaScript behavior checks passed for defaults, manual/pending edits, crane selection and single-crane creation; syntax and whitespace checks passed. Restored the site's disabled test setting.
+
 ## 2026-11-12 — Rental expense attribution by work period
 
 - Added Service From/To Date on Expense Entry, Assignment booking defaults, single-crane inference, paired/ordered date and company/Crane/booking validation. Accounting Posting Date remains independent. Expense forms prefill the work dates while preserving manual edits during pending requests.

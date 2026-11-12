@@ -16,6 +16,23 @@ from heavy_equipment_rental.rental_validation import (
 )
 
 
+@frappe.whitelist()
+def get_assignment_defaults(crane=None, rental_rate_unit=None):
+    if not (frappe.has_permission("Crane Assignment", "create") or frappe.has_permission("Crane Assignment", "write")):
+        frappe.throw(_("You cannot edit Crane Assignments."), frappe.PermissionError)
+    settings = frappe.get_single("Heavy Equipment Rental Settings")
+    settings.check_permission("read")
+    unit = rental_rate_unit or settings.default_selling_uom or "Hour"
+    if unit not in ("Hour", "Day", "Month"):
+        frappe.throw(_("Select an Hour, Day or Month Rental Rate Unit."))
+    result = dict(rental_rate_unit=unit)
+    if crane:
+        equipment = frappe.get_doc("Crane", crane)
+        equipment.check_permission("read")
+        result["rental_rate"] = next((r.price for r in equipment.period_prices if r.period == unit), 0)
+    return result
+
+
 class CraneAssignment(Document):
     def validate(self):
         if self.flags.legacy_migration:
@@ -37,6 +54,11 @@ class CraneAssignment(Document):
         others = allocations(cranes, exclude=self.name) if cranes else []
         rows = list(self.assigned_cranes)
         for row in rows:
+            if row.name not in old and (not row.rental_rate_unit or not row.rental_rate):
+                defaults = get_assignment_defaults(row.crane, row.rental_rate_unit)
+                row.rental_rate_unit = row.rental_rate_unit or defaults["rental_rate_unit"]
+                if not row.rental_rate:
+                    row.rental_rate = defaults.get("rental_rate", 0)
             label = _("Crane {0}, row {1}").format(crane_display_name(row.crane), row.idx)
             check_date_order(row.start_date, row.expected_end_date, label)
             check_non_negative(row.rental_rate, label + " rental rate")
