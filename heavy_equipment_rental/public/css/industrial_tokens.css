@@ -1,0 +1,124 @@
+/* HER design tokens. Loaded after the shared theme; semantic status colors stay native. */
+html:root,
+html[data-theme="light"] {
+  color-scheme: light;
+  --her-yellow: #f5c518;
+  --her-yellow-hover: #e6b608;
+  --her-on-yellow: #20241f;
+  --her-accent-text: #806000;
+  --her-accent-soft: #fff5ce;
+  --her-canvas: #f3f4f4;
+  --her-surface: #ffffff;
+  --her-surface-raised: #ffffff;
+  --her-subtle: #f7f8f8;
+  --her-hover: #eef0f1;
+  --her-ink: #252b30;
+  --her-heading: #171d22;
+  --her-muted: #66717a;
+  --her-line: #dfe3e6;
+  --her-line-strong: #bbc4ca;
+  --her-field: #f2f4f5;
+  --her-shadow: 0 4px 16px rgb(22 30 36 / 4%);
+  --her-shadow-raised: 0 16px 48px rgb(22 30 36 / 12%);
+  --her-focus: 0 0 0 3px rgb(191 145 0 / 22%);
+  --her-sidebar: #20262b;
+  --her-sidebar-hover: #30383e;
+  --her-sidebar-text: #dce2e6;
+  --her-sidebar-muted: #a4b0b9;
+  --her-loader-image: url("/assets/heavy_equipment_rental/branding/loader.gif");
+
+  --primary: var(--her-accent-text);
+  --primary-color: var(--her-accent-text);
+  --brand-color: var(--her-yellow);
+  --btn-primary: var(--her-yellow);
+  --border-primary: var(--her-accent-text);
+  --bg-color: var(--her-canvas);
+  --fg-color: var(--her-surface);
+  --card-bg: var(--her-surface);
+  --subtle-accent: var(--her-subtle);
+  --subtle-fg: var(--her-hover);
+  --control-bg: var(--her-field);
+  --control-bg-on-gray: var(--her-hover);
+  --disabled-control-bg: var(--her-subtle);
+  --disabled-text-color: var(--her-muted);
+  --input-disabled-bg: var(--her-hover);
+  --navbar-bg: #171d22;
+  --text-color: var(--her-ink);
+  --heading-color: var(--her-heading);
+  --text-muted: var(--her-muted);
+  --text-light: var(--her-muted);
+  --border-color: var(--her-line);
+  --dark-border-color: var(--her-line-strong);
+  --table-border-color: var(--her-line);
+  --sidebar-select-color: var(--her-accent-soft);
+  --fg-hover-color: var(--her-hover);
+  --highlight-color: var(--her-subtle);
+  --modal-bg: var(--her-surface-raised);
+  --popover-bg: var(--her-surface-raised);
+  --toast-bg: var(--her-surface-raised);
+  --awesomebar-focus-bg: var(--her-surface-raised);
+  --awesomplete-hover-bg: var(--her-accent-soft);
+  --btn-default-bg: var(--her-field);
+  --btn-default-hover-bg: var(--her-hover);
+  --btn-group-border-color: var(--her-line-strong);
+  --icon-stroke: var(--her-muted);
+  --date-active-bg: var(--her-yellow);
+  --date-active-text: var(--her-on-yellow);
+  --date-range-bg: var(--her-accent-soft);
+  --checkbox-color: var(--her-on-yellow);
+  --checkbox-gradient: linear-gradient(var(--her-yellow), var(--her-yellow));
+  --checkbox-focus-shadow: var(--her-focus);
+  --focus-default: var(--her-focus);
+  --card-shadow: var(--her-shadow);
+  --modal-shadow: var(--her-shadow-raised);
+  --scrollbar-thumb-color: var(--her-line-strong);
+  --scrollbar-track-color: var(--her-canvas);
+  --skeleton-bg: var(--her-hover);
+  --border-radius: 8px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 12px;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --her-accent-text: #f5ce4b;
+  --her-accent-soft: #39331f;
+  --her-canvas: #14191d;
+  --her-surface: #1d242a;
+  --her-surface-raised: #252d34;
+  --her-subtle: #20282e;
+  --her-hover: #2d373f;
+  --her-ink: #e0e6ea;
+  --her-heading: #f3f5f6;
+  --her-muted: #a8b3bc;
+  --her-line: #35414a;
+  --her-line-strong: #53616b;
+  --her-field: #28323a;
+  --her-shadow: 0 4px 16px rgb(0 0 0 / 12%);
+  --her-shadow-raised: 0 18px 56px rgb(0 0 0 / 35%);
+  --her-focus: 0 0 0 3px rgb(245 197 24 / 25%);
+  --her-sidebar: #191f24;
+  --her-sidebar-hover: #30383e;
+  --navbar-bg: #101518;
+  /* Repeat native aliases: Frappe and the shared theme declare dark overrides. */
+  --primary: var(--her-accent-text);
+  --primary-color: var(--her-accent-text);
+  --btn-primary: var(--her-yellow);
+  --border-primary: var(--her-accent-text);
+  --bg-color: var(--her-canvas);
+  --fg-color: var(--her-surface);
+  --card-bg: var(--her-surface);
+  --control-bg: var(--her-field);
+  --control-bg-on-gray: var(--her-hover);
+  --text-color: var(--her-ink);
+  --heading-color: var(--her-heading);
+  --text-muted: var(--her-muted);
+  --border-color: var(--her-line);
+  --dark-border-color: var(--her-line-strong);
+  --sidebar-select-color: var(--her-accent-soft);
+  --fg-hover-color: var(--her-hover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:root { --her-loader-image: url("/assets/heavy_equipment_rental/branding/loader-still.png"); }
+}

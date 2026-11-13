@@ -1,37 +1,39 @@
-"""App branding defaults for sites that still use Frappe/ERPNext artwork."""
+"""HER visual identity, kept separate from rental setup and the shared theme app."""
 
 import frappe
 
-ICON = "/assets/heavy_equipment_rental/branding/ar-monogram-classic.png"
-FAVICON = "/assets/heavy_equipment_rental/branding/favicon-classic.ico"
-LEGACY_BRANDING = (
-	"/assets/heavy_equipment_rental/branding/ar-monogram.png",
-	"/assets/heavy_equipment_rental/branding/favicon.ico",
-	"/assets/heavy_equipment_rental/branding/ar-monogram-glass.png",
-	"/assets/heavy_equipment_rental/branding/favicon-glass.ico",
-)
-APP_NAME = "Heavy Equipment Rental"
+ASSET_ROOT = "/assets/heavy_equipment_rental/branding/"
 
 
 def apply_branding():
-	defaults = {
-		"Navbar Settings": {"app_logo": ICON},
+	"""Replace framework/base-theme defaults; retain unrelated custom site branding.
+
+	Only presentation settings are touched. This can be run independently of
+	setup/migrate, without syncing workspaces, permissions, or rental documents.
+	"""
+	settings = {
+		"Navbar Settings": {"app_logo": ASSET_ROOT + "mobile-crane-logo.png"},
 		"Website Settings": {
-			"app_logo": ICON,
-			"favicon": FAVICON,
-			"splash_image": ICON,
-			"app_name": APP_NAME,
+			"app_logo": ASSET_ROOT + "mobile-crane-logo.png",
+			"favicon": ASSET_ROOT + "favicon.ico",
+			"splash_image": ASSET_ROOT + "loader.gif",
+			"app_name": "Heavy Equipment Rental",
 		},
 	}
-	for doctype, fields in defaults.items():
+	changed = False
+	for doctype, fields in settings.items():
 		for fieldname, value in fields.items():
 			current = frappe.db.get_single_value(doctype, fieldname)
 			if current == value:
 				continue
 			if current and not (
-				current.startswith(("/assets/frappe/", "/assets/erpnext/"))
-				or current in LEGACY_BRANDING
-				or (fieldname == "app_name" and current in ("Frappe", "ERPNext"))
+				current.startswith((
+					"/assets/frappe/", "/assets/erpnext/", "/assets/arab_erp_theme/", ASSET_ROOT,
+				))
+				or (fieldname == "app_name" and current in ("Frappe", "ERPNext", "Arab ERP"))
 			):
 				continue
 			frappe.db.set_single_value(doctype, fieldname, value)
+			changed = True
+	if changed:
+		frappe.clear_cache()

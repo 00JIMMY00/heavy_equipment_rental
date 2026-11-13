@@ -19,42 +19,36 @@
    "label": "Crane",
    "options": "Crane",
    "reqd": 1,
-   "in_list_view": 1
-  },
-  {
-   "fieldname": "crane_driver",
-   "fieldtype": "Link",
-   "label": "Crane Driver",
-   "options": "Crane Driver",
-   "in_list_view": 1
+   "in_list_view": 1,
+   "columns": 3
   },
   {
    "fieldname": "assignment_col",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "Draft\nReserved\nCancelled",
-   "default": "Draft",
+   "fieldname": "cancelled",
+   "fieldtype": "Check",
+   "label": "Legacy cancelled booking",
+   "hidden": 1,
    "read_only": 1,
-   "in_list_view": 1,
-   "no_copy": 1
+   "default": 0
   },
   {
    "fieldname": "start_date",
    "fieldtype": "Date",
    "label": "Start Date",
    "reqd": 1,
-   "in_list_view": 1
+   "in_list_view": 1,
+   "columns": 2
   },
   {
    "fieldname": "expected_end_date",
    "fieldtype": "Date",
    "label": "End Date",
    "reqd": 1,
-   "in_list_view": 1
+   "in_list_view": 1,
+   "columns": 2
   },
   {
    "fieldname": "rate_section",
@@ -65,82 +59,30 @@
    "fieldname": "rental_rate",
    "fieldtype": "Currency",
    "label": "Rental Rate",
-   "non_negative": 1
+   "non_negative": 1,
+   "in_list_view": 1,
+   "columns": 2
   },
   {
    "fieldname": "rental_rate_unit",
    "fieldtype": "Select",
    "label": "Rental Rate Unit",
-   "options": "Hour\nDay\nMonth",
-   "default": "Hour",
-   "reqd": 1
-  },
-  {
-   "fieldname": "cancellation_section",
-   "fieldtype": "Section Break",
-   "label": "Cancellation"
-  },
-  {
-   "fieldname": "cancellation_date",
-   "fieldtype": "Date",
-   "label": "Cancellation Date",
-   "read_only": 1,
-   "no_copy": 1
-  },
-  {
-   "fieldname": "cancellation_reason",
-   "fieldtype": "Small Text",
-   "label": "Cancellation Reason",
-   "read_only": 1,
-   "no_copy": 1
-  },
-  {
-   "fieldname": "audit_col",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "status_before_cancel",
-   "fieldtype": "Select",
-   "label": "Status Before Cancel",
-   "options": "\nDraft\nReserved",
-   "read_only": 1,
-   "no_copy": 1,
-   "hidden": 1
-  },
-  {
-   "fieldname": "last_action_by",
-   "fieldtype": "Link",
-   "label": "Last Action By",
-   "options": "User",
-   "read_only": 1,
-   "no_copy": 1
-  },
-  {
-   "fieldname": "last_action_at",
-   "fieldtype": "Datetime",
-   "label": "Last Action At",
-   "read_only": 1,
-   "no_copy": 1
+   "options": "\nHour\nDay\nMonth",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 1
   }
  ],
  "field_order": [
   "assignment_section",
   "crane",
-  "crane_driver",
   "assignment_col",
-  "status",
+  "cancelled",
   "start_date",
   "expected_end_date",
   "rate_section",
   "rental_rate",
-  "rental_rate_unit",
-  "cancellation_section",
-  "cancellation_date",
-  "cancellation_reason",
-  "audit_col",
-  "status_before_cancel",
-  "last_action_by",
-  "last_action_at"
+  "rental_rate_unit"
  ],
  "istable": 1,
  "is_submittable": 0,

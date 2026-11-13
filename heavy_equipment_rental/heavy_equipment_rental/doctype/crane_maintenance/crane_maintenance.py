@@ -25,7 +25,7 @@ class CraneMaintenance(Document):
 			frappe.throw(_("A started maintenance record cannot move to another crane."))
 		if before and before.expense_entry and any(
 			self.get(field) != before.get(field)
-			for field in ("crane", "project", "cost", "expense_type", "mode_of_payment", "credit_account", "actual_end_date")
+			for field in ("crane", "cost", "expense_type", "mode_of_payment", "credit_account", "actual_end_date")
 		):
 			frappe.throw(_("Expense details cannot change after expense creation."))
 		if flt(self.cost) < 0:
@@ -34,9 +34,9 @@ class CraneMaintenance(Document):
 		if self.status == "Completed" and (
 			flt(self.cost) <= 0 or not self.expense_type or not (self.mode_of_payment or legacy_completed)
 		):
-			frappe.throw(_("Set a positive cost, Expense Type and Mode of Payment before completing maintenance."))
+			frappe.throw(_("Set a positive cost, Expense Entry Type and Mode of Payment before completing maintenance."))
 		if self.mode_of_payment and self.expense_type and not self.expense_entry:
-			debit_name = frappe.db.get_value("Expense Type", self.expense_type, "account")
+			debit_name = frappe.db.get_value("Expense Entry Type", self.expense_type, "account")
 			company = frappe.db.get_value("Account", debit_name, "company") if debit_name else None
 			if company:
 				self.credit_account = payment_account(self.mode_of_payment, company)
@@ -90,18 +90,22 @@ class CraneMaintenance(Document):
 		if self.expense_entry and frappe.db.exists("Expense Entry", self.expense_entry):
 			if frappe.db.get_value("Expense Entry", self.expense_entry, "docstatus") != 2:
 				frappe.throw(_("An active Expense Entry is already linked to this maintenance."))
+		if not self.mode_of_payment:
+			frappe.throw(_("Select a Mode of Payment before creating an Expense Entry."))
+		expense_type = frappe.db.get_value(
+			"Expense Entry Type", self.expense_type, ("company", "account", "enabled"), as_dict=True
+		)
+		if not expense_type or not expense_type.enabled:
+			frappe.throw(_("Select an enabled Expense Entry Type."))
 		expense = frappe.get_doc({
 			"doctype": "Expense Entry",
-			"project": self.project,
+			"company": expense_type.company,
 			"crane": self.crane,
 			"crane_maintenance": self.name,
-			"expense_type": self.expense_type,
+			"expenses": [{"expense_entry_type": self.expense_type, "amount": self.cost}],
 			"mode_of_payment": self.mode_of_payment,
-			"credit_account": self.credit_account,
 			"posting_date": self.actual_end_date,
-			"amount": self.cost,
 			"description": _("Crane Maintenance {0}: {1}").format(self.name, self.description),
-			"receipt": self.attachment,
 		}).insert()
 		# Keep completion and expense submission in the same transaction.
 		expense.submit()
@@ -117,5 +121,5 @@ def create_expense(maintenance):
 	if doc.status != "Completed" or flt(doc.cost) <= 0 or not doc.expense_type or not (
 		doc.mode_of_payment or doc.credit_account
 	):
-		frappe.throw(_("Complete maintenance with a positive cost, Expense Type and Mode of Payment first."))
+		frappe.throw(_("Complete maintenance with a positive cost, Expense Entry Type and Mode of Payment first."))
 	return doc.make_expense()

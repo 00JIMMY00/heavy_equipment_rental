@@ -1,0 +1,37 @@
+<section class="retail-overview" aria-label="Retail overview">
+  <div class="retail-heading">
+    <div>
+      <p class="retail-eyebrow">EL SAKR · DAILY OVERVIEW</p>
+      <h2>Retail at a glance <span lang="ar">· نظرة سريعة على المتجر</span></h2>
+      <p class="retail-subtitle">Live figures for submitted invoices at <span data-company></span>.</p>
+    </div>
+    <span class="retail-asof" data-asof>Loading…</span>
+  </div>
+  <div class="retail-kpis">
+    <a class="retail-kpi" href="/app/sales-invoice">
+      <span class="retail-kpi-label">Sales invoiced this month</span>
+      <strong data-kpi="sales">…</strong>
+      <span class="retail-kpi-detail">Gross invoices excluding returns · EGP</span>
+    </a>
+    <a class="retail-kpi" href="/app/purchase-invoice">
+      <span class="retail-kpi-label">Purchases invoiced this month</span>
+      <strong data-kpi="purchases">…</strong>
+      <span class="retail-kpi-detail">Gross invoices excluding returns · EGP</span>
+    </a>
+    <a class="retail-kpi retail-kpi-due" href="/app/query-report/Accounts%20Receivable">
+      <span class="retail-kpi-label">Customer invoices due</span>
+      <strong data-kpi="receivable">…</strong>
+      <span class="retail-kpi-detail">Unpaid EGP invoices · open report →</span>
+    </a>
+    <a class="retail-kpi retail-kpi-due" href="/app/query-report/Accounts%20Payable">
+      <span class="retail-kpi-label">Supplier invoices due</span>
+      <strong data-kpi="payable">…</strong>
+      <span class="retail-kpi-detail">Unpaid EGP invoices · open report →</span>
+    </a>
+  </div>
+  <div class="retail-alerts">
+    <span><b data-kpi="overdue_sales">…</b> overdue customer invoices</span>
+    <span><b data-kpi="overdue_purchases">…</b> overdue supplier invoices</span>
+    <span class="retail-alert-note">Balances are invoice based. Open the receivables and payables reports for the full account position.</span>
+  </div>
+</section>

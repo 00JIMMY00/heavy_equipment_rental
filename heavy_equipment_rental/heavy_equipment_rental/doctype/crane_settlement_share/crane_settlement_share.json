@@ -1,0 +1,107 @@
+{
+ "doctype": "DocType",
+ "name": "Crane Settlement Share",
+ "module": "Heavy Equipment Rental",
+ "engine": "InnoDB",
+ "field_order": [
+  "is_company",
+  "supplier",
+  "shareholder",
+  "ownership_percentage",
+  "profit_percentage",
+  "currency",
+  "residual_amount",
+  "operating_amount",
+  "amount",
+  "ledger_party_type"
+ ],
+ "fields": [
+  {
+   "fieldname": "is_company",
+   "fieldtype": "Check",
+   "label": "Our Company",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Legacy Partner Supplier",
+   "options": "Supplier",
+   "in_list_view": 0,
+   "depends_on": "eval:!doc.is_company",
+   "mandatory_depends_on": "",
+   "columns": 3,
+   "hidden": 1
+  },
+  {
+   "fieldname": "ownership_percentage",
+   "fieldtype": "Percent",
+   "label": "Ownership %",
+   "precision": "6",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "profit_percentage",
+   "fieldtype": "Percent",
+   "label": "Remaining Balance %",
+   "precision": "6",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "hidden": 1
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Total Entitlement",
+   "options": "currency",
+   "in_list_view": 1,
+   "read_only": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "residual_amount",
+   "fieldtype": "Currency",
+   "label": "Remaining Balance Share",
+   "options": "currency",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "operating_amount",
+   "fieldtype": "Currency",
+   "label": "Operating Share",
+   "options": "currency",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "shareholder",
+   "fieldtype": "Link",
+   "label": "Partner (Shareholder)",
+   "options": "Shareholder",
+   "in_list_view": 1,
+   "depends_on": "eval:!doc.is_company",
+   "mandatory_depends_on": "eval:!doc.is_company"
+  },
+  {
+   "fieldname": "ledger_party_type",
+   "fieldtype": "Data",
+   "label": "Ledger Party Type",
+   "read_only": 1,
+   "hidden": 1
+  }
+ ],
+ "permissions": [],
+ "istable": 1,
+ "editable_grid": 1
+}

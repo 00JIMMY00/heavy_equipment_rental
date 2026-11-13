@@ -16,7 +16,7 @@
   {
    "fieldname": "project_section",
    "fieldtype": "Section Break",
-   "label": "Project"
+   "label": "Rental Agreement"
   },
   {
    "fieldname": "naming_series",
@@ -28,38 +28,31 @@
    "hidden": 1
   },
   {
-   "fieldname": "project",
+   "fieldname": "customer",
    "fieldtype": "Link",
-   "label": "Crane Project",
-   "options": "Crane Project",
+   "label": "Customer",
+   "options": "Customer",
    "reqd": 1,
    "in_list_view": 1,
    "in_standard_filter": 1
   },
   {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
    "fieldname": "dates_col",
-   "fieldtype": "Column Break"
+   "fieldtype": "Column Break",
+   "label": ""
   },
   {
-   "fieldname": "project_start_date",
-   "fieldtype": "Date",
-   "label": "Project Start Date",
-   "fetch_from": "project.expected_start_date",
-   "read_only": 1,
-   "no_copy": 1
-  },
-  {
-   "fieldname": "project_end_date",
-   "fieldtype": "Date",
-   "label": "Project End Date",
-   "fetch_from": "project.expected_end_date",
-   "read_only": 1,
-   "no_copy": 1
-  },
-  {
-   "fieldname": "cranes_tab",
-   "fieldtype": "Tab Break",
-   "label": "Assigned Cranes"
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   },
   {
    "fieldname": "cranes_section",
@@ -71,19 +64,31 @@
    "fieldtype": "Table",
    "label": "Assigned Cranes",
    "options": "Assigned Crane"
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
+  },
+  {
+   "fieldname": "connections_section",
+   "fieldtype": "Section Break",
+   "label": "Linked Documents"
   }
  ],
  "field_order": [
   "details_tab",
   "project_section",
   "naming_series",
-  "project",
+  "customer",
+  "location",
   "dates_col",
-  "project_start_date",
-  "project_end_date",
-  "cranes_tab",
+  "company",
   "cranes_section",
-  "assigned_cranes"
+  "assigned_cranes",
+  "connections_tab",
+  "connections_section"
  ],
  "istable": 0,
  "is_submittable": 0,

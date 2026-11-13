@@ -1,12 +1,52 @@
 {
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-10-13 00:00:00",
  "doctype": "DocType",
- "name": "Crane",
- "module": "Heavy Equipment Rental",
+ "editable_grid": 1,
  "engine": "InnoDB",
- "creation": "2026-10-13 00:00:00.000000",
- "modified": "2026-10-13 12:54:00.772895",
- "modified_by": "Administrator",
- "owner": "Administrator",
+ "field_order": [
+  "details_tab",
+  "identity_section",
+  "naming_series",
+  "crane_name",
+  "crane_image",
+  "crane_list_image",
+  "model",
+  "license_plate",
+  "specs_col",
+  "capacity_tons",
+  "ownership_type",
+  "supplier",
+  "column_break_mjyn",
+  "operational_condition",
+  "maintenance_condition_managed",
+  "sharing_section",
+  "enable_profit_sharing",
+  "sharing_company",
+  "agreement_effective_from",
+  "operator_type",
+  "operating_partner",
+  "operating_shareholder",
+  "sharing_calculation",
+  "operating_percentage",
+  "sharing_accounts_column",
+  "profit_allocation_account",
+  "partner_payable_account",
+  "sharing_cost_center",
+  "sharing_partners_section",
+  "ownership_partners",
+  "agreement_history",
+  "pricing_section",
+  "period_prices",
+  "legacy_year_price",
+  "availability_tab",
+  "availability_section",
+  "availability_overview",
+  "connections_tab",
+  "connections_section",
+  "item"
+ ],
  "fields": [
   {
    "fieldname": "details_tab",
@@ -19,34 +59,34 @@
    "label": "Crane"
   },
   {
+   "default": "CR-.#####",
    "fieldname": "naming_series",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Series",
    "options": "CR-.#####",
-   "default": "CR-.#####",
-   "reqd": 1,
-   "hidden": 1
+   "reqd": 1
   },
   {
    "fieldname": "crane_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Crane Name",
-   "reqd": 1,
-   "in_list_view": 1
+   "reqd": 1
   },
   {
    "fieldname": "item",
    "fieldtype": "Link",
    "label": "Sales Item",
+   "no_copy": 1,
    "options": "Item",
-   "read_only": 1,
-   "no_copy": 1
+   "read_only": 1
   },
   {
    "fieldname": "model",
    "fieldtype": "Data",
-   "label": "Model",
-   "in_list_view": 1
+   "in_list_view": 1,
+   "label": "Model"
   },
   {
    "fieldname": "specs_col",
@@ -59,33 +99,29 @@
    "non_negative": 1
   },
   {
+   "default": "Owned",
    "fieldname": "ownership_type",
    "fieldtype": "Select",
    "label": "Ownership Type",
-   "options": "Owned\nRented\nOther",
-   "default": "Owned"
+   "options": "Owned\nRented\nShared Ownership\nOperated for Owner\nOperated by Partner\nOther"
   },
   {
+   "default": "Operational",
    "fieldname": "operational_condition",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Operational Condition",
    "options": "Operational\nMaintenance\nInactive",
-   "default": "Operational",
-   "reqd": 1,
-   "in_list_view": 1
+   "reqd": 1
   },
   {
+   "default": "0",
    "fieldname": "maintenance_condition_managed",
    "fieldtype": "Check",
-   "label": "Maintenance Condition Managed",
    "hidden": 1,
-   "read_only": 1,
-   "no_copy": 1
-  },
-  {
-   "fieldname": "pricing_tab",
-   "fieldtype": "Tab Break",
-   "label": "Pricing"
+   "label": "Maintenance Condition Managed",
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "fieldname": "pricing_section",
@@ -99,6 +135,7 @@
    "options": "Crane Period Price"
   },
   {
+   "depends_on": "eval:!doc.__islocal",
    "fieldname": "availability_tab",
    "fieldtype": "Tab Break",
    "label": "Availability"
@@ -106,83 +143,246 @@
   {
    "fieldname": "availability_section",
    "fieldtype": "Section Break",
-   "label": "Activity and Reservations"
-  },
-  {
-   "fieldname": "availability_date",
-   "fieldtype": "Date",
-   "label": "Availability Date",
-   "default": "Today"
+   "label": "Reservation Calendar"
   },
   {
    "fieldname": "availability_overview",
    "fieldtype": "HTML",
    "label": "Availability Overview"
+  },
+  {
+   "fieldname": "license_plate",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "License Plate"
+  },
+  {
+   "fieldname": "crane_image",
+   "fieldtype": "Attach Image",
+   "hidden": 1,
+   "label": "Crane Image",
+   "make_attachment_public": 1
+  },
+  {
+   "fieldname": "legacy_year_price",
+   "fieldtype": "Currency",
+   "hidden": 1,
+   "label": "Legacy Year Price",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
+  },
+  {
+   "fieldname": "connections_section",
+   "fieldtype": "Section Break",
+   "label": "Linked Documents"
+  },
+  {
+   "columns": 1,
+   "fieldname": "crane_list_image",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "in_list_view": 1,
+   "label": "Photo",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mjyn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier",
+   "depends_on": "eval:doc.ownership_type=='Rented'",
+   "mandatory_depends_on": "eval:doc.ownership_type=='Rented'"
+  },
+  {
+   "fieldname": "sharing_section",
+   "fieldtype": "Section Break",
+   "label": "Operating & Distribution Agreement"
+  },
+  {
+   "fieldname": "enable_profit_sharing",
+   "fieldtype": "Check",
+   "label": "Enable Profit Sharing",
+   "default": "0",
+   "depends_on": "eval:doc.ownership_type!='Rented'",
+   "description": "Ownership and profit percentages are independent. External partners use Supplier accounts.",
+   "read_only_depends_on": "eval:['Shared Ownership','Operated for Owner','Operated by Partner'].includes(doc.ownership_type)"
+  },
+  {
+   "fieldname": "sharing_company",
+   "fieldtype": "Link",
+   "label": "Agreement Company",
+   "options": "Company",
+   "depends_on": "eval:doc.enable_profit_sharing",
+   "mandatory_depends_on": "eval:doc.enable_profit_sharing"
+  },
+  {
+   "fieldname": "agreement_effective_from",
+   "fieldtype": "Date",
+   "label": "Agreement Effective From",
+   "description": "For changed terms, enter a new date after the previous version. Settle each version separately.",
+   "depends_on": "eval:doc.enable_profit_sharing || doc.agreement_history",
+   "mandatory_depends_on": "eval:doc.enable_profit_sharing"
+  },
+  {
+   "fieldname": "operator_type",
+   "fieldtype": "Select",
+   "label": "Operator",
+   "options": "Our Company\nExternal Operator",
+   "default": "Our Company",
+   "depends_on": "eval:doc.enable_profit_sharing",
+   "read_only_depends_on": "eval:['Operated for Owner','Operated by Partner'].includes(doc.ownership_type)"
+  },
+  {
+   "fieldname": "operating_partner",
+   "fieldtype": "Link",
+   "label": "Legacy Operating Supplier",
+   "options": "Supplier",
+   "depends_on": "eval:doc.enable_profit_sharing && doc.operator_type=='External Operator'",
+   "mandatory_depends_on": "",
+   "hidden": 1
+  },
+  {
+   "fieldname": "ownership_partners",
+   "fieldtype": "Table",
+   "label": "Owners & Profit Shares",
+   "options": "Crane Partner",
+   "description": "Ownership and remaining balance percentages each total 100%. Add our Company only if it shares ownership or the remaining balance. The operator receives its operating share separately.",
+   "depends_on": "eval:doc.enable_profit_sharing"
+  },
+  {
+   "fieldname": "sharing_accounts_column",
+   "fieldtype": "Section Break",
+   "depends_on": "eval:doc.enable_profit_sharing",
+   "label": "Accounting Setup",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "profit_allocation_account",
+   "fieldtype": "Link",
+   "label": "Legacy Profit Allocation Account",
+   "options": "Account",
+   "description": "Historical net-profit agreements only. Operating First settlements use the revenue accounts of their source invoices automatically.",
+   "depends_on": "eval:doc.enable_profit_sharing && doc.sharing_calculation=='Legacy Net Profit'",
+   "mandatory_depends_on": "eval:doc.enable_profit_sharing && doc.sharing_calculation=='Legacy Net Profit'"
+  },
+  {
+   "fieldname": "partner_payable_account",
+   "fieldtype": "Link",
+   "label": "Partner Payable Account",
+   "options": "Account",
+   "description": "Company-currency Payable account. Each external partner is credited as a Supplier.",
+   "depends_on": "eval:doc.enable_profit_sharing",
+   "mandatory_depends_on": "eval:doc.enable_profit_sharing"
+  },
+  {
+   "fieldname": "sharing_cost_center",
+   "fieldtype": "Link",
+   "label": "Profit Sharing Cost Center",
+   "options": "Cost Center",
+   "depends_on": "eval:doc.enable_profit_sharing",
+   "mandatory_depends_on": "eval:doc.enable_profit_sharing"
+  },
+  {
+   "fieldname": "agreement_history",
+   "fieldtype": "Code",
+   "label": "Agreement History",
+   "options": "JSON",
+   "hidden": 1,
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "sharing_partners_section",
+   "fieldtype": "Section Break",
+   "label": "Agreement Partners",
+   "depends_on": "eval:doc.enable_profit_sharing"
+  },
+  {
+   "fieldname": "sharing_calculation",
+   "fieldtype": "Select",
+   "label": "Calculation Method",
+   "options": "Operating First\nLegacy Net Profit",
+   "default": "Operating First",
+   "read_only": 1,
+   "depends_on": "eval:doc.enable_profit_sharing"
+  },
+  {
+   "fieldname": "operating_percentage",
+   "fieldtype": "Percent",
+   "label": "Operating Share of Grand Total %",
+   "precision": "6",
+   "default": "0",
+   "depends_on": "eval:doc.enable_profit_sharing && doc.sharing_calculation=='Operating First'",
+   "description": "Deduct this share before expenses. Distribute the remaining balance using the table below."
+  },
+  {
+   "fieldname": "operating_shareholder",
+   "fieldtype": "Link",
+   "label": "Operating Partner (Shareholder)",
+   "options": "Shareholder",
+   "depends_on": "eval:doc.enable_profit_sharing && doc.operator_type=='External Operator'",
+   "mandatory_depends_on": "eval:doc.enable_profit_sharing && doc.operator_type=='External Operator'"
   }
  ],
- "field_order": [
-  "details_tab",
-  "identity_section",
-  "naming_series",
-  "crane_name",
-  "item",
-  "model",
-  "specs_col",
-  "capacity_tons",
-  "ownership_type",
-  "operational_condition",
-  "maintenance_condition_managed",
-  "pricing_tab",
-  "pricing_section",
-  "period_prices",
-  "availability_tab",
-  "availability_section",
-  "availability_date",
-  "availability_overview"
- ],
- "istable": 0,
- "is_submittable": 0,
- "editable_grid": 1,
  "grid_page_length": 100,
- "rows_threshold_for_grid_search": 20,
- "sort_field": "modified",
- "sort_order": "DESC",
- "track_changes": 1,
+ "image_field": "crane_image",
+ "links": [],
+ "modified": "2026-10-22 15:01:14.069074",
+ "modified_by": "Administrator",
+ "module": "Heavy Equipment Rental",
+ "name": "Crane",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
  "permissions": [
   {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
    "role": "System Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "report": 1,
-   "export": 1,
-   "print": 1
+   "write": 1
   },
   {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
    "role": "Projects Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "report": 1,
-   "export": 1,
-   "print": 1
+   "write": 1
   },
   {
-   "role": "Projects User",
-   "read": 1,
-   "write": 1,
    "create": 1,
    "delete": 1,
-   "report": 1,
    "export": 1,
-   "print": 1
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Projects User",
+   "write": 1
   }
  ],
- "autoname": "naming_series:",
- "naming_rule": "By \"Naming Series\" field",
- "title_field": "crane_name",
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "search_fields": "crane_name,model",
  "show_title_field_in_link": 1,
- "search_fields": "crane_name,model"
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "crane_name",
+ "track_changes": 1
 }

@@ -7,6 +7,38 @@
  "istable": 0,
  "fields": [
   {
+   "fieldname": "billing_tab",
+   "fieldtype": "Tab Break",
+   "label": "Billing Defaults"
+  },
+  {
+   "fieldname": "billing_section",
+   "fieldtype": "Section Break",
+   "label": "Timesheet Defaults"
+  },
+  {
+   "fieldname": "default_selling_uom",
+   "fieldtype": "Select",
+   "label": "Default Selling UOM",
+   "options": "Hour\nDay\nMonth",
+   "default": "Hour",
+   "reqd": 1,
+   "description": "Prefills the Billing Unit on new Timesheets. The selected Crane supplies its reference price for this unit; existing Assignment terms take precedence."
+  },
+  {
+   "fieldname": "billing_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_supplier_uom",
+   "fieldtype": "Select",
+   "label": "Default Supplier Billing UOM",
+   "options": "Hour\nDay\nMonth",
+   "default": "Hour",
+   "reqd": 1,
+   "description": "Prefills the Supplier Billing UOM on new Timesheets. The Purchase Invoice uses that Timesheet unit and its entered purchase price."
+  },
+  {
    "fieldname": "shifts_tab",
    "fieldtype": "Tab Break",
    "label": "Day Shift"
@@ -42,46 +74,20 @@
    "default": 8,
    "precision": "2",
    "description": "Calculated from the default start and end times."
-  },
-  {
-   "fieldname": "accounts_tab",
-   "fieldtype": "Tab Break",
-   "label": "Driver Payment"
-  },
-  {
-   "fieldname": "accounts_section",
-   "fieldtype": "Section Break",
-   "label": "Accounts"
-  },
-  {
-   "fieldname": "driver_payment_expense_account",
-   "fieldtype": "Link",
-   "label": "Direct Driver Payment Expense Account",
-   "options": "Account"
-  },
-  {
-   "fieldname": "payable_col",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "driver_payment_payable_account",
-   "fieldtype": "Link",
-   "label": "Direct Driver Payment Employee Payable Account",
-   "options": "Account"
   }
  ],
  "field_order": [
+  "billing_tab",
+  "billing_section",
+  "default_selling_uom",
+  "billing_column",
+  "default_supplier_uom",
   "shifts_tab",
   "shift_section",
   "day_shift_start_time",
   "day_shift_end_time",
   "hours_col",
-  "day_shift_hours",
-  "accounts_tab",
-  "accounts_section",
-  "driver_payment_expense_account",
-  "payable_col",
-  "driver_payment_payable_account"
+  "day_shift_hours"
  ],
  "permissions": [
   {

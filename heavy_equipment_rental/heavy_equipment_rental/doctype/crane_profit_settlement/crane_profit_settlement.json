@@ -1,0 +1,310 @@
+{
+ "doctype": "DocType",
+ "name": "Crane Profit Settlement",
+ "module": "Heavy Equipment Rental",
+ "engine": "InnoDB",
+ "field_order": [
+  "crane",
+  "timesheet",
+  "settlement_basis",
+  "sales_invoice",
+  "company",
+  "currency",
+  "calculation_method",
+  "period_column",
+  "from_date",
+  "to_date",
+  "posting_date",
+  "results_section",
+  "revenue",
+  "operating_percentage",
+  "operating_fee",
+  "balance_after_operating",
+  "operating_expenses",
+  "net_profit",
+  "profit_column",
+  "loss_brought_forward",
+  "distributable_profit",
+  "loss_carried_forward",
+  "external_distribution",
+  "company_retained",
+  "distribution_section",
+  "shares",
+  "journal_entry",
+  "partner_payments",
+  "notes",
+  "audit_section",
+  "source_details",
+  "agreement_snapshot",
+  "source_snapshot",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "crane",
+   "fieldtype": "Link",
+   "label": "Crane",
+   "options": "Crane",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "reqd": 1,
+   "default": "Today"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "results_section",
+   "fieldtype": "Section Break",
+   "label": "Period Results"
+  },
+  {
+   "fieldname": "revenue",
+   "fieldtype": "Currency",
+   "label": "Revenue / Allocated Grand Total",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "operating_expenses",
+   "fieldtype": "Currency",
+   "label": "Operating Expenses",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "net_profit",
+   "fieldtype": "Currency",
+   "label": "Balance After Operating Share & Expenses",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "loss_brought_forward",
+   "fieldtype": "Currency",
+   "label": "Loss Brought Forward",
+   "options": "currency",
+   "read_only": 1,
+   "depends_on": "eval:doc.calculation_method=='Legacy Net Profit' || doc.loss_brought_forward"
+  },
+  {
+   "fieldname": "distributable_profit",
+   "fieldtype": "Currency",
+   "label": "Remaining Balance to Distribute",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "loss_carried_forward",
+   "fieldtype": "Currency",
+   "label": "Loss Carried Forward",
+   "options": "currency",
+   "read_only": 1,
+   "depends_on": "eval:doc.calculation_method=='Legacy Net Profit' || doc.loss_carried_forward"
+  },
+  {
+   "fieldname": "external_distribution",
+   "fieldtype": "Currency",
+   "label": "External Partner Distribution",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "shares",
+   "fieldtype": "Table",
+   "label": "Operating Share & Remaining Balance Distribution",
+   "options": "Crane Settlement Share",
+   "read_only": 1
+  },
+  {
+   "fieldname": "journal_entry",
+   "fieldtype": "Link",
+   "label": "Journal Entry",
+   "options": "Journal Entry",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "audit_section",
+   "fieldtype": "Section Break",
+   "label": "Posted Revenue & Costs",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "agreement_snapshot",
+   "fieldtype": "Code",
+   "label": "Agreement Snapshot",
+   "options": "JSON",
+   "read_only": 1,
+   "no_copy": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "source_snapshot",
+   "fieldtype": "Code",
+   "label": "Source Amounts",
+   "options": "JSON",
+   "read_only": 1,
+   "no_copy": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Crane Profit Settlement",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "period_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "profit_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "distribution_section",
+   "fieldtype": "Section Break",
+   "label": "Profit Distribution"
+  },
+  {
+   "fieldname": "source_details",
+   "fieldtype": "HTML",
+   "label": "Posted Sources"
+  },
+  {
+   "fieldname": "calculation_method",
+   "fieldtype": "Data",
+   "label": "Calculation Method",
+   "read_only": 1
+  },
+  {
+   "fieldname": "operating_percentage",
+   "fieldtype": "Percent",
+   "label": "Operating Share %",
+   "read_only": 1,
+   "precision": "6"
+  },
+  {
+   "fieldname": "operating_fee",
+   "fieldtype": "Currency",
+   "label": "Operating Share",
+   "read_only": 1,
+   "options": "currency"
+  },
+  {
+   "fieldname": "balance_after_operating",
+   "fieldtype": "Currency",
+   "label": "Balance After Operating Share",
+   "read_only": 1,
+   "options": "currency"
+  },
+  {
+   "fieldname": "company_retained",
+   "fieldtype": "Currency",
+   "label": "Total Retained by Our Company",
+   "read_only": 1,
+   "options": "currency"
+  },
+  {
+   "fieldname": "timesheet",
+   "fieldtype": "Link",
+   "label": "Crane Timesheet",
+   "options": "Crane Timesheet",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "sales_invoice",
+   "fieldtype": "Link",
+   "label": "Sales Invoice",
+   "options": "Sales Invoice",
+   "read_only": 1
+  },
+  {
+   "fieldname": "partner_payments",
+   "fieldtype": "HTML",
+   "label": "Partner Entitlements and Payments"
+  },
+  {
+   "fieldname": "settlement_basis",
+   "fieldtype": "Select",
+   "label": "Settlement Basis",
+   "options": "Period\nTimesheet",
+   "default": "Period",
+   "read_only": 1
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1,
+   "delete": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  },
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1,
+   "delete": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  }
+ ],
+ "is_submittable": 1,
+ "autoname": "format:CPS-{#####}",
+ "track_changes": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "search_fields": "crane,company"
+}

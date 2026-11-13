@@ -108,3 +108,20 @@ Redis, and site volumes are never pruned.
 Container rollback does not reverse database changes. Site backups are created
 before migration and remain available for a reviewed restore. Keep independent
 off-server backups too.
+
+## El Sakr retail workspace
+
+`retail_workspace.py` publishes the site-specific **El Sakr Retail** workspace
+and its custom HTML overview through the Frappe API. The El Sakr site does not
+install the rental app, so this workspace is not synced by `bench migrate`.
+Run the script again after changing its layout or overview assets:
+
+```bash
+python deploy/retail_workspace.py --site https://elsakr.arab-erp.com
+```
+
+The script prompts for the API key and secret unless `FRAPPE_API_KEY` and
+`FRAPPE_API_SECRET` are set. Do not commit credentials. It validates the site's
+company, roles, DocTypes, and reports, then creates or updates the workspace
+and HTML block. The overview reports EGP invoice balances; the linked standard
+Accounts Receivable and Accounts Payable reports provide the full account view.

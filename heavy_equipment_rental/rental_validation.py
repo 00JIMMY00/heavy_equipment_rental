@@ -8,10 +8,6 @@ import frappe
 from frappe import _
 from frappe.utils import cint, escape_html, flt, get_time, getdate, today
 
-RENTAL_ACTION = object()  # Cannot be supplied through JSON/import fields.
-
-ROW_STATUSES = ("Draft", "Reserved", "Cancelled")
-
 
 def check_date_order(start, end, label):
 	if not start or not end or getdate(start) > getdate(end):
@@ -23,10 +19,8 @@ def check_non_negative(value, label):
 		frappe.throw(_("{0} cannot be negative.").format(label))
 
 
-def project_doc(name, permission="read", lock=False):
-	if lock:
-		frappe.db.sql("SELECT name FROM `tabCrane Project` WHERE name=%s FOR UPDATE", name)
-	doc = frappe.get_doc("Crane Project", name, for_update=lock)
+def assignment_doc(name, permission="read", lock=False):
+	doc = frappe.get_doc("Crane Assignment", name, for_update=lock)
 	doc.check_permission(permission)
 	return doc
 
@@ -53,7 +47,7 @@ def action_date(value):
 
 
 def allocation_window(row):
-	if row.status != "Reserved" or not row.start_date:
+	if row.get("cancelled") or not row.start_date:
 		return None
 	return (getdate(row.start_date), getdate(row.expected_end_date)) if row.expected_end_date else None
 
@@ -69,20 +63,20 @@ def ranges_overlap(start, end, other_start, other_end):
 	return getdate(start) <= getdate(other_end) and getdate(other_start) <= getdate(end)
 
 
-def allocations(cranes=None, project=None, exclude=None, lock=True):
-	conditions = ["a.parenttype='Crane Assignment'"]
+def allocations(cranes=None, assignment=None, exclude=None, lock=True):
+	conditions = ["a.parenttype='Crane Assignment'", "COALESCE(a.cancelled, 0)=0"]
 	args = {}
 	if cranes:
 		conditions.append("a.crane IN %(cranes)s")
 		args["cranes"] = tuple(cranes)
-	if project:
-		conditions.append("p.project=%(project)s")
-		args["project"] = project
+	if assignment:
+		conditions.append("p.name=%(assignment)s")
+		args["assignment"] = assignment
 	if exclude:
 		conditions.append("p.name!=%(exclude)s")
 		args["exclude"] = exclude
 	return frappe.db.sql(
-		"""SELECT a.*, p.project, p.name AS assignment
+		"""SELECT a.*, p.customer, p.location, p.name AS assignment
         FROM `tabAssigned Crane` a JOIN `tabCrane Assignment` p ON p.name=a.parent
         WHERE """
 		+ " AND ".join(conditions)
@@ -154,16 +148,50 @@ def billable_totals(intervals):
 	return float(hours), float(amount)
 
 
-def recorded_work(project, cranes):
+
+def entered_hour_totals(intervals):
+    """Deduplicate operators' reported hours over overlapping scheduled windows.
+
+    Within a window, distribute its entered hours evenly; simultaneous operators
+    use the highest operating fraction rather than charging the crane twice.
+    Entered hours have no upper bound tied to the scheduled duration.
+    """
+    events = defaultdict(list)
+    for key, (start, end, rate, hours) in enumerate(intervals):
+        density = Decimal(str(hours)) * Decimal(3600) / Decimal(str((end - start).total_seconds()))
+        events[start].append((key, (density, Decimal(str(rate)))))
+        events[end].append((key, None))
+    active, previous, hours, amount = {}, None, Decimal(0), Decimal(0)
+    for timestamp in sorted(events):
+        if previous is not None and active:
+            operating = [value for value in active.values() if value[0] > 0]
+            if operating:
+                rates = {rate for _, rate in operating}
+                if len(rates) > 1:
+                    frappe.throw(_("Overlapping driver intervals have different hourly prices."))
+                duration = Decimal(str((timestamp - previous).total_seconds())) / Decimal(3600)
+                quantity = duration * max(density for density, _ in operating)
+                hours += quantity
+                amount += quantity * next(iter(rates))
+        for key, value in events[timestamp]:
+            if value is None:
+                active.pop(key, None)
+            else:
+                active[key] = value
+        previous = timestamp
+    return float(hours), float(amount)
+
+
+def recorded_work(assignment, cranes):
 	if not cranes:
 		return []
 	return frappe.db.sql(
 		"""SELECT e.*, s.name AS timesheet, s.crane AS header_crane,
         s.docstatus AS sheet_docstatus
         FROM `tabTimesheet Entry` e JOIN `tabCrane Timesheet` s ON s.name=e.parent
-        WHERE e.parenttype='Crane Timesheet' AND s.project=%s AND s.crane IN %s
+		WHERE e.parenttype='Crane Timesheet' AND s.assignment=%s AND s.crane IN %s
         AND s.docstatus<2 FOR UPDATE""",
-		(project, tuple(cranes)),
+		(assignment, tuple(cranes)),
 		as_dict=True,
 	)
 
