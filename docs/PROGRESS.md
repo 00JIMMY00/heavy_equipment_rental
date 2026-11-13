@@ -1,5 +1,10 @@
 # Progress
 
+## 2026-11-13 — Optional start-date rental defaults
+
+- Confirmed scope: Crane Maintenance and Expense Entry. Assignment and Timesheet are optional editable links; removed all client/server mandatory-selection rules. Crane plus Actual Start Date (maintenance) or Posting Date (expense) defaults unique matches, without using the end date for discovery. Multiple matching Timesheets are not selected arbitrarily. Users may override or clear suggestions; refresh preserves those choices, with defaults initialized once on new prefilled forms.
+- Kept explicit-link consistency validation, permissions and posted-accounting locks. Passed all 16 automatic settlement/context tests; reran the two affected cases after enabling optional maintenance links. JavaScript checks covered both forms, ambiguity, manual clearing, pending edits and initial defaults. Syntax/whitespace checks passed; restored the disabled test setting. No schema migration was needed.
+
 ## 2026-11-13 — Inline required rental links; removed maintenance planning dates
 
 - Removed planned date fields and active calendar/query references. A repeatable post-sync patch archives historical planned dates in hidden Legacy Planned Dates without changing actual work dates or record timestamps. Maintenance matching now uses Actual Start/End only.

@@ -14,9 +14,9 @@ frappe.ui.form.on("Expense Entry", {
         if (!frm.doc.crane_timesheet) await rental_expense_defaults(frm);
         return expense_rental_context(frm, "timesheet_changed");
     },
-    crane(frm) { return expense_rental_context(frm, "changed"); },
-    company(frm) { return expense_rental_context(frm, "changed"); },
-    posting_date(frm) { return expense_rental_context(frm, "changed"); },
+    crane(frm) { return expense_rental_context(frm, "autofill"); },
+    company(frm) { return expense_rental_context(frm, "autofill"); },
+    posting_date(frm) { return expense_rental_context(frm, "autofill"); },
     refresh(frm) { return expense_rental_context(frm, "setup"); },
 });
 

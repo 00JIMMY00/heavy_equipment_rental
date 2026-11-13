@@ -24,6 +24,11 @@ heavy_equipment_rental.rental_context = {
                 }};
             });
         }
+        const first_load = !frm._rental_context_initialized;
+        frm._rental_context_initialized = true;
+        if (first_load && frm.is_new?.() && !frm.doc.crane_assignment && !frm.doc.crane_timesheet) {
+            return this.autofill(frm);
+        }
         return this.changed(frm, false);
     },
     async changed(frm, clear_invalid = true) {
@@ -41,8 +46,8 @@ heavy_equipment_rental.rental_context = {
         if (request !== frm._work_request || crane !== frm.doc.crane || assignment !== frm.doc.crane_assignment ||
             this.dates(frm).join('|') !== [start,end].join('|')) return;
         const sheets = options.timesheets.filter(r=>!assignment || r.assignment === assignment);
-        frm.set_df_property("crane_assignment","reqd",options.assignments.length > 0);
-        frm.set_df_property("crane_timesheet","reqd",sheets.length > 0);
+        frm.set_df_property("crane_assignment","reqd",0);
+        frm.set_df_property("crane_timesheet","reqd",0);
         if (!clear_invalid) return;
         const values = {};
         if (assignment && !options.assignments.some(r=>r.name === assignment)) {
@@ -55,6 +60,29 @@ heavy_equipment_rental.rental_context = {
             try { await frm.set_value(values); } finally { frm._setting_rental_context = false; }
             return this.changed(frm,false);
         }
+    },
+    async autofill(frm) {
+        if (frm._setting_rental_context || !this.editable(frm)) return;
+        const crane = frm.doc.crane;
+        const start = frm.doc.doctype === "Expense Entry" ? frm.doc.posting_date : frm.doc.actual_start_date;
+        const fields = ["crane", "company", "posting_date", "actual_start_date", "crane_assignment", "crane_timesheet"];
+        const snapshot = fields.map(f=>frm.doc[f]).join("|");
+        const request = frm._work_request = (frm._work_request || 0) + 1;
+        if (!crane || !start) return;
+        const {message: options} = await frappe.call({method:"heavy_equipment_rental.rental_context.rental_work_options",
+            args:{crane,start,end:start,company:frm.doc.company}});
+        if (request !== frm._work_request || fields.map(f=>frm.doc[f]).join("|") !== snapshot) return;
+        const assignment = options.assignments.length === 1 ? options.assignments[0] :
+            options.assignments.find(r=>r.name === frm.doc.crane_assignment);
+        const sheets = options.timesheets.filter(r=>!assignment || r.assignment === assignment.name);
+        const sheet = sheets.length === 1 ? sheets[0] : sheets.find(r=>r.name === frm.doc.crane_timesheet);
+        const values = {crane_assignment:sheet?.assignment || assignment?.name || null, crane_timesheet:sheet?.name || null};
+        if (frm.doc.doctype === "Expense Entry") Object.assign(values,{
+            service_from_date:sheet?.start || assignment?.start || null,
+            service_to_date:sheet?.end || assignment?.end || null,
+        });
+        frm._setting_rental_context = true;
+        try { await frm.set_value(values); } finally { frm._setting_rental_context = false; }
     },
     async assignment_changed(frm) {
         if (frm._setting_rental_context || !this.editable(frm)) return;

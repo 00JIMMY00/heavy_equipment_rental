@@ -36,7 +36,7 @@ async function maintenance_rental_context(frm, method) {
 }
 frappe.ui.form.on("Crane Maintenance", Object.fromEntries([
     "crane", "actual_start_date", "actual_end_date",
-].map(field => [field, frm => maintenance_rental_context(frm, "changed")])));
+].map(field => [field, frm => maintenance_rental_context(frm, field === "actual_end_date" ? "changed" : "autofill")])));
 
 frappe.ui.form.on("Crane Maintenance", {
     crane_assignment(frm) { return maintenance_rental_context(frm,"assignment_changed"); },

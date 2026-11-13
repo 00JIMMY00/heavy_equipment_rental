@@ -328,14 +328,15 @@ class TestPartnerSettlements(FrappeTestCase):
         self.assertIn(self.assignment.name, [r['name'] for r in options['assignments']])
         self.assertIn(first.name, [r['name'] for r in options['timesheets']])
         self.assertNotIn(second.name, [r['name'] for r in options['timesheets']])
-        with self.assertRaisesRegex(frappe.ValidationError, 'Select a Crane Timesheet'):
-            self.rental_expense().insert()
+        optional = self.rental_expense().insert()
+        self.assertFalse(optional.crane_timesheet)
         standalone = self.rental_expense(50, crane_assignment=None, posting_date=add_days(self.start, 10)).insert()
         standalone.submit()
         self.assertFalse(standalone.crane_assignment)
         self.assertFalse(standalone.crane_timesheet)
-        with self.assertRaisesRegex(frappe.ValidationError, 'Select its Assignment or Timesheet'):
-            self.rental_expense(crane_assignment=None, posting_date=self.start).insert()
+        crane_only = self.rental_expense(crane_assignment=None, posting_date=self.start).insert()
+        self.assertFalse(crane_only.crane_assignment)
+        self.assertFalse(crane_only.crane_timesheet)
         expense = self.rental_expense(250, crane_assignment=None, crane_timesheet=first.name).insert()
         self.assertEqual(expense.crane_assignment, self.assignment.name)
         expense.submit()
@@ -346,10 +347,11 @@ class TestPartnerSettlements(FrappeTestCase):
     def test_maintenance_rental_context_carries_to_expense(self):
         first = self.sheet()
         template = self.rental_expense()
-        with self.assertRaisesRegex(frappe.ValidationError, 'Select its Assignment or Timesheet'):
-            frappe.get_doc(dict(doctype='Crane Maintenance', crane=self.crane.name,
-                maintenance_type='Corrective', description='Missing rental selection',
-                actual_start_date=self.start, actual_end_date=self.start)).insert()
+        crane_only = frappe.get_doc(dict(doctype='Crane Maintenance', crane=self.crane.name,
+            maintenance_type='Corrective', description='Optional rental selection',
+            actual_start_date=self.start, actual_end_date=self.start)).insert()
+        self.assertFalse(crane_only.crane_assignment)
+        self.assertFalse(crane_only.crane_timesheet)
         maintenance = frappe.get_doc(dict(doctype='Crane Maintenance', crane=self.crane.name,
             crane_timesheet=first.name, maintenance_type='Corrective', description='Selected rental maintenance',
             actual_start_date=self.start, actual_end_date=self.start,

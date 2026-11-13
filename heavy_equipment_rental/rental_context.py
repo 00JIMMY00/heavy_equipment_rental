@@ -62,6 +62,8 @@ def validate_context(doc):
         return
     from heavy_equipment_rental.rental_validation import lock_cranes
     lock_cranes([doc.crane])
+    if not doc.get("crane_assignment") and not doc.get("crane_timesheet"):
+        return
     if doc.get("crane_timesheet"):
         sheet = frappe.get_doc("Crane Timesheet", doc.crane_timesheet)
         sheet.check_permission("read")
@@ -92,10 +94,6 @@ def validate_context(doc):
             frappe.throw(_("Select an Assignment matching this Crane and work period."))
         if doc.get("crane_timesheet") and doc.crane_timesheet not in {r["name"] for r in options["timesheets"]}:
             frappe.throw(_("Select a Timesheet matching this work period."))
-        if not doc.get("crane_timesheet") and any(r["assignment"] == doc.crane_assignment for r in options["timesheets"]):
-            frappe.throw(_("Select a Crane Timesheet for this Assignment and work period."))
-    elif options["assignments"] or options["timesheets"]:
-        frappe.throw(_("Rental work matches this Crane and period. Select its Assignment or Timesheet before saving."))
 
 
 @frappe.whitelist()
