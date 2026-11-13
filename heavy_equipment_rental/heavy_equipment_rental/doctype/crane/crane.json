@@ -37,6 +37,9 @@
   "sharing_partners_section",
   "ownership_partners",
   "agreement_history",
+  "asset_section",
+  "asset",
+  "asset_values",
   "pricing_section",
   "period_prices",
   "legacy_year_price",
@@ -333,6 +336,28 @@
    "options": "Shareholder",
    "depends_on": "eval:doc.enable_profit_sharing && doc.operator_type=='External Operator'",
    "mandatory_depends_on": "eval:doc.enable_profit_sharing && doc.operator_type=='External Operator'"
+  },
+  {
+   "fieldname": "asset_section",
+   "fieldtype": "Section Break",
+   "label": "Fixed Asset & Ownership Value"
+  },
+  {
+   "fieldname": "asset",
+   "fieldtype": "Link",
+   "label": "Asset",
+   "options": "Asset",
+   "unique": 1,
+   "no_copy": 1,
+   "in_standard_filter": 1,
+   "description": "Link the physical crane Asset. For owned/shared cranes, record the whole crane cost in the company books. Only Accounts Managers can change this link. Capitalization and depreciation use the native Asset workflow.",
+   "read_only_depends_on": "eval:!frappe.user.has_role(['Accounts Manager','System Manager'])"
+  },
+  {
+   "fieldname": "asset_values",
+   "fieldtype": "HTML",
+   "label": "Asset Values",
+   "depends_on": "asset"
   }
  ],
  "grid_page_length": 100,
@@ -374,6 +399,15 @@
    "report": 1,
    "role": "Projects User",
    "write": 1
+  },
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "write": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "select": 1
   }
  ],
  "row_format": "Dynamic",

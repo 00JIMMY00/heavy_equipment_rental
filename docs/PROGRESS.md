@@ -1,5 +1,12 @@
 # Progress
 
+## 2026-11-13 — Crane Asset links and shared ownership values
+
+- Added one unique, non-copied native Asset link per physical Crane, with native Connections and a live financial panel. The user chose whole crane cost in company books. Reference owner amounts use today's saved ownership percentages, independently of profit distributions/future agreements, and conserve currency totals. Read current depreciation values from the company default Finance Book; missing/ambiguous book values stay unavailable.
+- Restricted link changes to Accounts Manager/System Manager with Asset read permission for new selections. Crane's native Version history audits corrections without reversing valid Asset postings. Validate company, single-unit quantity, separate fixed-asset/service Items and explicit third-party ownership for rented/owner-operated cranes; enforce consistency on native Asset edits as well. Preserve cancelled/disposed references and show status; reject new disposed links. Financial display retains native source permissions.
+- Migrated `cranes-dev2.arab-erp.com`; verified the unique database index and Accounts Manager permissions. Added no Assets, guessed values, contributions, openings or journals. Existing Cranes remain unlinked until explicitly reviewed. Depreciation/funding stay in native accounting; the link does not change settlement calculations or recognize partner liabilities.
+- All **58 integration tests passed**: 10 Crane/Asset, 3 rental workflow, 29 settlement/accounting and 16 automatic partner/context tests. Covered native depreciation posting/reversal, multiple/default Finance Books, whole-cost ownership allocation, audited corrections, duplicates, native Asset edits, permissions and preserved settlement behavior. JavaScript panel checks covered rendering/escaping, unsaved edits, missing book values, permissions and stale responses; syntax/whitespace checks passed. Test records rolled back and the site's disabled test setting remained unchanged.
+
 ## 2026-11-13 — Owned Crane checkbox visibility
 
 - Hide Enable Profit Sharing for Owned cranes, retaining its existing Rented exclusion. No saved flag, agreement or accounting changes. Migrated `cranes-dev2.arab-erp.com`; verified visibility for all Ownership Types and passed all 3 rental workflow tests plus whitespace checks. Restored the disabled test setting.

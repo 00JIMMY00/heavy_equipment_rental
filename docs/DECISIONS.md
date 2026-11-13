@@ -1,5 +1,12 @@
 # Current decisions
 
+## 2026-11-13 — Crane fixed assets and shared ownership value
+
+- The user explicitly chose **whole crane cost in our company's books** for shared cranes. Link the Crane to one native ERPNext Asset (quantity 1); keep its physical fixed-asset Item separate from the rental service Item. ERPNext remains the source of asset acquisition, depreciation and disposal accounting.
+- Show live gross cost/current value after depreciation in company currency, using the company default Finance Book. Allocate reference values using the saved ownership agreement effective today, never profit percentages or future terms. Use deterministic currency rounding; missing book values are unavailable, not zero. These are reference values, not capital paid, partner liabilities or payments.
+- Accounts Manager/System Manager controls new/corrected links, with native Asset read permission. Enforce one Asset per Crane in validation and through a unique database column; require Agreement/Asset Company consistency and explicit third-party ownership for Rented/Operated for Owner. Recheck consistency on native Asset validation. Crane's native change history audits link corrections; do not require cancellation of a valid Asset to correct master-data attribution. Preserve links/status through cancellation/disposal until explicitly corrected.
+- Schema migration adds an optional link and financial HTML display only. Do not create/backfill Assets, costs, openings or journals from historical rental prices/ownership. Existing Cranes remain saveable without a link. Contributions/acquisition funding and any contractual depreciation allocation require explicit native accounting; this link does not alter posted settlements or deduct depreciation automatically.
+
 These reflect the latest user requests and current implementation (2026-11-06):
 
 1. Keep the rental workflow centered on **Crane Assignment** and **Crane Timesheet**. Do not restore the custom `Crane Project` or its old status workflow.

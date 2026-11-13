@@ -31,6 +31,7 @@ override_doctype_class = {
 }
 
 doc_events = {
+	"Asset": {"validate": "heavy_equipment_rental.crane_assets.validate_linked_asset"},
     "Shareholder": {"validate": "heavy_equipment_rental.partner_accounts.validate_shareholder"},
 	"Crane Timesheet": {
 		"before_submit": "heavy_equipment_rental.timesheet_settlement.guard_timesheet",

@@ -1,5 +1,12 @@
 frappe.ui.form.on("Crane", {
     setup(frm) {
+        frm.set_query("asset", () => ({ filters: {
+            docstatus: ["<", 2], asset_quantity: 1,
+            status: ["not in", ["Sold", "Scrapped", "Capitalized"]],
+            ...(frm.doc.sharing_company ? { company: frm.doc.sharing_company } : {}),
+            ...(["Rented", "Operated for Owner"].includes(frm.doc.ownership_type)
+                ? {} : { asset_owner: "Company" }),
+        } }));
         frm.set_query("profit_allocation_account", () => ({ filters: {
             company: frm.doc.sharing_company, is_group: 0, disabled: 0,
             root_type: ["in", ["Expense", "Equity"]],
@@ -65,6 +72,7 @@ frappe.ui.form.on("Crane", {
         frm.toggle_display("availability_tab", !frm.is_new());
     },
     refresh(frm) {
+        frm.trigger("load_asset_values");
         frm.trigger("set_partner_company_rules");
         frm._partner_ownership = Object.fromEntries((frm.doc.ownership_partners || []).map(
             row => [row.name, flt(row.ownership_percentage)]));
@@ -140,6 +148,57 @@ frappe.ui.form.on("Crane", {
         }
         frm._calendar_month = frm._calendar_month || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
         frm.trigger("load_availability");
+    },
+    asset(frm) {
+        return frm.trigger("load_asset_values");
+    },
+    async load_asset_values(frm) {
+        const wrapper = frm.fields_dict.asset_values.$wrapper;
+        const request = frm._asset_request = (frm._asset_request || 0) + 1;
+        wrapper.empty();
+        if (!frm.doc.asset) return;
+        if (frm.is_new() || frm.is_dirty()) {
+            wrapper.text(__("Save the Crane to view the linked Asset and dated ownership values."));
+            return;
+        }
+        if (!frappe.model.can_read("Asset")) {
+            wrapper.text(__("Asset read permission is required to view financial values."));
+            return;
+        }
+        wrapper.text(__("Loading Asset values..."));
+        try {
+            const { message: data } = await frappe.call({
+                method: "heavy_equipment_rental.crane_assets.asset_summary",
+                args: { crane: frm.doc.name },
+            });
+            if (request !== frm._asset_request) return;
+            if (!data) { wrapper.empty(); return; }
+            const esc = value => frappe.utils.escape_html(String(value ?? ""));
+            const money = value => value === null ? __("Unavailable") : format_currency(value, data.currency);
+            const rows = data.shares.map(row => `<tr><td>${esc(row.owner_label || row.owner)}</td>
+                <td>${esc(row.ownership_percentage)}%</td><td>${money(row.cost)}</td>
+                <td>${money(row.book_value)}</td></tr>`).join("");
+            const warning = data.docstatus !== 1
+                ? __("Draft or cancelled Asset: these values do not confirm posted asset balances.")
+                : ["Sold", "Scrapped", "Capitalized"].includes(data.status)
+                    ? __("This Asset has been disposed of. Review its native accounting records.") : "";
+            wrapper.html(`<p><b>${esc(data.company)}</b> · ${esc(__(data.status))}
+                · ${esc(__("Asset Owner"))}: ${esc(__(data.asset_owner))}
+                · ${esc(__("Finance Book"))}: ${esc(data.finance_book || __("Default"))}</p>
+                ${warning ? `<p class="text-warning">${esc(warning)}</p>` : ""}
+                <p>${esc(__("Whole Crane Gross Purchase Cost"))}: <b>${money(data.gross_purchase_amount)}</b>
+                · ${esc(__("Current Value After Depreciation"))}: <b>${money(data.book_value)}</b></p>
+                ${data.book_value === null ? `<p class="text-warning">${esc(__("The default Finance Book is missing from this Asset. Review its Finance Books."))}</p>` : ""}
+                <p class="text-muted">${esc(__("Ownership as of {0}. Reference values only; ownership does not create partner payables or change profit distributions.", [data.as_of]))}</p>
+                ${rows ? `<div class="table-responsive"><table class="table table-bordered"><thead><tr>
+                    <th>${esc(__("Owner"))}</th><th>${esc(__("Ownership %"))}</th>
+                    <th>${esc(__("Share of Gross Cost"))}</th><th>${esc(__("Share of Current Book Value"))}</th>
+                    </tr></thead><tbody>${rows}</tbody></table></div>`
+                    : `<p class="text-muted">${esc(__("No ownership agreement is effective today."))}</p>`}`);
+        } catch (error) {
+            if (request === frm._asset_request)
+                wrapper.text(__("Asset values are unavailable. Check Asset read permission and accounting setup."));
+        }
     },
     load_availability(frm) {
         if (frm.is_new()) return;

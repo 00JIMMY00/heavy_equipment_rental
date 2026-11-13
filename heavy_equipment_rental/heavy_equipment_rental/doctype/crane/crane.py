@@ -82,5 +82,8 @@ class Crane(Document):
 		from heavy_equipment_rental.profit_sharing import validate_agreement
 
 		validate_agreement(self)
+		from heavy_equipment_rental.crane_assets import validate_asset_link
+
+		validate_asset_link(self)
 		# Physical condition remains independent of bookings, including when
 		# maintenance starts during an existing contract. New activation is blocked.

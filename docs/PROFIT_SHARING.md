@@ -195,3 +195,9 @@ last command skips unrelated generated ERPNext fixtures (the site's optional
 Payment Gateway DocType is not installed). Tests use real controllers/ledgers
 and roll back their own records. Use the explicit demo command in the numerical
 demo to retain reviewable sample documents on the development site.
+
+## Asset ownership value — 2026-11-13
+
+Crane's optional **Asset** link records the physical crane in ERPNext's native asset register, separately from its rental service Item. The user chose whole crane cost in company books. The live panel uses today's saved ownership agreement to show each owner's reference share of gross cost/current book value; **Remaining Balance %** remains independent and still controls residual profit distributions. Asset amounts are read under native Asset permissions and the default Finance Book.
+
+Linking an Asset never creates partner capital, payable, depreciation or payment entries, and does not add depreciation to existing settlement calculations. Record acquisition/funding and depreciation through native accounting. No historical Assets, values, settlements or ledgers are backfilled. See [Crane fixed assets](../README.md#crane-fixed-assets).

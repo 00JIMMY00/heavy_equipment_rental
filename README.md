@@ -53,6 +53,16 @@ Timesheet periods may overlap when their actual crane shifts do not overlap. Exi
 
 Cancel the Purchase Invoice before cancelling its Timesheet. To correct submitted work, cancel both and amend the Timesheet; its replacement gets a new invoice when **Rented** is checked. Existing submitted Timesheets do not create retroactive Purchase Invoices, and historical invoices keep their original quantities, units, rates, and amounts. Migration archives previous purchase terms; Day/Month purchase prices on existing drafts are cleared so users enter an hourly price before submission. Rented Cranes still require their Supplier on the master record.
 
+## Crane fixed assets
+
+Open **Crane → Fixed Asset & Ownership Value → Asset** as an Accounts Manager or System Manager. Select the native ERPNext Asset for that physical crane (quantity **1**). Its fixed-asset Item is separate from the automatically created rental service Item. For owned/shared cranes, record the **whole crane cost in the company's books**, as requested; do not reduce it to the company's ownership percentage. Configure acquisition/opening accounting and depreciation through ERPNext's native Asset workflow.
+
+The panel reads current gross purchase cost and value after depreciation in company currency, using the company's default Finance Book. Shared owners' reference amounts use the saved ownership agreement effective **today**, with deterministic currency rounding. Future agreements do not change today's ownership. Remaining Balance/profit percentages do not determine these asset values. Missing default-book values remain unavailable rather than appearing as zero. Asset read permission is required to see financial values.
+
+Each Asset links to at most one Crane. Its Company must match the Agreement Company. Accounting managers can correct a link through Crane's native change history without reversing valid Asset accounting. Draft/cancelled/disposed status is visible; new links reject cancelled, sold, scrapped and capitalized Assets. Native Asset edits also enforce company, quantity and ownership consistency. Rented/Operated for Owner cranes can link an explicitly identified third-party Asset for custody, rather than treating it as company-owned.
+
+Linking or displaying an Asset creates no accounting entries. Partner reference shares are not paid-in capital, debt or profit entitlements. Record actual acquisition funding/contributions through native accounting with the appropriate accounts. Native Asset depreciation is not automatically added to rental profit settlements by this link. Existing Cranes remain usable without a link so historical Assets, values and opening entries are never guessed or duplicated; link them explicitly after review.
+
 ## Crane ownership and profit sharing
 
 Crane supports **Shared Ownership**, **Operated for Owner**, and **Operated by
@@ -175,6 +185,12 @@ bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment
 ```
 
 The report and settlement tests use the development fixture company `cranes company` and roll back their records.
+
+Crane/Asset accounting integration tests:
+
+```bash
+bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane
+```
 
 ## Industrial theme
 
