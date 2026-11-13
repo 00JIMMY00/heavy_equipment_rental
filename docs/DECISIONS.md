@@ -143,3 +143,7 @@ Remove maintenance Planned Start/End Date fields from the form and active calend
 ## 2026-11-13 — Optional rental links with unique start-date defaults
 
 Supersedes the mandatory-link rules above for Crane Maintenance and Expense Entry (user confirmed these two forms). Both Assignment and Timesheet are optional and editable on draft/open records. Selecting Crane and Actual Start Date (maintenance) or Posting Date (expense) looks up that single date, independent of the period end, and defaults uniquely matching links. Multiple Timesheets may share a date; never arbitrarily select one. Preserve valid manual selections and protect edits during pending lookups. Manual clearing and ordinary refresh do not reapply defaults. New prefilled forms may initialize defaults once. Server validation permits blank links while still checking explicitly selected Crane/company/work-period consistency and existing accounting locks. Service dates continue to derive from selected rental work; historical submitted records are not relinked.
+
+## 2026-11-13 — Owned Crane profit-sharing checkbox visibility
+
+Hide Enable Profit Sharing when Ownership Type is Owned (and retain the existing Rented exclusion). This is a form visibility rule only; preserve saved agreement flags, dated terms and posted settlements.

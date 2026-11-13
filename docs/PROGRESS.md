@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-11-13 — Owned Crane checkbox visibility
+
+- Hide Enable Profit Sharing for Owned cranes, retaining its existing Rented exclusion. No saved flag, agreement or accounting changes. Migrated `cranes-dev2.arab-erp.com`; verified visibility for all Ownership Types and passed all 3 rental workflow tests plus whitespace checks. Restored the disabled test setting.
+
 ## 2026-11-13 — Optional start-date rental defaults
 
 - Confirmed scope: Crane Maintenance and Expense Entry. Assignment and Timesheet are optional editable links; removed all client/server mandatory-selection rules. Crane plus Actual Start Date (maintenance) or Posting Date (expense) defaults unique matches, without using the end date for discovery. Multiple matching Timesheets are not selected arbitrarily. Users may override or clear suggestions; refresh preserves those choices, with defaults initialized once on new prefilled forms.
