@@ -1,5 +1,24 @@
 # Progress
 
+## 2026-11-13 — Short Arabic Asset guide
+
+- Added [ASSETS_AR.md](ASSETS_AR.md): concise explanation of shared-asset logic: one Asset, dated ownership agreements, whole/company-interest recognition, depreciation/repairs, and separate profit, funding and payment amounts. Revised on user request to explain behavior rather than operating steps. Linked from README; documentation only.
+
+## 2026-11-13 — Illustrated user guide
+
+- Added [USER_GUIDE.md](USER_GUIDE.md) with setup instructions, current screen/button names, rental and repair workflows, five Mermaid diagrams, worked ownership/settlement/payment examples, reports, corrections and current accounting/version limits. Linked it from README. Documentation only; no schema or accounting changes.
+
+## 2026-11-13 — Crane-centered native accounting redesign
+
+- Added Crane → Operations as the main hub and moved Cranes to the first workspace shortcut. Start bookings, Timesheets, repairs, Asset/funding work and owner review from the Crane. New cranes reuse `HER-RENTAL-SERVICE`; legacy Item links/mirrors remain intact. Shared-item invoice attribution separates multiple cranes correctly.
+- Added reviewed Whole Crane / Company Interest Only / Third-party Custody recognition. User confirmed varying contracts. Native Assets retain acquisition, improvement, depreciation and disposal accounting; no automatic ownership valuation postings, capital contributions or balance rescaling. Company-interest values are not multiplied by ownership percentages again.
+- Extended existing maintenance with native operating stock issues/service invoices, justified Asset Repair improvements, separately recoverable owner Sales Invoices and No Cost. Kept Cash Expense for existing/direct-paid repairs. Capitalization uses actual stock ledger values, including serialized parts, and reverses stock and Asset value together. Native depreciation schedules regenerate; company-owned/shared and third-party repair cases are covered.
+- New dated agreements use reviewed posting, net revenue and explicit partner Expense/agency revenue/Equity treatment, with posted-depreciation policy. Draft review deficits do not block customer invoicing; deficits and unfinished relevant operating repairs block entitlement submission. Native costs allocate by rental work and are counted once. Owner recovery invoices, stock acquisition, Asset disposal and balance-sheet funding stay outside rental profit; funding remains possible after settlement closure. Existing contracts and submitted snapshots retain historical behavior.
+- Added repair stock/service costs and attributed depreciation/journals to Rental Profitability. Native partner journals, partial payments, reports, company/account permissions, dated terms, source/allocation locks and legacy automatic settlements remain supported.
+- Backed up and migrated `cranes-dev2.arab-erp.com` (database backup prefix `20261113_170509`). **90 distinct integration tests passed**: the 87-test main run plus native depreciation-schedule, two-crane/shared-item and serialized-part cases. The final 19-test run passed after the last accounting-lock changes and migration. Covered real GL/stock posting, capitalization/cancellation, VAT exclusion, depreciation deduction, owner recovery, funding, permissions, historical settings and migration repeatability.
+- Compared pre-change backup/current document counts: GL 436, stock ledger 2, Sales Invoices 9, Purchase Invoices 1, Journal Entries 195, Payment Entries 6, Assets 2, settlements 9 — all unchanged. Test data rolled back; `allow_tests` remains false. No real Asset, stock movement or entitlement was created by migration.
+- Live browser checks passed at desktop and 390px: 11 hub actions, correct Crane/Company repair defaults, owner-billing controls, no horizontal overflow and no JavaScript errors. Removed temporary verification authentication. Python/JavaScript syntax, DocType field orders and whitespace checks passed. See [full workflow, accounting decisions and version boundaries](NATIVE_CRANE_WORKFLOW.md).
+
 ## 2026-11-13 — Crane Asset links and shared ownership values
 
 - Added one unique, non-copied native Asset link per physical Crane, with native Connections and a live financial panel. The user chose whole crane cost in company books. Reference owner amounts use today's saved ownership percentages, independently of profit distributions/future agreements, and conserve currency totals. Read current depreciation values from the company default Finance Book; missing/ambiguous book values stay unavailable.

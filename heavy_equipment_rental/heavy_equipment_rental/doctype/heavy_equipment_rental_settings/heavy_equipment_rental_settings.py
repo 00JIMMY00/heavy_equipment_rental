@@ -8,6 +8,9 @@ from frappe.utils import get_time
 
 class HeavyEquipmentRentalSettings(Document):
 	def validate(self):
+		if self.get("rental_service_item"):
+			from heavy_equipment_rental.rental_items import validate_service_item
+			validate_service_item(self.rental_service_item)
 		if not self.day_shift_start_time or not self.day_shift_end_time:
 			frappe.throw(_("Enter both default day shift times."))
 		start = datetime.combine(datetime(2000, 1, 1).date(), get_time(self.day_shift_start_time))

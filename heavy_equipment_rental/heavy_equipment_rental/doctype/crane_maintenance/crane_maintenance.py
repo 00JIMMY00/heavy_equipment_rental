@@ -9,6 +9,10 @@ from heavy_equipment_rental.payment import payment_account
 class CraneMaintenance(Document):
 	def validate(self):
 		before = self.get_doc_before_save()
+		# Blank old API records retain their original cash-expense behavior.
+		self.cost_treatment = self.cost_treatment or "Cash Expense"
+		from heavy_equipment_rental.crane_repairs import validate_maintenance
+		validate_maintenance(self)
 		if before and before.expense_entry != self.expense_entry:
 			frappe.throw(_("Use Create Expense to link an Expense Entry."))
 		if before and before.status in ("Completed", "Cancelled") and self.status != before.status:
@@ -31,7 +35,7 @@ class CraneMaintenance(Document):
 		if flt(self.cost) < 0:
 			frappe.throw(_("Maintenance cost cannot be negative."))
 		legacy_completed = before and before.status == "Completed" and not before.mode_of_payment and before.credit_account
-		if self.status == "Completed" and (
+		if self.cost_treatment == "Cash Expense" and self.status == "Completed" and (
 			flt(self.cost) <= 0 or not self.expense_type or not (self.mode_of_payment or legacy_completed)
 		):
 			frappe.throw(_("Set a positive cost, Expense Entry Type and Mode of Payment before completing maintenance."))
@@ -62,7 +66,7 @@ class CraneMaintenance(Document):
 	def on_update(self):
 		self.sync_crane_condition()
 		before = self.get_doc_before_save()
-		if self.status == "Completed" and (not before or before.status != "Completed"):
+		if self.cost_treatment == "Cash Expense" and self.status == "Completed" and (not before or before.status != "Completed"):
 			self.make_expense()
 
 	def sync_crane_condition(self):
@@ -88,6 +92,8 @@ class CraneMaintenance(Document):
 			frappe.throw(_("Only planned maintenance without an expense can be deleted."))
 
 	def make_expense(self):
+		if self.cost_treatment != "Cash Expense":
+			frappe.throw(_("This repair uses native accounting documents; a second cash expense is not allowed."))
 		if self.expense_entry and frappe.db.exists("Expense Entry", self.expense_entry):
 			if frappe.db.get_value("Expense Entry", self.expense_entry, "docstatus") != 2:
 				frappe.throw(_("An active Expense Entry is already linked to this maintenance."))

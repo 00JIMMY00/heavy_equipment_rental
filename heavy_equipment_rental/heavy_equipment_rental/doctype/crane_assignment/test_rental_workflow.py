@@ -49,7 +49,7 @@ class TestRentalWorkflow(FrappeTestCase):
             "operational_condition": "Operational",
         }).insert()
         maintenance = frappe.get_doc({
-            "doctype": "Crane Maintenance", "crane": crane.name,
+            "doctype": "Crane Maintenance", "crane": crane.name, "cost_treatment": "Cash Expense",
             "maintenance_type": "Corrective", "description": "Expense integration test",
             "status": "Planned",
         }).insert()
@@ -88,18 +88,18 @@ class TestRentalWorkflow(FrappeTestCase):
         self.assertEqual(crane.crane_list_image, crane.crane_image)
         self.assertEqual([row.period for row in crane.period_prices], ["Hour", "Day", "Month"])
         item = frappe.get_doc("Item", crane.item)
-        self.assertEqual(item.image, crane.crane_image)
+        self.assertFalse(item.image)
         self.assertEqual(
             [(row.period, row.price) for row in item.period_prices],
-            [(row.period, row.price) for row in crane.period_prices],
+            [],
         )
         crane.period_prices[0].price = 42
         crane.save()
-        self.assertEqual(frappe.get_doc("Item", crane.item).period_prices[0].price, 42)
+        self.assertFalse(frappe.get_doc("Item", crane.item).period_prices)
         crane.crane_image = "/files/updated-test-crane.jpg"
         crane.save()
         self.assertEqual(crane.crane_list_image, crane.crane_image)
-        self.assertEqual(frappe.db.get_value("Item", crane.item, "image"), crane.crane_image)
+        self.assertFalse(frappe.db.get_value("Item", crane.item, "image"))
         crane.crane_image = None
         crane.save()
         self.assertFalse(crane.crane_list_image)

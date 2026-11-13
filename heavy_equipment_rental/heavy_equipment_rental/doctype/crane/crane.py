@@ -17,37 +17,17 @@ class Crane(Document):
 		sync_crane_item_prices(self)
 
 	def ensure_sales_item(self):
-		"""Create the service item in the same transaction as the crane."""
+		"""Reuse an invoice service; preserve historical per-crane products."""
+		from heavy_equipment_rental.rental_items import default_service_item, validate_service_item
+
 		if self.item:
-			if not frappe.db.exists("Item", self.item):
-				frappe.throw(_("The linked sales Item for crane {0} is missing.").format(self.crane_name))
-			if frappe.db.get_value("Item", self.item, "item_name") != self.crane_name:
+			validate_service_item(self.item)
+			if self.item == "CRANE-" + self.name:
 				frappe.db.set_value("Item", self.item, "item_name", self.crane_name)
 			return self.item
-		code = "CRANE-" + self.name
-		if frappe.db.exists("Item", code):
-			frappe.throw(_("Item {0} already exists; choose a distinct crane code.").format(code))
-		if not frappe.db.exists("UOM", "Hour"):
-			frappe.throw(_("Create the Hour UOM before saving cranes."))
-		item_group = "Services" if frappe.db.exists("Item Group", "Services") else frappe.db.get_value(
-			"Item Group", {"is_group": 0}, "name"
-		)
-		if not item_group:
-			frappe.throw(_("Create a service Item Group before saving cranes."))
-		item = frappe.get_doc({
-			"doctype": "Item",
-			"item_code": code,
-			"item_name": self.crane_name,
-			"item_group": item_group,
-			"stock_uom": "Hour",
-			"is_stock_item": 0,
-			"is_sales_item": 1,
-			"is_purchase_item": 1,
-		})
-		item.insert(ignore_permissions=True)
-		self.item = item.name
-		frappe.db.set_value("Crane", self.name, "item", item.name, update_modified=False)
-		return item.name
+		self.item = default_service_item()
+		frappe.db.set_value("Crane", self.name, "item", self.item, update_modified=False)
+		return self.item
 
 	def validate(self):
 		if self.ownership_type == "Rented" and not self.supplier:

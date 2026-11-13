@@ -15,6 +15,9 @@
   "crane_timesheet",
   "crane_assignment",
   "maintenance_type",
+  "cost_treatment",
+  "company",
+  "owner_customer",
   "column_break_ecru",
   "mode_of_payment",
   "cost",
@@ -22,11 +25,13 @@
   "status",
   "work_section",
   "description",
+  "capitalization_reason",
   "work_column",
   "expense_type",
   "attachment",
   "expense_tab",
   "expense_section",
+  "accounting_documents",
   "expense_entry",
   "payment_column",
   "credit_account"
@@ -121,26 +126,28 @@
   {
    "fieldname": "expense_tab",
    "fieldtype": "Tab Break",
-   "label": "Expense"
+   "label": "Accounting"
   },
   {
    "fieldname": "expense_section",
    "fieldtype": "Section Break",
-   "label": "Expense Details"
+   "label": "Posting Documents"
   },
   {
    "fieldname": "cost",
    "fieldtype": "Currency",
    "label": "Cost",
-   "mandatory_depends_on": "eval:doc.status=='Completed'",
-   "non_negative": 1
+   "mandatory_depends_on": "eval:doc.status=='Completed' && (!doc.cost_treatment || doc.cost_treatment=='Cash Expense')",
+   "non_negative": 1,
+   "depends_on": "eval:!doc.cost_treatment || doc.cost_treatment=='Cash Expense'"
   },
   {
    "fieldname": "expense_type",
    "fieldtype": "Link",
    "label": "Expense Entry Type",
-   "mandatory_depends_on": "eval:doc.status=='Completed'",
-   "options": "Expense Entry Type"
+   "mandatory_depends_on": "eval:doc.status=='Completed' && (!doc.cost_treatment || doc.cost_treatment=='Cash Expense')",
+   "options": "Expense Entry Type",
+   "depends_on": "eval:!doc.cost_treatment || doc.cost_treatment=='Cash Expense'"
   },
   {
    "fieldname": "payment_column",
@@ -150,8 +157,9 @@
    "fieldname": "mode_of_payment",
    "fieldtype": "Link",
    "label": "Mode of Payment",
-   "mandatory_depends_on": "eval:doc.status=='Completed' && !doc.credit_account",
-   "options": "Mode of Payment"
+   "mandatory_depends_on": "eval:doc.status=='Completed' && (!doc.cost_treatment || doc.cost_treatment=='Cash Expense')",
+   "options": "Mode of Payment",
+   "depends_on": "eval:!doc.cost_treatment || doc.cost_treatment=='Cash Expense'"
   },
   {
    "fieldname": "credit_account",
@@ -184,6 +192,43 @@
   {
    "fieldname": "column_break_ecru",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cost_treatment",
+   "fieldtype": "Select",
+   "label": "Cost Treatment",
+   "options": "Cash Expense\nOperating Expense\nCapitalize Improvement\nRecover from Owner\nNo Cost",
+   "default": "Operating Expense",
+   "reqd": 1,
+   "description": "Routine parts and servicing are expenses. Capitalize only qualifying improvements. Owner recoveries are separate customer invoices."
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "options": "Company",
+   "label": "Company",
+   "mandatory_depends_on": "eval:doc.cost_treatment && doc.cost_treatment!='Cash Expense'"
+  },
+  {
+   "fieldname": "owner_customer",
+   "fieldtype": "Link",
+   "options": "Customer",
+   "label": "Bill Repair To",
+   "depends_on": "eval:doc.cost_treatment=='Recover from Owner'",
+   "mandatory_depends_on": "eval:doc.cost_treatment=='Recover from Owner'",
+   "description": "The owner as an ERPNext Customer for repair billing. This does not change their Shareholder identity."
+  },
+  {
+   "fieldname": "capitalization_reason",
+   "fieldtype": "Small Text",
+   "label": "Capitalization Justification",
+   "depends_on": "eval:doc.cost_treatment=='Capitalize Improvement'",
+   "mandatory_depends_on": "eval:doc.cost_treatment=='Capitalize Improvement'"
+  },
+  {
+   "fieldname": "accounting_documents",
+   "fieldtype": "HTML",
+   "label": "Repair Accounting Documents"
   }
  ],
  "links": [],

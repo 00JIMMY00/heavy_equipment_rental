@@ -74,6 +74,21 @@
    "default": 8,
    "precision": "2",
    "description": "Calculated from the default start and end times."
+  },
+  {
+   "fieldname": "rental_service_item",
+   "fieldtype": "Link",
+   "options": "Item",
+   "label": "Rental Service Item",
+   "description": "Shared non-stock Hour service for new Cranes. Existing Crane invoice Items are preserved."
+  },
+  {
+   "fieldname": "native_workflow_migrated",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "read_only": 1,
+   "default": "0",
+   "label": "Native Workflow Migrated"
   }
  ],
  "field_order": [
@@ -82,12 +97,14 @@
   "default_selling_uom",
   "billing_column",
   "default_supplier_uom",
+  "rental_service_item",
   "shifts_tab",
   "shift_section",
   "day_shift_start_time",
   "day_shift_end_time",
   "hours_col",
-  "day_shift_hours"
+  "day_shift_hours",
+  "native_workflow_migrated"
  ],
  "permissions": [
   {

@@ -35,7 +35,9 @@ def ensure_settlement(sheet, method=None):
     if doc.docstatus == 0 and doc.sales_invoice != sheet.sales_invoice:
         doc.sales_invoice = sheet.sales_invoice
         doc.save(ignore_permissions=True)
-    if sheet.sales_invoice and frappe.db.get_value("Sales Invoice", sheet.sales_invoice, "docstatus") == 1 and doc.docstatus == 0:
+    from heavy_equipment_rental.profit_sharing import agreement_for
+    agreement = agreement_for(frappe.get_doc("Crane", sheet.crane), sheet.period_start, sheet.period_end)
+    if agreement.get("settlement_approval", "On Invoice Submission") == "On Invoice Submission" and sheet.sales_invoice and frappe.db.get_value("Sales Invoice", sheet.sales_invoice, "docstatus") == 1 and doc.docstatus == 0:
         # Explicit automation authorization: calculations still enforce source read and
         # journal create/submit permissions. Failure rolls the invoice transaction back.
         doc.flags.ignore_permissions = True
@@ -61,7 +63,7 @@ def guard_timesheet(sheet, method=None):
     for closed in frappe.get_all("Crane Profit Settlement", filters={"crane": sheet.crane, "docstatus": 1, "settlement_basis": "Timesheet"},
             fields=["name", "source_snapshot"]):
         for source in json.loads(closed.source_snapshot or "[]"):
-            if source["doctype"] == "Expense Entry" and source.get("service_from_date") and matches(source, sheet):
+            if source.get("service_from_date") and matches(source, sheet):
                 frappe.throw(_("Expense allocation is closed by settlement {0}. Cancel the affected settlement before changing its work.").format(closed.name))
     settled = frappe.db.get_value("Crane Profit Settlement", {"crane": sheet.crane, "docstatus": 1,
         "from_date": ["<=", sheet.period_end], "to_date": [">=", sheet.period_start]}, "name")
@@ -81,6 +83,8 @@ def collect_timesheet_sources(sheet, company, grand_total):
         if matches(source, sheet):
             sources.append(source)
             expense_docs[expense.name] = expense
+    from heavy_equipment_rental.crane_repairs import repair_expense_sources
+    sources.extend(source for source in repair_expense_sources(sheet.crane, company) if matches(source, sheet))
     all_sheets = frappe.get_all("Crane Timesheet", filters={"crane": sheet.crane, "docstatus": 1},
         fields=["name", "assignment", "period_start", "period_end", "sales_invoice", "purchase_invoice", "total_amount", "total_crane_billable_hours"],
         order_by="name")
@@ -88,11 +92,17 @@ def collect_timesheet_sources(sheet, company, grand_total):
     result = []
     for source in sources:
         kind = source["doctype"]
-        if kind in ("Sales Invoice", "Purchase Invoice"):
+        if kind != "Expense Entry" and source.get("service_from_date"):
+            candidates = [s for s in all_sheets if matches(source, s)]
+            weight = "total_crane_billable_hours"
+        elif kind in ("Sales Invoice", "Purchase Invoice"):
             link = "sales_invoice" if kind == "Sales Invoice" else "purchase_invoice"
             original = frappe.db.get_value(kind, source["name"], "return_against") or source["name"]
             candidates = [s for s in all_sheets if s[link] == original]
             weight = "total_amount" if kind == "Sales Invoice" else "total_crane_billable_hours"
+            if kind == "Purchase Invoice" and not candidates:
+                day = getdate(source["posting_date"])
+                candidates = [s for s in all_sheets if getdate(s.period_start) <= day <= getdate(s.period_end)]
         elif kind == "Expense Entry":
             candidates = [s for s in all_sheets if matches(source, s)]
             check_posted(expense_docs[source["name"]])
@@ -140,7 +150,7 @@ def validate_source_allocations(doc, sources):
                 if (old["doctype"], old["name"], old.get("detail")) != key:
                     continue
                 if doc.settlement_basis != "Timesheet" or row.settlement_basis != "Timesheet":
-                    separate_expense_periods = (source["doctype"] == "Expense Entry" and
+                    separate_expense_periods = (source.get("service_from_date") and
                         doc.settlement_basis != "Timesheet" and row.settlement_basis != "Timesheet" and
                         source.get("allocation_from_date") and old.get("allocation_from_date") and
                         (getdate(source["allocation_from_date"]) > getdate(old["allocation_to_date"]) or

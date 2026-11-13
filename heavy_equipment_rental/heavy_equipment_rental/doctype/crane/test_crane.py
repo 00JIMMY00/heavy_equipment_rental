@@ -40,12 +40,13 @@ class TestCrane(FrappeTestCase):
 
 	def link(self):
 		self.crane.asset = self.asset.name
+		self.crane.asset_accounting_basis = "Third-party Custody" if self.crane.ownership_type in ("Rented", "Operated for Owner") else "Whole Crane"
 		self.crane.save()
 
 	def sharing(self):
 		supplier = frappe.get_doc(dict(doctype="Supplier", supplier_name=self.key,
 			supplier_type="Company", supplier_group=frappe.db.get_value("Supplier Group", {"is_group": 0}, "name"))).insert()
-		self.crane.update(dict(ownership_type="Shared Ownership", sharing_company=self.company.name,
+		self.crane.update(dict(settlement_revenue_basis="Invoice Grand Total", distribution_posting="Source Revenue Accounts", settlement_approval="On Invoice Submission", include_depreciation=0, ownership_type="Shared Ownership", sharing_company=self.company.name,
 			agreement_effective_from=add_days(today(), -10)))
 		self.crane.set("ownership_partners", [dict(is_company=1, ownership_percentage=25, profit_percentage=60),
 			dict(supplier=supplier.name, ownership_percentage=75, profit_percentage=40)])
@@ -67,7 +68,7 @@ class TestCrane(FrappeTestCase):
 	def test_duplicate_asset_and_grouped_assets_rejected(self):
 		self.link()
 		with self.assertRaisesRegex(frappe.ValidationError, "already linked"):
-			frappe.get_doc(dict(doctype="Crane", crane_name=self.key + " second", asset=self.asset.name)).insert()
+			frappe.get_doc(dict(doctype="Crane", crane_name=self.key + " second", asset=self.asset.name, asset_accounting_basis="Whole Crane")).insert()
 		self.asset.asset_quantity = 2
 		with self.assertRaisesRegex(frappe.ValidationError, "quantity 1"):
 			self.asset.save()

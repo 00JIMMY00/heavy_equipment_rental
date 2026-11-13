@@ -24,7 +24,7 @@ class TestPartnerSettlements(FrappeTestCase):
         self.crane = frappe.get_doc("Crane", self.cycle["crane"])
         self.partners = [frappe.get_doc(dict(doctype="Shareholder", title="HER owner " + self.key + str(i),
             company=self.company.name)).insert() for i in range(2)]
-        self.crane.update(dict(ownership_type="Shared Ownership", sharing_company=self.company.name,
+        self.crane.update(dict(settlement_revenue_basis="Invoice Grand Total", distribution_posting="Source Revenue Accounts", settlement_approval="On Invoice Submission", include_depreciation=0, ownership_type="Shared Ownership", sharing_company=self.company.name,
             agreement_effective_from=self.cycle["from_date"], operating_percentage=10))
         self.crane.set("ownership_partners", [dict(is_company=1, ownership_percentage=50, profit_percentage=50)] + [
             dict(shareholder=p.name, ownership_percentage=25, profit_percentage=25) for p in self.partners])
@@ -347,12 +347,12 @@ class TestPartnerSettlements(FrappeTestCase):
     def test_maintenance_rental_context_carries_to_expense(self):
         first = self.sheet()
         template = self.rental_expense()
-        crane_only = frappe.get_doc(dict(doctype='Crane Maintenance', crane=self.crane.name,
+        crane_only = frappe.get_doc(dict(doctype='Crane Maintenance', cost_treatment='Cash Expense', crane=self.crane.name,
             maintenance_type='Corrective', description='Optional rental selection',
             actual_start_date=self.start, actual_end_date=self.start)).insert()
         self.assertFalse(crane_only.crane_assignment)
         self.assertFalse(crane_only.crane_timesheet)
-        maintenance = frappe.get_doc(dict(doctype='Crane Maintenance', crane=self.crane.name,
+        maintenance = frappe.get_doc(dict(doctype='Crane Maintenance', cost_treatment='Cash Expense', crane=self.crane.name,
             crane_timesheet=first.name, maintenance_type='Corrective', description='Selected rental maintenance',
             actual_start_date=self.start, actual_end_date=self.start,
             expense_type=template.expenses[0].expense_entry_type, mode_of_payment=template.mode_of_payment,

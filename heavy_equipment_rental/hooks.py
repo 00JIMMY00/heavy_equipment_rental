@@ -26,11 +26,22 @@ after_install = ["heavy_equipment_rental.setup.execute", "heavy_equipment_rental
 after_migrate = ["heavy_equipment_rental.setup.execute", "heavy_equipment_rental.branding.apply_branding"]
 
 override_doctype_class = {
+	"Asset Repair": "heavy_equipment_rental.asset_repair.RentalAssetRepair",
 	"Expense Entry": "heavy_equipment_rental.expenses.RentalExpenseEntry",
 	"Journal Entry": "heavy_equipment_rental.expenses.RentalJournalEntry",
 }
 
 doc_events = {
+    "Stock Entry": {
+        "validate": "heavy_equipment_rental.crane_repairs.validate_native_document",
+        "before_submit": "heavy_equipment_rental.profit_sharing.guard_closed_period",
+        "before_cancel": "heavy_equipment_rental.profit_sharing.guard_closed_period",
+    },
+    "Asset Repair": {
+        "validate": "heavy_equipment_rental.crane_repairs.validate_native_document",
+        "before_submit": "heavy_equipment_rental.crane_repairs.guard_repair_posting",
+        "before_cancel": "heavy_equipment_rental.crane_repairs.guard_repair_posting",
+    },
 	"Asset": {"validate": "heavy_equipment_rental.crane_assets.validate_linked_asset"},
     "Shareholder": {"validate": "heavy_equipment_rental.partner_accounts.validate_shareholder"},
 	"Crane Timesheet": {
@@ -43,6 +54,7 @@ doc_events = {
 		"before_submit": "heavy_equipment_rental.partner_reporting.lock_payment_settlements",
 	},
 	"Purchase Invoice": {
+		"validate": "heavy_equipment_rental.crane_repairs.validate_native_document",
 		"before_submit": "heavy_equipment_rental.profit_sharing.guard_closed_period",
 		"before_cancel": "heavy_equipment_rental.profit_sharing.guard_closed_period",
 		"on_cancel": "heavy_equipment_rental.purchasing.allow_timesheet_invoice_cancel",
@@ -52,6 +64,7 @@ doc_events = {
 		"before_cancel": "heavy_equipment_rental.profit_sharing.guard_closed_period",
 	},
 	"Journal Entry": {
+		"validate": "heavy_equipment_rental.crane_repairs.attribute_depreciation",
 		"before_submit": "heavy_equipment_rental.profit_sharing.guard_closed_period",
 		"before_cancel": [
 			"heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.treasury_transaction.guard_journal_cancel",
@@ -59,6 +72,7 @@ doc_events = {
 		],
 	},
 	"Sales Invoice": {
+		"validate": "heavy_equipment_rental.crane_repairs.validate_native_document",
 		"on_submit": "heavy_equipment_rental.timesheet_settlement.invoice_submitted",
 		"before_submit": "heavy_equipment_rental.profit_sharing.guard_closed_period",
 		"before_cancel": "heavy_equipment_rental.profit_sharing.guard_closed_period",

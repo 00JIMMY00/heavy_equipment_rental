@@ -26,7 +26,7 @@ def install_item_price_field():
 
 
 def sync_crane_item_prices(crane):
-	if not crane.item:
+	if not crane.item or crane.item != "CRANE-" + crane.name:
 		return
 	item = frappe.get_doc("Item", crane.item)
 	prices = [(row.period, row.price) for row in crane.period_prices]

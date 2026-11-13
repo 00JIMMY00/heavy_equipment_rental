@@ -15,6 +15,7 @@
   "from_date",
   "to_date",
   "posting_date",
+  "costs_reviewed",
   "results_section",
   "revenue",
   "operating_percentage",
@@ -92,7 +93,7 @@
   {
    "fieldname": "revenue",
    "fieldtype": "Currency",
-   "label": "Revenue / Allocated Grand Total",
+   "label": "Settlement Revenue",
    "options": "currency",
    "read_only": 1
   },
@@ -271,6 +272,14 @@
    "options": "Period\nTimesheet",
    "default": "Period",
    "read_only": 1
+  },
+  {
+   "fieldname": "costs_reviewed",
+   "fieldtype": "Check",
+   "label": "Costs Reviewed",
+   "default": "0",
+   "no_copy": 1,
+   "description": "Confirm repair parts, external services, hire and agreed depreciation costs are complete before closing."
   }
  ],
  "permissions": [

@@ -1,3 +1,60 @@
+function render_crane_operations(frm) {
+    const wrapper = frm.fields_dict.operations_hub?.$wrapper;
+    if (!wrapper) return;
+    wrapper.empty();
+    if (frm.is_new()) return;
+    const saved = action => {
+        if (frm.is_dirty()) frappe.throw(__("Save the Crane before starting another document."));
+        return action();
+    };
+    const company = frm.doc.sharing_company || frappe.defaults.get_user_default("Company");
+    const sections = [
+        ["Rental Work", [
+            ["Book Crane", "Crane Assignment", "create", () => frappe.new_doc("Crane Assignment", { company }, doc => {
+                const row = frappe.model.add_child(doc, "Assigned Crane", "assigned_cranes");
+                row.crane = frm.doc.name;
+            })],
+            ["Record Work", "Crane Timesheet", "create", () => frappe.new_doc("Crane Timesheet", { crane: frm.doc.name })],
+            ["Timesheets & Invoices", "Crane Timesheet", "read", () => frappe.set_route("List", "Crane Timesheet", { crane: frm.doc.name })],
+        ]],
+        ["Repairs & Stock", [
+            ["New Repair", "Crane Maintenance", "create", () => frappe.new_doc("Crane Maintenance", {
+                crane: frm.doc.name, company, cost_treatment: "Operating Expense", actual_start_date: frappe.datetime.get_today(),
+            })],
+            ["Repair History", "Crane Maintenance", "read", () => frappe.set_route("List", "Crane Maintenance", { crane: frm.doc.name })],
+            ["Consumed Parts", "Stock Entry", "read", () => frappe.set_route("List", "Stock Entry", { crane: frm.doc.name })],
+        ]],
+        ["Asset & Funding", [
+            [frm.doc.asset ? "Open Asset" : "Create Asset", "Asset", frm.doc.asset ? "read" : "create", () => frm.doc.asset
+                ? frappe.set_route("Form", "Asset", frm.doc.asset)
+                : frappe.new_doc("Asset", { asset_name: frm.doc.crane_name, company })],
+            ["Capital / Owner Funding", "Journal Entry", "create", () => frappe.new_doc("Journal Entry", { company }, doc => {
+                const row = frappe.model.add_child(doc, "Journal Entry Account", "accounts");
+                row.crane = frm.doc.name;
+            })],
+        ]],
+        ["Owners & Results", [
+            ["Review Settlements", "Crane Profit Settlement", "read", () => frappe.set_route("List", "Crane Profit Settlement", { crane: frm.doc.name })],
+            ["Owner Balances & Payments", "Crane Profit Settlement", "read", () => frappe.set_route("query-report", "Crane Partner Summary", { crane: frm.doc.name, company })],
+            ["Rental Profitability", "Sales Invoice", "read", () => frappe.set_route("query-report", "Crane Rental Profitability", { crane: frm.doc.name, company })],
+        ]],
+    ];
+    const esc = value => frappe.utils.escape_html(String(value || ""));
+    wrapper.append(`<p class="text-muted">${esc(__("Start work here. ERPNext documents hold stock, Asset values, invoices and payments."))}</p>`);
+    const grid = $('<div class="row"></div>').appendTo(wrapper);
+    for (const [label, actions] of sections) {
+        const available = actions.filter(([, dt, permission]) => permission === "create" ? frappe.model.can_create(dt) : frappe.model.can_read(dt));
+        if (!available.length) continue;
+        const box = $('<div class="col-sm-6 mb-3"><div class="border rounded p-3 h-100"></div></div>').appendTo(grid).children();
+        box.append(`<h5>${esc(__(label))}</h5>`);
+        for (const [title, , , action] of available) {
+            $('<button type="button" class="btn btn-default btn-sm mr-2 mb-2"></button>')
+                .text(__(title)).on("click", () => saved(action)).appendTo(box);
+        }
+    }
+    if (!frm.doc.asset) wrapper.append(`<p class="text-muted">${esc(__("Link the physical Asset in Crane Details after accounting reviews ownership and recognition. Rental prices do not determine asset cost."))}</p>`);
+}
+
 frappe.ui.form.on("Crane", {
     setup(frm) {
         frm.set_query("asset", () => ({ filters: {
@@ -73,6 +130,7 @@ frappe.ui.form.on("Crane", {
     },
     refresh(frm) {
         frm.trigger("load_asset_values");
+        render_crane_operations(frm);
         frm.trigger("set_partner_company_rules");
         frm._partner_ownership = Object.fromEntries((frm.doc.ownership_partners || []).map(
             row => [row.name, flt(row.ownership_percentage)]));
@@ -120,9 +178,9 @@ frappe.ui.form.on("Crane", {
         }
         if (frappe.model.can_create("Expense Entry"))
             frm.add_custom_button(__("Expense"), () => frappe.new_doc("Expense Entry", { crane: frm.doc.name }), __("Create"));
-        for (const [label, doctype] of [["Maintenance", "Crane Maintenance"], ["Timesheet", "Crane Timesheet"]]) {
+        for (const [label, doctype] of [["Repair / Maintenance", "Crane Maintenance"], ["Timesheet", "Crane Timesheet"]]) {
             if (frappe.model.can_create(doctype))
-                frm.add_custom_button(__(label), () => frappe.new_doc(doctype, { crane: frm.doc.name }), __("Create"));
+                frm.add_custom_button(__(label), () => frappe.new_doc(doctype, { crane: frm.doc.name, ...(doctype === "Crane Maintenance" ? { company: frm.doc.sharing_company || frappe.defaults.get_user_default("Company"), cost_treatment: "Operating Expense" } : {}) }), __("Create"));
         }
         if (frappe.model.can_create("Sales Invoice")) {
             frm.add_custom_button(__("Sales Invoice"), () => frappe.call({
@@ -182,11 +240,12 @@ frappe.ui.form.on("Crane", {
                 ? __("Draft or cancelled Asset: these values do not confirm posted asset balances.")
                 : ["Sold", "Scrapped", "Capitalized"].includes(data.status)
                     ? __("This Asset has been disposed of. Review its native accounting records.") : "";
-            wrapper.html(`<p><b>${esc(data.company)}</b> · ${esc(__(data.status))}
+            wrapper.html(`<p><b>${esc(data.company)}</b> · ${esc(__(data.recognition_basis || "Pending Review"))} · ${esc(__(data.status))}
                 · ${esc(__("Asset Owner"))}: ${esc(__(data.asset_owner))}
                 · ${esc(__("Finance Book"))}: ${esc(data.finance_book || __("Default"))}</p>
                 ${warning ? `<p class="text-warning">${esc(warning)}</p>` : ""}
-                <p>${esc(__("Whole Crane Gross Purchase Cost"))}: <b>${money(data.gross_purchase_amount)}</b>
+                <p>${esc(__("Asset Gross Purchase Cost"))}: <b>${money(data.gross_purchase_amount)}</b>
+                · ${esc(__("Capitalized Improvements"))}: <b>${money(data.additional_asset_cost)}</b>
                 · ${esc(__("Current Value After Depreciation"))}: <b>${money(data.book_value)}</b></p>
                 ${data.book_value === null ? `<p class="text-warning">${esc(__("The default Finance Book is missing from this Asset. Review its Finance Books."))}</p>` : ""}
                 <p class="text-muted">${esc(__("Ownership as of {0}. Reference values only; ownership does not create partner payables or change profit distributions.", [data.as_of]))}</p>
@@ -194,7 +253,7 @@ frappe.ui.form.on("Crane", {
                     <th>${esc(__("Owner"))}</th><th>${esc(__("Ownership %"))}</th>
                     <th>${esc(__("Share of Gross Cost"))}</th><th>${esc(__("Share of Current Book Value"))}</th>
                     </tr></thead><tbody>${rows}</tbody></table></div>`
-                    : `<p class="text-muted">${esc(__("No ownership agreement is effective today."))}</p>`}`);
+                    : `<p class="text-muted">${esc(__("Owner reference allocations are shown only for a whole-crane Asset with a current ownership agreement."))}</p>`}`);
         } catch (error) {
             if (request === frm._asset_request)
                 wrapper.text(__("Asset values are unavailable. Check Asset read permission and accounting setup."));

@@ -64,15 +64,18 @@ class CraneProfitSettlement(Document):
             frappe.throw(_("The Journal Entry is assigned automatically on submission."))
         self.calculation_method = agreement.get("calculation_method", LEGACY_NET)
         operating_first = self.calculation_method == OPERATING_FIRST
+        use_grand_total = operating_first and agreement.get("settlement_revenue_basis", "Invoice Grand Total") == "Invoice Grand Total"
         if sheet:
             from heavy_equipment_rental.timesheet_settlement import collect_timesheet_sources
-            sources = collect_timesheet_sources(sheet, self.company, operating_first)
+            sources = collect_timesheet_sources(sheet, self.company, use_grand_total)
             if self.docstatus == 1 and (not self.sales_invoice or
                     frappe.db.get_value("Sales Invoice", self.sales_invoice, "docstatus") != 1):
                 frappe.throw(_("Submit the linked Sales Invoice before posting partner entitlements."))
         else:
             sources = collect_sources(self.crane, self.company, self.from_date, self.to_date,
-                                      grand_total=operating_first)
+                                      grand_total=use_grand_total)
+        if not agreement.get("include_depreciation", 0):
+            sources = [source for source in sources if not source.get("is_depreciation")]
         from heavy_equipment_rental.timesheet_settlement import validate_source_allocations
         validate_source_allocations(self, sources)
         precision = self.precision("net_profit")
@@ -84,10 +87,17 @@ class CraneProfitSettlement(Document):
         self.net_profit = flt(self.balance_after_operating - self.operating_expenses, precision)
         self.loss_brought_forward = flt(previous.loss_carried_forward if previous else 0, precision)
         available = flt(self.net_profit - self.loss_brought_forward, precision)
-        if self.revenue < 0:
+        review_draft = self.docstatus == 0 and agreement.get("settlement_approval") == "Review Before Posting"
+        if self.docstatus == 1 and agreement.get("settlement_approval") == "Review Before Posting":
+            if not self.get("costs_reviewed"):
+                frappe.throw(_("Review all repair, hire and depreciation costs, then confirm Costs Reviewed before posting entitlements."))
+        if self.docstatus == 1:
+            from heavy_equipment_rental.crane_repairs import validate_repair_closure
+            validate_repair_closure(self)
+        if self.revenue < 0 and not review_draft:
             frappe.throw(_("Cannot settle negative revenue: {0} {1}. Review returns and source adjustments.").format(
                 f"{self.revenue:,.{precision}f}", self.currency))
-        if available < 0:
+        if available < 0 and not review_draft:
             frappe.throw(_("Settlement stopped: revenue {0}, operating share {1}, balance after operating {2}, "
                            "expenses {3}, historical loss {4}, shortfall {5} {6}. "
                            "Expenses and historical losses exceed the balance after the operating share. "
@@ -95,7 +105,7 @@ class CraneProfitSettlement(Document):
                 *[f"{v:,.{precision}f}" for v in (self.revenue, self.operating_fee,
                     self.balance_after_operating, self.operating_expenses, self.loss_brought_forward, -available)],
                 self.currency))
-        self.distributable_profit = available
+        self.distributable_profit = max(available, 0)
         self.loss_carried_forward = 0
         self.set("shares", [])
         amounts = allocate_amount(self.distributable_profit,
@@ -114,7 +124,7 @@ class CraneProfitSettlement(Document):
             operator.amount = flt(operator.residual_amount + operator.operating_amount, precision)
         self.company_retained = flt(sum(r.amount for r in self.shares if r.is_company), precision)
         self.external_distribution = flt(sum(r.amount for r in self.shares if not r.is_company), precision)
-        self.agreement_snapshot = dumps(dict(agreement, posting_basis="Source Revenue Accounts")
+        self.agreement_snapshot = dumps(dict(agreement, posting_basis=agreement.get("distribution_posting", "Source Revenue Accounts"))
                                         if operating_first else agreement)
         self.source_snapshot = dumps(sources)
 
@@ -123,7 +133,7 @@ class CraneProfitSettlement(Document):
             return
         agreement = json.loads(self.agreement_snapshot)
         validate_account(agreement["payable_account"], self.company, self.currency, payable=True)
-        if self.calculation_method == OPERATING_FIRST:
+        if self.calculation_method == OPERATING_FIRST and agreement.get("distribution_posting", "Source Revenue Accounts") == "Source Revenue Accounts":
             debit_rows = revenue_allocation_rows(json.loads(self.source_snapshot),
                 self.external_distribution, self.company, self.currency,
                 agreement["cost_center"], self.precision("net_profit"))

@@ -124,6 +124,8 @@ def execute():
 			"insert_after": "description",
 		}],
 	})
+	from heavy_equipment_rental.crane_repairs import install_fields as install_repair_fields
+	install_repair_fields()
 	install_item_price_field()
 	from heavy_equipment_rental.profit_sharing import install_fields
 

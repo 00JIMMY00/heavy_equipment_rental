@@ -1,3 +1,5 @@
+> Current redesign: [Native Crane workflow](NATIVE_CRANE_WORKFLOW.md). New agreements use reviewed approval, Net Revenue and an explicit partner posting treatment; existing agreements retain their historical automatic approval/Grand Total/source-revenue behavior. Posted depreciation is a dated contract option, and native operating repair costs are included once by work period. The earlier behavior described below remains applicable to legacy terms.
+
 # Automatic Timesheet settlements — current workflow (2026-11-10)
 
 Configure the sharing Crane once. Select Company, native **Shareholder** partners, ownership/residual percentages and operator. The Company **Partners** Payable account and cost center default automatically; choose a different enabled company-currency Payable account if necessary. Shareholders receive their default party account too. This does not issue company shares or alter share capital.

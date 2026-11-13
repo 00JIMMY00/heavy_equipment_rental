@@ -53,6 +53,8 @@ def execute(filters=None):
             invoice = frappe.get_doc(doctype, header.name)
             for line in invoice.items:
                 sources = mapping.get(line.item_code)
+                if sources and line.get("crane"):
+                    sources = {source for source in sources if source[1] == line.crane}
                 if not sources:
                     continue
                 if len(sources) != 1:
@@ -91,6 +93,27 @@ def execute(filters=None):
                          crane=expense.crane, description=expense.description,
                          mode_of_payment=expense.mode_of_payment, source_account=accounts,
                          expenses=sum(flt(row.amount) for row in expense.expenses), currency=currency))
+    # Native repair ledger costs and attributed depreciation/other journals.
+    # These sources are independent of customer billing and cash disbursement.
+    from heavy_equipment_rental.crane_repairs import repair_expense_sources
+    from heavy_equipment_rental.profit_sharing import collect_sources
+    for crane in items:
+        for source in repair_expense_sources(crane, filters.company):
+            if not getdate(filters.from_date) <= getdate(source["posting_date"]) <= getdate(filters.to_date):
+                continue
+            if filters.assignment and source.get("rental_assignment") != filters.assignment:
+                continue
+            data.append(dict(posting_date=source["posting_date"], voucher_type=source["doctype"],
+                voucher=source["name"], assignment=source.get("rental_assignment"), crane=crane,
+                description=_("Repair parts / external services"), expenses=source["expenses"], currency=currency))
+        if not filters.assignment:
+            for source in collect_sources(crane, filters.company, filters.from_date, filters.to_date, include_expenses=False):
+                if source["doctype"] != "Journal Entry":
+                    continue
+                data.append(dict(posting_date=source["posting_date"], voucher_type=source["doctype"],
+                    voucher=source["name"], crane=crane, currency=currency,
+                    description=_("Depreciation") if source.get("is_depreciation") else _("Attributed journal"),
+                    income=source.get("revenue", 0), expenses=source.get("expenses", 0)))
     data.sort(key=lambda row: (getdate(row["posting_date"]), row["voucher_type"], row["voucher"]))
     for row in data:
         row["income"] = flt(row.get("income"))
@@ -104,6 +127,7 @@ def execute(filters=None):
                         ("Net Sales (Income - Expenses)", income - expenses,
                          "Green" if income >= expenses else "Red"))]
     message = _("Submitted documents only, by posting date, in company currency. Invoice amounts exclude taxes. "
+                "Includes posted repair stock consumption, external repair services and attributed journals/depreciation. "
                 "Net Sales means rental income minus recorded costs, not cash collected. "
                 "Treasury transfers and invoice payments are excluded to avoid counting costs twice. "
                 "Assignment filters require expenses to have an Assignment link; crane filters require a Crane link.")

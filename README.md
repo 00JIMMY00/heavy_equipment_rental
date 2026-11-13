@@ -1,6 +1,12 @@
 # Heavy Equipment Rental
 
-Crane rentals for Frappe/ERPNext. Install `arab_erp_theme` first for the shared expense models. HER supplies its own industrial theme and branding. The **Crane Operations** workspace starts with a **Crane Assignment** or a **Crane Timesheet**. ERPNext's native Project is independent of this workflow.
+Crane rentals for Frappe/ERPNext. Install `arab_erp_theme` first for the shared expense models. HER supplies its own industrial theme and branding. Start from **Crane Operations → Cranes → Operations**. The Crane is the main hub for bookings, work, repairs, Assets and owner settlements. Assignment-first and Timesheet-first entry remain available. ERPNext's native Project is independent of this workflow.
+
+## Native workflow redesign
+
+Read the [illustrated user guide](docs/USER_GUIDE.md) for setup, daily operation, repair choices and complete accounting examples.
+
+See [the complete operational and accounting design](docs/NATIVE_CRANE_WORKFLOW.md). New cranes share a rental-service Item and link their physical native Asset separately. Review Whole Crane / Company Interest Only / Third-party Custody recognition for each ownership contract. Repairs use native Material Issue, service Purchase Invoice, Asset Repair or owner Sales Invoice according to their cost treatment; only qualifying improvements increase Asset value. New agreements default to reviewed settlements and net revenue, with explicit partner posting and depreciation policies. Historical agreements and posted ledgers are preserved.
 
 ## Workflow
 
@@ -35,8 +41,8 @@ New Timesheets prefill their selling Billing Unit and Supplier Billing UOM from 
 - Timesheets use native Draft, Submitted, and Cancelled states. Work in a submitted Timesheet is the basis for billing. An active Sales Invoice must be cancelled before cancelling its source Timesheet.
 - Each shift records an Employee, work times, optional overtime hours, and editable actual worked hours excluding downtime. Entered hours are retained when clock times change. Overlapping operators contribute to operator hours individually, while crane billable hours count the time only once. A submitted crane shift cannot overlap another submitted Timesheet for that crane.
 - Hourly billing uses the agreed rate times entered crane operating hours, deduplicating simultaneous operators over their scheduled windows. Daily billing charges each worked calendar day once per booked crane period. Monthly billing prorates distinct worked days by the number of days in each month. An active invoice prevents those hours or days from being billed again.
-- Crane Maintenance remains an operational, non-submittable record. Select a shared **Expense Entry Type** and Mode of Payment when completing it; the shared **Expense Entry** posts through an ERPNext Journal Entry. The Crane form shows its bookings, Timesheets, Sales Invoices, and expenses.
-- Upload the Crane image from its side panel; these images are public and appear as thumbnails in the regular Crane List view. The linked ERPNext Item shows the same image, including later changes and removal. The form stores a license plate and Hour, Day, and Month reference prices in Crane Details. The Item displays the same prices read-only. After saving, Availability shows a compact month calendar with reserved dates; Connections links related documents.
+- Crane Maintenance remains an operational, non-submittable repair job. Select Cost Treatment, create and submit its native stock/accounting documents, then complete the job. Cash Expense retains the shared Expense Entry route for direct paid repairs. The Crane form shows its bookings, Timesheets, Sales Invoices, and expenses.
+- Upload the Crane image from its side panel; these images are public and appear as thumbnails in the regular Crane List view. Legacy per-crane Items retain their image mirror; the shared service Item is not overwritten by individual cranes. The form stores a license plate and Hour, Day, and Month reference prices in Crane Details. Legacy per-crane Items display the same prices read-only. After saving, Availability shows a compact month calendar with reserved dates; Connections links related documents.
 - From a saved Crane's **Create** menu, start an Expense, Maintenance record, or Timesheet with the Crane preselected. **Sales Invoice** creates draft invoices for the Crane's submitted, unbilled Timesheets, grouped by Assignment so each invoice has one customer.
 - The shared Expense Entry has optional Crane and Crane Assignment links supplied by this app. **Create → Expense** on a saved Crane or Crane Assignment opens a new Expense Entry with the corresponding link filled in; neither link is required for other expenses.
 - Selecting a Crane Driver (Employee) on Expense Entry fills Party Type **Employee** and that employee's ID on its Journal Entry expense debit rows. These identify the expense recipient on the journal; General Ledger expense rows remain without a party under ERPNext's native accounting rules. Migration fills missing parties on matching historical journals without changing posted amounts or ledger balances.
@@ -55,23 +61,23 @@ Cancel the Purchase Invoice before cancelling its Timesheet. To correct submitte
 
 ## Crane fixed assets
 
-Open **Crane → Fixed Asset & Ownership Value → Asset** as an Accounts Manager or System Manager. Select the native ERPNext Asset for that physical crane (quantity **1**). Its fixed-asset Item is separate from the automatically created rental service Item. For owned/shared cranes, record the **whole crane cost in the company's books**, as requested; do not reduce it to the company's ownership percentage. Configure acquisition/opening accounting and depreciation through ERPNext's native Asset workflow.
+[شرح عربي مختصر لمنطق الأصول المشتركة](docs/ASSETS_AR.md).
 
-The panel reads current gross purchase cost and value after depreciation in company currency, using the company's default Finance Book. Shared owners' reference amounts use the saved ownership agreement effective **today**, with deterministic currency rounding. Future agreements do not change today's ownership. Remaining Balance/profit percentages do not determine these asset values. Missing default-book values remain unavailable rather than appearing as zero. Asset read permission is required to see financial values.
+Open **Crane → Fixed Asset & Ownership Value → Asset** as an Accounts Manager or System Manager. Select the native ERPNext Asset for that physical crane (quantity **1**). Its fixed-asset Item is separate from the shared rental-service Item. Select Asset Recognition Basis after reviewing the ownership/control contract: **Whole Crane**, **Company Interest Only**, or **Third-party Custody**. Record the approved recognized cost; the app does not automatically multiply or divide Asset amounts by ownership percentages. Configure acquisition/opening accounting and depreciation through ERPNext's native Asset workflow.
+
+The panel reads current gross purchase cost and value after depreciation in company currency, using the company's default Finance Book. For Whole Crane recognition, shared owners' reference amounts use the saved ownership agreement effective **today**, with deterministic currency rounding. Future agreements do not change today's ownership. Remaining Balance/profit percentages do not determine these asset values. Missing default-book values remain unavailable rather than appearing as zero. Asset read permission is required to see financial values.
 
 Each Asset links to at most one Crane. Its Company must match the Agreement Company. Accounting managers can correct a link through Crane's native change history without reversing valid Asset accounting. Draft/cancelled/disposed status is visible; new links reject cancelled, sold, scrapped and capitalized Assets. Native Asset edits also enforce company, quantity and ownership consistency. Rented/Operated for Owner cranes can link an explicitly identified third-party Asset for custody, rather than treating it as company-owned.
 
-Linking or displaying an Asset creates no accounting entries. Partner reference shares are not paid-in capital, debt or profit entitlements. Record actual acquisition funding/contributions through native accounting with the appropriate accounts. Native Asset depreciation is not automatically added to rental profit settlements by this link. Existing Cranes remain usable without a link so historical Assets, values and opening entries are never guessed or duplicated; link them explicitly after review.
+Linking or displaying an Asset creates no accounting entries. Partner reference shares are not paid-in capital, debt or profit entitlements. Record actual acquisition funding/contributions through native accounting with the appropriate accounts. New native depreciation journals are attributed to the Crane; settlement includes posted depreciation only when its dated agreement enables that policy. Existing Cranes remain usable without a link so historical Assets, values and opening entries are never guessed or duplicated; link them explicitly after review.
 
 ## Crane ownership and profit sharing
 
 Crane supports **Shared Ownership**, **Operated for Owner**, and **Operated by
 Partner**, with separate ownership and remaining balance percentages. Enter the
 operator, operating percentage and dated agreement once. Submitting a sharing
-Timesheet creates its settlement; submitting the Sales Invoice approves/posts it
-automatically. The settlement takes its allocated Sales Invoice **Grand Total**, deducts
-the operating share first, then costs, and distributes the remainder. A deficit
-blocks saving/submission with its numerical explanation. Exactly zero remainder
+Timesheet creates a draft settlement. New agreements require cost review before posting; existing automatic agreements still post with the Sales Invoice. The settlement takes its agreed invoice revenue (net of taxes by default for new agreements), deducts
+the operating share first, then costs, and distributes the remainder. A deficit blocks submission with its numerical explanation; review-mode drafts can retain the shortfall. Exactly zero remainder
 is allowed. External partners use native **Shareholders** and a company-specific
 **Partners** Payable account. Native Journal Entries recognize entitlements;
 Partner Payment opens a Pay Payment Entry for the selected unpaid partner,
@@ -86,7 +92,7 @@ net-sales basis. See [configuration and accounting](docs/PROFIT_SHARING.md) and
 
 Maintenance and expenses show editable **Crane Assignment** and **Crane Timesheet** links directly. Choose Crane and start date to default uniquely matching rental links. Both links are optional and editable; ambiguous Timesheets remain for manual selection. Maintenance uses Actual Start/End dates only. A Timesheet fills its Assignment automatically; Crane-only records are allowed when no work matches. Maintenance carries its selection into the generated expense.
 
-Rental expenses display **Crane**, **Crane Assignment**, optional **Crane Timesheet**, and read-only **Service From/To Date**. The Assignment defaults its Crane booking period; select a Timesheet to use its work period. Settlement uses that work attribution even if the expense is posted later, allocating it once among eligible submitted Timesheets by billable hours. Enter expenses before invoice submission automatically approves the settlement. Reopen affected settlements before adding costs for closed work. Posted accounting dates and existing submitted settlements are preserved. See [expense allocation rules](docs/PROFIT_SHARING.md).
+Rental expenses display **Crane**, **Crane Assignment**, optional **Crane Timesheet**, and read-only **Service From/To Date**. The Assignment defaults its Crane booking period; select a Timesheet to use its work period. Settlement uses that work attribution even if the expense is posted later, allocating it once among eligible submitted Timesheets by billable hours. Enter all costs before approving the settlement. Under historical automatic agreements, costs must be complete before invoice submission. Reopen affected settlements before adding costs for closed work. Posted accounting dates and existing submitted settlements are preserved. See [expense allocation rules](docs/PROFIT_SHARING.md).
 
 ## Treasury transfers
 
@@ -110,8 +116,7 @@ shows Total Income, Total Expenses, and **Net Sales = Income − Expenses**, wit
 documents and the actual cash/custody source account for expenses.
 
 Income is submitted Sales Invoice item net amounts linked through submitted rental Timesheets.
-Costs are linked submitted Purchase Invoice item net amounts plus submitted rental Expense
-Entries. Native invoice returns reduce the corresponding amounts. Drafts, cancelled records,
+Costs include linked supplier hire invoices, rental Expense Entries, native repair stock/service postings and attributed depreciation/other journals. Native invoice returns reduce the corresponding amounts. Drafts, cancelled records,
 payments, and treasury transfers are excluded. Invoice values exclude taxes and use company
 currency. This is recorded rental margin, not cash receipts or a complete company profit and loss.
 Unbilled Timesheets are excluded. An Assignment filter requires an explicit Assignment link on
@@ -226,4 +231,10 @@ Automatic settlement and Shareholder/report tests:
 
 ```bash
 bench --site YOUR_SITE run-tests --module heavy_equipment_rental.test_partner_settlements
+```
+
+Native Asset/repair/stock/owner accounting integration tests:
+
+```bash
+bench --site YOUR_SITE run-tests --module heavy_equipment_rental.test_native_crane_workflow
 ```

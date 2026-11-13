@@ -30,3 +30,6 @@ heavy_equipment_rental.patches.treasury_workbook_cost_centers
 heavy_equipment_rental.patches.shareholder_timesheet_settlements
 
 heavy_equipment_rental.patches.archive_maintenance_planned_dates
+
+heavy_equipment_rental.patches.crane_native_workflow
+heavy_equipment_rental.patches.explicit_settlement_revenue_basis

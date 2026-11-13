@@ -50,11 +50,14 @@ frappe.ui.form.on("Crane Profit Settlement", {
                 ${["Posting Date", "Crane Assignment", "Service Period", "Document Type", "Document", "Revenue Account", "Revenue", "Operating Expenses"].map(label => `<th>${esc(__(label))}</th>`).join("")}
                 </tr></thead><tbody>${rows}</tbody></table></div>`
             : `<p class="text-muted">${__("No posted revenue or costs in this period.")}</p>`);
-        frm.set_intro(__("Save to calculate: allocated invoice Grand Total, less operating share, less expenses, then distribute the remaining balance. A deficit stops the settlement. Submit to close the period and create partner payables. Historical agreements retain their original revenue basis."));
+        frm.set_intro(__("Save to calculate: agreed invoice revenue, less operating share, less expenses, then distribute the remaining balance. A deficit stops the settlement. Submit to close the period and create partner payables. Historical agreements retain their original revenue basis."));
         if (frm.doc.timesheet && frm.doc.settlement_basis === "Timesheet") {
             frm.set_df_property("from_date", "read_only", 1);
             frm.set_df_property("to_date", "read_only", 1);
-            frm.set_intro(__("Partner entitlements are posted automatically when the linked Sales Invoice is submitted. Use Partner Payment to pay the outstanding balance."), "blue");
+            const terms = JSON.parse(frm.doc.agreement_snapshot || "{}");
+            frm.set_intro(__(terms.settlement_approval === "Review Before Posting"
+                ? "Review costs, recalculate and confirm Costs Reviewed, then submit to recognize partner entitlements. Partner Payment records the later payment."
+                : "This agreement posts partner entitlements on invoice submission. Partner Payment records the later payment."), "blue");
         }
         const agreement = JSON.parse(frm.doc.agreement_snapshot || "{}");
         if (agreement.posting_basis === "Source Revenue Accounts") {

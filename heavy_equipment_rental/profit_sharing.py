@@ -127,6 +127,8 @@ def validate_agreement(doc):
     history = json.loads(before.agreement_history or "[]") if before else []
     if (doc.agreement_history or "") != (before.agreement_history or "" if before else ""):
         frappe.throw(_("Agreement History is maintained automatically."))
+    doc.settlement_revenue_basis = doc.get("settlement_revenue_basis") or (
+        history[-1].get("settlement_revenue_basis", "Invoice Grand Total") if history else "Net Revenue")
     if doc.ownership_type in SHARING_TYPES:
         doc.enable_profit_sharing = 1
     if doc.ownership_type == "Rented" and doc.enable_profit_sharing:
@@ -145,7 +147,11 @@ def validate_agreement(doc):
                    payable_account=doc.partner_payable_account, cost_center=doc.sharing_cost_center,
                    partners=[])
     version.update(calculation_method=doc.sharing_calculation or OPERATING_FIRST,
-                   operating_percentage=percentage(doc.operating_percentage))
+                   operating_percentage=percentage(doc.operating_percentage),
+                   settlement_approval=doc.settlement_approval or "Review Before Posting",
+                   distribution_posting=doc.distribution_posting or "Partner Expense",
+                   include_depreciation=int(bool(doc.include_depreciation)),
+                   settlement_revenue_basis=doc.settlement_revenue_basis)
     if version["calculation_method"] not in (OPERATING_FIRST, LEGACY_NET):
         frappe.throw(_("Invalid agreement calculation method."))
     if doc.enable_profit_sharing:
@@ -154,8 +160,12 @@ def validate_agreement(doc):
         company = frappe.get_doc("Company", doc.sharing_company)
         company.check_permission("read")
         version["currency"] = company.default_currency
-        if version["calculation_method"] == LEGACY_NET:
+        if version["calculation_method"] == LEGACY_NET or version["distribution_posting"] != "Source Revenue Accounts":
             validate_account(doc.profit_allocation_account, company.name, company.default_currency)
+        if version["calculation_method"] != LEGACY_NET and version["distribution_posting"] != "Source Revenue Accounts":
+            root = "Equity" if version["distribution_posting"] == "Equity Distribution" else "Expense"
+            if frappe.get_cached_value("Account", doc.profit_allocation_account, "root_type") != root:
+                frappe.throw(_("Partner Allocation Account must be an {0} account for this treatment.").format(root))
         validate_account(doc.partner_payable_account, company.name, company.default_currency, payable=True)
         center = frappe.get_doc("Cost Center", doc.sharing_cost_center)
         if center.company != company.name or center.is_group or center.disabled:
@@ -192,6 +202,8 @@ def validate_agreement(doc):
         for field in ("ownership_percentage", "profit_percentage"):
             if sum(Decimal(str(p[field])) for p in version["partners"]) != 100:
                 frappe.throw(_("Ownership percentages and Profit Share percentages must each total 100%."))
+        if version["distribution_posting"] == "Equity Distribution" and (doc.operator_type == "External Operator" or doc.ownership_type == "Operated by Partner") and version["operating_percentage"]:
+            frappe.throw(_("External operator fees are service costs, not equity distributions. Use Partner Expense or account for the operator separately."))
         if doc.ownership_type == "Operated by Partner":
             doc.operator_type = version["operator_type"] = "External Operator"
         if doc.operator_type == "External Operator":
@@ -212,6 +224,10 @@ def validate_agreement(doc):
     if previous:
         previous.setdefault("calculation_method", LEGACY_NET)
         previous.setdefault("operating_percentage", 0)
+        previous.setdefault("settlement_approval", "On Invoice Submission")
+        previous.setdefault("distribution_posting", "Source Revenue Accounts")
+        previous.setdefault("include_depreciation", 0)
+        previous.setdefault("settlement_revenue_basis", "Invoice Grand Total")
         previous = modern_agreement(previous)
         previous.setdefault("operating_shareholder", None)
         for p in previous["partners"]:
@@ -305,19 +321,26 @@ def invoice_cranes(doc):
 
 
 def source_cranes(doc):
-    if doc.doctype == "Expense Entry":
+    if doc.doctype in ("Expense Entry", "Stock Entry", "Asset Repair"):
         return {doc.crane} if doc.crane else set()
     if doc.doctype == "Journal Entry":
-        cranes = {r.crane for r in doc.accounts if r.get("crane")}
+        if doc.voucher_type == "Depreciation Entry" and doc.finance_book and doc.finance_book != frappe.get_cached_value("Company", doc.company, "default_finance_book"):
+            return set()
+        cranes = {r.crane for r in doc.accounts if r.get("crane") and
+                  frappe.get_cached_value("Account", r.account, "root_type") in ("Income", "Expense")}
         cranes.update(frappe.get_all("Expense Entry", filters={"journal_entry": doc.name, "docstatus": 1},
                                      pluck="crane"))
         return set(filter(None, cranes))
     mapping = invoice_cranes(doc)
     cranes = set().union(*mapping.values()) if mapping else set()
     for row in doc.items:
-        if not row.get("crane"):
+        if not row.get("crane") or row.get("is_fixed_asset"):
             continue
-        if row.item_code in mapping and mapping[row.item_code] != {row.crane}:
+        if doc.doctype == "Purchase Invoice" and (
+                frappe.get_cached_value("Item", row.item_code, "is_stock_item") or
+                frappe.get_cached_value("Account", row.expense_account, "root_type") != "Expense"):
+            continue
+        if row.item_code in mapping and row.crane not in mapping[row.item_code]:
             frappe.throw(_("Invoice Crane attribution conflicts with its rental Timesheets."))
         cranes.add(row.crane)
     return cranes
@@ -325,6 +348,11 @@ def source_cranes(doc):
 
 def guard_closed_period(doc, method=None):
     """Serialize source posting with settlements, and keep closed periods stable."""
+    if doc.get("crane_maintenance"):
+        from heavy_equipment_rental.crane_repairs import guard_repair_posting
+        guard_repair_posting(doc, method)
+        if frappe.db.get_value("Crane Maintenance", doc.crane_maintenance, "cost_treatment") != "Operating Expense":
+            return
     if doc.doctype == "Journal Entry":
         active = frappe.db.get_value("Crane Profit Settlement", {"journal_entry": doc.name, "docstatus": 1}, "name")
         if active:
@@ -360,7 +388,7 @@ def guard_closed_period(doc, method=None):
         if closed:
             frappe.throw(_("Period closed by {0}. Cancel later settlements first, or post the adjustment "
                            "in an open period.").format(closed))
-        if doc.doctype in ("Expense Entry", "Journal Entry", "Purchase Invoice"):
+        if doc.doctype in ("Expense Entry", "Journal Entry", "Purchase Invoice", "Stock Entry"):
             closed_work = frappe.db.get_value("Crane Profit Settlement", {
                 "crane": crane, "company": doc.company, "docstatus": 1, "settlement_basis": "Timesheet",
                 "from_date": ["<=", doc.posting_date], "to_date": [">=", doc.posting_date]}, "name")
@@ -406,6 +434,15 @@ def collect_sources(crane, company, start, end, *, grand_total=False, include_ex
                 # with opposite signed items; keep that explicit attribution.
                 amounts = [flt(r.base_net_amount) for r in invoice.items]
             for row, amount in zip(invoice.items, amounts):
+                # Stock purchases and improvements are not rental operating costs.
+                if invoice.get("crane_maintenance"):
+                    continue  # Native repair costs are collected once from their actual ledger.
+                if row.get("is_fixed_asset"):
+                    continue
+                if doctype == "Purchase Invoice" and (
+                        frappe.get_cached_value("Item", row.item_code, "is_stock_item") or
+                        frappe.get_cached_value("Account", row.expense_account, "root_type") != "Expense"):
+                    continue
                 linked = {row.crane} if row.get("crane") else mapping.get(row.item_code, set())
                 if crane not in linked:
                     continue
@@ -450,6 +487,8 @@ def collect_sources(crane, company, start, end, *, grand_total=False, include_ex
         if name in expense_journals or name in settlement_journals:
             continue
         journal = frappe.get_doc("Journal Entry", name)
+        if journal.voucher_type == "Depreciation Entry" and journal.finance_book and journal.finance_book != frappe.get_cached_value("Company", company, "default_finance_book"):
+            continue
         for row in journal.accounts:
             if row.get("crane") != crane:
                 continue
@@ -460,6 +499,12 @@ def collect_sources(crane, company, start, end, *, grand_total=False, include_ex
             value = flt(row.credit) - flt(row.debit) if root == "Income" else flt(row.debit) - flt(row.credit)
             sources.append(dict(doctype="Journal Entry", name=name, detail=row.name,
                 posting_date=str(journal.posting_date),
+                is_depreciation=journal.voucher_type == "Depreciation Entry",
                 **(dict(income_account=row.account, dimensions=revenue_dimensions(row)) if root == "Income" else {}),
                 **{"revenue" if root == "Income" else "expenses": value}))
+    if include_expenses:
+        from heavy_equipment_rental.crane_repairs import repair_expense_sources, allocate_repair_period
+        for source in repair_expense_sources(crane, company):
+            if allocated := allocate_repair_period(source, company, start, end):
+                sources.append(allocated)
     return sorted(sources, key=lambda r: (r["posting_date"], r["doctype"], r["name"], r.get("detail", "")))

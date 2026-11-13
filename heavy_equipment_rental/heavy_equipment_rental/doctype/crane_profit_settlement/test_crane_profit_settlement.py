@@ -21,7 +21,7 @@ class TestCraneProfitSettlement(FrappeTestCase):
         self.crane = frappe.get_doc("Crane", self.cycle["crane"])
         self.supplier = frappe.get_doc(dict(doctype="Supplier", supplier_name="HER Partner " + self.key,
             supplier_type="Company", supplier_group=frappe.db.get_value("Supplier Group", {"is_group": 0}, "name"))).insert()
-        self.crane.update(dict(ownership_type="Shared Ownership", sharing_company=self.company.name,
+        self.crane.update(dict(settlement_revenue_basis="Invoice Grand Total", distribution_posting="Source Revenue Accounts", settlement_approval="On Invoice Submission", include_depreciation=0, ownership_type="Shared Ownership", sharing_company=self.company.name,
             agreement_effective_from=self.cycle["from_date"],
             profit_allocation_account=self.company.default_expense_account,
             partner_payable_account=self.company.default_payable_account,

@@ -1,5 +1,14 @@
 # Current decisions
 
+## 2026-11-13 — Native workflow redesign and Crane hub (latest)
+
+- User confirmed contracts vary: support both whole-crane control/funding and separately owned interests, with explicit accounting review. Asset Recognition Basis controls interpretation, not automatic postings or rescaling. Third-party custody cannot receive company capitalization/depreciation. This supersedes the earlier whole-cost-only decision.
+- Crane → Operations is the main entry point. Keep native Asset, fixed-asset Item, stock Items/Warehouses, invoices, journals and payments. New cranes reuse one non-stock rental-service Item; historical per-crane Items remain linked. No custom stock, asset or contribution ledger.
+- Extend existing Crane Maintenance with Operating Expense, Capitalize Improvement, Recover from Owner, No Cost and legacy Cash Expense. Native Material Issue consumes routine parts, Purchase Invoice records external services, Asset Repair capitalizes justified improvements, and stock-updating owner Sales Invoice records separately recoverable parts/services. Do not charge one repair through two treatments. Capitalization uses actual stock valuation, reverses with its stock issue, and retains native depreciation schedules.
+- New dated agreements default to Review Before Posting, Net Revenue, Partner Expense and posted depreciation. Select a reviewed allocation account. Explicit Source Revenue Accounts and Equity Distribution remain available for appropriate contracts; external operating fees cannot be posted as equity distributions. Historical automatic approval, revenue basis and postings remain unchanged until a dated amendment.
+- Review-mode deficits remain visible in drafts without blocking customer billing; submission still rejects deficits. Costs Reviewed and completion of relevant operating repair jobs are required to close reviewed settlements. Entitlement recognition and actual payment remain separate. Native repair costs allocate by work/service period; Rental Profitability uses accounting dates and includes repair stock/service costs and attributed depreciation/journals.
+- Migration preserves physical Assets, stock, invoices, GL, current legacy Item links and immutable agreement/settlement snapshots. Existing cash maintenance stays Cash Expense. See [full design and boundaries](NATIVE_CRANE_WORKFLOW.md).
+
 ## 2026-11-13 — Crane fixed assets and shared ownership value
 
 - The user explicitly chose **whole crane cost in our company's books** for shared cranes. Link the Crane to one native ERPNext Asset (quantity 1); keep its physical fixed-asset Item separate from the rental service Item. ERPNext remains the source of asset acquisition, depreciation and disposal accounting.
