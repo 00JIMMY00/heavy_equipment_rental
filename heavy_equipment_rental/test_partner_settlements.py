@@ -24,7 +24,7 @@ class TestPartnerSettlements(FrappeTestCase):
         self.crane = frappe.get_doc("Crane", self.cycle["crane"])
         self.partners = [frappe.get_doc(dict(doctype="Shareholder", title="HER owner " + self.key + str(i),
             company=self.company.name)).insert() for i in range(2)]
-        self.crane.update(dict(settlement_revenue_basis="Invoice Grand Total", distribution_posting="Source Revenue Accounts", settlement_approval="On Invoice Submission", include_depreciation=0, ownership_type="Shared Ownership", sharing_company=self.company.name,
+        self.crane.update(dict(ownership_type="Shared Ownership", sharing_company=self.company.name,
             agreement_effective_from=self.cycle["from_date"], operating_percentage=10))
         self.crane.set("ownership_partners", [dict(is_company=1, ownership_percentage=50, profit_percentage=50)] + [
             dict(shareholder=p.name, ownership_percentage=25, profit_percentage=25) for p in self.partners])
@@ -57,6 +57,111 @@ class TestPartnerSettlements(FrappeTestCase):
         payment.insert().submit()
         return payment
 
+    def test_payment_form_reallocates_partial_shareholder_payment(self):
+        sheet = self.sheet()
+        self.invoice(sheet).submit()
+        settlement = frappe.get_doc("Crane Profit Settlement", sheet.profit_settlement)
+        payment = frappe.get_doc(make_partner_payment(settlement.name, shareholder=self.partners[0].name))
+        entitlement = payment.paid_amount
+        # Exercise the same server method called after editing Paid Amount in Desk.
+        payment.paid_amount = payment.received_amount = 500
+        payment.allocate_amount_to_references(500, True, True)
+        self.assertEqual(payment.references[0].allocated_amount, 500)
+        payment.reference_no, payment.reference_date = "HER form partial", today()
+        payment.insert().submit()
+        balance = settlement_payment_details(settlement.name)["balances"][0]
+        self.assertEqual((balance["paid_amount"], balance["outstanding_amount"], balance["status"]),
+            (500, entitlement - 500, "Partly Paid"))
+
+        remaining = frappe.get_doc(make_partner_payment(settlement.name, shareholder=self.partners[0].name))
+        for amount in (0, 100, 300, entitlement + 100):
+            remaining.allocate_amount_to_references(amount, True, True)
+            self.assertEqual(remaining.references[0].allocated_amount, min(amount, entitlement - 500))
+        remaining.allocate_amount_to_references(300, True, False)
+        self.assertEqual(remaining.references[0].allocated_amount, 0)
+        remaining.allocate_amount_to_references(remaining.paid_amount, False, True)
+        remaining.reference_no, remaining.reference_date = "HER form remainder", today()
+        remaining.insert().submit()
+        self.assertEqual(settlement_payment_details(settlement.name)["balances"][0]["status"], "Paid")
+        remaining.cancel()
+        payment.cancel()
+        self.assertEqual(settlement_payment_details(settlement.name)["balances"][0]["outstanding_amount"], entitlement)
+
+    def test_payment_allocator_keeps_native_non_settlement_behavior(self):
+        from erpnext.accounts.doctype.payment_entry.payment_entry import PaymentEntry
+
+        payment = frappe.new_doc("Payment Entry")
+        for party_type, settlement in (("Supplier", "CPS-test"), ("Customer", None), ("Shareholder", None)):
+            payment.party_type, payment.crane_profit_settlement = party_type, settlement
+            payment.payment_type = "Pay"
+            with patch.object(PaymentEntry, "allocate_amount_to_references") as native:
+                payment.allocate_amount_to_references(100, True, True)
+                native.assert_called_once_with(100, True, True)
+
+    def test_combined_partner_payment_from_open_entitlements(self):
+        from heavy_equipment_rental.partner_payment import get_open_partner_entitlements
+
+        first, second = self.sheet(), self.sheet(offset=1, hours=4)
+        self.invoice(first).submit()
+        self.invoice(second).submit()
+        a, b = [frappe.get_doc("Crane Profit Settlement", sheet.profit_settlement) for sheet in (first, second)]
+        payment = frappe.get_doc(make_partner_payment(a.name, shareholder=self.partners[0].name))
+        args = dict(company=self.company.name, party_type="Shareholder", party=self.partners[0].name,
+            paid_to=payment.paid_to)
+        rows = get_open_partner_entitlements(**args)
+        self.assertEqual([r["settlement"] for r in rows], [a.name, b.name])
+        self.assertEqual([r["outstanding_amount"] for r in rows], [1800, 900])
+        for field, value in (("timesheet", second.name), ("sales_invoice", b.sales_invoice)):
+            self.assertEqual([r["settlement"] for r in get_open_partner_entitlements(**args, **{field: value})], [b.name])
+        self.assertEqual(get_open_partner_entitlements(**args, to_date="2000-01-01"), [])
+        self.assertEqual(get_open_partner_entitlements(**args, crane="missing crane"), [])
+        payment.set("references", [dict(reference_doctype=r["reference_doctype"], reference_name=r["reference_name"],
+            total_amount=r["total_amount"], outstanding_amount=r["outstanding_amount"], exchange_rate=r["exchange_rate"])
+            for r in rows])
+        payment.paid_amount = payment.received_amount = 2000
+        payment.allocate_amount_to_references(2000, True, True)
+        self.assertEqual([r.allocated_amount for r in payment.references], [1800, 200])
+        payment.reference_no, payment.reference_date = "HER combined", today()
+        payment.insert().submit()
+        self.assertFalse(payment.crane_profit_settlement or payment.crane_timesheet or payment.crane)
+        self.assertEqual(settlement_payment_details(a.name)["balances"][0]["status"], "Paid")
+        self.assertEqual(settlement_payment_details(b.name)["balances"][0]["status"], "Partly Paid")
+        self.assertEqual([r["amount"] for r in settlement_payment_details(b.name)["payments"]], [200])
+        remaining = get_open_partner_entitlements(**args)
+        self.assertEqual([(r["settlement"], r["outstanding_amount"]) for r in remaining], [(b.name, 700)])
+        other = get_open_partner_entitlements(**{**args, "party": self.partners[1].name})
+        self.assertEqual([r["outstanding_amount"] for r in other], [1800, 900])
+        payment.cancel()
+        self.assertEqual([r["outstanding_amount"] for r in get_open_partner_entitlements(**args)], [1800, 900])
+
+    def test_open_entitlements_permissions_and_account_scope(self):
+        from heavy_equipment_rental.partner_payment import get_open_partner_entitlements
+        from frappe.model.document import Document
+
+        sheet = self.sheet()
+        self.invoice(sheet).submit()
+        payment = frappe.get_doc(make_partner_payment(sheet.profit_settlement, shareholder=self.partners[0].name))
+        args = dict(company=self.company.name, party_type="Shareholder", party=self.partners[0].name,
+            paid_to=payment.paid_to)
+        with self.assertRaises(frappe.ValidationError):
+            get_open_partner_entitlements(**{**args, "paid_to": self.company.default_cash_account})
+        with self.assertRaises(frappe.ValidationError):
+            get_open_partner_entitlements(**args, from_date="2026-11-15", to_date="2026-11-14")
+        check = Document.check_permission
+        def deny_invoice(doc, *a, **kw):
+            if doc.doctype == "Sales Invoice":
+                raise frappe.PermissionError
+            return check(doc, *a, **kw)
+        with patch.object(Document, "check_permission", deny_invoice), self.assertRaises(frappe.PermissionError):
+            get_open_partner_entitlements(**args)
+        user = frappe.session.user
+        try:
+            frappe.set_user("Guest")
+            with self.assertRaises(frappe.PermissionError):
+                get_open_partner_entitlements(**args)
+        finally:
+            frappe.set_user(user)
+
     def test_automatic_submission_and_shareholder_payments(self):
         sheet = self.sheet()
         settlement = frappe.get_doc("Crane Profit Settlement", sheet.profit_settlement)
@@ -71,6 +176,12 @@ class TestPartnerSettlements(FrappeTestCase):
         self.assertEqual((settlement.operating_fee, settlement.external_distribution), (800, 3600))
         journal = frappe.get_doc("Journal Entry", settlement.journal_entry)
         self.assertEqual(journal.total_debit, 3600)
+        agreement = json.loads(settlement.agreement_snapshot)
+        self.assertEqual((agreement["distribution_posting"], agreement["settlement_approval"],
+            agreement["settlement_revenue_basis"], agreement["include_depreciation"]),
+            ("Source Revenue Accounts", "On Invoice Submission", "Invoice Grand Total", 0))
+        self.assertTrue(all(frappe.get_cached_value("Account", row.account, "root_type") == "Income"
+            for row in journal.accounts if row.debit_in_account_currency))
         self.assertEqual({r.party_type for r in journal.accounts if r.party}, {"Shareholder"})
         self.assertEqual(journal.accounts[-1].account, default_account(self.company.name))
         self.pay(settlement, amount=500)
@@ -368,3 +479,75 @@ class TestPartnerSettlements(FrappeTestCase):
         with self.assertRaisesRegex(frappe.ValidationError,'Expense details cannot change'):
             maintenance.crane_timesheet=None
             maintenance.save()
+
+
+    def test_restore_migration_is_dated_idempotent_and_preserves_posted_snapshots(self):
+        from heavy_equipment_rental.patches.restore_automatic_revenue_settlements import execute, RESTORED_TERMS
+        sheet = self.sheet()
+        self.invoice(sheet).submit()
+        settlement = frappe.get_doc("Crane Profit Settlement", sheet.profit_settlement)
+        snapshot = settlement.agreement_snapshot
+        journal = frappe.get_doc("Journal Entry", settlement.journal_entry).as_dict()
+        self.crane.update(dict(agreement_effective_from=add_days(self.start, 1),
+            settlement_approval="Review Before Posting", distribution_posting="Partner Expense",
+            profit_allocation_account=self.company.default_expense_account,
+            settlement_revenue_basis="Net Revenue", include_depreciation=1))
+        self.crane.save()
+        previous = json.loads(self.crane.agreement_history)
+        counts = {dt: frappe.db.count(dt) for dt in ("GL Entry", "Payment Entry", "Journal Entry", "Crane Profit Settlement")}
+        execute()
+        self.crane.reload()
+        restored = json.loads(self.crane.agreement_history)
+        self.assertEqual(restored[:-1], previous)
+        self.assertGreater(restored[-1]["effective_from"], previous[-1]["effective_from"])
+        self.assertGreater(restored[-1]["effective_from"], str(settlement.to_date))
+        self.assertTrue(all(self.crane.get(k) == v for k, v in RESTORED_TERMS.items()))
+        execute()
+        self.assertEqual(json.loads(self.crane.reload().agreement_history), restored)
+        self.assertEqual(settlement.reload().agreement_snapshot, snapshot)
+        self.assertEqual(frappe.get_doc("Journal Entry", settlement.journal_entry).as_dict(), journal)
+        self.assertEqual(counts, {dt: frappe.db.count(dt) for dt in counts})
+
+    def test_confirmed_cancel_all_from_invoice_and_timesheet(self):
+        from heavy_equipment_rental.cancellation import get_plan, cancel_all
+
+        for root in ("Sales Invoice", "Crane Timesheet"):
+            sheet = self.sheet(offset=0 if root == "Sales Invoice" else 1)
+            invoice = self.invoice(sheet)
+            invoice.submit()
+            settlement = frappe.get_doc("Crane Profit Settlement", sheet.profit_settlement)
+            name = invoice.name if root == "Sales Invoice" else sheet.name
+            plan = get_plan(root, name)
+            keys = [(row["doctype"], row["name"]) for row in plan]
+            self.assertEqual(len(keys), len(set(keys)))
+            with self.assertRaises(frappe.ValidationError):
+                cancel_all(root, name, "[]")
+            self.assertEqual(frappe.db.get_value("Sales Invoice", invoice.name, "docstatus"), 1)
+            # A downstream accounting failure must restore already cancelled entitlements.
+            invoice_class = type(invoice)
+            with patch.object(invoice_class, "cancel", side_effect=frappe.ValidationError("Cancellation blocked")):
+                with self.assertRaises(frappe.ValidationError):
+                    cancel_all(root, name, frappe.as_json(plan))
+            for row in plan:
+                self.assertEqual(frappe.db.get_value(row["doctype"], row["name"], "docstatus"), 1)
+            cancel_all(root, name, frappe.as_json(plan))
+            for dt, dn in (("Sales Invoice", invoice.name), ("Crane Timesheet", sheet.name),
+                           ("Crane Profit Settlement", settlement.name),
+                           ("Journal Entry", settlement.journal_entry)):
+                self.assertEqual(frappe.db.get_value(dt, dn, "docstatus"),
+                                 1 if dt == "Crane Timesheet" and root == "Sales Invoice" else 2)
+
+    def test_cancel_settlement_preserves_invoice_and_work(self):
+        from heavy_equipment_rental.cancellation import get_plan, cancel_all
+
+        sheet = self.sheet()
+        invoice = self.invoice(sheet)
+        invoice.submit()
+        settlement = frappe.get_doc("Crane Profit Settlement", sheet.profit_settlement)
+        plan = get_plan(settlement.doctype, settlement.name)
+        self.assertEqual({r["doctype"] for r in plan}, {"Crane Profit Settlement", "Journal Entry"})
+        cancel_all(settlement.doctype, settlement.name, frappe.as_json(plan))
+        self.assertEqual(sheet.reload().docstatus, 1)
+        self.assertEqual(invoice.reload().docstatus, 1)
+        self.assertEqual(settlement.reload().docstatus, 2)
+        self.assertEqual(frappe.db.get_value("Journal Entry", settlement.journal_entry, "docstatus"), 2)

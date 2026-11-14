@@ -1,5 +1,44 @@
 # Current decisions
 
+## 2026-11-14 — Select multiple partner entitlements in Payment Entry
+
+- Add a permission-checked picker to draft Pay entries for Shareholder/Supplier. Scope open, submitted settlement journals by Company, party and Account Paid To; optionally filter settlement posting dates, Crane, Timesheet and Sales Invoice. Amounts are current native ledger balances, not historical as-of balances. Exclude draft/cancelled/fully paid settlements.
+- Append selected native Journal Entry references without duplicates. Preserve an entered payment amount; otherwise default to the total selected balance using payment exchange rates. Partial payments allocate in reference order, capped by each remaining balance. Extend the Shareholder allocator to multiple settlement journals; retain native behavior for other payment flows.
+- Validate all participating settlements and retain native outstanding/submit locks. Combined payments clear the single-settlement/Timesheet/Crane header links; reference rows remain authoritative for reports and balances. No schema or historical accounting changes.
+
+## 2026-11-14 — Partial partner payment from the settlement form
+
+- Keep native Payment Entry and its accounting/permission checks. A scoped controller override allocates edited payment amounts for the single Shareholder Journal Entry reference created by Partner Payment; ERPNext v15 otherwise resets this allocation to zero because its positive-payable branch only includes Supplier/Employee.
+- Respect the allocation toggle, deductions and outstanding cap. Other payment flows retain the native allocator. No historical accounting changes or schema migration.
+- The Partner Payment button returns a native Promise so Desk can restore the button without a `response.finally` error.
+
+## 2026-11-13 — Comprehensive profit distribution report
+
+- Add native Script Report Crane Profit Distribution, accessible from Crane Operations, the Crane hub and settlement View. Five views cover settlement economics, participant totals, per-settlement percentages/cost burden, source costs/revenue and native payable/payment movements. Keep the existing partner and accounting reports.
+- Read saved agreement/source/share snapshots, without recalculating or posting. Company operating and residual shares remain separate; expense burden follows saved residual-profit percentages, not ownership percentages. Company retention is not a payable or cash balance. Costs are explanatory allocations, never extra GL postings.
+- Work-period filters select whole overlapping settlements; posting-date filters select settlement posting dates. Payment balances use the native ledger through Balance As Of. Separate posted/draft totals and estimates; never total percentages or running balances. A Shareholder/status filter scopes settlements, keeps full-context economics cards and limits participant/movement rows to matching partners. Do not repeat invoice/settlement totals per participant.
+- Respect source, settlement, party, journal and payment read permissions; fail on inaccessible contributing documents rather than returning incomplete totals. Cancellations/delinked rows follow the current native ledger; no reconstruction of a previous cancellation state. Company currency only. Native export/print remain available.
+
+## 2026-11-13 — Demo accounts must not become shared rental defaults
+
+- Demo-specific invoice accounts belong to their example transactions. Preserve shared rental Item income defaults around explicit demo creation, because native SellingController learns non-company accounts when the Item default is empty. The shared development Item uses company Sales - CC for ordinary invoices. Submitted invoices require normal accounting correction; changing an Item default does not rewrite them.
+
+## 2026-11-13 — Restore pre-550f4f5d profit distribution (latest)
+
+- User explicitly requested the earlier settlement workflow. New agreements use On Invoice Submission, Source Revenue Accounts, Invoice Grand Total and no depreciation deduction. The invoice automatically posts the entitlement journal: debit source Income accounts, credit Partners Payable by Shareholder. Customer receipts and manual partner payments remain separate native Payment Entries.
+- Hide the redesign's alternative accounting/approval/tax/depreciation selectors; keep their stored fields and calculation paths solely for historical compatibility. Legacy Profit Allocation Account is visible only for Legacy Net Profit. Costs Reviewed appears only on historical review-mode settlements. Asset ownership, stock/repair workflows, source locks, permissions and Connections remain supported.
+- Migration appends restored dated terms after previous versions and submitted settlement periods, preserving original agreements, submitted settlements, journals, payments and GL. Do not reclassify paid historical entitlements. Record costs and complete operating repairs before invoice submission; deficits still block automatic entitlement posting and roll back invoice submission.
+
+## 2026-11-13 — Complete Crane connections
+
+- Keep the native Connections dashboard, using its supported custom count method. Discover incoming Crane links in standard/custom fields and child tables (including site accounting dimensions); show child links under their parent DocType. Include outgoing master/owner links, union header/row links and deduplicate documents. Counts and list destinations respect source and target permissions.
+- Connections also follow linked Asset acquisition invoices/receipts, Timesheet invoices, expense/settlement journals, depreciation schedules and exact native Payment Entry references. Include invoice/journal rows attributed to the Crane’s selected company leaf Cost Center only when no other Crane shares that center; this includes dedicated spare-parts purchases. Never expand by shared supplier, customer or Item. Check read permissions at every hop and deduplicate results. No accounting or schema changes.
+
+## 2026-11-13 — Company assets only (latest user instruction)
+
+- Supersedes whole-crane/shared and custody recognition. Owned means full Company cost. Shared equipment means only the Company interest, using ownership_partners. No Company ownership means no Asset link or creation action. Basis is derived/read-only; Whole Crane, Pending Review and custody choices are removed.
+- Asset panels show Company values only, with no other-owner amount allocations. Native accounting records our recognized costs; changing a percentage does not rescale posted Assets. Migration archives obsolete zero-ownership/custody and full-crane partial-interest links without rewriting Assets, agreements, settlements or GL.
+
 ## 2026-11-13 — Native workflow redesign and Crane hub (latest)
 
 - User confirmed contracts vary: support both whole-crane control/funding and separately owned interests, with explicit accounting review. Asset Recognition Basis controls interpretation, not automatic postings or rescaling. Third-party custody cannot receive company capitalization/depreciation. This supersedes the earlier whole-cost-only decision.
@@ -163,3 +202,8 @@ Supersedes the mandatory-link rules above for Crane Maintenance and Expense Entr
 ## 2026-11-13 — Owned Crane profit-sharing checkbox visibility
 
 Hide Enable Profit Sharing when Ownership Type is Owned (and retain the existing Rented exclusion). This is a form visibility rule only; preserve saved agreement flags, dated terms and posted settlements.
+
+## 2026-11-13 — Confirmed rental cancellation
+
+- Cancellation follows business dependencies: Timesheet → invoices → Profit Settlements. Cancelling an invoice preserves submitted Timesheets; cancelling a settlement preserves invoices and Timesheets. A settlement always reverses its own generated entitlement journal. Historical backlinks never expand the cancellation scope.
+- Preview each affected document once and require confirmation. Recompute the scope before execution, enforce normal cancellation permissions/payment/closed-period guards, and roll back the complete operation on any failure. Existing paid entitlements require normal payment cancellation or unreconciliation first.

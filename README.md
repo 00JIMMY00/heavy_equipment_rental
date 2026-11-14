@@ -6,7 +6,7 @@ Crane rentals for Frappe/ERPNext. Install `arab_erp_theme` first for the shared 
 
 Read the [illustrated user guide](docs/USER_GUIDE.md) for setup, daily operation, repair choices and complete accounting examples.
 
-See [the complete operational and accounting design](docs/NATIVE_CRANE_WORKFLOW.md). New cranes share a rental-service Item and link their physical native Asset separately. Review Whole Crane / Company Interest Only / Third-party Custody recognition for each ownership contract. Repairs use native Material Issue, service Purchase Invoice, Asset Repair or owner Sales Invoice according to their cost treatment; only qualifying improvements increase Asset value. New agreements default to reviewed settlements and net revenue, with explicit partner posting and depreciation policies. Historical agreements and posted ledgers are preserved.
+See [the complete operational and accounting design](docs/NATIVE_CRANE_WORKFLOW.md). New cranes share a rental-service Item and link their physical native Asset separately. Ownership determines Asset recognition: Owned records the full company cost; shared equipment records only our interest; zero company ownership has no Asset. Repairs use native Material Issue, service Purchase Invoice, Asset Repair or owner Sales Invoice according to their cost treatment; only qualifying improvements increase Asset value. New agreements restore automatic source-revenue settlements on Sales Invoice submission, using Invoice Grand Total and excluding depreciation from the distribution pool. Historical agreements and posted ledgers are preserved.
 
 ## Workflow
 
@@ -63,20 +63,22 @@ Cancel the Purchase Invoice before cancelling its Timesheet. To correct submitte
 
 [شرح عربي مختصر لمنطق الأصول المشتركة](docs/ASSETS_AR.md).
 
-Open **Crane → Fixed Asset & Ownership Value → Asset** as an Accounts Manager or System Manager. Select the native ERPNext Asset for that physical crane (quantity **1**). Its fixed-asset Item is separate from the shared rental-service Item. Select Asset Recognition Basis after reviewing the ownership/control contract: **Whole Crane**, **Company Interest Only**, or **Third-party Custody**. Record the approved recognized cost; the app does not automatically multiply or divide Asset amounts by ownership percentages. Configure acquisition/opening accounting and depreciation through ERPNext's native Asset workflow.
+Owned cranes record the full Company Asset; shared cranes record only the Company's positive ownership interest. The basis is derived automatically and is read-only. Zero Company ownership, rented cranes and equipment operated solely for others have no Asset link or creation action. `ownership_partners` remains the ownership/profit agreement table.
 
-The panel reads current gross purchase cost and value after depreciation in company currency, using the company's default Finance Book. For Whole Crane recognition, shared owners' reference amounts use the saved ownership agreement effective **today**, with deterministic currency rounding. Future agreements do not change today's ownership. Remaining Balance/profit percentages do not determine these asset values. Missing default-book values remain unavailable rather than appearing as zero. Asset read permission is required to see financial values.
+Link one quantity-1 native Asset in the correct Company, using a fixed-asset Item separate from the rental service Item. For a 1,000,000 crane with 40% Company ownership, the native Company Asset cost is 400,000. Its amounts already represent our interest and are never multiplied by ownership again. Enter recognized amounts through native acquisition/opening/improvement documents; changing a percentage does not automatically resize posted Assets.
 
-Each Asset links to at most one Crane. Its Company must match the Agreement Company. Accounting managers can correct a link through Crane's native change history without reversing valid Asset accounting. Draft/cancelled/disposed status is visible; new links reject cancelled, sold, scrapped and capitalized Assets. Native Asset edits also enforce company, quantity and ownership consistency. Rented/Operated for Owner cranes can link an explicitly identified third-party Asset for custody, rather than treating it as company-owned.
-
-Linking or displaying an Asset creates no accounting entries. Partner reference shares are not paid-in capital, debt or profit entitlements. Record actual acquisition funding/contributions through native accounting with the appropriate accounts. New native depreciation journals are attributed to the Crane; settlement includes posted depreciation only when its dated agreement enables that policy. Existing Cranes remain usable without a link so historical Assets, values and opening entries are never guessed or duplicated; link them explicitly after review.
+The financial panel shows only Company cost, capitalized improvements and book value using the Company default Finance Book. Other owners' Asset values are not displayed. Normal permissions, unique links and native Asset validation remain enforced. Linking posts no accounting entries. Migration archives obsolete whole/shared and zero-ownership/custody links for correction, preserving original Assets and ledgers. Native depreciation remains governed by Asset settings and the dated settlement policy.
 
 ## Crane ownership and profit sharing
+
+**Crane Operations → Crane Profit Distribution** shows company operating/residual shares, partner entitlements, expense burden, source documents and payment balances, with five views and company/Crane/partner/date/status filters. [دليل التقرير الشامل](docs/PROFIT_DISTRIBUTION_REPORT.md).
+
+[تجربة استعادة التوزيع التلقائي على ونش موجود](docs/RESTORED_SETTLEMENT_AR.md).
 
 Crane supports **Shared Ownership**, **Operated for Owner**, and **Operated by
 Partner**, with separate ownership and remaining balance percentages. Enter the
 operator, operating percentage and dated agreement once. Submitting a sharing
-Timesheet creates a draft settlement. New agreements require cost review before posting; existing automatic agreements still post with the Sales Invoice. The settlement takes its agreed invoice revenue (net of taxes by default for new agreements), deducts
+Timesheet creates a draft settlement. Record all costs before submitting the Sales Invoice: its submission automatically posts partner entitlements against the source revenue accounts. The settlement takes its agreed invoice Grand Total, deducts
 the operating share first, then costs, and distributes the remainder. A deficit blocks submission with its numerical explanation; review-mode drafts can retain the shortfall. Exactly zero remainder
 is allowed. External partners use native **Shareholders** and a company-specific
 **Partners** Payable account. Native Journal Entries recognize entitlements;
@@ -237,4 +239,10 @@ Native Asset/repair/stock/owner accounting integration tests:
 
 ```bash
 bench --site YOUR_SITE run-tests --module heavy_equipment_rental.test_native_crane_workflow
+```
+
+Comprehensive profit distribution report tests:
+
+```bash
+bench --site YOUR_SITE run-tests --module heavy_equipment_rental.test_distribution_reporting
 ```

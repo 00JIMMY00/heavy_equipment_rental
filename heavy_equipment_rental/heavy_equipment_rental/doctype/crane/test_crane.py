@@ -40,7 +40,6 @@ class TestCrane(FrappeTestCase):
 
 	def link(self):
 		self.crane.asset = self.asset.name
-		self.crane.asset_accounting_basis = "Third-party Custody" if self.crane.ownership_type in ("Rented", "Operated for Owner") else "Whole Crane"
 		self.crane.save()
 
 	def sharing(self):
@@ -58,7 +57,9 @@ class TestCrane(FrappeTestCase):
 		self.link()
 		data = asset_summary(self.crane.name)
 		self.assertEqual((data["gross_purchase_amount"], data["book_value"]), (100000, 80000))
-		self.assertEqual(data["shares"][0]["ownership_percentage"], 100)
+		self.assertEqual(data["company_ownership_percentage"], 100)
+		self.assertEqual(data["recognition_basis"], "Company Owned")
+		self.assertEqual(data["shares"], [])
 		self.assertEqual(self.crane.item, service_item)
 		self.assertNotEqual(service_item, self.asset.item_code)
 		self.assertFalse(frappe.get_doc("Item", service_item).is_fixed_asset)
@@ -68,7 +69,7 @@ class TestCrane(FrappeTestCase):
 	def test_duplicate_asset_and_grouped_assets_rejected(self):
 		self.link()
 		with self.assertRaisesRegex(frappe.ValidationError, "already linked"):
-			frappe.get_doc(dict(doctype="Crane", crane_name=self.key + " second", asset=self.asset.name, asset_accounting_basis="Whole Crane")).insert()
+			frappe.get_doc(dict(doctype="Crane", crane_name=self.key + " second", asset=self.asset.name)).insert()
 		self.asset.asset_quantity = 2
 		with self.assertRaisesRegex(frappe.ValidationError, "quantity 1"):
 			self.asset.save()
@@ -82,23 +83,24 @@ class TestCrane(FrappeTestCase):
 		with self.assertRaisesRegex(frappe.ValidationError, "Agreement Company"):
 			self.asset.save()
 
-	def test_dated_ownership_values_ignore_profit_percentages_and_future_terms(self):
+	def test_company_share_is_not_applied_twice_and_future_terms_do_not_reprice_asset(self):
 		self.sharing()
 		self.link()
 		data = asset_summary(self.crane.name)
-		self.assertEqual([r["cost"] for r in data["shares"]], [25000, 75000])
-		self.assertEqual([r["book_value"] for r in data["shares"]], [20000, 60000])
+		self.assertEqual(data["shares"], [])
+		self.assertEqual(data["company_ownership_percentage"], 25)
+		self.assertEqual(data["book_value"], 80000)
+		self.assertEqual(self.crane.asset_accounting_basis, "Company Interest Only")
 		self.crane.agreement_effective_from = add_days(today(), 10)
 		for row, ownership, profit in zip(self.crane.ownership_partners, (10, 90), (90, 10)):
 			row.ownership_percentage, row.profit_percentage = ownership, profit
 		self.crane.save()
-		self.assertEqual(asset_summary(self.crane.name)["shares"], data["shares"])
+		self.assertEqual(asset_summary(self.crane.name)["company_ownership_percentage"], 25)
 		with patch("heavy_equipment_rental.crane_assets.today", return_value=add_days(today(), 11)):
-			self.assertEqual([r["cost"] for r in asset_summary(self.crane.name)["shares"]], [10000, 90000])
-		self.asset.gross_purchase_amount = 100000.01
-		self.asset.save()
-		shares = asset_summary(self.crane.name)["shares"]
-		self.assertEqual(flt(sum(r["cost"] for r in shares), 2), 100000.01)
+			data = asset_summary(self.crane.name)
+			self.assertEqual(data["company_ownership_percentage"], 10)
+			self.assertEqual(data["book_value"], 80000)
+
 
 	def test_link_corrections_are_audited_without_reversing_asset_accounting(self):
 		self.asset.submit()
@@ -118,20 +120,59 @@ class TestCrane(FrappeTestCase):
 		with self.assertRaisesRegex(frappe.ValidationError, "active Asset"):
 			self.link()
 
-	def test_third_party_assets_do_not_become_company_assets(self):
+	def test_no_company_ownership_disallows_even_third_party_asset_links(self):
 		supplier = frappe.get_doc(dict(doctype="Supplier", supplier_name=self.key,
 			supplier_type="Company", supplier_group=frappe.db.get_value("Supplier Group", {"is_group": 0}, "name"))).insert()
 		self.crane.ownership_type, self.crane.supplier = "Rented", supplier.name
-		with self.assertRaisesRegex(frappe.ValidationError, "third-party-owned"):
+		with self.assertRaisesRegex(frappe.ValidationError, "positive Company ownership"):
 			self.link()
 		self.crane.reload()
 		self.crane.ownership_type, self.crane.supplier = "Rented", supplier.name
-		self.asset.asset_owner, self.asset.supplier = "Supplier", supplier.name
-		self.asset.save()
+		self.crane.save()
+		self.assertFalse(self.crane.asset_accounting_basis)
+		from heavy_equipment_rental.crane_assets import make_company_asset
+		with self.assertRaisesRegex(frappe.ValidationError, "owns no percentage"):
+			make_company_asset(self.crane.name)
+
+	def test_zero_company_shared_interest_keeps_partners_but_no_asset(self):
+		self.sharing()
+		self.crane.agreement_effective_from = add_days(today(), -9)
+		self.crane.ownership_partners[0].ownership_percentage = 0
+		self.crane.ownership_partners[1].ownership_percentage = 100
+		self.crane.save()
+		self.assertFalse(self.crane.asset_accounting_basis)
+		self.assertEqual(len(self.crane.ownership_partners), 2)
+		with self.assertRaisesRegex(frappe.ValidationError, "positive Company ownership"):
+			self.link()
+
+	def test_migration_archives_full_shared_link_without_rewriting_asset(self):
+		from heavy_equipment_rental.patches.company_assets_only import execute
+		self.sharing()
 		self.link()
-		self.asset.asset_owner = "Company"
-		with self.assertRaisesRegex(frappe.ValidationError, "third-party-owned"):
-			self.asset.save()
+		frappe.db.set_value("Crane", self.crane.name, "asset_accounting_basis", "Whole Crane")
+		counts = {dt: frappe.db.count(dt) for dt in ("GL Entry", "Asset", "Journal Entry")}
+		execute()
+		self.crane.reload()
+		self.assertFalse(self.crane.asset)
+		self.assertEqual(frappe.parse_json(self.crane.legacy_asset_recognition)[0]["asset"], self.asset.name)
+		self.assertEqual(self.asset.reload().gross_purchase_amount, 100000)
+		archive = self.crane.legacy_asset_recognition
+		execute()
+		self.assertEqual(self.crane.reload().legacy_asset_recognition, archive)
+		self.assertEqual(counts, {dt: frappe.db.count(dt) for dt in counts})
+
+
+	def test_asset_draft_and_basis_follow_company_ownership(self):
+		from heavy_equipment_rental.crane_assets import make_company_asset
+		self.crane.sharing_company = self.company.name
+		self.crane.asset_accounting_basis = "Company Interest Only"
+		self.crane.save()
+		self.assertEqual(self.crane.asset_accounting_basis, "Company Owned")
+		draft = make_company_asset(self.crane.name)
+		self.assertEqual((draft["company"], draft["asset_owner"], draft["asset_quantity"]), (self.company.name, "Company", 1))
+		self.sharing()
+		self.assertEqual(self.crane.asset_accounting_basis, "Company Interest Only")
+		self.assertIn("25.0%", make_company_asset(self.crane.name)["asset_name"])
 
 	def test_link_changes_and_financial_reads_require_permissions(self):
 		from heavy_equipment_rental.crane_assets import validate_asset_link

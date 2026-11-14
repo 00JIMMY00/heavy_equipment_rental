@@ -23,7 +23,18 @@ frappe.ui.form.on("Crane Profit Settlement", {
         frm.set_value(values);
     },
     refresh(frm) {
-        if (!frm.is_new()) render_partner_payments(frm);
+        const agreement_terms = JSON.parse(frm.doc.agreement_snapshot || "{}");
+        frm.toggle_display("costs_reviewed", agreement_terms.settlement_approval === "Review Before Posting");
+        if (!frm.is_new()) {
+            render_partner_payments(frm);
+            if (frappe.user.has_role(["Accounts Manager", "System Manager"])) {
+                frm.add_custom_button(__("Profit Distribution Details"), () => frappe.set_route("query-report", "Crane Profit Distribution", {
+                    company: frm.doc.company, settlement: frm.doc.name, view: "Distribution Details",
+                    from_date: frm.doc.from_date, to_date: frm.doc.to_date,
+                    settlement_status: frm.doc.docstatus === 0 ? "Draft" : "Submitted",
+                }), __("View"));
+            }
+        }
         frm.set_df_property("crane", "read_only", Boolean(frm.doc.timesheet));
         const sources = JSON.parse(frm.doc.source_snapshot || "[]");
         const grouped = new Map();
@@ -67,7 +78,7 @@ frappe.ui.form.on("Crane Profit Settlement", {
             frm.add_custom_button(__("Recalculate"), () => frm.save());
         }
         if (frm.doc.docstatus !== 1 || !frm.doc.journal_entry || !frappe.model.can_create("Payment Entry")) return;
-        frm.add_custom_button(__("Partner Payment"), () => {
+        frm.add_custom_button(__("Partner Payment"), async () => {
             return frappe.call({
                 method: "heavy_equipment_rental.partner_reporting.settlement_payment_details",
                 args: { settlement: frm.doc.name },

@@ -33,3 +33,7 @@ heavy_equipment_rental.patches.archive_maintenance_planned_dates
 
 heavy_equipment_rental.patches.crane_native_workflow
 heavy_equipment_rental.patches.explicit_settlement_revenue_basis
+
+heavy_equipment_rental.patches.company_assets_only
+
+heavy_equipment_rental.patches.restore_automatic_revenue_settlements

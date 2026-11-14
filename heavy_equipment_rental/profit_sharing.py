@@ -128,7 +128,7 @@ def validate_agreement(doc):
     if (doc.agreement_history or "") != (before.agreement_history or "" if before else ""):
         frappe.throw(_("Agreement History is maintained automatically."))
     doc.settlement_revenue_basis = doc.get("settlement_revenue_basis") or (
-        history[-1].get("settlement_revenue_basis", "Invoice Grand Total") if history else "Net Revenue")
+        history[-1].get("settlement_revenue_basis", "Invoice Grand Total") if history else "Invoice Grand Total")
     if doc.ownership_type in SHARING_TYPES:
         doc.enable_profit_sharing = 1
     if doc.ownership_type == "Rented" and doc.enable_profit_sharing:
@@ -148,8 +148,8 @@ def validate_agreement(doc):
                    partners=[])
     version.update(calculation_method=doc.sharing_calculation or OPERATING_FIRST,
                    operating_percentage=percentage(doc.operating_percentage),
-                   settlement_approval=doc.settlement_approval or "Review Before Posting",
-                   distribution_posting=doc.distribution_posting or "Partner Expense",
+                   settlement_approval=doc.settlement_approval or "On Invoice Submission",
+                   distribution_posting=doc.distribution_posting or "Source Revenue Accounts",
                    include_depreciation=int(bool(doc.include_depreciation)),
                    settlement_revenue_basis=doc.settlement_revenue_basis)
     if version["calculation_method"] not in (OPERATING_FIRST, LEGACY_NET):

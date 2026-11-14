@@ -87,11 +87,12 @@ def validate_maintenance(doc):
 
 
 def capital_asset(crane, company):
+	from heavy_equipment_rental.crane_assets import accounting_basis
 	if not crane.asset:
 		frappe.throw(_("Link the reviewed native Asset on the Crane before capitalizing improvements."))
 	asset = frappe.get_doc("Asset", crane.asset)
 	asset.check_permission("read")
-	if (crane.asset_accounting_basis not in ("Whole Crane", "Company Interest Only") or
+	if (not accounting_basis(crane) or
 		asset.asset_owner != "Company" or (asset.asset_owner_company or asset.company) != company or
 		asset.company != company or asset.docstatus != 1):
 		frappe.throw(_("Only a submitted Asset recognized in this Company's books can receive capital improvements."))

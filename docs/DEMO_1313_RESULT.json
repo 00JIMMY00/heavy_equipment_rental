@@ -1,0 +1,268 @@
+{
+  "company": "cranes company",
+  "currency": "EGP",
+  "crane": "CR-00073",
+  "asset": "ACC-ASS-2026-00002",
+  "company_cost": 300000,
+  "physical_reference_cost": 750000,
+  "ownership": [
+    40,
+    20,
+    20,
+    20
+  ],
+  "operating_percentage": 10,
+  "customer": "HER1313 عميل تجريبي",
+  "partners": [
+    "ACC-SH-2026-00014",
+    "ACC-SH-2026-00015",
+    "ACC-SH-2026-00016"
+  ],
+  "assignment": "ASG-00084",
+  "timesheet": "TS-00075",
+  "acquisition_invoice": "ACC-PINV-2026-00006",
+  "acquisition_payment": "ACC-PAY-2026-00033",
+  "funding_journal": "ACC-JV-2026-00238",
+  "parts_invoice": "ACC-PINV-2026-00007",
+  "parts_payment": "ACC-PAY-2026-00035",
+  "maintenance": "CM-00007",
+  "stock_issue": "MAT-STE-2026-00003",
+  "expenses": [
+    "EXPE-00123",
+    "EXPE-00124",
+    "EXPE-00125"
+  ],
+  "depreciation_schedule": "ACC-ADS-2026-00005",
+  "depreciation_journal": "ACC-JV-2026-00242",
+  "sales_invoice": "ACC-SINV-2026-00031",
+  "customer_receipt": "ACC-PAY-2026-00034",
+  "settlement": "CPS-00021",
+  "entitlement_journal": "ACC-JV-2026-00243",
+  "partner_payments": [
+    "ACC-PAY-2026-00036",
+    "ACC-PAY-2026-00037",
+    "ACC-PAY-2026-00038"
+  ],
+  "start_date": "2026-11-11",
+  "end_date": "2026-11-12",
+  "cost_center": "HER1313 ونش ١٣١٣ - CC",
+  "warehouse": "HER1313 Parts - CC",
+  "part": "HER1313-PART",
+  "accounts": {
+    "cash": "HER1313 Cash - CC",
+    "equity": "HER1313 Demo Funding - CC",
+    "fixed": "HER1313 Company Crane Asset - CC",
+    "accumulated": "HER1313 Accumulated Depreciation - CC",
+    "depreciation": "HER1313 Depreciation - CC",
+    "operating": "HER1313 Operating Costs - CC",
+    "participation": "HER1313 Partner Participation - CC",
+    "income": "HER1313 Rental Revenue - CC",
+    "inventory": "HER1313 Parts Inventory - CC"
+  },
+  "verified": true,
+  "settlement_revenue": 100000,
+  "shared_costs": 15000,
+  "operating_fee": 10000,
+  "residual": 75000,
+  "company_before_depreciation": 40000,
+  "company_net_profit": 35000,
+  "company_book_value": 295000,
+  "cash_balance": 40000,
+  "partner_entitlement_each": 15000,
+  "partner_balances": [
+    {
+      "shareholder": "ACC-SH-2026-00014",
+      "party_type": "Shareholder",
+      "party": "ACC-SH-2026-00014",
+      "partner_name": "HER1313 شريك تجريبي 1",
+      "entitlement": 15000.0,
+      "pending_entitlement": 0,
+      "operating_amount": 0.0,
+      "residual_amount": 15000.0,
+      "paid_amount": 15000.0,
+      "outstanding_amount": 0.0,
+      "status": "Paid",
+      "entries": [
+        {
+          "voucher_type": "Journal Entry",
+          "voucher_no": "ACC-JV-2026-00243",
+          "posting_date": "2026-11-12",
+          "amount_in_account_currency": 15000.0
+        },
+        {
+          "voucher_type": "Payment Entry",
+          "voucher_no": "ACC-PAY-2026-00036",
+          "posting_date": "2026-11-12",
+          "amount_in_account_currency": -15000.0
+        }
+      ]
+    },
+    {
+      "shareholder": "ACC-SH-2026-00015",
+      "party_type": "Shareholder",
+      "party": "ACC-SH-2026-00015",
+      "partner_name": "HER1313 شريك تجريبي 2",
+      "entitlement": 15000.0,
+      "pending_entitlement": 0,
+      "operating_amount": 0.0,
+      "residual_amount": 15000.0,
+      "paid_amount": 15000.0,
+      "outstanding_amount": 0.0,
+      "status": "Paid",
+      "entries": [
+        {
+          "voucher_type": "Journal Entry",
+          "voucher_no": "ACC-JV-2026-00243",
+          "posting_date": "2026-11-12",
+          "amount_in_account_currency": 15000.0
+        },
+        {
+          "voucher_type": "Payment Entry",
+          "voucher_no": "ACC-PAY-2026-00037",
+          "posting_date": "2026-11-12",
+          "amount_in_account_currency": -15000.0
+        }
+      ]
+    },
+    {
+      "shareholder": "ACC-SH-2026-00016",
+      "party_type": "Shareholder",
+      "party": "ACC-SH-2026-00016",
+      "partner_name": "HER1313 شريك تجريبي 3",
+      "entitlement": 15000.0,
+      "pending_entitlement": 0,
+      "operating_amount": 0.0,
+      "residual_amount": 15000.0,
+      "paid_amount": 15000.0,
+      "outstanding_amount": 0.0,
+      "status": "Paid",
+      "entries": [
+        {
+          "voucher_type": "Journal Entry",
+          "voucher_no": "ACC-JV-2026-00243",
+          "posting_date": "2026-11-12",
+          "amount_in_account_currency": 15000.0
+        },
+        {
+          "voucher_type": "Payment Entry",
+          "voucher_no": "ACC-PAY-2026-00038",
+          "posting_date": "2026-11-12",
+          "amount_in_account_currency": -15000.0
+        }
+      ]
+    }
+  ],
+  "account_balances": {
+    "cash": 40000.0,
+    "equity": -300000.0,
+    "fixed": 300000.0,
+    "accumulated": -5000.0,
+    "depreciation": 5000.0,
+    "operating": 15000.0,
+    "participation": 45000.0,
+    "income": -100000.0,
+    "inventory": 0.0
+  },
+  "balanced_vouchers": 16,
+  "report_totals": [
+    100000.0,
+    20000.0,
+    80000.0
+  ],
+  "assignment_report_totals": [
+    100000.0,
+    15000.0,
+    85000.0
+  ],
+  "vouchers": [
+    {
+      "doctype": "Journal Entry",
+      "name": "ACC-JV-2026-00238"
+    },
+    {
+      "doctype": "Journal Entry",
+      "name": "ACC-JV-2026-00239"
+    },
+    {
+      "doctype": "Journal Entry",
+      "name": "ACC-JV-2026-00240"
+    },
+    {
+      "doctype": "Journal Entry",
+      "name": "ACC-JV-2026-00241"
+    },
+    {
+      "doctype": "Journal Entry",
+      "name": "ACC-JV-2026-00242"
+    },
+    {
+      "doctype": "Journal Entry",
+      "name": "ACC-JV-2026-00243"
+    },
+    {
+      "doctype": "Payment Entry",
+      "name": "ACC-PAY-2026-00033"
+    },
+    {
+      "doctype": "Payment Entry",
+      "name": "ACC-PAY-2026-00034"
+    },
+    {
+      "doctype": "Payment Entry",
+      "name": "ACC-PAY-2026-00035"
+    },
+    {
+      "doctype": "Payment Entry",
+      "name": "ACC-PAY-2026-00036"
+    },
+    {
+      "doctype": "Payment Entry",
+      "name": "ACC-PAY-2026-00037"
+    },
+    {
+      "doctype": "Payment Entry",
+      "name": "ACC-PAY-2026-00038"
+    },
+    {
+      "doctype": "Purchase Invoice",
+      "name": "ACC-PINV-2026-00006"
+    },
+    {
+      "doctype": "Purchase Invoice",
+      "name": "ACC-PINV-2026-00007"
+    },
+    {
+      "doctype": "Sales Invoice",
+      "name": "ACC-SINV-2026-00031"
+    },
+    {
+      "doctype": "Stock Entry",
+      "name": "MAT-STE-2026-00003"
+    }
+  ],
+  "repeat_check": {
+    "before": {
+      "Crane": 31,
+      "Asset": 3,
+      "Sales Invoice": 11,
+      "Purchase Invoice": 3,
+      "Payment Entry": 12,
+      "Journal Entry": 203,
+      "GL Entry": 477,
+      "Stock Ledger Entry": 4,
+      "Crane Profit Settlement": 10
+    },
+    "after": {
+      "Crane": 31,
+      "Asset": 3,
+      "Sales Invoice": 11,
+      "Purchase Invoice": 3,
+      "Payment Entry": 12,
+      "Journal Entry": 203,
+      "GL Entry": 477,
+      "Stock Ledger Entry": 4,
+      "Crane Profit Settlement": 10
+    },
+    "no_duplicates": true
+  }
+}

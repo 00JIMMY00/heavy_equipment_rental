@@ -178,6 +178,8 @@ class CraneProfitSettlement(Document):
                 frappe.throw(_("Cancel or unreconcile payments against this settlement before cancelling it."))
 
     def on_cancel(self):
+        # Timesheets retain the historical settlement reference.
+        self.ignore_linked_doctypes = ("Crane Timesheet",)
         if not self.journal_entry:
             return
         journal = frappe.get_doc("Journal Entry", self.journal_entry, for_update=True)

@@ -32,7 +32,7 @@ The diagrams use Mermaid. Open this file in a Markdown viewer with Mermaid suppo
 | Shared ownership | Dated agreements hold ownership percentages and independent remaining-profit percentages. |
 | Repairs | Choose operating expense, capital improvement, owner recovery, cash expense or no cost. |
 | Inventory | Native stock documents hold parts, warehouse quantities and valuation. |
-| Settlements | New agreements require review before posting owner entitlements. Payments happen separately. |
+| Settlements | Sales Invoice submission automatically posts owner entitlements from source revenue. Complete costs first; payments happen separately. |
 | Existing records | Historical Item links, posted accounting and dated agreements remain available. Existing agreements retain their previous approval/accounting behavior until changed. |
 
 **The important distinction:** a physical crane, the service you sell, and the spare parts you consume have different jobs in the system.
@@ -143,25 +143,17 @@ The Operations hub appears after saving. Save later changes before using its act
 
 ### Step 3 — Link the reviewed Asset
 
-An Accounts Manager or System Manager selects **Asset Recognition Basis** and the **Asset** under Crane Details → Fixed Asset & Ownership Value.
+The accounting basis follows ownership automatically. An Accounts Manager or System Manager links the correct native Asset.
 
-| Basis | What the Asset amount represents |
+| Ownership | Asset treatment |
 | --- | --- |
-| Pending Review | Recognition has not yet been approved; review before linking an Asset |
-| Whole Crane | The full amount approved for recognition in the company's books |
-| Company Interest Only | Only the company's recognized interest |
-| Third-party Custody | Equipment belonging to an identified external owner |
+| Owned | Company Owned: the full recognized crane cost |
+| Shared Ownership with a positive Company percentage | Company Interest Only: our recognized portion only |
+| No Company ownership, Rented or Operated for Owner | No Asset link or Create Asset action |
 
-The linked Asset must represent one physical unit and the correct Company. It cannot also be another Crane's Asset. For custody, identify its external owner on the native Asset; do not depreciate that custody Asset in your operating company's books.
+Example: a crane costing 1,000,000 with 40% Company ownership has a Company Asset cost of 400,000. Other owners' amounts remain outside our assets. Enter the Company's portion through native purchase/opening documents; changing the percentage does not automatically resize posted Assets.
 
-**Example of the two recognition bases:** the physical crane costs 1,000,000 and your ownership is 40%.
-
-- If accounting approves Whole Crane recognition, the linked Asset may record 1,000,000. The ownership panel's 400,000 company reference share is informational.
-- If accounting approves Company Interest Only recognition, the linked Asset may record 400,000. Do not multiply that 400,000 by 40% again.
-
-These are alternative treatments requiring contract review. Changing the basis field does not change an Asset's amount. Actual changes in recognized amounts need native accounting documents.
-
-**Create Asset** opens a native Asset draft. After completing its native workflow, return to Crane and select that Asset; creating the draft does not automatically link it back.
+The Asset must represent one physical unit in the correct Company. A shared-interest Asset is named with the Company's percentage when created from Crane. After completing its native workflow, return to Crane to link it. Obsolete historical full-crane/shared or custody links are archived; the old Assets and accounting remain intact.
 
 ### Step 4 — Configure a participation agreement
 
@@ -178,19 +170,7 @@ Ownership describes the agreed ownership proportions. Remaining Balance percenta
 
 Under **Operated for Owner**, every partner row must be external. Your company's operating fee is separate. Use Shared Ownership when the company also belongs in the owners/residual table.
 
-Review the Accounting Setup fields:
-
-| Field | How to use it |
-| --- | --- |
-| Settlement Approval | Review Before Posting is the new default. Automatic posting is suitable only when costs are complete by invoice submission. |
-| Settlement Revenue Basis | Net Revenue excludes invoice taxes. Invoice Grand Total retains an explicit historical contract basis. |
-| Partner Entitlement Accounting | Choose Partner Expense, Source Revenue Accounts or Equity Distribution according to the contract. |
-| Partner Allocation Account | Reviewed Expense or Equity account when required by the chosen treatment |
-| Partner Payable Account | The native account holding unpaid external entitlements |
-| Profit Sharing Cost Center | Company-specific accounting dimension |
-| Deduct Posted Depreciation in Settlements | Determines whether eligible posted depreciation enters the calculation |
-
-**Partner Expense** records contractual participation as an expense. **Source Revenue Accounts** reduces attributed sales revenue for an appropriate agency arrangement. **Equity Distribution** debits equity for an approved company distribution. Choose the treatment based on the agreement; being called an “owner” does not decide it automatically.
+Accounting Setup needs the Company, Partner Payable Account and Profit Sharing Cost Center. New agreements automatically use source-revenue debits, Invoice Grand Total and invoice-triggered posting, without depreciation deduction. No Partner Allocation Account is required for Operating First. The Legacy Profit Allocation Account remains for historical Legacy Net Profit agreements only.
 
 Use **Change Agreement** for later terms and a later effective date. Save the changed terms. The system preserves earlier versions and submitted settlement evidence. Work crossing an agreement change needs separate settlement periods.
 
@@ -201,12 +181,13 @@ flowchart LR
     B[Book Crane] --> A[Save Assignment]
     A --> W[Record actual work]
     W --> T[Submit Timesheet]
-    T --> I[Generate and submit Sales Invoice]
-    I --> R[Record customer receipt]
     T --> D[Draft settlement for sharing work]
-    D --> C[Finish costs and recalculate]
-    C --> S[Review and submit settlement]
-    S --> P[Pay owners]
+    T --> C[Record costs and complete repairs]
+    C --> I[Submit Sales Invoice]
+    I --> R[Record customer receipt]
+    I --> S[Settlement and entitlement post automatically]
+    D --> S
+    S --> P[Manually pay owners]
 ```
 
 The customer receipt and owner settlement are separate branches. Invoice submission does not prove that the customer has paid.
@@ -241,7 +222,7 @@ Hourly billing uses the agreed hourly rate and distinct crane operating hours. D
 3. Review and submit the native Sales Invoice.
 4. Record the customer receipt with a native Payment Entry against that invoice.
 
-New sharing work also has a draft settlement. Under Review Before Posting, open it through **Review Settlements** and recalculate after posting costs. Its draft figures may need refreshing after the invoice is submitted.
+New sharing work also has a draft settlement. Finish all costs before submitting the Sales Invoice; invoice submission automatically recalculates and posts its settlement. Open **Review Settlements** to inspect its sources, shares and payment balances.
 
 ### When the crane is rented from a Supplier
 
@@ -336,23 +317,23 @@ Assume the following **illustrative** agreement and completed work. There are no
 
 ### Agreement and Asset
 
-- Crane: Alpha, with reviewed Whole Crane recognition.
-- Asset acquisition cost: 1,000,000.
+- Crane: Alpha, with Company Interest Only recognition.
+- Physical crane cost: 1,000,000; Company Asset cost: 400,000 for its 40% interest.
 - Operator: Our Company, operating share 10%.
 - Ownership and remaining-profit percentages: the 40/35/25 and 50/30/20 table in section 4.
-- Approval: Review Before Posting; revenue basis: Net Revenue.
-- Entitlement accounting: Partner Expense, with its reviewed Expense account.
+- Approval: automatic on Sales Invoice submission; revenue basis: Invoice Grand Total.
+- Entitlement accounting: debit the original source revenue accounts. No allocation account is required.
 
-The 1,000,000 Asset cost does not enter rental expenses as one immediate deduction. Its eligible posted depreciation can enter settlement under the agreement's policy.
+The 400,000 Company Asset cost does not enter rental expenses as one immediate deduction. Its depreciation remains in Company accounting and is excluded from the restored distribution pool.
 
 ### Work and costs
 
 1. Book Alpha for the customer and agree a rental charge producing **100,000** of invoice revenue.
-2. Record/submit the actual work, generate the Sales Invoice and submit it.
-3. Post **17,000** of other attributable operating costs.
+2. Record/submit the actual work and generate the draft Sales Invoice.
+3. Post **18,000** of other attributable operating costs.
 4. Use an Operating Expense repair job to consume parts costing **2,000**; complete that job.
-5. Post **1,000** of eligible native depreciation. For this example, its posting date is covered by the settlement/work allocation.
-6. Open **Review Settlements → the draft settlement → Recalculate**.
+5. Review costs, then submit the Sales Invoice. The settlement and entitlement journal post automatically.
+6. Open the submitted settlement to inspect sources and shares.
 
 ### Calculate the entitlement
 
@@ -361,9 +342,8 @@ The 1,000,000 Asset cost does not enter rental expenses as one immediate deducti
 | Settlement revenue | 100,000 |
 | Company operating share: 10% × 100,000 | (10,000) |
 | Balance after operating share | 90,000 |
-| Other operating costs | (17,000) |
+| Other operating costs | (18,000) |
 | Routine repair parts | (2,000) |
-| Eligible posted depreciation | (1,000) |
 | **Remaining balance to distribute** | **70,000** |
 
 | Participant | Remaining-balance calculation | Operating amount | Total entitlement/retention |
@@ -375,7 +355,7 @@ The 1,000,000 Asset cost does not enter rental expenses as one immediate deducti
 
 Reconciliation: **100,000 revenue = 20,000 costs + 45,000 company retention + 35,000 external entitlements**.
 
-The owners' reference Asset values use ownership percentages. Their residual profit amounts use the independently agreed remaining-balance percentages.
+The Company's Asset contains only its recognized interest; other owners' Asset values are not shown. Profit distribution still uses the independently agreed remaining-balance percentages.
 
 ```mermaid
 flowchart TD
@@ -392,11 +372,11 @@ flowchart TD
 
 ### Approve, then pay
 
-Review the sources and shares, confirm **Costs Reviewed**, then submit the settlement. For the selected Partner Expense treatment, the illustrative entitlement journal is:
+Submitting the Sales Invoice automatically submits the settlement. Its entitlement journal is:
 
 | Account/party | Debit | Credit |
 | --- | ---: | ---: |
-| Reviewed partner participation Expense account | 35,000 | 0 |
+| Original source Income account(s) | 35,000 | 0 |
 | Partners Payable — Owner A | 0 | 21,000 |
 | Partners Payable — Owner B | 0 | 14,000 |
 
@@ -452,7 +432,7 @@ If instead the contract says the rental operation bears the 500, use Operating E
 | Operating costs | (9,500) |
 | **Shortfall** | **500** |
 
-With Review Before Posting, the draft can show this shortfall and customer billing can proceed. Submitting the settlement is blocked. The system does not post negative partner shares or automatically carry a new loss. Review the contract, source costs and any agreed adjustment before closing.
+Under the restored automatic workflow, a deficit blocks settlement posting and rolls back Sales Invoice submission. Historical Review Before Posting versions can retain a draft shortfall. The system does not post negative partner shares or automatically carry a new loss. Review the contract, source costs and any agreed adjustment before closing.
 
 ## 9. Reports and corrections
 
@@ -524,10 +504,24 @@ Do not recreate an already posted cost just because a report is filtered to a di
 **Accounting user**
 
 - Confirm Asset recognition and the current dated agreement.
-- Post stock consumption, service bills, hire and eligible depreciation before settlement approval.
-- Complete relevant operating repairs and recalculate the draft settlement.
-- Review source evidence, tax basis, allocation and shares; confirm Costs Reviewed and submit.
+- Post stock consumption, service bills and hire before Sales Invoice submission. Native depreciation remains separate from the restored distribution pool.
+- Complete relevant operating repairs before Sales Invoice submission.
+- Review all costs before submitting the Sales Invoice; it posts partner entitlements automatically.
 - Review available cash and create explicit customer/supplier/owner Payment Entries.
 - Reconcile owner statements, invoice outstanding balances and native ledgers.
 
 For implementation details, see [Native Crane workflow](NATIVE_CRANE_WORKFLOW.md). For the application overview and test commands, see [README](../README.md).
+
+## Comprehensive profit distribution report
+
+Use **Crane Operations → Crane Profit Distribution**, or **Profit Distribution Details** from the Crane/settlement. Five views show settlement totals, company/partner totals, detailed operating/residual shares and expense burden, source revenue/costs and native entitlement/payment movements. Filter by Company, Crane, Shareholder, work/posting dates, Balance As Of, statuses and source documents. Posted and draft amounts remain separate; Company retention is not a cash balance. [Full Arabic guide and the CR-00074 reconciliation](PROFIT_DISTRIBUTION_REPORT.md).
+
+### Cancel linked rental documents
+
+Choose **Cancel** and review the list before confirming. Cancellation follows the workflow direction:
+
+- **Sales Invoice** cancels its Profit Settlements and their generated entitlement journals; Timesheets remain submitted and can be billed again.
+- **Crane Profit Settlement** cancels only that settlement and reverses its generated entitlement journal; the invoice and Timesheet remain submitted.
+- **Crane Timesheet** cancels its linked invoices and their settlements before cancelling the Timesheet.
+
+Duplicate references appear once. Normal permissions, payment reconciliation restrictions and accounting guards apply. Any failure rolls back the whole operation. If links change while the prompt is open, reopen Cancel to review the updated list.

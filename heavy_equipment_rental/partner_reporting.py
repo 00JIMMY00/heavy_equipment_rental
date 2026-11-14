@@ -94,6 +94,17 @@ def validate_payment(doc, method=None):
         if not any(not r.is_company and share_party(r) == (doc.party_type, doc.party) for r in source.shares):
             frappe.throw(_("Select a partner from this settlement."))
         doc.crane_timesheet, doc.crane = match.timesheet, match.crane
+    for settlement in settlements:
+        source = frappe.get_doc("Crane Profit Settlement", settlement.name)
+        source.check_permission("read")
+        if doc.payment_type != "Pay":
+            frappe.throw(_("Partner settlement payments must use payment type Pay."))
+        if source.company != doc.company or not any(
+                not r.is_company and share_party(r) == (doc.party_type, doc.party) for r in source.shares):
+            frappe.throw(_("Select a partner from this settlement."))
+    if len(settlements) > 1:
+        # References are the source of truth for a payment covering several work periods.
+        doc.crane_profit_settlement = doc.crane_timesheet = doc.crane = None
     elif len(settlements) == 1 and doc.payment_type == "Pay":
         doc.crane_profit_settlement = settlements[0].name
         doc.crane_timesheet, doc.crane = settlements[0].timesheet, settlements[0].crane

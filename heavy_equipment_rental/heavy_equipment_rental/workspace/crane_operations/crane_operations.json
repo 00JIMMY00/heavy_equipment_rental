@@ -1,136 +1,24 @@
 {
- "doctype": "Workspace",
- "name": "Crane Operations",
- "title": "Crane Operations",
- "label": "Crane Operations",
- "module": "Heavy Equipment Rental",
- "public": 1,
- "is_hidden": 0,
- "icon": "project",
- "sequence_id": 12,
- "content": "[{\"id\": \"operations-section\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Operations</b></span>\", \"col\": 12}}, {\"id\": \"cranes-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Cranes\", \"col\": 12}}, {\"id\": \"rental-calendar-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Rental Calendar\", \"col\": 6}}, {\"id\": \"resource-calendar-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Resource Timeline\", \"col\": 6}}, {\"id\": \"assignments-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Assignments\", \"col\": 4}}, {\"id\": \"timesheets-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Timesheets\", \"col\": 4}}, {\"id\": \"maintenance-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Maintenance\", \"col\": 4}}, {\"id\": \"customers-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customers\", \"col\": 4}}, {\"id\": \"reports-section\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Reports</b></span>\", \"col\": 12}}, {\"id\": \"treasury-workbook-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Treasury Workbook\", \"col\": 3}}, {\"id\": \"rental-profitability-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Rental Profitability\", \"col\": 3}}, {\"id\": \"timesheet-report-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Timesheet Report\", \"col\": 3}}, {\"id\": \"maintenance-report-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Maintenance Report\", \"col\": 3}}, {\"id\": \"sales-register-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Register\", \"col\": 3}}, {\"id\": \"accounts-receivable-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Accounts Receivable\", \"col\": 3}}, {\"id\": \"accounting-section\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Accounting</b></span>\", \"col\": 12}}, {\"id\": \"sales-invoices-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Invoices\", \"col\": 4}}, {\"id\": \"expense-entry-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Entries\", \"col\": 4}}, {\"id\": \"expense-type-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Entry Types\", \"col\": 4}}, {\"id\": \"treasury-transactions-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Treasury Transactions\", \"col\": 4}}, {\"id\": \"settings-section\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Settings</b></span>\", \"col\": 12}}, {\"id\": \"rental-settings-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Rental Settings\", \"col\": 4}}, {\"id\": \"partner-statement-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Partner Statement\", \"col\": 4}}, {\"id\": \"partner-summary-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Crane Partner Summary\", \"col\": 4}}, {\"id\": \"shareholders-link\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Shareholders\", \"col\": 4}}]",
- "shortcuts": [
-  {
-   "label": "Rental Calendar",
-   "type": "URL",
-   "url": "/rental-calendar"
-  },
-  {
-   "label": "Resource Timeline",
-   "type": "URL",
-   "url": "/rental-calendar/timeline"
-  },
-  {
-   "label": "Crane Assignments",
-   "type": "DocType",
-   "link_to": "Crane Assignment",
-   "doc_view": "List"
-  },
-  {
-   "label": "Crane Timesheets",
-   "type": "DocType",
-   "link_to": "Crane Timesheet",
-   "doc_view": "List"
-  },
-  {
-   "label": "Crane Maintenance",
-   "type": "DocType",
-   "link_to": "Crane Maintenance",
-   "doc_view": "List"
-  },
-  {
-   "label": "Cranes",
-   "type": "DocType",
-   "link_to": "Crane",
-   "doc_view": "List"
-  },
-  {
-   "label": "Customers",
-   "type": "DocType",
-   "link_to": "Customer",
-   "doc_view": "List"
-  },
-  {
-   "label": "Rental Profitability",
-   "type": "Report",
-   "link_to": "Crane Rental Profitability"
-  },
-  {
-   "label": "Timesheet Report",
-   "type": "DocType",
-   "link_to": "Crane Timesheet",
-   "doc_view": "Report Builder"
-  },
-  {
-   "label": "Maintenance Report",
-   "type": "DocType",
-   "link_to": "Crane Maintenance",
-   "doc_view": "Report Builder"
-  },
-  {
-   "label": "Sales Register",
-   "type": "Report",
-   "link_to": "Sales Register"
-  },
-  {
-   "label": "Accounts Receivable",
-   "type": "Report",
-   "link_to": "Accounts Receivable"
-  },
-  {
-   "label": "Sales Invoices",
-   "type": "DocType",
-   "link_to": "Sales Invoice",
-   "doc_view": "List"
-  },
-  {
-   "label": "Expense Entries",
-   "type": "DocType",
-   "link_to": "Expense Entry",
-   "doc_view": "List"
-  },
-  {
-   "label": "Expense Entry Types",
-   "type": "DocType",
-   "link_to": "Expense Entry Type",
-   "doc_view": "List"
-  },
-  {
-   "label": "Treasury Transactions",
-   "type": "DocType",
-   "link_to": "Treasury Transaction",
-   "doc_view": "List"
-  },
-  {
-   "label": "Rental Settings",
-   "type": "DocType",
-   "link_to": "Heavy Equipment Rental Settings"
-  },
-  {
-   "label": "Treasury Workbook",
-   "type": "Report",
-   "link_to": "Treasury Workbook"
-  },
-  {
-   "label": "Crane Partner Statement",
-   "type": "Report",
-   "link_to": "Crane Partner Statement"
-  },
-  {
-   "label": "Crane Partner Summary",
-   "type": "Report",
-   "link_to": "Crane Partner Summary"
-  },
-  {
-   "label": "Shareholders",
-   "type": "DocType",
-   "link_to": "Shareholder",
-   "doc_view": "List"
-  }
- ],
- "links": [],
  "charts": [],
+ "content": "[{\"id\":\"operations-section\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Operations</b></span>\",\"col\":12}},{\"id\":\"cranes-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Cranes\",\"col\":12}},{\"id\":\"rental-calendar-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Rental Calendar\",\"col\":6}},{\"id\":\"resource-calendar-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Resource Timeline\",\"col\":6}},{\"id\":\"assignments-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Crane Assignments\",\"col\":4}},{\"id\":\"timesheets-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Crane Timesheets\",\"col\":4}},{\"id\":\"maintenance-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Crane Maintenance\",\"col\":4}},{\"id\":\"customers-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customers\",\"col\":4}},{\"id\":\"reports-section\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports</b></span>\",\"col\":12}},{\"id\":\"treasury-workbook-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Treasury Workbook\",\"col\":3}},{\"id\":\"profit-distribution-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Crane Profit Distribution\",\"col\":6}},{\"id\":\"rental-profitability-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Rental Profitability\",\"col\":3}},{\"id\":\"timesheet-report-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Timesheet Report\",\"col\":3}},{\"id\":\"maintenance-report-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Report\",\"col\":3}},{\"id\":\"sales-register-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sales Register\",\"col\":3}},{\"id\":\"accounts-receivable-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Accounts Receivable\",\"col\":3}},{\"id\":\"accounting-section\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Accounting</b></span>\",\"col\":12}},{\"id\":\"sales-invoices-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sales Invoices\",\"col\":4}},{\"id\":\"expense-entry-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Expense Entries\",\"col\":4}},{\"id\":\"expense-type-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Expense Entry Types\",\"col\":4}},{\"id\":\"treasury-transactions-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Treasury Transactions\",\"col\":4}},{\"id\":\"HN50dqgrCt\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payment Entry\",\"col\":3}},{\"id\":\"settings-section\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Settings</b></span>\",\"col\":12}},{\"id\":\"rental-settings-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Rental Settings\",\"col\":4}},{\"id\":\"partner-statement-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Crane Partner Statement\",\"col\":4}},{\"id\":\"partner-summary-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Crane Partner Summary\",\"col\":4}},{\"id\":\"shareholders-link\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Shareholders\",\"col\":4}}]",
+ "creation": "2026-10-17 20:35:25.314473",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "hide_custom": 0,
+ "icon": "project",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Crane Operations",
+ "links": [],
+ "modified": "2026-11-14 15:24:35.258442",
+ "modified_by": "Administrator",
+ "module": "Heavy Equipment Rental",
+ "name": "Crane Operations",
  "number_cards": [],
+ "owner": "Administrator",
+ "public": 1,
+ "quick_lists": [],
  "roles": [
   {
    "role": "System Manager"
@@ -142,8 +30,155 @@
    "role": "Projects User"
   }
  ],
- "owner": "Administrator",
- "modified_by": "Administrator",
- "modified": "2026-10-17 22:00:00.000000",
- "custom_blocks": []
+ "sequence_id": 12.0,
+ "shortcuts": [
+  {
+   "doc_view": "",
+   "label": "Rental Calendar",
+   "type": "URL",
+   "url": "/rental-calendar"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Payment Entry",
+   "link_to": "Payment Entry",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Resource Timeline",
+   "type": "URL",
+   "url": "/rental-calendar/timeline"
+  },
+  {
+   "doc_view": "List",
+   "label": "Crane Assignments",
+   "link_to": "Crane Assignment",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Crane Timesheets",
+   "link_to": "Crane Timesheet",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Crane Maintenance",
+   "link_to": "Crane Maintenance",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Cranes",
+   "link_to": "Crane",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Customers",
+   "link_to": "Customer",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Rental Profitability",
+   "link_to": "Crane Rental Profitability",
+   "report_ref_doctype": "Crane Timesheet",
+   "type": "Report"
+  },
+  {
+   "doc_view": "Report Builder",
+   "label": "Timesheet Report",
+   "link_to": "Crane Timesheet",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "Report Builder",
+   "label": "Maintenance Report",
+   "link_to": "Crane Maintenance",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Sales Register",
+   "link_to": "Sales Register",
+   "report_ref_doctype": "Sales Invoice",
+   "type": "Report"
+  },
+  {
+   "doc_view": "",
+   "label": "Accounts Receivable",
+   "link_to": "Accounts Receivable",
+   "report_ref_doctype": "Sales Invoice",
+   "type": "Report"
+  },
+  {
+   "doc_view": "List",
+   "label": "Sales Invoices",
+   "link_to": "Sales Invoice",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Expense Entries",
+   "link_to": "Expense Entry",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Expense Entry Types",
+   "link_to": "Expense Entry Type",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Treasury Transactions",
+   "link_to": "Treasury Transaction",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Rental Settings",
+   "link_to": "Heavy Equipment Rental Settings",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Treasury Workbook",
+   "link_to": "Treasury Workbook",
+   "report_ref_doctype": "GL Entry",
+   "type": "Report"
+  },
+  {
+   "doc_view": "",
+   "label": "Crane Partner Statement",
+   "link_to": "Crane Partner Statement",
+   "report_ref_doctype": "Crane Profit Settlement",
+   "type": "Report"
+  },
+  {
+   "doc_view": "",
+   "label": "Crane Partner Summary",
+   "link_to": "Crane Partner Summary",
+   "report_ref_doctype": "Crane Profit Settlement",
+   "type": "Report"
+  },
+  {
+   "doc_view": "List",
+   "label": "Shareholders",
+   "link_to": "Shareholder",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Crane Profit Distribution",
+   "link_to": "Crane Profit Distribution",
+   "report_ref_doctype": "Crane Profit Settlement",
+   "type": "Report"
+  }
+ ],
+ "title": "Crane Operations"
 }

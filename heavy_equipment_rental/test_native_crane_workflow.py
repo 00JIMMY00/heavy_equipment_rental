@@ -246,6 +246,8 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 	def test_review_settlement_includes_repair_and_posts_selected_expense(self):
 		self.crane.update(dict(ownership_type="Shared Ownership", sharing_company=self.company.name,
 			agreement_effective_from=today(), operating_percentage=10,
+			settlement_approval="Review Before Posting", distribution_posting="Partner Expense",
+			settlement_revenue_basis="Net Revenue", include_depreciation=1,
 			profit_allocation_account=self.company.default_expense_account))
 		owner = frappe.get_doc(dict(doctype="Shareholder", title=self.key + " partner", company=self.company.name)).insert()
 		self.crane.set("ownership_partners", [dict(is_company=1, ownership_percentage=50, profit_percentage=50),
@@ -312,5 +314,5 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 		counts = {dt: frappe.db.count(dt) for dt in ("GL Entry", "Asset", "Sales Invoice", "Stock Entry")}
 		execute()
 		execute()
-		self.assertEqual(self.crane.reload().settlement_approval, "Review Before Posting")
+		self.assertEqual(self.crane.reload().settlement_approval, "On Invoice Submission")
 		self.assertEqual(counts, {dt: frappe.db.count(dt) for dt in counts})

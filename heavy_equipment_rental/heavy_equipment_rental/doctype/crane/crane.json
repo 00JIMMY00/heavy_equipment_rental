@@ -55,7 +55,8 @@
   "availability_overview",
   "connections_tab",
   "connections_section",
-  "item"
+  "item",
+  "legacy_asset_recognition"
  ],
  "fields": [
   {
@@ -280,11 +281,11 @@
   {
    "fieldname": "profit_allocation_account",
    "fieldtype": "Link",
-   "label": "Partner Allocation Account",
+   "label": "Legacy Profit Allocation Account",
    "options": "Account",
-   "description": "Expense account for contractual participation, or Equity for company distributions. Required except when reducing source revenue.",
-   "depends_on": "eval:doc.enable_profit_sharing && (doc.sharing_calculation=='Legacy Net Profit' || doc.distribution_posting!='Source Revenue Accounts')",
-   "mandatory_depends_on": "eval:doc.enable_profit_sharing && (doc.sharing_calculation=='Legacy Net Profit' || doc.distribution_posting!='Source Revenue Accounts')"
+   "description": "Historical net-profit agreements only. Operating First settlements use the revenue accounts of their source invoices automatically.",
+   "depends_on": "eval:doc.enable_profit_sharing && doc.sharing_calculation=='Legacy Net Profit'",
+   "mandatory_depends_on": "eval:doc.enable_profit_sharing && doc.sharing_calculation=='Legacy Net Profit'"
   },
   {
    "fieldname": "partner_payable_account",
@@ -330,7 +331,7 @@
   {
    "fieldname": "operating_percentage",
    "fieldtype": "Percent",
-   "label": "Operating Share of Settlement Revenue %",
+   "label": "Operating Share of Grand Total %",
    "precision": "6",
    "default": "0",
    "depends_on": "eval:doc.enable_profit_sharing && doc.sharing_calculation=='Operating First'",
@@ -357,7 +358,7 @@
    "unique": 1,
    "no_copy": 1,
    "in_standard_filter": 1,
-   "description": "One native Asset for the physical crane. Select its recognition basis; acquisition, improvements, depreciation and disposal remain in ERPNext.",
+   "description": "Company assets only. Owned: full cost. Shared: only the Company interest cost; never other owners’ shares.",
    "read_only_depends_on": "eval:!frappe.user.has_role(['Accounts Manager','System Manager'])"
   },
   {
@@ -370,36 +371,40 @@
    "fieldname": "asset_accounting_basis",
    "fieldtype": "Select",
    "label": "Asset Recognition Basis",
-   "options": "Pending Review\nWhole Crane\nCompany Interest Only\nThird-party Custody",
-   "default": "Pending Review",
-   "description": "Accounting scope of the linked Asset. Ownership percentages alone do not determine recognition. Review the ownership/control contract.",
-   "read_only_depends_on": "eval:!frappe.user.has_role(['Accounts Manager','System Manager'])"
+   "options": "\nCompany Owned\nCompany Interest Only",
+   "default": "",
+   "description": "Automatic: Owned records the full company Asset; shared equipment records only the Company interest. No Company ownership means no Asset.",
+   "read_only": 1,
+   "depends_on": "asset_accounting_basis"
   },
   {
    "fieldname": "settlement_approval",
    "fieldtype": "Select",
    "label": "Settlement Approval",
    "options": "Review Before Posting\nOn Invoice Submission",
-   "default": "Review Before Posting",
+   "default": "On Invoice Submission",
    "depends_on": "enable_profit_sharing",
-   "description": "Review costs before posting partner entitlements. Automatic approval is available only when costs are complete at invoicing."
+   "description": "Retained for historical agreement snapshots. New agreements use automatic source-revenue settlements on invoice submission.",
+   "hidden": 1
   },
   {
    "fieldname": "distribution_posting",
    "fieldtype": "Select",
    "label": "Partner Entitlement Accounting",
    "options": "Source Revenue Accounts\nPartner Expense\nEquity Distribution",
-   "default": "Partner Expense",
+   "default": "Source Revenue Accounts",
    "depends_on": "enable_profit_sharing",
-   "description": "Use revenue reduction for agency arrangements; expense for contractual operating participation; equity only for approved company profit distributions. Select the treatment supported by the contract."
+   "description": "Retained for historical agreement snapshots. New agreements use automatic source-revenue settlements on invoice submission.",
+   "hidden": 1
   },
   {
    "fieldname": "include_depreciation",
    "fieldtype": "Check",
    "label": "Deduct Posted Depreciation in Settlements",
-   "default": "1",
+   "default": "0",
    "depends_on": "enable_profit_sharing",
-   "description": "Only posted native depreciation attributed to this Crane is included. Capital improvements themselves are never deducted as repairs."
+   "description": "Retained for historical agreement snapshots. New agreements use automatic source-revenue settlements on invoice submission.",
+   "hidden": 1
   },
   {
    "fieldname": "operations_tab",
@@ -418,7 +423,18 @@
    "label": "Settlement Revenue Basis",
    "options": "\nNet Revenue\nInvoice Grand Total",
    "depends_on": "enable_profit_sharing",
-   "description": "New agreements use revenue excluding taxes. Historical Grand Total contracts remain explicit and must be reviewed before changing."
+   "description": "Retained for historical agreement snapshots. New agreements use automatic source-revenue settlements on invoice submission.",
+   "default": "Invoice Grand Total",
+   "hidden": 1
+  },
+  {
+   "fieldname": "legacy_asset_recognition",
+   "fieldtype": "Code",
+   "options": "JSON",
+   "label": "Historical Asset Recognition",
+   "read_only": 1,
+   "hidden": 1,
+   "no_copy": 1
   }
  ],
  "grid_page_length": 100,

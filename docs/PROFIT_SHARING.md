@@ -1,4 +1,4 @@
-> Current redesign: [Native Crane workflow](NATIVE_CRANE_WORKFLOW.md). New agreements use reviewed approval, Net Revenue and an explicit partner posting treatment; existing agreements retain their historical automatic approval/Grand Total/source-revenue behavior. Posted depreciation is a dated contract option, and native operating repair costs are included once by work period. The earlier behavior described below remains applicable to legacy terms.
+> Latest (2026-11-13): restored pre-550f4f5d automatic invoice approval, source-revenue debits, Invoice Grand Total and no depreciation deduction. Complete costs before submitting the Sales Invoice. Payments from the settlement remain manual native Pay entries. Older alternative treatments remain only for historical snapshots. See [the posted existing-Crane example](RESTORED_SETTLEMENT_AR.md).
 
 # Automatic Timesheet settlements — current workflow (2026-11-10)
 

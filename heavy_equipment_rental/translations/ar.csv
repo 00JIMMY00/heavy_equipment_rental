@@ -425,3 +425,95 @@ Create Payment,إنشاء قيد دفع
 All partner entitlements are paid.,تم سداد جميع مستحقات الشركاء.
 Invoice Value is allocated across external partners so shared invoices are not counted twice. Payments and balances use the native payment ledger as of Report Date. Draft amounts are not posted entitlements.,قيمة الفواتير موزعة بين الشركاء الخارجيين لمنع تكرار الإجمالي. المدفوعات والأرصدة من دفتر الدفع حتى تاريخ التقرير، ومبالغ المسودات غير مرحلة.
 Partner entitlements are posted automatically when the linked Sales Invoice is submitted. Use Partner Payment to pay the outstanding balance.,تُرحّل مستحقات الشركاء تلقائيًا عند اعتماد فاتورة المبيعات المرتبطة. استخدم دفع مستحقات شريك لسداد المتبقي.
+Crane Profit Distribution,توزيع أرباح الرافعات
+Profit Distribution Details,تفاصيل توزيع الأرباح
+Settlement Summary,ملخص التسويات
+Distribution Details,تفاصيل توزيع الأرباح
+Source Details,مصادر الإيرادات والمصروفات
+Entitlement Movements,حركة الاستحقاق والسداد
+Balance As Of,الرصيد حتى تاريخ
+Date Basis,أساس الفترة
+Work Period,فترة العمل
+Settlement Posting Date,تاريخ ترحيل التسوية
+Settlement Status,حالة التسوية
+Participant,الطرف
+External Partners,الشركاء الخارجيون
+External Partner,شريك خارجي
+Participant Name,اسم الطرف
+Our Company,شركتنا
+Retained by Company,محتفظ به للشركة
+Settlement Revenue,إيراد التسوية
+Posted Settlement Revenue,إيراد التسويات المعتمدة
+Settlement Costs,مصروفات التسوية
+Total Operating Share,إجمالي حصة التشغيل
+After Operating Share,المتبقي بعد التشغيل
+Residual Pool,المتاح لتوزيع المتبقي
+Company Operating Share,نصيب الشركة من التشغيل
+Company Residual Share,نصيب الشركة من المتبقي
+Company Total Retention,إجمالي نصيب الشركة
+Partners Calculated Share,نصيب الشركاء المحتسب
+Partners Posted Entitlement,استحقاق الشركاء المرحل
+Draft Partner Estimates,تقديرات الشركاء غير المرحلة
+Partner Payments,مدفوعات الشركاء
+Other Partner Adjustments,تسويات الشركاء الأخرى
+Partners Outstanding,المتبقي للشركاء
+Filtered Partners Entitlement,استحقاق الشركاء المحددين
+Filtered Partners Paid / Adjusted,المسدد والمسوى للشركاء المحددين
+Filtered Partners Outstanding,المتبقي للشركاء المحددين
+Expense Burden,أثر المصروفات على النصيب
+Residual Before These Costs,نصيب المتبقي قبل هذه المصروفات
+Total Share,إجمالي النصيب
+Ownership %,نسبة الملكية %
+Source Posting Date,تاريخ ترحيل المصدر
+Source Type,نوع المصدر
+Source Document,مستند المصدر
+Allocated Revenue,الإيراد المخصص للتسوية
+Allocated Cost,التكلفة المخصصة للتسوية
+Source Amount (Reference),مبلغ المصدر للمرجعية
+Allocation Basis,أساس التخصيص
+Movement Date,تاريخ الحركة
+Entitlement Increase,زيادة الاستحقاق
+Settlement / Payment Decrease,تخفيض بالسداد أو التسوية
+Partner Settlement Balance,رصيد الشريك في التسوية
+Entitlement Journal,قيد الاستحقاق
+Work From,العمل من
+Work To,العمل إلى
+Company and Balance As Of are required.,الشركة وتاريخ الرصيد مطلوبان.
+From Date must be before Balance As Of.,بداية الفترة يجب ألا تتجاوز تاريخ الرصيد.
+To Date must be before Balance As Of.,نهاية الفترة يجب ألا تتجاوز تاريخ الرصيد.
+Select a Shareholder in the report Company.,اختر شريكًا في شركة التقرير.
+"Whole saved settlements are selected by overlapping work dates or settlement posting date; amounts are not prorated by report filters. Summary cards include each selected settlement once. Company retention is not a cash balance. Paid / Adjusted and outstanding use the native payment ledger through Balance As Of. Drafts are estimates, not posted entitlements.",يعرض التقرير التسويات المحفوظة كاملة حسب تداخل فترة العمل أو تاريخ الترحيل، ولا يعيد توزيع مبالغها حسب فلاتر الفترة. البطاقات تجمع كل تسوية مرة واحدة. نصيب الشركة ليس رصيد نقدية. السداد والتسويات والأرصدة من دفتر الدفع حتى تاريخ الرصيد. المسودات تقديرات وليست استحقاقات مرحلة.
+Partner and payment-status filters select matching settlements. Summary cards retain the full settlement context; Distribution Details and Entitlement Movements show only matching external partners. Source Details includes all selected settlement sources.,فلتر الشريك وحالة السداد يحدد التسويات المطابقة. البطاقات تعرض إجمالي هذه التسويات، بينما تفاصيل التوزيع والحركة تعرض الشركاء الخارجيين المطابقين فقط. مصادر الإيرادات والمصروفات تعرض كامل مصادر التسويات المختارة.
+"Expense Burden is the reduction in the residual share from saved settlement costs, allocated by saved Remaining Balance %. It is explanatory, not another expense posting. Ownership % and Remaining Balance % are independent.",أثر المصروفات يوضح مقدار انخفاض نصيب المتبقي بسبب مصروفات التسوية، موزعًا حسب نسب توزيع المتبقي المحفوظة. هذا شرح للحساب وليس قيد مصروف إضافيًا. نسبة الملكية مستقلة عن نسبة توزيع المتبقي.
+Some saved source postings are later than Balance As Of; this report preserves the settlement snapshot rather than reconstructing an earlier cost estimate.,بعض مصادر التسوية المحفوظة تاريخ ترحيلها بعد تاريخ الرصيد؛ التقرير يعرض لقطة التسوية المحفوظة ولا يعيد بناء تقدير التكاليف بتاريخ سابق.
+Draft figures are the last saved calculation. Recalculate the settlement after changing sources; the report does not refresh or post it.,أرقام المسودات هي آخر حساب محفوظ. أعد حساب التسوية بعد تعديل مصادرها؛ التقرير لا يعيد حسابها ولا يرحلها.
+Participant Summary,ملخص الشركة والشركاء
+Settlement Count,عدد التسويات
+"Expense Burden compares rounded residual shares before and after saved costs, after prior losses. Deficit drafts may contain costs beyond the distributable pool. This is explanatory, not another expense posting. Ownership % and Remaining Balance % are independent.",أثر المصروفات يقارن نصيب المتبقي المقرب قبل التكاليف وبعدها، بعد الخسائر السابقة. قد تحتوي المسودات العاجزة على تكاليف تتجاوز وعاء التوزيع. هذا شرح للحساب وليس قيد مصروف إضافيًا. نسبة الملكية مستقلة عن نسبة توزيع المتبقي.
+
+Crane Distribution Dashboard,لوحة المستحقات والشراكة
+Assignment,أمر الإيجار
+Expense Type,نوع المصروف
+Income Account,حساب الإيراد
+Loss Brought Forward,الخسائر المرحلة
+Operating %,نسبة التشغيل
+Service From Date,بداية فترة الخدمة
+Service To Date,نهاية فترة الخدمة
+Settlement,التسوية
+Timesheet,سجل العمل
+Voucher,المستند
+Voucher Type,نوع المستند
+All,الكل
+Payment Entry,سند الدفع
+Get Outstanding Partner Entitlements,جلب مستحقات الشريك المفتوحة
+Outstanding Partner Entitlements,مستحقات الشريك المفتوحة
+Search Entitlements,بحث المستحقات
+Add Selected Entitlements,إضافة المستحقات المحددة
+"Select Company, Partner and Account Paid To first.",اختر الشركة والشريك وحساب المستحقات أولًا.
+Select at least one entitlement.,حدد استحقاقًا واحدًا على الأقل.
+The selected entitlements are already in Payment References.,المستحقات المحددة موجودة بالفعل في مراجع الدفع.
+No outstanding partner entitlements match these filters.,لا توجد مستحقات مفتوحة للشريك تطابق هذه الفلاتر.
+Payment details changed. Reopen the entitlements selector.,تغيّرت بيانات الدفع. افتح نافذة اختيار المستحقات من جديد.
+Select entitlements to add. Partial payments are allocated in reference row order. Dates filter settlement posting dates; balances are current.,حدد المستحقات المطلوب إضافتها. توزع الدفعات الجزئية حسب ترتيب سطور المراجع. فلتر التاريخ يخص تاريخ ترحيل التسوية والأرصدة المعروضة حالية.
+Select a partner (Shareholder or Supplier).,اختر شريكًا من نوع مساهم أو مورد.
+Select a payable account in the payment company.,اختر حساب مستحقات تابعًا لشركة سند الدفع.

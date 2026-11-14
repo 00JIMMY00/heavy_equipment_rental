@@ -26,6 +26,7 @@ after_install = ["heavy_equipment_rental.setup.execute", "heavy_equipment_rental
 after_migrate = ["heavy_equipment_rental.setup.execute", "heavy_equipment_rental.branding.apply_branding"]
 
 override_doctype_class = {
+	"Payment Entry": "heavy_equipment_rental.partner_payment.PartnerPaymentEntry",
 	"Asset Repair": "heavy_equipment_rental.asset_repair.RentalAssetRepair",
 	"Expense Entry": "heavy_equipment_rental.expenses.RentalExpenseEntry",
 	"Journal Entry": "heavy_equipment_rental.expenses.RentalJournalEntry",
@@ -74,6 +75,7 @@ doc_events = {
 	"Sales Invoice": {
 		"validate": "heavy_equipment_rental.crane_repairs.validate_native_document",
 		"on_submit": "heavy_equipment_rental.timesheet_settlement.invoice_submitted",
+		"on_cancel": "heavy_equipment_rental.purchasing.allow_timesheet_invoice_cancel",
 		"before_submit": "heavy_equipment_rental.profit_sharing.guard_closed_period",
 		"before_cancel": "heavy_equipment_rental.profit_sharing.guard_closed_period",
 	},
@@ -86,4 +88,9 @@ website_route_rules = [
 ]
 
 
-doctype_js = {"Expense Entry": "public/js/rental_expense.js"}
+doctype_js = {
+    "Expense Entry": "public/js/rental_expense.js",
+    "Payment Entry": "public/js/partner_payment.js",
+}
+
+app_include_js = ["/assets/heavy_equipment_rental/js/rental_cancellation.js"]

@@ -1,37 +1,45 @@
 """Link physical cranes to native assets without posting or duplicating accounting."""
 
 import json
-from decimal import Decimal
 
 import frappe
 from frappe import _
 from frappe.utils import flt, getdate, today
 
-from heavy_equipment_rental.profit_sharing import allocate_amount
+
+
+def company_ownership_percentage(crane):
+	if crane.ownership_type == "Owned":
+		return 100.0
+	if crane.ownership_type in ("Rented", "Operated for Owner"):
+		return 0.0
+	owners = ownership_as_of(crane, today()) if crane.agreement_history else crane.ownership_partners
+	return sum(flt(row.get("ownership_percentage")) for row in owners if row.get("is_company"))
+
+
+def accounting_basis(crane):
+	if not company_ownership_percentage(crane):
+		return ""
+	return "Company Owned" if crane.ownership_type == "Owned" else "Company Interest Only"
 
 
 def validate_asset_link(crane):
 	crane.asset = crane.asset or None
 	before = crane.get_doc_before_save()
 	previous = before.asset if before else None
-	if crane.asset != previous or (before and crane.get("asset_accounting_basis") != before.get("asset_accounting_basis")):
+	crane.asset_accounting_basis = accounting_basis(crane)
+	if crane.asset != previous:
 		frappe.only_for(("Accounts Manager", "System Manager"))
 	if not crane.asset:
 		return
-	# Serialize against other Crane links and Asset edits; the unique column is
-	# the final protection against concurrent inserts.
+	if not crane.asset_accounting_basis:
+		frappe.throw(_("Only cranes with a positive Company ownership percentage can link an Asset. Clear the Asset link; its accounting history remains intact."))
 	frappe.db.get_value("Asset", crane.asset, "name", for_update=True)
 	asset = frappe.get_doc("Asset", crane.asset)
 	if crane.asset != previous:
 		asset.check_permission("read")
 		if asset.docstatus == 2 or asset.status in ("Sold", "Scrapped", "Capitalized"):
 			frappe.throw(_("Select a draft or active Asset that has not been disposed of."))
-	if crane.get("asset_accounting_basis") in (None, "", "Pending Review"):
-		frappe.throw(_("Review the ownership contract and select Asset Recognition Basis before linking an Asset."))
-	if crane.get("asset_accounting_basis") == "Third-party Custody" and crane.ownership_type not in ("Rented", "Operated for Owner"):
-		frappe.throw(_("Third-party Custody requires Rented or Operated for Owner ownership."))
-	if crane.ownership_type in ("Rented", "Operated for Owner") and crane.get("asset_accounting_basis") != "Third-party Custody":
-		frappe.throw(_("Rented and Operated for Owner cranes require Third-party Custody recognition."))
 	if not crane.sharing_company:
 		crane.sharing_company = asset.company
 	validate_pair(crane, asset)
@@ -40,26 +48,32 @@ def validate_asset_link(crane):
 
 
 def validate_pair(crane, asset):
+	if not company_ownership_percentage(crane):
+		frappe.throw(_("Only cranes with a positive Company ownership percentage can link an Asset."))
 	if crane.sharing_company and asset.company != crane.sharing_company:
 		frappe.throw(_("The Asset Company must match the Crane Agreement Company."))
 	if flt(asset.asset_quantity) != 1:
 		frappe.throw(_("A Crane must link to an Asset with quantity 1. Split grouped assets using ERPNext first."))
 	if asset.item_code == crane.item:
 		frappe.throw(_("The fixed-asset Item must be separate from the Crane rental service Item."))
-	company_owned = asset.asset_owner == "Company" and (asset.asset_owner_company or asset.company) == asset.company
-	if crane.ownership_type in ("Rented", "Operated for Owner"):
-		if asset.calculate_depreciation:
-			frappe.throw(_("Do not depreciate a third-party custody Asset in the operating Company. Review any recognized lease Asset separately."))
-		if company_owned:
-			frappe.throw(_("Rented and Operated for Owner cranes require a third-party-owned Asset; do not capitalize them as company-owned assets."))
-		if not ((asset.asset_owner == "Supplier" and asset.supplier)
-			or (asset.asset_owner == "Customer" and asset.customer)
-			or (asset.asset_owner == "Company" and asset.asset_owner_company)):
-			frappe.throw(_("Identify the third-party owner on the Asset before linking it to this Crane."))
-		if crane.ownership_type == "Rented" and asset.asset_owner == "Supplier" and asset.supplier != crane.supplier:
-			frappe.throw(_("The Asset owner Supplier must match the rented Crane Supplier."))
-	elif not company_owned:
-		frappe.throw(_("Owned and shared cranes require an Asset owned by its accounting Company."))
+	if asset.asset_owner != "Company" or (asset.asset_owner_company or asset.company) != asset.company:
+		frappe.throw(_("The Asset must represent this Company's owned interest."))
+
+
+@frappe.whitelist()
+def make_company_asset(crane):
+	crane = frappe.get_doc("Crane", crane)
+	crane.check_permission("read")
+	frappe.has_permission("Asset", "create", throw=True)
+	if not accounting_basis(crane):
+		frappe.throw(_("This Company owns no percentage of this Crane; no Asset can be created from it."))
+	if crane.asset:
+		frappe.throw(_("This Crane already has an Asset."))
+	asset = frappe.new_doc("Asset")
+	asset.update(dict(asset_name=(crane.crane_name if crane.ownership_type == "Owned" else
+		_("{0} - Company {1}% interest").format(crane.crane_name, company_ownership_percentage(crane))), company=crane.sharing_company,
+		asset_owner="Company", asset_owner_company=crane.sharing_company, asset_quantity=1))
+	return asset.as_dict()
 
 
 def validate_linked_asset(asset, method=None):
@@ -91,7 +105,7 @@ def asset_summary(crane):
 	"""Read live values, never cache financial amounts on the operational master."""
 	crane = frappe.get_doc("Crane", crane)
 	crane.check_permission("read")
-	if not crane.asset:
+	if not crane.asset or not company_ownership_percentage(crane):
 		return None
 	asset = frappe.get_doc("Asset", crane.asset)
 	asset.check_permission("read")
@@ -104,25 +118,8 @@ def asset_summary(crane):
 		book_value = None
 	else:
 		book_value = asset.get_value_after_depreciation(finance_book)
-	precision = frappe.get_precision("Asset", "gross_purchase_amount", currency=currency)
-	owners = ownership_as_of(crane, today()) if crane.get("asset_accounting_basis") == "Whole Crane" else []
-	if sum(Decimal(str(p["ownership_percentage"])) for p in owners) != 100:
-		owners = []
-	weights = [p["ownership_percentage"] for p in owners]
-	costs = allocate_amount(asset.gross_purchase_amount, weights, precision) if owners else []
-	values = allocate_amount(book_value, weights, precision) if owners and book_value is not None else [None] * len(owners)
-	shares = []
-	for owner, cost, value in zip(owners, costs, values):
-		identity = asset.company if owner["is_company"] else owner.get("shareholder") or owner.get("supplier")
-		label = identity
-		if not owner["is_company"] and identity:
-			party_type, title_field = ("Shareholder", "title") if owner.get("shareholder") else ("Supplier", "supplier_name")
-			if frappe.has_permission(party_type, "read", doc=identity):
-				label = frappe.db.get_value(party_type, identity, title_field) or identity
-		shares.append(dict(owner=identity, owner_label=label,
-			ownership_percentage=owner["ownership_percentage"], cost=cost, book_value=value))
 	return dict(asset=asset.name, company=asset.company, currency=currency, status=asset.status,
 		docstatus=asset.docstatus, asset_owner=asset.asset_owner, finance_book=finance_book,
 		gross_purchase_amount=asset.gross_purchase_amount, total_asset_cost=asset.total_asset_cost,
-		additional_asset_cost=asset.additional_asset_cost, recognition_basis=crane.get("asset_accounting_basis"), book_value=book_value,
-		as_of=today(), shares=shares)
+		additional_asset_cost=asset.additional_asset_cost, recognition_basis=accounting_basis(crane), book_value=book_value,
+		as_of=today(), company_ownership_percentage=company_ownership_percentage(crane), shares=[])

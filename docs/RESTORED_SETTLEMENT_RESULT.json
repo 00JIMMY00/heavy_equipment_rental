@@ -1,0 +1,41 @@
+{
+  "crane": "CR-00073",
+  "company": "cranes company",
+  "date": "2026-11-13",
+  "assignment": "ASG-00085",
+  "timesheet": "TS-00076",
+  "expense": "EXPE-00126",
+  "sales_invoice": "ACC-SINV-2026-00032",
+  "settlement": "CPS-00022",
+  "entitlement_journal": "ACC-JV-2026-00245",
+  "customer_receipt": "ACC-PAY-2026-00039",
+  "partner_payments": [
+    "ACC-PAY-2026-00040",
+    "ACC-PAY-2026-00041",
+    "ACC-PAY-2026-00042",
+    "ACC-PAY-2026-00043"
+  ],
+  "partial_payment_check": {
+    "payment": "ACC-PAY-2026-00040",
+    "paid": 500,
+    "outstanding": 1000
+  },
+  "income_account": "HER1313 Rental Revenue - CC",
+  "cash_account": "HER1313 Cash - CC",
+  "cash_before": 40000.0,
+  "cash_after": 44000.0,
+  "cash_increase": 4000,
+  "revenue": 10000,
+  "operating_fee": 1000,
+  "costs": 1500,
+  "residual": 7500,
+  "company_retained": 4000,
+  "partner_entitlement_each": 1500,
+  "external_distribution": 4500,
+  "previous_settlement": "CPS-00021",
+  "previous_snapshot_preserved": true,
+  "verified": true,
+  "balanced_vouchers": 8,
+  "repeat_check_no_duplicates": true,
+  "old_posted_records_preserved": true
+}
