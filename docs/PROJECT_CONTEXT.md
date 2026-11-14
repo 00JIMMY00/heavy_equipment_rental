@@ -1,5 +1,8 @@
 # Project context
 
+Rental cancellation uses the native **Cancel** button with a linked-document preview and an accounting reversal warning. Confirming cancels listed payments and dependencies atomically. Use native **Amend** for replacements; no extra correction buttons. See [instructions](USER_GUIDE.md#expense-and-settlement-corrections).
+
+
 Payment Entry → **Get Outstanding Partner Entitlements** selects current open settlement balances for the selected Shareholder (or historical Supplier), company and payable account. Filter by settlement posting dates, Crane, Timesheet or Sales Invoice; add selected Journal Entry references without duplicates. A single payment can cover several settlements; partial amounts allocate in reference row order and each settlement retains its own native ledger balance/status.
 
 **Arabic distribution dashboard:** `Crane Operations → Crane Distribution Dashboard` (`/app/crane-distribution-dashboard`) presents the comprehensive saved-settlement report with financial cards, status filtering and five searchable detail views. Uses the same calculation and permission checks; see [report guide](PROFIT_DISTRIBUTION_REPORT.md).

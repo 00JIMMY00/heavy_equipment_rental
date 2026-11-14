@@ -1,5 +1,17 @@
 # Current decisions
 
+## 2026-11-14 — One Cancel action for rental dependencies
+
+- Use the existing Cancel button on Expense Entry, Profit Settlement, Sales Invoice and Timesheet. Preview all linked submitted payments, affected/later period settlements, invoices and generated journals; confirmation reverses the listed accounting atomically with native permissions. A combined Payment Entry cancels in full, reopening its allocations to other documents. Non-payment reconciled journal adjustments require explicit unreconciliation first.
+- Expense cancellation preserves its invoice/customer receipt/work; settlement cancellation preserves expense/invoice/work. Invoice cancellation includes its customer payments. No extra correction/recalculation buttons. Use native Amend for replacement expenses and settlements, then review/submit in dependency order. Preserve cancelled history and update the Timesheet backlink on settlement submission.
+
+
+## 2026-11-14 — Expense amendment journal link
+
+- New Expense Entry amendments clear only the cancelled source expense's copied generated Journal Entry link before native link validation. Preserve the original document/link and native amendment validation; unrelated supplied journals remain rejected.
+- Use native Cancel → Amend → Submit. Reopen affected settlements first, resolving partner payment allocations explicitly. Keep the Sales Invoice and Timesheet submitted for expense-only corrections; recreate the settlement after correcting costs. The later One Cancel action decision supersedes the manual dependency steps.
+
+
 ## 2026-11-14 — Select multiple partner entitlements in Payment Entry
 
 - Add a permission-checked picker to draft Pay entries for Shareholder/Supplier. Scope open, submitted settlement journals by Company, party and Account Paid To; optionally filter settlement posting dates, Crane, Timesheet and Sales Invoice. Amounts are current native ledger balances, not historical as-of balances. Exclude draft/cancelled/fully paid settlements.

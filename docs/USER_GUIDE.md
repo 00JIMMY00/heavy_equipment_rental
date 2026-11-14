@@ -525,3 +525,17 @@ Choose **Cancel** and review the list before confirming. Cancellation follows th
 - **Crane Timesheet** cancels its linked invoices and their settlements before cancelling the Timesheet.
 
 Duplicate references appear once. Normal permissions, payment reconciliation restrictions and accounting guards apply. Any failure rolls back the whole operation. If links change while the prompt is open, reopen Cancel to review the updated list.
+
+
+## Expense and settlement corrections
+
+Use the normal **Cancel** button. Review the linked documents in the warning before confirming: every listed submitted payment cancels in full, including payments allocated across several invoices or settlements. This reverses recorded accounting; it does not recover cash already paid. The cancellation is atomic and requires permission on every document.
+
+- Expense cancellation includes affected settlements, their partner payments and generated journals. The customer invoice, receipt and work remain submitted.
+- Settlement cancellation includes partner payments and its journal; expenses and customer billing remain submitted. Later period settlements are included when required by consecutive periods.
+- Sales Invoice cancellation includes its receipts and dependent settlements/payments. Timesheet cancellation includes its invoices and settlements. The preview is authoritative.
+- Reconciled journal adjustments other than Payment Entries must be unreconciled explicitly before cancellation.
+
+To correct a cancelled expense: choose **Amend**, edit and submit. Then open each cancelled settlement, choose **Amend**, save to recalculate current costs, review and submit. Submit periods oldest first. Replacement expense and settlement documents receive new generated journals and retain Amended From history. The submitted settlement updates the Timesheet link. If the expense was erroneous, leave it cancelled without an amendment.
+
+Use native Amend for any cancelled payments that need corrected replacement records; review their references and amounts before submission. Cancelled documents cannot be submitted again.

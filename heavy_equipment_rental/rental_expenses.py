@@ -99,6 +99,29 @@ def guard_expense(expense):
         frappe.throw(_("Work expenses are closed by settlement {0}. Cancel the affected settlement before posting or cancelling this expense.").format(row.name))
 
 
+def affected_settlements(expense):
+    """Submitted closures whose snapshots or work windows protect this expense."""
+    import json
+
+    if not expense.crane:
+        return []
+    start, end = work_window(expense)
+    result = []
+    for row in frappe.get_all("Crane Profit Settlement", filters={"crane": expense.crane,
+            "company": expense.company, "docstatus": 1},
+            fields=["name", "from_date", "to_date", "timesheet", "settlement_basis", "source_snapshot"]):
+        captured = any(s["doctype"] == "Expense Entry" and s["name"] == expense.name
+                       for s in json.loads(row.source_snapshot or "[]"))
+        overlaps = getdate(row.from_date) <= end and getdate(row.to_date) >= start
+        if row.settlement_basis == "Timesheet":
+            overlaps = overlaps and (not expense.crane_timesheet or row.timesheet == expense.crane_timesheet)
+            overlaps = overlaps and (not expense.crane_assignment or
+                frappe.db.get_value("Crane Timesheet", row.timesheet, "assignment") == expense.crane_assignment)
+        if captured or overlaps:
+            result.append(row.name)
+    return result
+
+
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def assignment_cranes(doctype, txt, searchfield, start, page_len, filters):

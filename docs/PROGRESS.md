@@ -1,5 +1,19 @@
 # Progress
 
+## 2026-11-14 — Cancel button handles linked payments and expenses
+
+- Removed the extra correction/recalculation buttons and their backend workflow. Extended the existing Cancel preview/execution to Expense Entry, affected/later period settlements and submitted native payments. Warn that a combined payment reverses in full and cancellation does not recover actual cash. Permissions, changed-scope confirmation and atomic rollback remain enforced.
+- Native settlement Amend now clears the copied generated journal before link validation, recalculates costs on save and updates the Timesheet settlement link on submission. No schema change; cancelled records remain intact.
+- All seven targeted cancellation integration tests passed on dev3: paid expense cancellation/native amendments, combined partner payments, customer receipts, changed scope, permission denial/rollback, shared expenses, and existing invoice/Timesheet/settlement cancellation scopes. Migrated dev3 and versioned the script URL; test transactions rolled back. Chrome verified native Cancel previews on EXPE-00001, CPS-00002 and their Sales Invoice, linked payments and reversal warning, no extra buttons and no JavaScript errors. Dismissed confirmations; existing business records remain submitted. Removed the temporary browser session.
+
+
+## 2026-11-14 — Expense cancellation/amendment fix
+
+- Fixed inherited cancelled Journal Entry links blocking new Expense Entry amendments, within HER's existing controller override. No schema change or migration; historical records unchanged.
+- Six expense integration tests passed on dev3, including amendment/new journal and rejection of unrelated journal links. One additional existing test (`test_unrelated_journal_keeps_native_party_validation`) failed because native journal submission did not raise its expected ValidationError; not changed by this fix.
+- Rehearsed correcting the saved shared-crane expense from 1,500 to 2,000 and rebuilding its settlement: partner 4,200, company 3,800, original paid Sales Invoice and Timesheet remain submitted. All test changes rolled back.
+
+
 ## 2026-11-14 — New cranes-dev3 development site
 
 - Created `cranes-dev3.arab-erp.com` in the existing bench with Frappe 15.122.0, ERPNext 15.122.0, required `arab_erp_theme` and HER from the current shared workspace. Installation and migration passed; existing sites and unrelated source edits were preserved.

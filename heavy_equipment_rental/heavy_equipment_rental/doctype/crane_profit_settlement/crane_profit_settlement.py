@@ -16,6 +16,14 @@ from heavy_equipment_rental.partner_accounts import modern_agreement, share_part
 
 
 class CraneProfitSettlement(Document):
+    def _validate_links(self):
+        if self.is_new() and self.amended_from and self.journal_entry:
+            source = frappe.db.get_value(self.doctype, self.amended_from,
+                ["docstatus", "journal_entry"], as_dict=True)
+            if source and source.docstatus == 2 and source.journal_entry == self.journal_entry:
+                self.journal_entry = None
+        super()._validate_links()
+
     def validate(self):
         sheet = None
         if self.timesheet and (self.settlement_basis == "Timesheet" or (self.is_new() and not self.amended_from)):
@@ -129,6 +137,9 @@ class CraneProfitSettlement(Document):
         self.source_snapshot = dumps(sources)
 
     def on_submit(self):
+        if self.timesheet and self.settlement_basis == "Timesheet":
+            frappe.db.set_value("Crane Timesheet", self.timesheet,
+                                "profit_settlement", self.name, update_modified=False)
         if not self.external_distribution:
             return
         agreement = json.loads(self.agreement_snapshot)

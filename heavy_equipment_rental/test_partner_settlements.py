@@ -551,3 +551,106 @@ class TestPartnerSettlements(FrappeTestCase):
         self.assertEqual(invoice.reload().docstatus, 1)
         self.assertEqual(settlement.reload().docstatus, 2)
         self.assertEqual(frappe.db.get_value("Journal Entry", settlement.journal_entry, "docstatus"), 2)
+
+    def correction_cycle(self):
+        sheet = self.sheet()
+        expense = self.rental_expense(crane_timesheet=sheet.name,
+            service_from_date=sheet.period_start, service_to_date=sheet.period_end).insert()
+        expense.submit()
+        invoice = self.invoice(sheet)
+        invoice.submit()
+        return sheet, expense, invoice, frappe.get_doc("Crane Profit Settlement", sheet.profit_settlement)
+
+    def test_cancel_expense_includes_payments_and_native_amendments(self):
+        from heavy_equipment_rental.cancellation import get_plan, cancel_all
+        sheet, expense, invoice, settlement = self.correction_cycle()
+        payment = self.pay(settlement, amount=500)
+        plan = get_plan(expense.doctype, expense.name)
+        self.assertIn(dict(doctype="Payment Entry", name=payment.name), plan)
+        cancel_all(expense.doctype, expense.name, plan)
+        self.assertTrue(all(d.reload().docstatus == 2 for d in (expense, settlement, payment)))
+        self.assertEqual(invoice.reload().docstatus, 1)
+        self.assertEqual(sheet.reload().docstatus, 1)
+        amended = frappe.copy_doc(expense)
+        amended.docstatus = 0
+        amended.amended_from = expense.name
+        amended.expenses[0].amount = 2000
+        amended.insert().submit()
+        replacement = frappe.copy_doc(settlement)
+        replacement.docstatus = 0
+        replacement.amended_from = settlement.name
+        replacement.insert().submit()
+        self.assertEqual(replacement.operating_expenses, 2000)
+        self.assertEqual(replacement.external_distribution, 2600)
+        self.assertEqual(sheet.reload().profit_settlement, replacement.name)
+
+    def test_cancel_scope_changes_and_permission_denial(self):
+        from heavy_equipment_rental.cancellation import get_plan, cancel_all
+        from frappe.model.document import Document
+        sheet, expense, invoice, settlement = self.correction_cycle()
+        original = get_plan(expense.doctype, expense.name)
+        payment = self.pay(settlement, amount=500)
+        with self.assertRaisesRegex(frappe.ValidationError, "Linked documents changed"):
+            cancel_all(expense.doctype, expense.name, original)
+        plan = get_plan(expense.doctype, expense.name)
+        check = Document.check_permission
+        def deny(doc, permtype="read", *args, **kwargs):
+            if doc.doctype == "Payment Entry" and permtype == "cancel":
+                raise frappe.PermissionError
+            return check(doc, permtype, *args, **kwargs)
+        with patch.object(Document, "check_permission", deny), self.assertRaises(frappe.PermissionError):
+            cancel_all(expense.doctype, expense.name, plan)
+        with patch.object(type(expense), "cancel", side_effect=frappe.ValidationError("Test failure")):
+            with self.assertRaisesRegex(frappe.ValidationError, "Test failure"):
+                cancel_all(expense.doctype, expense.name, plan)
+        self.assertTrue(all(d.reload().docstatus == 1 for d in (payment, expense, settlement, invoice)))
+
+    def test_cancel_shared_expense_cancels_all_affected_settlements(self):
+        from heavy_equipment_rental.cancellation import get_plan, cancel_all
+        expense = self.rental_expense().insert()
+        expense.submit()
+        first, second = self.sheet(), self.sheet(offset=1)
+        self.invoice().submit()
+        plan = get_plan(expense.doctype, expense.name)
+        names = {r["name"] for r in plan if r["doctype"] == "Crane Profit Settlement"}
+        self.assertEqual(names, {first.profit_settlement, second.profit_settlement})
+        cancel_all(expense.doctype, expense.name, plan)
+        self.assertTrue(all(frappe.get_doc("Crane Profit Settlement", n).docstatus == 2 for n in names))
+
+    def test_cancel_combined_partner_payment_keeps_other_settlement(self):
+        from heavy_equipment_rental.cancellation import get_plan, cancel_all
+        first, second = self.sheet(), self.sheet(offset=1)
+        self.invoice(first).submit()
+        self.invoice(second).submit()
+        a, b = [frappe.get_doc("Crane Profit Settlement", s.profit_settlement) for s in (first, second)]
+        payment = frappe.get_doc(make_partner_payment(a.name, shareholder=self.partners[0].name))
+        other = frappe.get_doc(make_partner_payment(b.name, shareholder=self.partners[0].name))
+        payment.append("references", other.references[0].as_dict())
+        payment.paid_amount = payment.received_amount = 3600
+        payment.allocate_amount_to_references(3600, True, True)
+        payment.reference_no, payment.reference_date = "Combined cancellation", today()
+        payment.insert().submit()
+        plan = get_plan(a.doctype, a.name)
+        self.assertEqual(sum(r["doctype"] == "Payment Entry" for r in plan), 1)
+        self.assertNotIn(dict(doctype=b.doctype, name=b.name), plan)
+        cancel_all(a.doctype, a.name, plan)
+        self.assertEqual(payment.reload().docstatus, 2)
+        self.assertEqual(b.reload().docstatus, 1)
+        self.assertEqual(settlement_payment_details(b.name)["balances"][0]["outstanding_amount"], 1800)
+
+    def test_cancel_invoice_includes_customer_receipt(self):
+        from heavy_equipment_rental.cancellation import get_plan, cancel_all
+        from erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry
+        sheet, expense, invoice, settlement = self.correction_cycle()
+        receipt = get_payment_entry("Sales Invoice", invoice.name,
+            bank_account=self.company.default_cash_account)
+        receipt.reference_no, receipt.reference_date = "Cancel receipt test", today()
+        receipt.insert().submit()
+        plan = get_plan(invoice.doctype, invoice.name)
+        self.assertIn(dict(doctype="Payment Entry", name=receipt.name), plan)
+        cancel_all(invoice.doctype, invoice.name, plan)
+        self.assertEqual(receipt.reload().docstatus, 2)
+        self.assertEqual(invoice.reload().docstatus, 2)
+        self.assertEqual(settlement.reload().docstatus, 2)
+        self.assertEqual(sheet.reload().docstatus, 1)
+        self.assertEqual(expense.reload().docstatus, 1)

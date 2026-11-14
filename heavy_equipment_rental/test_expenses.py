@@ -63,6 +63,35 @@ class TestExpenseParties(FrappeTestCase):
         self.assertEqual(frappe.db.get_value("Journal Entry", expense.journal_entry, "docstatus"), 2)
         self.assertFalse(self.ledger(expense))
 
+    def test_cancel_amend_creates_fresh_journal(self):
+        expense = self.make_expense()
+        original_journal = expense.journal_entry
+        expense.cancel()
+        amended = frappe.copy_doc(expense, ignore_no_copy=True)
+        amended.docstatus = 0
+        amended.amended_from = expense.name
+        self.assertEqual(amended.journal_entry, original_journal)
+        amended.expenses[0].amount = 150
+        amended.insert()
+        self.assertFalse(amended.journal_entry)
+        amended.submit()
+        self.assertNotEqual(amended.journal_entry, original_journal)
+        self.assertEqual(frappe.get_doc("Journal Entry", amended.journal_entry).total_debit, 225)
+        self.assertEqual(expense.reload().journal_entry, original_journal)
+        self.assertEqual(frappe.get_doc("Journal Entry", original_journal).docstatus, 2)
+
+    def test_amendment_does_not_clear_unrelated_journal(self):
+        expense = self.make_expense()
+        other = self.make_expense()
+        expense.cancel()
+        amended = frappe.copy_doc(expense)
+        amended.docstatus = 0
+        amended.amended_from = expense.name
+        amended.journal_entry = other.journal_entry
+        with self.assertRaises(frappe.ValidationError):
+            amended.insert()
+        self.assertEqual(other.reload().docstatus, 1)
+
     def test_expense_without_employee(self):
         self.assert_parties(self.make_expense(with_employee=False))
 

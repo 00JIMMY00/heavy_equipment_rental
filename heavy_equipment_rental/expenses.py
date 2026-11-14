@@ -9,6 +9,16 @@ from erpnext.accounts.doctype.journal_entry.journal_entry import JournalEntry
 
 
 class RentalExpenseEntry(ExpenseEntry):
+    def _validate_links(self):
+        # Frappe amendments copy no_copy fields too, and validate links before
+        # before_insert/validate. Drop only the cancelled source's generated link.
+        if self.is_new() and self.amended_from and self.journal_entry:
+            source = frappe.db.get_value("Expense Entry", self.amended_from,
+                ["docstatus", "journal_entry"], as_dict=True)
+            if source and source.docstatus == 2 and source.journal_entry == self.journal_entry:
+                self.journal_entry = None
+        super()._validate_links()
+
     def validate(self):
         super().validate()
         from heavy_equipment_rental.rental_expenses import validate_expense

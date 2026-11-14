@@ -517,3 +517,5 @@ Payment details changed. Reopen the entitlements selector.,تغيّرت بيان
 Select entitlements to add. Partial payments are allocated in reference row order. Dates filter settlement posting dates; balances are current.,حدد المستحقات المطلوب إضافتها. توزع الدفعات الجزئية حسب ترتيب سطور المراجع. فلتر التاريخ يخص تاريخ ترحيل التسوية والأرصدة المعروضة حالية.
 Select a partner (Shareholder or Supplier).,اختر شريكًا من نوع مساهم أو مورد.
 Select a payable account in the payment company.,اختر حساب مستحقات تابعًا لشركة سند الدفع.
+"This reverses the accounting for every listed document, including the full amount of any payment shared with other invoices or settlements. It does not recover money already paid. Cancelled documents remain in history; use Amend to create corrected replacements.",سيتم عكس القيود المحاسبية لكل المستندات المدرجة، بما فيها كامل أي دفعة مشتركة بين عدة فواتير أو تسويات. هذا لا يسترد الأموال المدفوعة فعلياً. تبقى المستندات الملغاة في السجل؛ استخدم التعديل لإنشاء البدائل الصحيحة.
+Unreconcile adjustment {0} before cancelling.,ألغِ مطابقة التسوية {0} قبل الإلغاء.
