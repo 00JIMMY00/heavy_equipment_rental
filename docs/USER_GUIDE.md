@@ -239,77 +239,30 @@ Unchecking Rented skips that Timesheet's supplier invoice. It does not mean the 
 
 ## 6. Repairs and spare parts
 
-```mermaid
-flowchart TD
-    J[Crane: New Repair] --> Q{What is the agreed treatment?}
-    Q -->|Routine company or rental cost| E[Operating Expense]
-    E --> MI[Consume Spare Parts: Material Issue]
-    E --> PI[External Repair Service: Purchase Invoice]
-    Q -->|Qualifying improvement| K[Capitalize Improvement]
-    K --> AR[Asset Improvement: Asset Repair]
-    Q -->|Owner billed separately| O[Recover from Owner]
-    O --> SI[Owner Sales Invoice with Update Stock for parts]
-    Q -->|Direct paid repair| CE[Cash Expense: Expense Entry]
-    Q -->|Inspection without a cost| NC[No Cost]
-    MI --> F[Complete maintenance after required postings]
-    PI --> F
-    AR --> F
-    SI --> F
-    NC --> F
-```
+Maintenance uses **Draft → Submit → Cancel → Amend**. Start at Crane → Operations → New Repair.
 
-Routine servicing is an operating expense. Only an improvement meeting the capitalization criteria should increase the Asset. For the technical accounting background, see [the design notes](NATIVE_CRANE_WORKFLOW.md#repairs-including-company-owned-shared-and-external-cranes).
+1. Enter the dates, description and optional rental Assignment/Timesheet.
+2. Choose **My Stock** for parts already purchased, **External Parts** to purchase new parts, or **External Service** for supplier labor.
+3. Choose **Operating Expense** for a routine repair or **Capitalize Improvement** for a qualifying improvement. Improvements require a linked company Asset and justification.
+4. Enter items and quantities. My Stock needs the source warehouse. External purchases need supplier and rates; the Maintenance warehouse is automatic for new parts.
+5. Review **Paid Amount to Supplier** (full by default; smaller for partial payment, zero for unpaid) and Payment Method. HER Settings supplies company repair-account/payment defaults.
+6. Save and **Submit**. Maintenance posts the purchase, consumption, payment and Asset Repair documents appropriate to your choices. Connections shows their links.
 
-### Common repair preparation
+For operating costs, choose **Crane Timesheet** to charge only its CPS, or **Crane Assignment** to share the cost across its submitted timesheets by working hours. Selecting a Timesheet fills its Assignment. Leave both empty for a general crane expense: the form shows **Unallocated**, and CPS excludes it. Dates do not fill or change these links. Expense Entry follows the same rules.
 
-1. On Crane → Operations, click **New Repair**.
-2. Confirm Company, Actual Start/End dates, Maintenance Type and description.
-3. Choose **Cost Treatment**.
-4. Select the relevant Timesheet/Assignment when this repair belongs to specific rental work. These links are optional; verify any automatic suggestions.
-5. Save before creating its accounting documents. Use In Progress while the job is active.
+### Correct a submitted repair
 
-A Timesheet link targets its work. Assignment/service-period costs can be shared across eligible work. Do not close a settlement while related operating repairs are unfinished.
+1. Open Maintenance and choose native **Cancel**.
+2. Review the listed documents and confirm their accounting reversals. This does not recover money already paid.
+3. Choose **Amend**, edit the dates/items/amounts, save and **Submit**.
 
-### A. Routine repair using your stock
+The old Maintenance and its cancelled documents remain in history. The amendment creates fresh postings; it does not edit the original invoice or stock ledger. My Stock's earlier purchase stays submitted. Shared payments that also cover unrelated transactions must be handled separately. Closed settlements, later Asset Repairs and native accounting restrictions can block cancellation; the whole cancellation rolls back on failure.
 
-1. Choose **Operating Expense** and save.
-2. Select **Create → Consume Spare Parts**.
-3. In the native Material Issue, enter Item, source Warehouse, quantity, Expense Account and Cost Center as applicable.
-4. Review and submit it.
-5. Return to maintenance. Post any additional external service invoice, then mark Completed and save.
+### Other repair workflows
 
-For outside services, use **Create → External Repair Service**, enter Supplier and service lines, and submit the Purchase Invoice. Purchase spare parts into stock separately; this repair-service invoice route is for services.
+**Manual Documents** supports owner billing, complex native transactions and legacy records. Prepare its native documents using Create, then submit Maintenance. For **Recover from Owner**, select the owner's Customer, create/submit the owner Sales Invoice (Update Stock for parts), then submit Maintenance. For **Cash Expense**, enter Cost, Expense Entry Type and Payment Method; Maintenance submission creates the Expense Entry. **No Cost** records an inspection without financial postings.
 
-Stock quantities and costs come from native stock accounting. Do not add a Cash Expense for the same consumed parts.
-
-### B. Qualifying capital improvement
-
-1. Confirm that the Crane has a submitted, reviewed company-recognized Asset.
-2. Choose **Capitalize Improvement**, explain the justification and save.
-3. If outside services are involved, use **Create → External Improvement Service**, review and submit its service Purchase Invoice.
-4. Select **Create → Asset Improvement** to open Asset Repair.
-5. Review the Asset, dates and Capitalize Repair Cost flag. Link the service invoice if applicable.
-6. For stock parts, enable Stock Consumption and enter the consumed Items, quantities, Warehouses and serial/batch details.
-7. Submit the Asset Repair, then complete maintenance.
-
-The app uses actual posted stock valuation for the increase. A repair form's preview valuation does not override the stock ledger. Native depreciation schedules are regenerated as applicable.
-
-### C. Repair billed separately to an external owner
-
-1. Choose **Recover from Owner**.
-2. Select **Bill Repair To**, using the owner's Customer record, and save.
-3. Select **Create → Invoice Owner / Consume Parts**.
-4. Enter stock parts, Warehouse, quantities and agreed selling rates. Keep Update Stock enabled when consuming parts.
-5. Review and submit the Sales Invoice, then complete maintenance.
-6. Receive the owner's payment through a native customer Payment Entry.
-
-This invoice consumes the parts. Do not create another Material Issue for those same quantities. This separately billed repair is excluded from rental profit settlement.
-
-### D. Cash Expense or No Cost
-
-For **Cash Expense**, enter the positive Cost, Expense Entry Type and Mode of Payment. Completing maintenance creates/submits the linked Expense Entry. This route suits a direct paid repair and remains available for historical records.
-
-For **No Cost**, record the inspection/work and complete it without inventing a financial amount.
+Routine servicing is an expense. Only qualifying improvements increase the Asset. Stock quantities and costs follow native valuation, and supplier payments are not a second repair expense. See [the design notes](NATIVE_CRANE_WORKFLOW.md#repairs-including-company-owned-shared-and-external-cranes).
 
 ## 7. Complete example: shared crane and owner payments
 
@@ -450,7 +403,7 @@ Under the restored automatic workflow, a deficit blocks settlement posting and r
 | What remains unpaid by a customer/supplier? | Native invoice outstanding balances / receivable/payable reports |
 | What cash/treasury movements occurred? | Treasury Workbook and native Cash/Bank ledgers |
 
-Rental Profitability uses accounting posting dates. Settlements can use repair/expense service periods and contract-specific allocation. Company-wide funding, available cash, accounting margin and distributable contract amounts can therefore differ. An Assignment filter cannot invent an allocation for general depreciation with no Assignment attribution.
+Rental Profitability uses accounting posting dates. Timesheet settlements charge repair/expense costs only through their selected Timesheet or Assignment; dates alone do not allocate them. Both links empty means Unallocated and excluded from CPS. Company-wide funding, available cash, accounting margin and distributable contract amounts can therefore differ. An Assignment filter cannot invent an allocation for general depreciation with no Assignment attribution.
 
 ### Correct a posted mistake
 

@@ -8,6 +8,8 @@ from frappe.utils import get_time
 
 class HeavyEquipmentRentalSettings(Document):
 	def validate(self):
+		from heavy_equipment_rental.maintenance_posting import validate_repair_defaults
+		validate_repair_defaults(self)
 		if self.get("rental_service_item"):
 			from heavy_equipment_rental.rental_items import validate_service_item
 			validate_service_item(self.rental_service_item)

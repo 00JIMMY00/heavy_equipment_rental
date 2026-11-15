@@ -1,0 +1,46 @@
+{
+ "doctype": "DocType",
+ "name": "Crane Maintenance Item",
+ "module": "Heavy Equipment Rental",
+ "istable": 1,
+ "editable_grid": 1,
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "label": "Quantity (Stock UOM)",
+   "reqd": 1,
+   "in_list_view": 1,
+   "default": 1
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "label": "Purchase Rate (Stock UOM)",
+   "in_list_view": 1,
+   "description": "For external purchases only. Stock issues use native valuation."
+  }
+ ],
+ "field_order": [
+  "item_code",
+  "qty",
+  "warehouse",
+  "rate"
+ ],
+ "permissions": []
+}

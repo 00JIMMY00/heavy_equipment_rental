@@ -247,3 +247,31 @@ class TestCrane(FrappeTestCase):
 		frappe.db.set_value("Company", self.company.name, "default_finance_book", books[2], update_modified=False)
 		frappe.clear_document_cache("Company", self.company.name)
 		self.assertIsNone(asset_summary(self.crane.name)["book_value"])
+
+	def test_disposed_asset_blocks_booking_until_restored(self):
+		from heavy_equipment_rental.rental_validation import validate_rental_asset
+		from erpnext.assets.doctype.asset.depreciation import scrap_asset, restore_asset
+		self.asset.submit()
+		self.link()
+		scrap_asset(self.asset.name, today())
+		with self.assertRaisesRegex(frappe.ValidationError, "disposed"):
+			frappe.get_doc(dict(doctype="Crane Assignment", customer=frappe.db.get_value("Customer", {}, "name"),
+				location=self.key, assigned_cranes=[dict(crane=self.crane.name, start_date=today(),
+				expected_end_date=today(), rental_rate_unit="Day", rental_rate=1000)])).insert()
+		restore_asset(self.asset.name)
+		validate_rental_asset(self.crane.name)
+		for status in ("Sold", "Scrapped", "Capitalized"):
+			frappe.db.set_value("Asset", self.asset.name, "status", status)
+			with self.assertRaises(frappe.ValidationError):
+				validate_rental_asset(self.crane.name)
+		frappe.db.set_value("Asset", self.asset.name, {"status": "Cancelled", "docstatus": 2})
+		with self.assertRaises(frappe.ValidationError):
+			validate_rental_asset(self.crane.name)
+
+	def test_assignment_derives_asset_company(self):
+		self.link()
+		assignment = frappe.get_doc(dict(doctype="Crane Assignment",
+			customer=frappe.db.get_value("Customer", {}, "name"), location=self.key,
+			assigned_cranes=[dict(crane=self.crane.name, start_date=today(), expected_end_date=today(),
+				rental_rate_unit="Day", rental_rate=1000)])).insert()
+		self.assertEqual(assignment.company, self.company.name)

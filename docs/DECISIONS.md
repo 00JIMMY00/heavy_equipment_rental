@@ -1,5 +1,36 @@
 # Current decisions
 
+## 2026-11-15 — Explicit expense attribution for CPS (latest)
+
+- Maintenance and Expense Entry costs require explicit rental links for CPS: a Timesheet charges only its settlement and fills Assignment; Assignment alone shares the cost across its submitted crane Timesheets by working hours. Neither link means a general, unallocated crane expense excluded from CPS. Dates do not choose or automatically fill the charged work. Mismatched links are rejected. Submitted settlement snapshots and ledgers remain unchanged; corrections use Cancel and Amend.
+- Remove date-based form autofill and use explicit links for pending repair/expense closure checks. Preserve protection of sources captured by historical settlements. Legacy Period settlements still prorate linked costs by service days; unlinked costs are excluded. No historical links are inferred or cleared.
+
+## 2026-11-15 — Native Maintenance Submit / Cancel / Amend (latest)
+
+- Maintenance is submittable. Draft saves do not post; Submit completes the repair and posts its automatic purchase/stock/Asset Repair/payment documents or cash Expense Entry. Manual native-document repairs validate their posted documents on submission. Remove Complete Repair and direct Completed status editing.
+- Cancel previews owned repair dependencies and reverses payments, newest Asset Repairs, stock issues, invoices and cash expenses/journals in order. Check normal cancel permissions first; fail atomically on closed periods, later repairs or any native accounting error. Prior My Stock purchases remain outside the cancellation. Shared payments involving unrelated documents and non-payment adjustments require explicit separate resolution.
+- Amend retains repair inputs and clears generated links before native link validation. Corrected dates flow to new invoice/stock postings. Existing completed or posted Maintenance becomes submitted through a metadata-only patch; old cancelled rows become cancelled, original status/docstatus is archived and no historical posting is rerun.
+
+## 2026-11-15 — Rebuild completion around Maintenance (latest)
+
+- Automated sources support both Operating Expense and Capitalize Improvement. Complete Repair saves the form and posts all required native purchase, consumption, Asset Repair and supplier payment documents atomically. Parts purchases capitalize through stock consumption only; service invoices capitalize through Asset Repair service cost.
+- Keep source and purpose together; automatic purpose choices are routine expense or improvement. Hide accounting defaults under Advanced Accounting and remove the direct Completed status choice for unposted automated jobs. Keep Manual Documents for legacy/other native workflows, preserving posted history.
+
+## 2026-11-15 — Simplify repair defaults and supplier payment (latest)
+
+- Routine repairs automatically use Operating Expense. Manual Documents explicitly replaces the empty source choice; Accounting Treatment remains visible in Maintenance Details: read-only for automated sources or posted/completed repairs, selectable for unposted Manual Documents. Cost Center remains under Advanced Accounting. Migration labels historical empty sources without changing posted documents or modification dates.
+- HER Settings → Maintenance Defaults holds one row per Company for repair Expense Account, optional warehouse override and default supplier Payment Method. External parts automatically receive/consume through a company Maintenance warehouse (created/reused on posting when no override exists); only My Stock asks for row warehouses.
+- Supplier Paid Amount defaults to the full native invoice amount. Partial and zero payments are supported; positive amounts submit a linked native Payment Entry with the purchase/issue/completion atomically. Native permissions, outstanding limits and cancellation order remain enforced. Existing completed repairs receive no retroactive payments.
+
+## 2026-11-15 — Post routine repairs from Maintenance
+
+- Operating Expense adds Repair Source and embedded item rows. My Stock posts Material Issue; External Parts posts a stock-updating Purchase Invoice followed by Material Issue; External Service posts a service Purchase Invoice. No second cash expense or automatic payment. Native valuation is authoritative.
+- Explicit Post Repair & Complete posts atomically with native permissions and period guards; duplicates and edited generated links/financial inputs are blocked. Cancel issue before purchase. Existing blank-source/manual jobs and historical ledgers remain intact. Complex native workflows remain available; Connections shows related documents.
+
+## 2026-11-14 — Rental eligibility and company selection
+
+New/changed bookings and draft Timesheet validation reject cancelled, Sold, Scrapped or Capitalized linked Assets. Preserve historical links and cancellation. New Assignments derive a single company from their cranes; mixed-company bookings are rejected. Timesheet-first explicitly supplies the crane company. New maintenance derives company from selected work or crane; existing inconsistent company edits are rejected.
+
 ## 2026-11-14 — One Cancel action for rental dependencies
 
 - Use the existing Cancel button on Expense Entry, Profit Settlement, Sales Invoice and Timesheet. Preview all linked submitted payments, affected/later period settlements, invoices and generated journals; confirmation reverses the listed accounting atomically with native permissions. A combined Payment Entry cancels in full, reopening its allocations to other documents. Non-payment reconciled journal adjustments require explicit unreconciliation first.

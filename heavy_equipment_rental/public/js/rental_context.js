@@ -7,19 +7,20 @@ heavy_equipment_rental.rental_context = {
             : [d.actual_start_date || frappe.datetime.get_today(), d.actual_end_date || d.actual_start_date || frappe.datetime.get_today()];
     },
     editable(frm) {
-        return frm.doc.doctype === "Expense Entry" ? frm.doc.docstatus === 0 : !frm.doc.expense_entry && !["Completed", "Cancelled"].includes(frm.doc.status);
+        return frm.doc.docstatus === 0;
     },
     setup(frm) {
         const editable = this.editable(frm);
+        frm.set_df_property("crane_assignment", "description", __("Choose the assignment that bears this cost. Without a Timesheet, its cost is shared across that assignment's submitted timesheets by working hours."));
+        frm.set_df_property("crane_timesheet", "description", __("Choose a Timesheet to charge only its settlement. Its Assignment is filled automatically. Leave both links empty for a general crane expense excluded from CPS."));
+        this.show_allocation(frm);
         for (const field of ["crane_assignment", "crane_timesheet"]) {
             frm.set_df_property(field, "read_only", !editable);
             frm.set_df_property(field, "reqd", 0);
             frm.set_query(field, () => {
-                const [start, end] = this.dates(frm);
-                const late_assignment = frm.doc.doctype === "Expense Entry" && field === "crane_assignment";
                 return {query:"heavy_equipment_rental.rental_context.context_link_query", filters:{
                     crane:frm.doc.crane, company:frm.doc.company,
-                    from_date:late_assignment ? null : start, to_date:late_assignment ? null : end,
+                    from_date:null, to_date:null,
                     assignment:field === "crane_timesheet" ? frm.doc.crane_assignment : null,
                 }};
             });
@@ -31,7 +32,16 @@ heavy_equipment_rental.rental_context = {
         }
         return this.changed(frm, false);
     },
+    show_allocation(frm) {
+        const description = frm.doc.crane_timesheet
+            ? __("Allocation: selected Timesheet only.")
+            : frm.doc.crane_assignment
+                ? __("Allocation: selected Assignment, shared by working hours.")
+                : __("Unallocated: general crane expense; excluded from CPS. Select an Assignment or Timesheet to allocate it.");
+        frm.set_df_property("crane_assignment", "description", description);
+    },
     async changed(frm, clear_invalid = true) {
+        this.show_allocation(frm);
         if (frm._setting_rental_context || !this.editable(frm)) return;
         const crane = frm.doc.crane, assignment = frm.doc.crane_assignment;
         const [start,end] = this.dates(frm);
@@ -42,7 +52,7 @@ heavy_equipment_rental.rental_context = {
             return;
         }
         const {message: options} = await frappe.call({method:"heavy_equipment_rental.rental_context.rental_work_options",
-            args:{crane,start,end,company:frm.doc.company}});
+            args:{crane,company:frm.doc.company}});
         if (request !== frm._work_request || crane !== frm.doc.crane || assignment !== frm.doc.crane_assignment ||
             this.dates(frm).join('|') !== [start,end].join('|')) return;
         const sheets = options.timesheets.filter(r=>!assignment || r.assignment === assignment);
@@ -62,27 +72,8 @@ heavy_equipment_rental.rental_context = {
         }
     },
     async autofill(frm) {
-        if (frm._setting_rental_context || !this.editable(frm)) return;
-        const crane = frm.doc.crane;
-        const start = frm.doc.doctype === "Expense Entry" ? frm.doc.posting_date : frm.doc.actual_start_date;
-        const fields = ["crane", "company", "posting_date", "actual_start_date", "crane_assignment", "crane_timesheet"];
-        const snapshot = fields.map(f=>frm.doc[f]).join("|");
-        const request = frm._work_request = (frm._work_request || 0) + 1;
-        if (!crane || !start) return;
-        const {message: options} = await frappe.call({method:"heavy_equipment_rental.rental_context.rental_work_options",
-            args:{crane,start,end:start,company:frm.doc.company}});
-        if (request !== frm._work_request || fields.map(f=>frm.doc[f]).join("|") !== snapshot) return;
-        const assignment = options.assignments.length === 1 ? options.assignments[0] :
-            options.assignments.find(r=>r.name === frm.doc.crane_assignment);
-        const sheets = options.timesheets.filter(r=>!assignment || r.assignment === assignment.name);
-        const sheet = sheets.length === 1 ? sheets[0] : sheets.find(r=>r.name === frm.doc.crane_timesheet);
-        const values = {crane_assignment:sheet?.assignment || assignment?.name || null, crane_timesheet:sheet?.name || null};
-        if (frm.doc.doctype === "Expense Entry") Object.assign(values,{
-            service_from_date:sheet?.start || assignment?.start || null,
-            service_to_date:sheet?.end || assignment?.end || null,
-        });
-        frm._setting_rental_context = true;
-        try { await frm.set_value(values); } finally { frm._setting_rental_context = false; }
+        // Keep the existing callers, but never infer financial links from dates.
+        return this.changed(frm);
     },
     async assignment_changed(frm) {
         if (frm._setting_rental_context || !this.editable(frm)) return;

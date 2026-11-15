@@ -45,10 +45,10 @@ def repair_documents(maintenance):
 	return documents(maintenance)
 
 
-def validate_maintenance(doc):
+def validate_maintenance(doc, *, require_postings=False):
 	before = doc.get_doc_before_save()
 	rows = documents(doc.name, check_permissions=False) if not doc.is_new() else []
-	if before and any(r["docstatus"] != 2 for r in rows) and any(
+	if before and not require_postings and any(r["docstatus"] != 2 for r in rows) and any(
 		str(doc.get(field) or "") != str(before.get(field) or "") and not (
 			field == "actual_end_date" and not before.actual_end_date and doc.status == "Completed"
 		) for field in ("crane", "company", "cost_treatment",
@@ -76,7 +76,7 @@ def validate_maintenance(doc):
 		capital_asset(crane, doc.company)
 	if doc.cost_treatment == "Recover from Owner" and not doc.owner_customer:
 		frappe.throw(_("Select the owner Customer to invoice for this repair."))
-	if doc.status == "Completed":
+	if doc.status == "Completed" and (require_postings or not (getattr(doc, "_action", None) == "submit" and doc.repair_source not in (None, "", "Manual Documents"))):
 		active = [r for r in rows if r["docstatus"] != 2]
 		if any(r["docstatus"] == 0 for r in active):
 			frappe.throw(_("Submit or delete draft repair accounting documents before completing maintenance."))
@@ -107,6 +107,8 @@ def capital_asset(crane, company):
 def make_repair_document(maintenance, doctype):
 	job = frappe.get_doc("Crane Maintenance", maintenance)
 	job.check_permission("write")
+	if job.docstatus != 0 and frappe.flags.maintenance_posting != job.name:
+		frappe.throw(_("Cancel and amend Maintenance before creating new repair documents."))
 	if job.status == "Cancelled" or doctype not in ALLOWED.get(job.cost_treatment, ()):
 		frappe.throw(_("This document is not appropriate for the repair's Cost Treatment."))
 	frappe.has_permission(doctype, "create", throw=True)
@@ -154,6 +156,8 @@ def validate_native_document(doc, method=None):
 			return
 	job = frappe.get_doc("Crane Maintenance", doc.crane_maintenance, for_update=True)
 	job.check_permission("read")
+	if doc.is_new() and job.docstatus != 0 and frappe.flags.maintenance_posting != job.name:
+		frappe.throw(_("Cancel and amend Maintenance before adding repair documents."))
 	internal_capital_issue = doc.doctype == "Stock Entry" and doc.get("asset_repair") and job.cost_treatment == "Capitalize Improvement"
 	if job.status == "Cancelled" or (doc.doctype not in ALLOWED.get(job.cost_treatment, ()) and not internal_capital_issue):
 		frappe.throw(_("Document and maintenance Cost Treatment do not agree."))
@@ -179,11 +183,15 @@ def validate_native_document(doc, method=None):
 		if any(frappe.get_cached_value("Item", row.item_code, "is_stock_item") for row in doc.items) and not doc.update_stock:
 			frappe.throw(_("Enable Update Stock to consume the repair parts exactly once."))
 	elif doc.doctype == "Purchase Invoice":
-		if doc.is_return and doc.return_against and frappe.db.exists("Asset Repair", {"purchase_invoice": doc.return_against, "docstatus": 1}):
+		stock_purchase = job.cost_treatment in ("Operating Expense", "Capitalize Improvement") and job.get("repair_source") == "External Parts"
+		if stock_purchase:
+			if not doc.update_stock or doc.is_return or any(not frappe.get_cached_value("Item", r.item_code, "is_stock_item") or r.is_fixed_asset for r in doc.items):
+				frappe.throw(_("External Parts requires a stock-updating Purchase Invoice of stock parts."))
+		if not stock_purchase and doc.is_return and doc.return_against and frappe.db.exists("Asset Repair", {"purchase_invoice": doc.return_against, "docstatus": 1}):
 			frappe.throw(_("Cancel the Asset Repair before returning its capitalized service invoice."))
-		if doc.update_stock or any(row.is_fixed_asset or frappe.get_cached_value("Item", row.item_code, "is_stock_item") for row in doc.items):
+		if not stock_purchase and (doc.update_stock or any(row.is_fixed_asset or frappe.get_cached_value("Item", row.item_code, "is_stock_item") for row in doc.items)):
 			frappe.throw(_("Repair Purchase Invoices are for external services. Purchase spare parts into stock separately, then consume them on the repair."))
-		if any(frappe.get_cached_value("Account", row.expense_account, "root_type") != "Expense" for row in doc.items):
+		if not stock_purchase and any(frappe.get_cached_value("Account", row.expense_account, "root_type") != "Expense" for row in doc.items):
 			frappe.throw(_("Repair service invoices must post to Expense accounts; Asset Repair reclassifies qualifying improvements."))
 	elif doc.doctype == "Asset Repair":
 		crane = frappe.get_doc("Crane", job.crane)
@@ -195,6 +203,8 @@ def validate_native_document(doc, method=None):
 			invoice.check_permission("read")
 			if invoice.docstatus != 1 or invoice.company != doc.company or invoice.crane_maintenance != job.name or invoice.is_return:
 				frappe.throw(_("Select a submitted repair service invoice from this maintenance job."))
+			if invoice.update_stock or any(frappe.get_cached_value("Item", r.item_code, "is_stock_item") for r in invoice.items):
+				frappe.throw(_("Purchased parts are capitalized through stock consumption. The Asset Repair invoice field is only for services."))
 			if len({r.expense_account for r in invoice.items}) != 1 or invoice.currency != frappe.get_cached_value("Company", doc.company, "default_currency"):
 				frappe.throw(_("Capitalization requires a company-currency service invoice using one Expense account."))
 			from erpnext.assets.doctype.asset_repair.asset_repair import get_repair_cost_for_purchase_invoice
@@ -219,6 +229,10 @@ def guard_repair_posting(doc, method=None):
 		return
 	job = frappe.get_doc("Crane Maintenance", doc.crane_maintenance, for_update=True)
 	lock_cranes([job.crane])
+	from heavy_equipment_rental.timesheet_settlement import guard_source_snapshots
+	guard_source_snapshots(doc, [job.crane])
+	if method == "before_cancel" and job.docstatus == 1:
+		frappe.throw(_("Cancel Crane Maintenance {0} to reverse its related documents together.").format(job.name))
 	if job.cost_treatment == "Operating Expense":
 		from heavy_equipment_rental.rental_expenses import guard_expense
 		context = frappe._dict(crane=job.crane, company=job.company, crane_assignment=job.crane_assignment,
@@ -229,6 +243,9 @@ def guard_repair_posting(doc, method=None):
 			context.service_from_date, context.service_to_date = frappe.db.get_value(
 				"Crane Timesheet", job.crane_timesheet, ["period_start", "period_end"])
 		guard_expense(context)
+	if doc.doctype == "Purchase Invoice" and method == "before_cancel" and job.get("repair_source") == "External Parts":
+		if frappe.db.exists("Stock Entry", {"crane_maintenance": job.name, "docstatus": 1}):
+			frappe.throw(_("Cancel the repair Material Issue before cancelling its parts Purchase Invoice."))
 	if doc.doctype == "Purchase Invoice" and method == "before_cancel" and frappe.db.exists(
 		"Asset Repair", {"purchase_invoice": doc.name, "docstatus": 1}):
 		frappe.throw(_("Cancel the Asset Repair before its capitalized service invoice."))
@@ -238,7 +255,7 @@ def guard_repair_posting(doc, method=None):
 
 
 def repair_expense_sources(crane, company):
-	"""Read actual posted costs, allocated by work dates rather than payment dates."""
+	"""Read actual posted costs with explicit work links for settlement allocation."""
 	for doctype in ("Stock Entry", "Purchase Invoice"):
 		for name in frappe.get_all(doctype, filters={"crane": crane, "company": company,
 			"docstatus": 1, "crane_maintenance": ["is", "set"]}, pluck="name"):
@@ -257,13 +274,15 @@ def repair_expense_sources(crane, company):
 				start, end = frappe.db.get_value("Crane Timesheet", job.crane_timesheet, ["period_start", "period_end"])
 			if amount:
 				yield dict(doctype=doctype, name=name, posting_date=str(doc.posting_date),
-					basis="Posted repair / service period", expenses=amount,
+					basis="Selected Timesheet" if job.crane_timesheet else "Selected Assignment / worked hours" if job.crane_assignment else "Unallocated crane repair", expenses=amount,
 					rental_assignment=job.crane_assignment, rental_timesheet=job.crane_timesheet,
 					service_from_date=str(start), service_to_date=str(end))
 
 
 def allocate_repair_period(source, company, start, end):
 	from heavy_equipment_rental.profit_sharing import allocate_amount
+	if not source.get("rental_assignment") and not source.get("rental_timesheet"):
+		return None
 	first, last = getdate(source["service_from_date"]), getdate(source["service_to_date"])
 	left, right = max(first, getdate(start)), min(last, getdate(end))
 	if left > right:
@@ -285,13 +304,12 @@ def validate_repair_closure(settlement):
 		job = frappe.get_doc("Crane Maintenance", name)
 		if job.cost_treatment != "Operating Expense":
 			continue
-		if job.crane_timesheet and settlement.timesheet and job.crane_timesheet != settlement.timesheet:
-			continue
+		from heavy_equipment_rental.rental_expenses import settlement_matches
+		first = job.actual_start_date or today()
+		last = job.actual_end_date or first
 		if job.crane_timesheet:
 			first, last = frappe.db.get_value("Crane Timesheet", job.crane_timesheet, ["period_start", "period_end"])
-		else:
-			first, last = job.actual_start_date or today(), job.actual_end_date or today()
-		if getdate(first) <= getdate(settlement.to_date) and getdate(last) >= getdate(settlement.from_date):
+		if settlement_matches(job, settlement, getdate(first), getdate(last)):
 			frappe.throw(_("Complete or cancel repair {0} before closing its profit settlement.").format(name))
 
 

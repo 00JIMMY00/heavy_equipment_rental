@@ -360,6 +360,77 @@ class TestPartnerSettlements(FrappeTestCase):
         doc.update(values)
         return doc
 
+    def test_unlinked_expense_is_excluded_and_does_not_close_unrelated_work(self):
+        from heavy_equipment_rental.rental_expenses import affected_settlements
+        first = self.sheet()
+        expense = self.rental_expense(700, crane_assignment=None,
+            posting_date=self.start).insert()
+        expense.submit()
+        self.invoice(first).submit()
+        settlement = frappe.get_doc("Crane Profit Settlement", first.profit_settlement)
+        self.assertEqual(settlement.operating_expenses, 0)
+        self.assertEqual(affected_settlements(expense), [])
+        snapshot = settlement.source_snapshot
+        # Legacy snapshots remain protected even when their source has no links.
+        legacy_sources = json.loads(snapshot) + [dict(doctype="Expense Entry", name=expense.name, expenses=700)]
+        frappe.db.set_value("Crane Profit Settlement", settlement.name, "source_snapshot", json.dumps(legacy_sources))
+        self.assertEqual(affected_settlements(expense), [settlement.name])
+        from heavy_equipment_rental.profit_sharing import guard_closed_period
+        with self.assertRaisesRegex(frappe.ValidationError, "included in settlement"):
+            guard_closed_period(expense, "before_cancel")
+        with self.assertRaisesRegex(frappe.ValidationError, "included in settlement"):
+            guard_closed_period(frappe.get_doc("Journal Entry", expense.journal_entry), "before_cancel")
+        frappe.db.set_value("Crane Profit Settlement", settlement.name, "source_snapshot", snapshot)
+        # An unallocated cost may be posted/cancelled even on a closed work date.
+        self.rental_expense(100, crane_assignment=None, posting_date=self.start).insert().submit()
+        expense.cancel()
+        self.assertEqual(settlement.reload().source_snapshot, snapshot)
+
+    def test_assignment_expense_ignores_service_date_for_timesheet_allocation(self):
+        first, second = self.sheet(hours=8), self.sheet(offset=1, hours=4)
+        expense = self.rental_expense(900, service_from_date=self.start,
+            service_to_date=self.start).insert()
+        expense.submit()
+        self.invoice().submit()
+        settlements = [frappe.get_doc("Crane Profit Settlement", s.profit_settlement) for s in (first, second)]
+        self.assertEqual([s.operating_expenses for s in settlements], [600, 300])
+        # A late cost for the same assignment cannot evade its existing closure.
+        with self.assertRaisesRegex(frappe.ValidationError, "closed"):
+            self.rental_expense(10, service_from_date=add_days(self.start, 3),
+                service_to_date=add_days(self.start, 3)).insert().submit()
+        with self.assertRaisesRegex(frappe.ValidationError, "same rental job"):
+            self.rental_expense(crane_timesheet=first.name,
+                crane_assignment=self.cycle["assignment"]).insert()
+
+    def test_native_repair_costs_use_explicit_links_only(self):
+        from heavy_equipment_rental.crane_repairs import make_repair_document, validate_repair_closure
+        first, second = self.sheet(hours=8), self.sheet(offset=1, hours=4)
+        supplier = frappe.get_doc(dict(doctype="Supplier", supplier_name="HER repair " + self.key,
+            supplier_type="Company", supplier_group=frappe.db.get_value("Supplier Group", {"is_group": 0}, "name"))).insert()
+        for amount, links in [(700, {}), (900, dict(crane_assignment=self.assignment.name)),
+                              (250, dict(crane_timesheet=first.name))]:
+            # Repairs can be paid/performed after the work they explicitly charge.
+            job = frappe.get_doc(dict(doctype="Crane Maintenance", crane=self.crane.name,
+                company=self.company.name, cost_treatment="Operating Expense", maintenance_type="Corrective",
+                actual_start_date=today(), actual_end_date=today(), description="Explicit allocation", **links)).insert()
+            invoice = frappe.get_doc(make_repair_document(job.name, "Purchase Invoice"))
+            invoice.supplier = supplier.name
+            invoice.append("items", dict(item_code=self.crane.item, qty=1, rate=amount,
+                expense_account=self.company.default_expense_account, cost_center=self.company.cost_center))
+            invoice.insert().submit()
+            job.submit()
+        pending = frappe.get_doc(dict(doctype="Crane Maintenance", crane=self.crane.name,
+            company=self.company.name, cost_treatment="Operating Expense", maintenance_type="Corrective",
+            actual_start_date=self.start, actual_end_date=self.start, description="Unallocated pending repair")).insert()
+        self.invoice().submit()
+        settlements = [frappe.get_doc("Crane Profit Settlement", s.profit_settlement) for s in (first, second)]
+        self.assertEqual([s.operating_expenses for s in settlements], [850, 300])
+        validate_repair_closure(settlements[0])  # Unallocated pending repair is irrelevant.
+        pending.crane_assignment = self.assignment.name
+        pending.save()
+        with self.assertRaisesRegex(frappe.ValidationError, "Complete or cancel repair"):
+            validate_repair_closure(settlements[0])
+
     def test_late_assignment_expense_is_allocated_only_once_by_worked_hours(self):
         expense = self.rental_expense().insert()
         self.assertEqual(str(expense.service_from_date), str(self.start))
@@ -469,14 +540,13 @@ class TestPartnerSettlements(FrappeTestCase):
             expense_type=template.expenses[0].expense_entry_type, mode_of_payment=template.mode_of_payment,
             cost=100)).insert()
         self.assertEqual(maintenance.crane_assignment,self.assignment.name)
-        maintenance.status='Completed'
-        maintenance.save()
+        maintenance.submit()
         expense=frappe.get_doc('Expense Entry',maintenance.expense_entry)
         self.assertEqual((expense.crane_assignment,expense.crane_timesheet,expense.docstatus),
             (self.assignment.name,first.name,1))
         self.assertEqual(str(expense.service_from_date), str(self.start))
         self.assertEqual(str(expense.service_to_date), str(self.start))
-        with self.assertRaisesRegex(frappe.ValidationError,'Expense details cannot change'):
+        with self.assertRaisesRegex(frappe.ValidationError,'Expense details cannot change|Not allowed to change'):
             maintenance.crane_timesheet=None
             maintenance.save()
 

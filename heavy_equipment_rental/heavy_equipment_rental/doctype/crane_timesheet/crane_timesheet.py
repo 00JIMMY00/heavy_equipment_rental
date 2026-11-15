@@ -9,6 +9,8 @@ from frappe.utils import flt, getdate, today
 
 from heavy_equipment_rental.rental_validation import (
     assignment_doc,
+    crane_company,
+    validate_rental_asset,
     entered_hour_totals,
     check_date_order,
     check_non_negative,
@@ -124,6 +126,7 @@ class CraneTimesheet(Document):
             frappe.throw(_("Creating a rental requires Crane Assignment create permission."), frappe.PermissionError)
         assignment = frappe.get_doc({
             "doctype": "Crane Assignment", "customer": self.customer,
+            "company": crane_company(self.crane) or frappe.defaults.get_user_default("Company"),
             "location": self.location,
             "assigned_cranes": [{
                 "crane": self.crane, "start_date": self.period_start,
@@ -165,6 +168,8 @@ class CraneTimesheet(Document):
         if not self.assignment:
             frappe.throw(_("Select a Crane Assignment or enter billing terms for a new rental."))
         lock_cranes([self.crane])
+        if self.docstatus != 2:
+            validate_rental_asset(self.crane)
         assignment = assignment_doc(self.assignment, "read", lock=True)
         if self.customer != assignment.customer or self.location != assignment.location:
             frappe.throw(_("Timesheet customer and location must match the Assignment."))

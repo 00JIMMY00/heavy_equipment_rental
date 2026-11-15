@@ -47,6 +47,6 @@ async function expense_rental_context(frm, method) {
     if (["changed", "setup"].includes(method) && frm.doc.crane_assignment && !frm.doc.service_from_date) {
         await rental_expense_defaults(frm);
     }
-    await frappe.require("/assets/heavy_equipment_rental/js/rental_context.js");
+    await frappe.require("/assets/heavy_equipment_rental/js/rental_context.js?v=20261115-explicit-links");
     return heavy_equipment_rental.rental_context[method](frm);
 }

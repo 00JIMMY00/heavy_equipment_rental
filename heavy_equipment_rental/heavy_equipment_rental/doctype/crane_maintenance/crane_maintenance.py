@@ -7,10 +7,92 @@ from heavy_equipment_rental.payment import payment_account
 
 
 class CraneMaintenance(Document):
+	def _validate_links(self):
+		# Native amendments copy generated links before normal validation runs.
+		if self.is_new() and self.amended_from:
+			source = frappe.get_doc(self.doctype, self.amended_from)
+			source.check_permission("read")
+			if source.docstatus == 2:
+				from heavy_equipment_rental.maintenance_posting import LINK_FIELDS
+				for field in LINK_FIELDS + ("expense_entry", "legacy_lifecycle"):
+					if self.get(field) and self.get(field) != source.get(field):
+						frappe.throw(_("An amendment cannot supply unrelated generated document links."))
+					self.set(field, None)
+				self.status = "Planned"
+		super()._validate_links()
+
+	def _submit(self):
+		return self._atomic_lifecycle(super()._submit)
+
+	def _cancel(self):
+		return self._atomic_lifecycle(super()._cancel)
+
+	def _atomic_lifecycle(self, action):
+		savepoint = "maintenance_" + frappe.generate_hash(length=10)
+		frappe.db.savepoint(savepoint)
+		try:
+			return action()
+		except Exception:
+			frappe.db.rollback(save_point=savepoint)
+			raise
+
+	def before_validate(self):
+		if self._action == "submit":
+			self.status = "Completed"
+			self.actual_start_date = self.actual_start_date or today()
+			self.actual_end_date = self.actual_end_date or today()
+		elif self.docstatus == 0 and self.status in ("Completed", "Cancelled"):
+			frappe.throw(_("Use Submit to complete Maintenance, or Cancel on a submitted Maintenance."))
+
+	def before_submit(self):
+		if self.repair_source not in (None, "", "Manual Documents"):
+			from heavy_equipment_rental.maintenance_posting import validate_posting
+			validate_posting(self)
+
+	def on_submit(self):
+		if self.repair_source not in (None, "", "Manual Documents"):
+			from heavy_equipment_rental.maintenance_posting import post_documents
+			previous = frappe.flags.maintenance_posting
+			frappe.flags.maintenance_posting = self.name
+			try:
+				post_documents(self)
+			finally:
+				frappe.flags.maintenance_posting = previous
+		elif self.cost_treatment == "Cash Expense":
+			self.make_expense()
+		from heavy_equipment_rental.crane_repairs import validate_maintenance
+		validate_maintenance(self, require_postings=True)
+		self.sync_crane_condition()
+
+	def before_cancel(self):
+		from heavy_equipment_rental.maintenance_cancellation import build_plan
+		self._maintenance_cancel_plan = build_plan(self.name)
+		for row in self._maintenance_cancel_plan:
+			frappe.get_doc(row["doctype"], row["name"]).check_permission("cancel")
+		self.status = "Cancelled"
+
+	def on_cancel(self):
+		for row in self._maintenance_cancel_plan:
+			doc = frappe.get_doc(row["doctype"], row["name"])
+			if doc.doctype != self.doctype and doc.docstatus == 1:
+				doc.cancel()
+		self.sync_crane_condition()
+
 	def validate(self):
 		before = self.get_doc_before_save()
+		from heavy_equipment_rental.rental_validation import crane_company
+		assignment = self.crane_assignment
+		if self.crane_timesheet:
+			assignment = frappe.db.get_value("Crane Timesheet", self.crane_timesheet, "assignment")
+		company = (frappe.db.get_value("Crane Assignment", assignment, "company") if assignment else None) or crane_company(self.crane)
+		if self.is_new() and company:
+			self.company = company
+		elif company and self.company != company:
+			frappe.throw(_("Maintenance Company must match the selected rental work and Crane."))
 		# Blank old API records retain their original cash-expense behavior.
 		self.cost_treatment = self.cost_treatment or "Cash Expense"
+		from heavy_equipment_rental.maintenance_posting import validate_inputs
+		validate_inputs(self)
 		from heavy_equipment_rental.crane_repairs import validate_maintenance
 		validate_maintenance(self)
 		if before and before.expense_entry != self.expense_entry:
@@ -65,9 +147,6 @@ class CraneMaintenance(Document):
 
 	def on_update(self):
 		self.sync_crane_condition()
-		before = self.get_doc_before_save()
-		if self.cost_treatment == "Cash Expense" and self.status == "Completed" and (not before or before.status != "Completed"):
-			self.make_expense()
 
 	def sync_crane_condition(self):
 		# The crane row was locked in validate, serializing concurrent records for this crane.
@@ -136,10 +215,5 @@ class CraneMaintenance(Document):
 
 @frappe.whitelist()
 def create_expense(maintenance):
-	doc = frappe.get_doc("Crane Maintenance", maintenance, for_update=True)
-	doc.check_permission("write")
-	if doc.status != "Completed" or flt(doc.cost) <= 0 or not doc.expense_type or not (
-		doc.mode_of_payment or doc.credit_account
-	):
-		frappe.throw(_("Complete maintenance with a positive cost, Expense Entry Type and Mode of Payment first."))
-	return doc.make_expense()
+	frappe.get_doc("Crane Maintenance", maintenance).check_permission("write")
+	frappe.throw(_("Submit Maintenance to create its expense. To correct a submitted repair, use Cancel and Amend."))

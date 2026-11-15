@@ -84,16 +84,16 @@ def validate_context(doc):
     start, end = window(doc)
     if start > end:
         frappe.throw(_("The work period end cannot precede its start."))
-    options = rental_work_options(doc.crane, start, end, doc.get("company"))
+    options = rental_work_options(doc.crane, company=doc.get("company"))
     if doc.get("crane_assignment"):
         assignment = frappe.get_doc("Crane Assignment", doc.crane_assignment)
         assignment.check_permission("read")
         if doc.get("company") and assignment.company and assignment.company != doc.company:
             frappe.throw(_("Expense and Assignment must belong to the same Company."))
         if doc.crane_assignment not in {r["name"] for r in options["assignments"]}:
-            frappe.throw(_("Select an Assignment matching this Crane and work period."))
+            frappe.throw(_("Select an Assignment containing this Crane."))
         if doc.get("crane_timesheet") and doc.crane_timesheet not in {r["name"] for r in options["timesheets"]}:
-            frappe.throw(_("Select a Timesheet matching this work period."))
+            frappe.throw(_("Select a Timesheet belonging to this Crane and Assignment."))
 
 
 @frappe.whitelist()

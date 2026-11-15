@@ -1,0 +1,194 @@
+[
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_asset_draft_and_basis_follow_company_ownership",
+    "seconds": 1.14,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_company_mismatch_rejected_from_crane_and_native_asset",
+    "seconds": 1.14,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_company_share_is_not_applied_twice_and_future_terms_do_not_reprice_asset",
+    "seconds": 1.19,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_default_finance_book_is_used_instead_of_first_book",
+    "seconds": 1.69,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_duplicate_asset_and_grouped_assets_rejected",
+    "seconds": 0.94,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_legacy_unlinked_cranes_remain_saveable",
+    "seconds": 0.95,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_link_changes_and_financial_reads_require_permissions",
+    "seconds": 0.91,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_link_corrections_are_audited_without_reversing_asset_accounting",
+    "seconds": 3.07,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_link_uses_full_value_without_posting_or_changing_service_item",
+    "seconds": 1.04,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_migration_archives_full_shared_link_without_rewriting_asset",
+    "seconds": 1.28,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_native_depreciation_and_reversal_are_live_without_crane_save",
+    "seconds": 3.23,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_no_company_ownership_disallows_even_third_party_asset_links",
+    "seconds": 1.07,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_zero_company_shared_interest_keeps_partners_but_no_asset",
+    "seconds": 1.19,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.test_rental_workflow.TestRentalWorkflow.test_assignment_defaults_use_settings_and_crane_prices",
+    "seconds": 0.67,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.test_rental_workflow.TestRentalWorkflow.test_assignment_first_and_timesheet_first",
+    "seconds": 2.84,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.test_rental_workflow.TestRentalWorkflow.test_completed_maintenance_uses_shared_expense_entry",
+    "seconds": 1.12,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_capital_improvement_uses_actual_stock_value_and_reverses_together",
+    "seconds": 3.88,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_custody_crane_can_consume_stock_but_cannot_capitalize",
+    "seconds": 1.84,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_external_service_costs_and_capitalization_are_not_duplicated",
+    "seconds": 4.37,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_improvement_regenerates_native_depreciation_schedule",
+    "seconds": 3.78,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_migration_repeat_does_not_change_new_terms_or_post_ledgers",
+    "seconds": 2.1,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_native_permission_and_attribution_checks",
+    "seconds": 1.73,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_owner_recovery_consumes_parts_and_is_not_rental_profit",
+    "seconds": 4.1,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_repair_costs_appear_in_posting_date_profitability",
+    "seconds": 2.02,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_review_settlement_includes_repair_and_posts_selected_expense",
+    "seconds": 3.62,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_serialized_improvement_restores_stock_on_cancellation",
+    "seconds": 4.01,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_shared_item_keeps_two_cranes_separate_on_one_invoice",
+    "seconds": 2.73,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_shared_service_product_and_company_interest_values",
+    "seconds": 1.47,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_stock_repair_expenses_once_without_increasing_asset",
+    "seconds": 3.22,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_maintenance_rental_context_carries_to_expense",
+    "seconds": 4.58,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_assignment_derives_asset_company",
+    "seconds": 0.94,
+    "status": "PASS",
+    "details": []
+  },
+  {
+    "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_disposed_asset_blocks_booking_until_restored",
+    "seconds": 2.97,
+    "status": "PASS",
+    "details": []
+  }
+]

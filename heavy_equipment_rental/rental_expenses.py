@@ -55,21 +55,25 @@ def validate_expense(expense):
 
 
 def matches(source, sheet):
-    return (not source.get("rental_timesheet") or source["rental_timesheet"] == sheet.name) and (not source.get("rental_assignment") or source["rental_assignment"] == sheet.assignment) and (
-        getdate(sheet.period_start) <= getdate(source["service_to_date"]) and
-        getdate(sheet.period_end) >= getdate(source["service_from_date"]))
+    # Explicit work links are authoritative; dates never select the charged job.
+    if source.get("rental_timesheet"):
+        return source["rental_timesheet"] == sheet.name and (
+            not source.get("rental_assignment") or source["rental_assignment"] == sheet.assignment)
+    return bool(source.get("rental_assignment")) and source["rental_assignment"] == sheet.assignment
 
 
 def expense_sources(crane, company):
     for name in frappe.get_all("Expense Entry", filters={"crane": crane, "company": company,
             "docstatus": 1}, pluck="name"):
         expense = frappe.get_doc("Expense Entry", name)
+        if not expense.crane_assignment and not expense.get("crane_timesheet"):
+            continue
         start, end = work_window(expense)
         yield expense, dict(doctype="Expense Entry", name=name, journal=expense.journal_entry,
             posting_date=str(expense.posting_date), rental_assignment=expense.crane_assignment,
             rental_timesheet=expense.get("crane_timesheet"),
             service_from_date=str(start), service_to_date=str(end),
-            basis="Assignment / service period" if expense.crane_assignment or expense.get("service_from_date") else "Posting date",
+            basis="Selected Timesheet" if expense.get("crane_timesheet") else "Selected Assignment / worked hours",
             expenses=sum(flt(r.amount) for r in expense.expenses))
 
 
@@ -84,19 +88,33 @@ def check_posted(expense):
 def guard_expense(expense):
     if not expense.crane:
         return
+    if expense.get("doctype") == "Expense Entry":
+        # Also protect direct cancellation of the expense's generated journal.
+        from heavy_equipment_rental.timesheet_settlement import guard_source_snapshots
+        guard_source_snapshots(expense, [expense.crane])
     agreement_company, history = frappe.db.get_value("Crane", expense.crane, ["sharing_company", "agreement_history"])
     if history and agreement_company and agreement_company != expense.company:
         frappe.throw(_("Crane {0} belongs to another agreement Company.").format(expense.crane))
+    if not expense.get("crane_assignment") and not expense.get("crane_timesheet"):
+        return
     start, end = work_window(expense)
     for row in frappe.get_all("Crane Profit Settlement", filters={"crane": expense.crane,
-            "company": expense.company, "docstatus": 1, "from_date": ["<=", end],
-            "to_date": [">=", start]}, fields=["name", "timesheet", "settlement_basis"]):
-        if row.settlement_basis == "Timesheet" and expense.get("crane_timesheet") and row.timesheet != expense.crane_timesheet:
-            continue
-        if row.settlement_basis == "Timesheet" and expense.crane_assignment:
-            if frappe.db.get_value("Crane Timesheet", row.timesheet, "assignment") != expense.crane_assignment:
-                continue
-        frappe.throw(_("Work expenses are closed by settlement {0}. Cancel the affected settlement before posting or cancelling this expense.").format(row.name))
+            "company": expense.company, "docstatus": 1},
+            fields=["name", "timesheet", "settlement_basis", "from_date", "to_date"]):
+        if settlement_matches(expense, row, start, end):
+            frappe.throw(_("Work expenses are closed by settlement {0}. Cancel the affected settlement before posting or cancelling this expense.").format(row.name))
+
+
+def settlement_matches(expense, settlement, start, end):
+    if not expense.get("crane_assignment") and not expense.get("crane_timesheet"):
+        return False
+    if settlement.settlement_basis == "Timesheet":
+        sheet = frappe._dict(name=settlement.timesheet, assignment=frappe.db.get_value(
+            "Crane Timesheet", settlement.timesheet, "assignment"))
+        return matches(dict(rental_timesheet=expense.get("crane_timesheet"),
+            rental_assignment=expense.get("crane_assignment")), sheet)
+    # Legacy period closures still split explicitly linked costs by service period.
+    return getdate(settlement.from_date) <= end and getdate(settlement.to_date) >= start
 
 
 def affected_settlements(expense):
@@ -112,11 +130,7 @@ def affected_settlements(expense):
             fields=["name", "from_date", "to_date", "timesheet", "settlement_basis", "source_snapshot"]):
         captured = any(s["doctype"] == "Expense Entry" and s["name"] == expense.name
                        for s in json.loads(row.source_snapshot or "[]"))
-        overlaps = getdate(row.from_date) <= end and getdate(row.to_date) >= start
-        if row.settlement_basis == "Timesheet":
-            overlaps = overlaps and (not expense.crane_timesheet or row.timesheet == expense.crane_timesheet)
-            overlaps = overlaps and (not expense.crane_assignment or
-                frappe.db.get_value("Crane Timesheet", row.timesheet, "assignment") == expense.crane_assignment)
+        overlaps = settlement_matches(expense, row, start, end)
         if captured or overlaps:
             result.append(row.name)
     return result

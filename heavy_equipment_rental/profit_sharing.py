@@ -365,6 +365,8 @@ def guard_closed_period(doc, method=None):
     lock_cranes(cranes)
     from heavy_equipment_rental.timesheet_settlement import guard_source_snapshots
     guard_source_snapshots(doc, cranes)
+    if doc.get("crane_maintenance"):
+        return  # Repair attribution and captured historical sources were checked above.
     if doc.doctype == "Expense Entry":
         from heavy_equipment_rental.rental_expenses import guard_expense
         guard_expense(doc)

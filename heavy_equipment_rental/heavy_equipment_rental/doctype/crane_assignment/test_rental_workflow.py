@@ -53,11 +53,10 @@ class TestRentalWorkflow(FrappeTestCase):
             "maintenance_type": "Corrective", "description": "Expense integration test",
             "status": "Planned",
         }).insert()
-        maintenance.status = "Completed"
         maintenance.cost = 125
         maintenance.expense_type = expense_type.name
         maintenance.mode_of_payment = mode
-        maintenance.save()
+        maintenance.submit()
         expense = frappe.get_doc("Expense Entry", maintenance.expense_entry)
         self.assertEqual(expense.company, expense_type.company)
         self.assertEqual(expense.crane, crane.name)

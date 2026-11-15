@@ -67,11 +67,10 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 		self.assertEqual(self.gl("Stock Entry", entry.name, "Expense"), 50)
 		self.assertEqual(asset_summary(self.crane.name)["book_value"], before)
 		self.assertEqual(list(repair_expense_sources(self.crane.name, self.company.name))[0]["expenses"], 50)
-		job.status = "Completed"
-		job.save()
+		job.submit()
 		self.assertFalse(job.expense_entry)
 		self.assertEqual(self.crane.reload().operational_condition, "Operational")
-		entry.cancel()
+		job.cancel()
 		self.assertEqual(list(repair_expense_sources(self.crane.name, self.company.name)), [])
 		self.assertEqual(frappe.db.get_value("Bin", {"item_code": self.part.name, "warehouse": self.warehouse}, "actual_qty"), 10)
 
@@ -110,9 +109,8 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 		self.assertEqual(self.gl("Sales Invoice", invoice.name, "Expense"), 50)
 		self.assertEqual(collect_sources(self.crane.name, self.company.name, today(), today()), [])
 		self.assertEqual(self.asset.reload().additional_asset_cost, 0)
-		job.status = "Completed"
-		job.save()
-		invoice.cancel()
+		job.submit()
+		job.cancel()
 		self.assertEqual(frappe.db.get_value("Bin", {"item_code": self.part.name, "warehouse": self.warehouse}, "actual_qty"), 10)
 
 	def test_custody_crane_can_consume_stock_but_cannot_capitalize(self):
@@ -288,8 +286,7 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 		settlement.costs_reviewed = 1
 		with self.assertRaisesRegex(frappe.ValidationError, "Complete or cancel repair"):
 			settlement.submit()
-		job.status = "Completed"
-		job.save()
+		job.submit()
 		settlement.reload()
 		settlement.costs_reviewed = 1
 		settlement.submit()

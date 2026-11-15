@@ -1,0 +1,1271 @@
+{
+  "site": "cranes-dev3.arab-erp.com",
+  "date": "2026-11-14",
+  "commit": "a8a69e48f99f80d6043195dbba8a260ea608e07e",
+  "original_suite": [
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_asset_draft_and_basis_follow_company_ownership",
+      "seconds": 1.24,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_company_mismatch_rejected_from_crane_and_native_asset",
+      "seconds": 1.18,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_company_share_is_not_applied_twice_and_future_terms_do_not_reprice_asset",
+      "seconds": 1.2,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_default_finance_book_is_used_instead_of_first_book",
+      "seconds": 1.67,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_duplicate_asset_and_grouped_assets_rejected",
+      "seconds": 0.9,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_legacy_unlinked_cranes_remain_saveable",
+      "seconds": 0.87,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_link_changes_and_financial_reads_require_permissions",
+      "seconds": 0.92,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_link_corrections_are_audited_without_reversing_asset_accounting",
+      "seconds": 2.97,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_link_uses_full_value_without_posting_or_changing_service_item",
+      "seconds": 0.92,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_migration_archives_full_shared_link_without_rewriting_asset",
+      "seconds": 1.18,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_native_depreciation_and_reversal_are_live_without_crane_save",
+      "seconds": 2.72,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_no_company_ownership_disallows_even_third_party_asset_links",
+      "seconds": 1.08,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane.test_crane.TestCrane.test_zero_company_shared_interest_keeps_partners_but_no_asset",
+      "seconds": 1.22,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.test_rental_workflow.TestRentalWorkflow.test_assignment_defaults_use_settings_and_crane_prices",
+      "seconds": 0.74,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.test_rental_workflow.TestRentalWorkflow.test_assignment_first_and_timesheet_first",
+      "seconds": 3.06,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.test_rental_workflow.TestRentalWorkflow.test_completed_maintenance_uses_shared_expense_entry",
+      "seconds": 1.25,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_agreement_validation_and_operator_arrangements",
+      "seconds": 4.19,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_changed_percentages_are_dated_and_historical_snapshots_survive",
+      "seconds": 5.82,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_closed_sources_and_backdated_postings_are_protected",
+      "seconds": 5.49,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_company_can_receive_both_operating_share_and_residual",
+      "seconds": 4.24,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_corrected_profit_split_creates_partner_payable",
+      "seconds": 4.29,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_denied_journal_creation_rolls_back_settlement",
+      "seconds": 4.14,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_duplicate_drafts_cannot_both_submit_and_gaps_are_rejected",
+      "seconds": 4.34,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_expenses_over_balance_block_save_and_submission",
+      "seconds": 4.17,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_external_operator_receives_operating_and_residual_in_one_payable",
+      "seconds": 4.34,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_grand_total_allocation_includes_tax_without_duplicating_other_cranes",
+      "seconds": 4.81,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_invalid_historical_expense_blocks_settlement",
+      "seconds": 4.01,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_large_partner_journal_posts_and_reverses_in_the_same_transaction",
+      "seconds": 10.52,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_many_partners_and_dated_pause",
+      "seconds": 4.71,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_migration_is_repeatable_and_leaves_legacy_cranes_unconfigured",
+      "seconds": 3.99,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_multiple_source_income_accounts_returns_and_dimensions",
+      "seconds": 4.61,
+      "status": "FAIL",
+      "details": [
+        "Traceback (most recent call last):\n  File \"/home/xxx/bench1/my-bench/apps/heavy_equipment_rental/heavy_equipment_rental/heavy_equipment_rental/doctype/crane_profit_settlement/test_crane_profit_settlement.py\", line 106, in test_multiple_source_income_accounts_returns_and_dimensions\n    self.assertEqual((doc.revenue, doc.operating_expenses, doc.external_distribution), (17000, 3500, 5400))\nAssertionError: Tuples differ: (55000.0, 3500.0, 20600.0) != (17000, 3500, 5400)\n\nFirst differing element 0:\n55000.0\n17000\n\n- (55000.0, 3500.0, 20600.0)\n+ (17000, 3500, 5400)\n"
+      ]
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_native_invoice_attribution_and_missing_accounting_permissions",
+      "seconds": 4.31,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_native_tagged_invoices_and_journals_are_counted_once",
+      "seconds": 5.05,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_negative_revenue_stops_new_period",
+      "seconds": 4.21,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_operated_for_owner_rejects_company_rows_even_without_ownership",
+      "seconds": 4.06,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_operating_fee_survives_zero_residual_but_one_cent_deficit_blocks",
+      "seconds": 4.51,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_operating_first_does_not_require_legacy_allocation_account",
+      "seconds": 4.38,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_operating_first_single_owner_without_company_in_partner_table",
+      "seconds": 4.48,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_operating_percentage_rejects_invalid_and_nonfinite_values",
+      "seconds": 3.93,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_operating_percentage_versions_and_legacy_migration_preserve_history",
+      "seconds": 4.43,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_owner_zero_profit_requires_explicit_confirmation",
+      "seconds": 4.1,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_posting_independent_shares_and_native_partial_payments",
+      "seconds": 4.63,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_signed_income_account_allocation_and_invalid_account_rejection",
+      "seconds": 4.14,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_switching_owner_operation_to_shared_still_requires_new_effective_date",
+      "seconds": 3.95,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_profit_settlement.test_crane_profit_settlement.TestCraneProfitSettlement.test_zero_profit_and_rounding_conserve_the_distributed_amount",
+      "seconds": 4.63,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet.TestCraneTimesheet.test_assignment_and_explicit_terms_override_settings",
+      "seconds": 1.0,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet.TestCraneTimesheet.test_distinct_worked_hours_include_overnight_and_ignore_idle_dates",
+      "seconds": 2.28,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet.TestCraneTimesheet.test_invoice_posting_units_payments_and_cancellation",
+      "seconds": 5.52,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet.TestCraneTimesheet.test_new_timesheet_defaults_create_assignment_and_preserve_snapshot",
+      "seconds": 2.53,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet.TestCraneTimesheet.test_owned_crane_never_creates_purchase_invoice",
+      "seconds": 1.25,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet.TestCraneTimesheet.test_paid_invoice_is_not_offered_for_payment",
+      "seconds": 3.04,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet.TestCraneTimesheet.test_periods_can_overlap_but_worked_shifts_cannot",
+      "seconds": 2.72,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet.TestCraneTimesheet.test_purchase_permissions_are_required",
+      "seconds": 1.89,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet.TestCraneTimesheet.test_removed_manual_terms_are_archived_without_repricing",
+      "seconds": 0.84,
+      "status": "SKIP",
+      "details": [
+        "Legacy purchase columns exist only on upgraded sites"
+      ]
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet.TestCraneTimesheet.test_supplier_day_and_month_use_worked_dates_not_period_span",
+      "seconds": 2.26,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet.TestCraneTimesheet.test_supplier_terms_and_invoice_link_are_validated",
+      "seconds": 2.04,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet.TestCraneTimesheet.test_unchecked_rented_skips_purchase_and_survives_saves",
+      "seconds": 1.71,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet.TestCraneTimesheet.test_uom_migration_preserves_existing_terms_and_settings",
+      "seconds": 2.09,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet.TestCraneTimesheet.test_worked_hour_migration_preserves_history_and_resets_daily_draft_rate",
+      "seconds": 2.12,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.test_treasury_transaction.TestTreasuryTransaction.test_bank_to_cash",
+      "seconds": 0.84,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.test_treasury_transaction.TestTreasuryTransaction.test_cost_center_validation_and_journal_attribution",
+      "seconds": 0.83,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.test_treasury_transaction.TestTreasuryTransaction.test_journal_permission_failure_rolls_back_submission",
+      "seconds": 0.69,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.test_treasury_transaction.TestTreasuryTransaction.test_party_is_copied_to_destination_journal_row",
+      "seconds": 4.0,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.test_treasury_transaction.TestTreasuryTransaction.test_party_on_designated_balance_accounts",
+      "seconds": 2.73,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.test_treasury_transaction.TestTreasuryTransaction.test_payment_mode_requires_enabled_company_cash_or_bank_account",
+      "seconds": 0.58,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.test_treasury_transaction.TestTreasuryTransaction.test_post_reverse_and_amend",
+      "seconds": 2.31,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.test_treasury_transaction.TestTreasuryTransaction.test_reject_invalid_amount_accounts_and_manual_journal",
+      "seconds": 0.6,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.test_treasury_transaction.TestTreasuryTransaction.test_reject_invalid_or_incomplete_party",
+      "seconds": 0.6,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.report.crane_rental_profitability.test_crane_rental_profitability.TestCraneRentalProfitability.test_cancelled_and_draft_expenses_and_sales_return",
+      "seconds": 5.83,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.report.crane_rental_profitability.test_crane_rental_profitability.TestCraneRentalProfitability.test_historical_expenses_with_missing_or_unsubmitted_journals",
+      "seconds": 3.8,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.report.crane_rental_profitability.test_crane_rental_profitability.TestCraneRentalProfitability.test_posted_income_cash_custody_and_repeatable_demo",
+      "seconds": 3.78,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.report.crane_rental_profitability.test_crane_rental_profitability.TestCraneRentalProfitability.test_required_filters_and_permissions",
+      "seconds": 3.76,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.heavy_equipment_rental.report.crane_rental_profitability.test_crane_rental_profitability.TestCraneRentalProfitability.test_shared_invoice_link_is_counted_once_and_purchase_is_included",
+      "seconds": 5.98,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_crane_connections.TestCraneConnections.test_child_assignments_and_invoice_header_and_rows_are_unioned",
+      "seconds": 1.01,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_crane_connections.TestCraneConnections.test_parts_payments_follow_only_unshared_company_cost_center",
+      "seconds": 1.14,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_crane_connections.TestCraneConnections.test_payments_follow_asset_and_invoice_references_without_duplicates",
+      "seconds": 1.06,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_crane_connections.TestCraneConnections.test_scalar_asset_link_empty_links_and_site_dimensions",
+      "seconds": 1.02,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_crane_connections.TestCraneConnections.test_source_permission_is_required",
+      "seconds": 0.58,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_crane_connections.TestCraneConnections.test_target_permissions_and_unrequested_doctypes",
+      "seconds": 0.96,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_distribution_reporting.TestDistributionReporting.test_company_operating_residual_cost_burden_and_source_breakdown",
+      "seconds": 4.86,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_distribution_reporting.TestDistributionReporting.test_dashboard_reconciles_report_and_scopes_status_counts",
+      "seconds": 4.91,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_distribution_reporting.TestDistributionReporting.test_denied_sources_or_payment_documents_fail_instead_of_partial_totals",
+      "seconds": 5.72,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_distribution_reporting.TestDistributionReporting.test_drafts_are_separate_estimates_and_reporting_does_not_recalculate",
+      "seconds": 5.13,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_distribution_reporting.TestDistributionReporting.test_mixed_posted_and_draft_totals_and_non_cash_adjustments_stay_separate",
+      "seconds": 5.94,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_distribution_reporting.TestDistributionReporting.test_one_cent_cost_burden_matches_actual_rounded_residual_difference",
+      "seconds": 5.66,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_distribution_reporting.TestDistributionReporting.test_partial_future_payment_as_of_movements_and_cancellation",
+      "seconds": 7.86,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_distribution_reporting.TestDistributionReporting.test_shared_invoice_and_partner_filter_do_not_duplicate_settlement_totals",
+      "seconds": 5.14,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_distribution_reporting.TestDistributionReporting.test_snapshot_percentages_and_independent_ownership_and_profit",
+      "seconds": 4.98,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_distribution_reporting.TestDistributionReporting.test_work_overlap_posting_date_assignment_customer_and_status_filters",
+      "seconds": 5.17,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_expenses.TestExpenseParties.test_amendment_does_not_clear_unrelated_journal",
+      "seconds": 2.47,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_expenses.TestExpenseParties.test_backfill_is_idempotent_and_preserves_amounts",
+      "seconds": 0.78,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_expenses.TestExpenseParties.test_backfill_preserves_conflicting_party",
+      "seconds": 0.84,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_expenses.TestExpenseParties.test_cancel_amend_creates_fresh_journal",
+      "seconds": 2.58,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_expenses.TestExpenseParties.test_employee_on_journal_with_native_ledger_and_cancellation",
+      "seconds": 2.23,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_expenses.TestExpenseParties.test_expense_without_employee",
+      "seconds": 0.86,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_expenses.TestExpenseParties.test_unrelated_journal_keeps_native_party_validation",
+      "seconds": 1.01,
+      "status": "FAIL",
+      "details": [
+        "Traceback (most recent call last):\n  File \"/home/xxx/bench1/my-bench/apps/heavy_equipment_rental/heavy_equipment_rental/test_expenses.py\", line 104, in test_unrelated_journal_keeps_native_party_validation\n    with self.assertRaises(frappe.ValidationError):\nAssertionError: ValidationError not raised\n"
+      ]
+    },
+    {
+      "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_capital_improvement_uses_actual_stock_value_and_reverses_together",
+      "seconds": 4.23,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_custody_crane_can_consume_stock_but_cannot_capitalize",
+      "seconds": 2.03,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_external_service_costs_and_capitalization_are_not_duplicated",
+      "seconds": 4.72,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_improvement_regenerates_native_depreciation_schedule",
+      "seconds": 3.87,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_migration_repeat_does_not_change_new_terms_or_post_ledgers",
+      "seconds": 1.63,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_native_permission_and_attribution_checks",
+      "seconds": 1.62,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_owner_recovery_consumes_parts_and_is_not_rental_profit",
+      "seconds": 5.09,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_repair_costs_appear_in_posting_date_profitability",
+      "seconds": 3.09,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_review_settlement_includes_repair_and_posts_selected_expense",
+      "seconds": 3.56,
+      "status": "FAIL",
+      "details": [
+        "Traceback (most recent call last):\n  File \"/home/xxx/bench1/my-bench/apps/heavy_equipment_rental/heavy_equipment_rental/test_native_crane_workflow.py\", line 268, in test_review_settlement_includes_repair_and_posts_selected_expense\n    invoice.save()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 378, in save\n    return self._save(*args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 414, in _save\n    self.run_before_save_methods()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1146, in run_before_save_methods\n    self.run_method(\"validate\")\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1017, in run_method\n    out = Document.hook(fn)(self, *args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1377, in composer\n    return composed(self, method, *args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1359, in runner\n    add_to_return_value(self, fn(self, *args, **kwargs))\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1014, in fn\n    return method_object(*args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/accounts/doctype/sales_invoice/sales_invoice.py\", line 276, in validate\n    super().validate()\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/controllers/selling_controller.py\", line 43, in validate\n    super().validate()\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/controllers/stock_controller.py\", line 53, in validate\n    super().validate()\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/controllers/accounts_controller.py\", line 288, in validate\n    self.validate_tax_account_company()\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/controllers/accounts_controller.py\", line 1396, in validate_tax_account_company\n    frappe.throw(\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 621, in throw\n    msgprint(\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 586, in msgprint\n    _raise_exception()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 537, in _raise_exception\n    raise exc\nfrappe.exceptions.ValidationError: Row #1: Account HER asset f8f492ce VAT - AUDCC does not belong to company test\n"
+      ]
+    },
+    {
+      "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_serialized_improvement_restores_stock_on_cancellation",
+      "seconds": 5.81,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_shared_item_keeps_two_cranes_separate_on_one_invoice",
+      "seconds": 3.11,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_shared_service_product_and_company_interest_values",
+      "seconds": 1.54,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_native_crane_workflow.TestNativeCraneWorkflow.test_stock_repair_expenses_once_without_increasing_asset",
+      "seconds": 3.38,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_automatic_submission_and_shareholder_payments",
+      "seconds": 5.04,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_automation_and_reports_keep_accounting_permissions",
+      "seconds": 6.23,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_cancel_combined_partner_payment_keeps_other_settlement",
+      "seconds": 8.61,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_cancel_expense_includes_payments_and_native_amendments",
+      "seconds": 7.24,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_cancel_invoice_includes_customer_receipt",
+      "seconds": 7.85,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_cancel_scope_changes_and_permission_denial",
+      "seconds": 7.39,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_cancel_settlement_preserves_invoice_and_work",
+      "seconds": 6.78,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_cancel_shared_expense_cancels_all_affected_settlements",
+      "seconds": 7.38,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_combined_partner_payment_from_open_entitlements",
+      "seconds": 7.99,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_confirmed_cancel_all_from_invoice_and_timesheet",
+      "seconds": 10.3,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_deficit_rolls_back_invoice_and_entitlements",
+      "seconds": 5.31,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_expense_work_terms_validate_and_company_matches",
+      "seconds": 5.01,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_late_assignment_expense_is_allocated_only_once_by_worked_hours",
+      "seconds": 7.6,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_maintenance_rental_context_carries_to_expense",
+      "seconds": 7.91,
+      "status": "FAIL",
+      "details": [
+        "Traceback (most recent call last):\n  File \"/home/xxx/bench1/my-bench/apps/heavy_equipment_rental/heavy_equipment_rental/test_partner_settlements.py\", line 470, in test_maintenance_rental_context_carries_to_expense\n    cost=100)).insert()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 309, in insert\n    self.run_before_save_methods()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1146, in run_before_save_methods\n    self.run_method(\"validate\")\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1017, in run_method\n    out = Document.hook(fn)(self, *args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1377, in composer\n    return composed(self, method, *args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1359, in runner\n    add_to_return_value(self, fn(self, *args, **kwargs))\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1014, in fn\n    return method_object(*args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/heavy_equipment_rental/heavy_equipment_rental/heavy_equipment_rental/doctype/crane_maintenance/crane_maintenance.py\", line 56, in validate\n    validate_context(self)\n  File \"/home/xxx/bench1/my-bench/apps/heavy_equipment_rental/heavy_equipment_rental/rental_context.py\", line 92, in validate_context\n    frappe.throw(_(\"Expense and Assignment must belong to the same Company.\"))\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 621, in throw\n    msgprint(\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 586, in msgprint\n    _raise_exception()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 537, in _raise_exception\n    raise exc\nfrappe.exceptions.ValidationError: Expense and Assignment must belong to the same Company.\n"
+      ]
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_migration_preserves_historical_journals_and_snapshots",
+      "seconds": 5.96,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_open_entitlements_permissions_and_account_scope",
+      "seconds": 7.67,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_overlapping_work_period_costs_are_allocated_once",
+      "seconds": 7.28,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_payment_allocator_keeps_native_non_settlement_behavior",
+      "seconds": 4.91,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_payment_form_reallocates_partial_shareholder_payment",
+      "seconds": 6.52,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_payment_link_validation_and_historical_report_date",
+      "seconds": 5.08,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_period_expense_rounding_and_consecutive_closure",
+      "seconds": 4.3,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_period_expense_service_proration",
+      "seconds": 4.32,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_rental_context_requires_selection_and_timesheet_cost_is_direct",
+      "seconds": 5.16,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_restore_migration_is_dated_idempotent_and_preserves_posted_snapshots",
+      "seconds": 4.69,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_service_dates_and_assignment_isolate_expenses",
+      "seconds": 5.36,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_settled_timesheet_is_immutable_and_duplicate_is_rejected",
+      "seconds": 4.63,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_shared_invoice_allocates_once_and_reports_real_movements",
+      "seconds": 6.76,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_partner_settlements.TestPartnerSettlements.test_shareholder_selection_supersedes_hidden_supplier_aliases",
+      "seconds": 4.72,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_rental_item_defaults.TestRentalItemDefaults.test_draft_invoice_account_stays_local_to_demo",
+      "seconds": 1.2,
+      "status": "FAIL",
+      "details": [
+        "Traceback (most recent call last):\n  File \"/home/xxx/bench1/my-bench/apps/heavy_equipment_rental/heavy_equipment_rental/test_rental_item_defaults.py\", line 24, in test_draft_invoice_account_stays_local_to_demo\n    self.assertEqual(frappe.db.get_value(\"Item Default\", row, \"income_account\"), account.name)\nAssertionError: None != 'HER default isolation 7e506559 - AUDCC'\n"
+      ]
+    },
+    {
+      "test": "heavy_equipment_rental.test_rental_item_defaults.TestRentalItemDefaults.test_existing_default_is_preserved_on_failure",
+      "seconds": 0.15,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_treasury_workbook.TestTreasuryWorkbook.test_cost_center_filter_opening_export_and_backfill",
+      "seconds": 4.58,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_treasury_workbook.TestTreasuryWorkbook.test_failed_posting_rolls_back_whole_import",
+      "seconds": 3.81,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_treasury_workbook.TestTreasuryWorkbook.test_parser_dates_and_formula_only_rows",
+      "seconds": 0.01,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_treasury_workbook.TestTreasuryWorkbook.test_post_reconcile_repeat_export_and_cancel",
+      "seconds": 5.94,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_treasury_workbook.TestTreasuryWorkbook.test_reject_unsafe_amounts_formulas_and_changed_file",
+      "seconds": 0.03,
+      "status": "PASS",
+      "details": []
+    },
+    {
+      "test": "heavy_equipment_rental.test_treasury_workbook.TestTreasuryWorkbook.test_report_opening_period_permissions_and_wrong_company",
+      "seconds": 4.4,
+      "status": "PASS",
+      "details": []
+    }
+  ],
+  "native_asset_probes": {
+    "scrap_status": "Scrapped",
+    "booking_scrapped_asset": "ACCEPTED: ASG-00002",
+    "restore_status": "Partially Depreciated",
+    "acquisition": {
+      "invoice": "ACC-PINV-2026-00001",
+      "asset": "ACC-ASS-2026-00003",
+      "cost": 100000.0,
+      "gl": [
+        {
+          "account": "Softwares - AUDCC",
+          "debit": 100000.0,
+          "credit": 0.0
+        },
+        {
+          "account": "Creditors - AUDCC",
+          "debit": 0.0,
+          "credit": 100000.0
+        }
+      ]
+    },
+    "purchase_outstanding_after_payment": 0.0,
+    "entered_hours_exceed_window": [
+      100.0,
+      10000.0
+    ]
+  },
+  "failure_diagnostics": {
+    "errors": [
+      "Traceback (most recent call last):\n  File \"/home/xxx/bench1/my-bench/apps/heavy_equipment_rental/heavy_equipment_rental/heavy_equipment_rental/doctype/crane_profit_settlement/test_crane_profit_settlement.py\", line 106, in test_multiple_source_income_accounts_returns_and_dimensions\n    self.assertEqual((doc.revenue, doc.operating_expenses, doc.external_distribution), (17000, 3500, 5400))\nAssertionError: Tuples differ: (55000.0, 3500.0, 20600.0) != (17000, 3500, 5400)\n\nFirst differing element 0:\n55000.0\n17000\n\n- (55000.0, 3500.0, 20600.0)\n+ (17000, 3500, 5400)\n"
+    ],
+    "invoices": [
+      {
+        "name": "ACC-SINV-2026-00004",
+        "is_return": 1,
+        "net_total": -20000.0,
+        "grand_total": -20000.0,
+        "items": [
+          {
+            "qty": -1.0,
+            "rate": 20000.0,
+            "price_list_rate": 10000.0,
+            "discount_percentage": 0.0,
+            "rate_with_margin": 0.0,
+            "amount": -20000.0,
+            "base_net_amount": -20000.0,
+            "income_account": "HER revenue 2a5def8f - AUDCC"
+          }
+        ]
+      },
+      {
+        "name": "ACC-SINV-2026-00003",
+        "is_return": 0,
+        "net_total": 60000.0,
+        "grand_total": 60000.0,
+        "items": [
+          {
+            "qty": 3.0,
+            "rate": 20000.0,
+            "price_list_rate": 10000.0,
+            "discount_percentage": 0.0,
+            "rate_with_margin": 0.0,
+            "amount": 60000.0,
+            "base_net_amount": 60000.0,
+            "income_account": "HER revenue 2a5def8f - AUDCC"
+          }
+        ]
+      },
+      {
+        "name": "ACC-SINV-2026-00002",
+        "is_return": 0,
+        "net_total": 15000.0,
+        "grand_total": 15000.0,
+        "items": [
+          {
+            "qty": 1.0,
+            "rate": 15000.0,
+            "price_list_rate": 10000.0,
+            "discount_percentage": 0.0,
+            "rate_with_margin": 0.0,
+            "amount": 15000.0,
+            "base_net_amount": 15000.0,
+            "income_account": "Sales - AUDCC"
+          }
+        ]
+      }
+    ],
+    "review_with_explicit_default": {
+      "passed": false,
+      "details": [
+        "Traceback (most recent call last):\n  File \"/home/xxx/bench1/my-bench/apps/heavy_equipment_rental/heavy_equipment_rental/test_native_crane_workflow.py\", line 268, in test_review_settlement_includes_repair_and_posts_selected_expense\n    invoice.save()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 378, in save\n    return self._save(*args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 414, in _save\n    self.run_before_save_methods()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1146, in run_before_save_methods\n    self.run_method(\"validate\")\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1017, in run_method\n    out = Document.hook(fn)(self, *args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1377, in composer\n    return composed(self, method, *args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1359, in runner\n    add_to_return_value(self, fn(self, *args, **kwargs))\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1014, in fn\n    return method_object(*args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/accounts/doctype/sales_invoice/sales_invoice.py\", line 276, in validate\n    super().validate()\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/controllers/selling_controller.py\", line 43, in validate\n    super().validate()\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/controllers/stock_controller.py\", line 53, in validate\n    super().validate()\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/controllers/accounts_controller.py\", line 288, in validate\n    self.validate_tax_account_company()\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/controllers/accounts_controller.py\", line 1396, in validate_tax_account_company\n    frappe.throw(\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 621, in throw\n    msgprint(\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 586, in msgprint\n    _raise_exception()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 537, in _raise_exception\n    raise exc\nfrappe.exceptions.ValidationError: Row #1: Account HER asset 11fcca45 VAT - AUDCC does not belong to company test\n"
+      ]
+    },
+    "maintenance_with_explicit_company": {
+      "passed": true,
+      "details": []
+    }
+  },
+  "controlled_fixture_retests": {
+    "test_multiple_source_income_accounts_returns_and_dimensions": {
+      "passed": true,
+      "details": []
+    },
+    "test_review_settlement_includes_repair_and_posts_selected_expense": {
+      "passed": true,
+      "details": []
+    },
+    "test_draft_invoice_account_stays_local_to_demo": {
+      "passed": false,
+      "details": [
+        "Traceback (most recent call last):\n  File \"<string>\", line 7, in test_draft_invoice_account_stays_local_to_demo\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 378, in save\n    return self._save(*args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 414, in _save\n    self.run_before_save_methods()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1146, in run_before_save_methods\n    self.run_method(\"validate\")\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1017, in run_method\n    out = Document.hook(fn)(self, *args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1377, in composer\n    return composed(self, method, *args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1359, in runner\n    add_to_return_value(self, fn(self, *args, **kwargs))\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1014, in fn\n    return method_object(*args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/stock/doctype/item/item.py\", line 218, in validate\n    self.validate_item_defaults()\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/stock/doctype/item/item.py\", line 754, in validate_item_defaults\n    validate_item_default_company_links(self.item_defaults)\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/stock/doctype/item/item.py\", line 1532, in validate_item_default_company_links\n    frappe.throw(\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 621, in throw\n    msgprint(\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 586, in msgprint\n    _raise_exception()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 537, in _raise_exception\n    raise exc\nfrappe.exceptions.ValidationError: Row #2: Warehouse <strong>Stores - T</strong> doesn't belong to Company <strong>cranes company</strong>. Please select valid <strong>Default Warehouse</strong>.\n"
+      ]
+    },
+    "original_expense_account_type": "",
+    "ordinary_journal_with_typed_expense_account": {
+      "passed": true,
+      "details": []
+    }
+  },
+  "company_routing_probe": {
+    "company_routing": {
+      "asset_company": "cranes company",
+      "crane_company": "cranes company",
+      "assignment_company": "test",
+      "invoice_company": "test",
+      "invoice_total": 2000.0,
+      "submission_error": "Traceback (most recent call last):\n  File \"/tmp/her_audit_company_probe.py\", line 15, in <module>\n    invoice.submit();settlement=frappe.get_doc('Crane Profit Settlement',sheet.reload().profit_settlement)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/utils/typing_validations.py\", line 32, in wrapper\n    return func(*args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1103, in submit\n    return self._submit()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1086, in _submit\n    return self.save()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 378, in save\n    return self._save(*args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 414, in _save\n    self.run_before_save_methods()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1150, in run_before_save_methods\n    self.run_method(\"before_submit\")\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1017, in run_method\n    out = Document.hook(fn)(self, *args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1377, in composer\n    return composed(self, method, *args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1361, in runner\n    add_to_return_value(self, f(self, method, *args, **kwargs))\n  File \"/home/xxx/bench1/my-bench/apps/heavy_equipment_rental/heavy_equipment_rental/profit_sharing.py\", line 382, in guard_closed_period\n    frappe.throw(_(\"Crane {0} belongs to another agreement Company.\").format(crane))\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 621, in throw\n    msgprint(\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 586, in msgprint\n    _raise_exception()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 537, in _raise_exception\n    raise exc\nfrappe.exceptions.ValidationError: Crane CR-00002 belongs to another agreement Company.\n"
+    },
+    "exception": "Traceback (most recent call last):\n  File \"/tmp/her_audit_company_probe.py\", line 25, in <module>\n    item.save()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 378, in save\n    return self._save(*args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 414, in _save\n    self.run_before_save_methods()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1146, in run_before_save_methods\n    self.run_method(\"validate\")\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1017, in run_method\n    out = Document.hook(fn)(self, *args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1377, in composer\n    return composed(self, method, *args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1359, in runner\n    add_to_return_value(self, fn(self, *args, **kwargs))\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/model/document.py\", line 1014, in fn\n    return method_object(*args, **kwargs)\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/stock/doctype/item/item.py\", line 218, in validate\n    self.validate_item_defaults()\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/stock/doctype/item/item.py\", line 754, in validate_item_defaults\n    validate_item_default_company_links(self.item_defaults)\n  File \"/home/xxx/bench1/my-bench/apps/erpnext/erpnext/stock/doctype/item/item.py\", line 1532, in validate_item_default_company_links\n    frappe.throw(\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 621, in throw\n    msgprint(\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 586, in msgprint\n    _raise_exception()\n  File \"/home/xxx/bench1/my-bench/apps/frappe/frappe/__init__.py\", line 537, in _raise_exception\n    raise exc\nfrappe.exceptions.ValidationError: Row #2: Warehouse <strong>Stores - T</strong> doesn't belong to Company <strong>cranes company</strong>. Please select valid <strong>Default Warehouse</strong>.\n"
+  },
+  "item_default_retest": {
+    "fixture": {
+      "name": null,
+      "owner": null,
+      "creation": null,
+      "modified": null,
+      "modified_by": null,
+      "docstatus": 0,
+      "idx": 2,
+      "company": "cranes company",
+      "default_warehouse": "Goods In Transit - AUDCC",
+      "default_price_list": null,
+      "default_discount_account": null,
+      "buying_cost_center": "Main - AUDCC",
+      "default_supplier": null,
+      "expense_account": "Cost of Goods Sold - AUDCC",
+      "default_provisional_account": null,
+      "selling_cost_center": "Main - AUDCC",
+      "income_account": null,
+      "deferred_expense_account": null,
+      "deferred_revenue_account": null,
+      "parent": "HER-RENTAL-SERVICE",
+      "parentfield": "item_defaults",
+      "parenttype": "Item",
+      "doctype": "Item Default",
+      "__islocal": 1
+    },
+    "passed": true,
+    "details": []
+  },
+  "browser_smoke": [
+    {
+      "page": "crane",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "page": "asset",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "page": "crane-assignment",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "page": "crane-timesheet",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "page": "expense-entry",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "page": "sales-invoice",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "page": "crane-profit-settlement",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "page": "payment-entry",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "page": "mobile crane",
+      "width": 375,
+      "viewport": 390
+    },
+    {
+      "page": "/rental-calendar",
+      "title": "Rental Calendar",
+      "body_chars": 592,
+      "errors": []
+    },
+    {
+      "page": "/app/crane-distribution-dashboard",
+      "title": "لوحة المستحقات والشراكة",
+      "body_chars": 2916,
+      "errors": []
+    }
+  ],
+  "ledger_before": {
+    "unbalanced_vouchers": [],
+    "accounts_net": [
+      {
+        "root_type": "Asset",
+        "balance": 5460.0
+      },
+      {
+        "root_type": "Equity",
+        "balance": -1500.0
+      },
+      {
+        "root_type": "Expense",
+        "balance": 1600.0
+      },
+      {
+        "root_type": "Income",
+        "balance": -5560.0
+      },
+      {
+        "root_type": "Liability",
+        "balance": 0.0
+      }
+    ],
+    "assets": [
+      {
+        "name": "ACC-ASS-2026-00001",
+        "docstatus": 1,
+        "status": "Submitted",
+        "gross_purchase_amount": 400000.0,
+        "is_existing_asset": 1,
+        "calculate_depreciation": 0,
+        "purchase_invoice": null,
+        "purchase_receipt": null
+      }
+    ],
+    "cranes": [
+      {
+        "name": "CR-00001",
+        "ownership_type": "Shared Ownership",
+        "asset": "ACC-ASS-2026-00001",
+        "operational_condition": "Operational"
+      }
+    ],
+    "settings": {
+      "allow_account_in_multiple_rows": null,
+      "unlink_payment_on_cancellation_of_invoice": 1,
+      "allow_cost_center_in_entry_of_bs_account": null
+    }
+  },
+  "environment": {
+    "site_flags": {
+      "developer_mode": 1,
+      "maintenance_mode": null,
+      "pause_scheduler": null,
+      "disable_scheduler": null,
+      "allow_tests": null,
+      "host_name": null
+    },
+    "versions": {
+      "frappe": "15.122.0",
+      "erpnext": "15.122.0"
+    },
+    "scheduler": 1
+  },
+  "final_integrity": {
+    "audit_company_remaining": false,
+    "counts": {
+      "Company": 1,
+      "Crane": 1,
+      "Asset": 1,
+      "Crane Assignment": 1,
+      "Crane Timesheet": 1,
+      "Crane Maintenance": 0,
+      "Expense Entry": 2,
+      "Sales Invoice": 1,
+      "Purchase Invoice": 0,
+      "Crane Profit Settlement": 2,
+      "Journal Entry": 5,
+      "Payment Entry": 4,
+      "GL Entry": 28
+    },
+    "saved_documents": {
+      "Crane Timesheet": [
+        {
+          "name": "TS-00001",
+          "docstatus": 1,
+          "sales_invoice": "ACC-SINV-2026-00001",
+          "profit_settlement": "CPS-00002-1"
+        }
+      ],
+      "Sales Invoice": [
+        {
+          "name": "ACC-SINV-2026-00001",
+          "docstatus": 1,
+          "grand_total": 10000.0,
+          "outstanding_amount": 0.0
+        }
+      ],
+      "Crane Profit Settlement": [
+        {
+          "name": "CPS-00002-1",
+          "docstatus": 1,
+          "revenue": 10000.0,
+          "operating_expenses": 1600.0,
+          "external_distribution": 4440.0,
+          "company_retained": 3960.0,
+          "journal_entry": "ACC-JV-2026-00005"
+        },
+        {
+          "name": "CPS-00002",
+          "docstatus": 2,
+          "revenue": 10000.0,
+          "operating_expenses": 1500.0,
+          "external_distribution": 4500.0,
+          "company_retained": 4000.0,
+          "journal_entry": "ACC-JV-2026-00003"
+        }
+      ],
+      "Expense Entry": [
+        {
+          "name": "EXPE-00001-1",
+          "docstatus": 1,
+          "journal_entry": "ACC-JV-2026-00004"
+        },
+        {
+          "name": "EXPE-00001",
+          "docstatus": 2,
+          "journal_entry": "ACC-JV-2026-00002"
+        }
+      ],
+      "Payment Entry": [
+        {
+          "name": "ACC-PAY-2026-00004",
+          "docstatus": 1,
+          "paid_amount": 4440.0,
+          "party_type": "Shareholder"
+        },
+        {
+          "name": "ACC-PAY-2026-00003",
+          "docstatus": 2,
+          "paid_amount": 3500.0,
+          "party_type": "Shareholder"
+        },
+        {
+          "name": "ACC-PAY-2026-00002",
+          "docstatus": 2,
+          "paid_amount": 1000.0,
+          "party_type": "Shareholder"
+        },
+        {
+          "name": "ACC-PAY-2026-00001",
+          "docstatus": 1,
+          "paid_amount": 10000.0,
+          "party_type": "Customer"
+        }
+      ]
+    },
+    "unbalanced_vouchers": [],
+    "broken_submitted_expense_journals": [],
+    "broken_submitted_settlement_journals": [],
+    "temporary_browser_session_removed": true
+  }
+}

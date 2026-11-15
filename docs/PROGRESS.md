@@ -1,5 +1,54 @@
 # Progress
 
+## 2026-11-15 — Explicit Maintenance / Expense attribution to CPS
+
+- Timesheet CPS costs use the selected rental links only: direct Timesheet first, otherwise all submitted crane Timesheets of the selected Assignment weighted by working hours. Unlinked costs remain general crane expenses and are excluded. Removed date-based link autofill; searches and Maintenance attribution allow earlier work independently of repair/posting date. Forms describe the selected allocation and show Unallocated for empty links.
+- Pending repair and expense closure guards follow those same links. Historical captured sources, including an Expense Entry's journal, remain protected even without links. Existing submitted settlements, source links and accounting are unchanged; legacy Period closures continue prorating explicitly linked costs by service days.
+- On cranes-dev3: 34 settlement/rental integration tests passed, followed by 6 final checks covering historical unlinked-source protection, shared-cost cancellation, native repair allocation and rental workflows. Tests rolled back; site test settings unchanged. JavaScript handler checks passed for both forms (no date autofill, selected Timesheet fills Assignment, date changes preserve selection, allocation descriptions); Python/JS syntax and whitespace checks passed. No schema change or migration needed.
+- Read-only CPS-00004 verification: saved submitted operating expenses remain 700 EGP; fresh calculation excludes its unlinked repairs and gives 0 EGP. No business settlement was cancelled or recalculated in place.
+
+## 2026-11-15 — Native Maintenance lifecycle
+
+- Made Crane Maintenance submittable with native Submit, Cancel and Amend. Submission posts automatic repair documents and cash expenses; cancellation previews related documents and reverses them atomically in dependency order. Amend clears generated links before native validation and permits corrected dates/items/payment amounts. The previous Complete Repair endpoint now delegates to native submission for old open forms.
+- Cancellation includes native supplier/customer payments, newest Asset Repairs, stock issues, invoices and cash expenses/journals. Earlier My Stock purchases stay outside scope. Shared payments across unrelated invoices, adjustment reconciliations, closed periods and later repairs remain blocking dependencies; all partial reversals roll back on failure. Submitted jobs reject extra repair documents. Native permissions apply.
+- Backed up dev3 database/public/private files (`20261115_131531-cranes-dev3_arab-erp_com-*`), then migrated. Metadata-only patch archives old lifecycle values, marks completed/already-posted jobs submitted and cancelled jobs cancelled, preserving original status/dates/modification time and financial postings. No existing business repair was submitted/cancelled through hooks.
+- **32 integration checks passed**: the 31-case posting/lifecycle/rental/manual-repair suite plus the focused newest-first multi-Asset-Repair test after its ordering fix. Covers paid and unpaid repairs, cash journals, changed-date/quantity/payment amendments, stock restoration, payment/permission failure rollback, later-asset blocking, shared-payment isolation, stale preview, forged-link rejection and migration repeatability. Test transactions rolled back.
+- Actual headless Chrome verified native Submit → cancellation preview → Cancel → Amend on a temporary No Cost repair, editable Planned amendment and cleared generated links, with zero page JavaScript errors. Removed the temporary repair/crane and revoked its browser session. Syntax and whitespace checks passed.
+
+## 2026-11-15 — One completion flow for repairs and improvements
+
+- Rebuilt automatic completion to support Operating Expense and Capitalize Improvement across My Stock, External Parts and External Service. Complete Repair saves pending edits and creates native purchase/consumption, Asset Repair and supplier payment documents atomically. Improvements consume parts through Asset Repair; purchased parts are not capitalized again as invoice service costs.
+- Source and purpose are adjacent; normal automated purpose choices are routine expense or improvement. Accounting defaults stay out of the entry flow. The explicit completion button replaces the direct Completed status option for unposted automatic jobs. Manual Documents remains for historical/other native workflows. Existing business records were not posted or changed.
+- Migrated dev3. All **22 integration tests passed**; the three-source capitalization test was rerun successfully after adding the stock-invoice double-capitalization guard. Integration coverage includes all three capital sources, native asset increases/cancellation, duplicate completion and rollback after Asset Repair permission failure, alongside existing payment, stock, rental and manual-repair cases. Node checks cover all six automatic source/purpose combinations, new-form completion action and status/purpose controls. Browser interaction was not exercised.
+
+## 2026-11-15 — Simplified maintenance and supplier payments
+
+- Accounting Treatment now stays visible in Maintenance Details for every source. Automated sources show it read-only, with help explaining that automation supports Operating Expense only; unposted Manual Documents allows other choices. Moved the field outside the hidden Advanced Accounting section. Migrated dev3; all 3 rental workflow tests passed (rolled back), plus Node checks for layout, visibility, editability and help text across all four sources and Planned/Completed/Cancelled states.
+
+- Accounting Treatment now updates its help text when selected and when opening a saved repair, explaining all five treatments. Verified all choices and fallback text with Node; JavaScript syntax/whitespace checks passed. No schema change.
+
+- Added company-specific HER Maintenance Defaults for repair Expense Account, default supplier Payment Method and optional warehouse override. External parts automatically use a Maintenance warehouse; routine repairs hide Advanced Accounting. Replaced empty Repair Source with Manual Documents via an idempotent historical-label patch, preserving financial documents and modification dates.
+- Supplier Paid Amount defaults to the full native invoice, supports partial/zero payment and atomically posts a native Payment Entry with purchase, consumption and completion. Connections links the generated supplier payment. Failed payment rolls back all postings; completed historical repairs do not create new payments.
+- Migrated cranes-dev3.arab-erp.com. **21 integration tests passed**: 13 automated repair/default/payment cases, 3 rental workflow cases and 5 manual native repair regressions. Covered full/partial/zero/overpayments, rollback after receipt or payment failure, default/overridden warehouse, settings validation, historical-label repeatability and input locking. Tests rolled back without changing site test settings. Node handler checks verified payment defaults, preserved partial amounts, warehouse visibility and Advanced Accounting visibility. Syntax, metadata Connections links and whitespace checks passed; no browser interaction was tested.
+
+## 2026-11-15 — Routine repair posting on Maintenance
+
+- Added Repair Source dropdown, inline item/quantity/warehouse/purchase-rate rows, Supplier invoice details and company repair account/Cost Center. Post Repair & Complete atomically submits Material Issue (own stock), stock-updating Purchase Invoice + Material Issue (external parts), or service Purchase Invoice (external labor). Native valuation and expense-ledger sources prevent double counting.
+- Added a native Connections tab for stock/accounting and rental links. Generated links and financial inputs are protected; repeated completion is idempotent, failed posting rolls back, and stock issues must be cancelled before purchased receipts. Blank-source/manual repairs and historical postings remain unchanged; serial/batch/complex purchases retain the native workflow.
+- Migrated cranes-dev3.arab-erp.com successfully. **14 integration tests passed**: 6 new automated repair tests, 3 rental workflow tests and 5 existing native repair/accounting regressions. The legacy fixture's hardcoded company was mapped to this development site's Company only during test setup. Tests were rolled back and the site's test configuration was unchanged. Python/JavaScript syntax and diff whitespace checks passed. Browser interaction was not exercised.
+
+
+## 2026-11-14 — Disposed-asset restrictions and company selection
+
+Implemented asset eligibility checks and company derivation within HER; no schema changes or historical accounting edits. All 32 focused integration/regression tests passed on dev3, including the two previously failing company-selection cases and native scrap/restore booking checks. Test transactions rolled back. Dev server reloaded the Python changes and dev3 cache was cleared; no migration required. Evidence: `RENTAL_GUARDS_TEST_RESULTS_2026-11-14.json`. The earlier audit remains a historical snapshot, not the current implementation status.
+
+## 2026-11-14 — Production readiness audit
+
+- Audited commit `a8a69e4` on dev3 after a database/files backup. Original 145-case integration run: 139 passed, 5 failed, 1 skipped. Five controlled fixture reruns passed; original results remain recorded, and the retired-column migration case still needs an upgraded database.
+- Confirmed a scrapped linked Asset still permits a new crane booking. Confirmed Timesheet-first company defaults can create a wrong-company Assignment/invoice draft; the existing submission guard blocks that invoice. Production release is on hold pending these fixes and remaining release checks.
+- Native asset acquisition/payment/scrap/restore probes, 1,000 randomized allocation checks, Python/JSON parsing, frontend build and browser page-load smoke checks completed. No unbalanced active GL vouchers or broken submitted expense/settlement journal links found. The saved existing Asset's opening value needs reconciliation before production.
+- Rolled back test transactions and temporary company; removed audit browser session. No functional/schema changes. See [full findings and release matrix](PRODUCTION_READINESS_2026-11-14.md), [all executed cases](PRODUCTION_AUDIT_CASES_2026-11-14.md), and [raw evidence](PRODUCTION_AUDIT_RESULTS_2026-11-14.json).
+
 ## 2026-11-14 — Cancel button handles linked payments and expenses
 
 - Removed the extra correction/recalculation buttons and their backend workflow. Extended the existing Cancel preview/execution to Expense Entry, affected/later period settlements and submitted native payments. Warn that a combined payment reverses in full and cancellation does not recover actual cash. Permissions, changed-scope confirmation and atomic rollback remain enforced.

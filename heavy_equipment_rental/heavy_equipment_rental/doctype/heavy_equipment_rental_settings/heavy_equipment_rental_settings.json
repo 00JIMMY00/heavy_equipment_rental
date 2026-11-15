@@ -89,6 +89,18 @@
    "read_only": 1,
    "default": "0",
    "label": "Native Workflow Migrated"
+  },
+  {
+   "fieldname": "repairs_tab",
+   "fieldtype": "Tab Break",
+   "label": "Maintenance Defaults"
+  },
+  {
+   "fieldname": "repair_defaults",
+   "fieldtype": "Table",
+   "label": "Repair Defaults by Company",
+   "options": "HER Repair Defaults",
+   "description": "Set the repair expense account and supplier payment method once per Company. Purchased parts use the Maintenance warehouse automatically."
   }
  ],
  "field_order": [
@@ -104,7 +116,9 @@
   "day_shift_end_time",
   "hours_col",
   "day_shift_hours",
-  "native_workflow_migrated"
+  "native_workflow_migrated",
+  "repairs_tab",
+  "repair_defaults"
  ],
  "permissions": [
   {

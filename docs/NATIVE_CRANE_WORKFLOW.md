@@ -31,7 +31,15 @@ Migration archives obsolete zero-ownership/custody links and former whole-crane 
 
 ## Repairs, including company-owned, shared and external cranes
 
-Start **New Repair** from Crane, select the Company, work dates and Cost Treatment, and save. Use its Create menu to open native drafts, review/submit those documents, then complete maintenance. Linked financial attribution is protected once native documents exist. No second cash expense is generated for native-document repairs.
+**One form for routine repairs and asset improvements:** choose Repair Source (My Stock, External Parts or External Service), choose Repair Purpose (Operating Expense or Capitalize Improvement), and enter item quantities. External purchases add supplier, rates and paid amount (full by default; partial/zero supported). My Stock means parts already purchased: no second supplier invoice. External Parts means a new purchase, automatically received into the configured Maintenance warehouse. Expense account and payment defaults come from HER Settings.
+
+Save the draft, then click native **Submit**. Submission atomically posts the required purchase, stock, supplier payment and completion. Operating Expense uses Material Issue/service expense; Capitalize Improvement automatically creates/submits Asset Repair with stock consumption or the service invoice. Purchased parts invoices are never treated as service costs, avoiding double capitalization. Asset Repair consumes stock at native valuation; supplier payments do not add another cost. A linked company Asset and improvement justification are required for capitalization.
+
+Connections lists all generated documents. Use native **Cancel → Amend** to correct dates, quantities or payments. Cancel previews and reverses related payments, Asset Repairs, stock issues, invoices and cash expenses/journals in dependency order. Amend clears generated links, retains inputs and creates a new editable draft; submitting it posts fresh documents. Purchases made earlier and consumed through My Stock remain untouched. Cancellation failure rolls back the entire operation, including any payments already reversed in that attempt. Closed work periods, later Asset Repairs, and payment adjustments retain their native checks; shared payments covering unrelated invoices require separate cancellation/unreconciliation.
+
+Migration archives each existing Maintenance's old status/docstatus, promotes completed or already-posted repairs to submitted records and old cancelled records to cancelled. Existing operational status, dates, modification timestamps and native financial documents are preserved; no submit/cancel hooks run and nothing is reposted. Drafts without posted documents stay drafts. Previously posted repairs can now use Cancel and Amend. A draft cannot be marked Completed directly; only Submit completes a repair.
+
+**Manual Documents** remains an explicit advanced/legacy route for owner recovery, cash expenses, no-cost work and serial/batch or complex native transactions. It is not required for ordinary repairs or asset improvements. New forms start with My Stock. Existing unposted Manual Documents jobs can select a source and submit once their items are entered. Records with existing accounting documents must finish/reverse those documents before starting a new automated job.
 
 | Treatment | Native workflow | Accounting result |
 | --- | --- | --- |
@@ -62,7 +70,7 @@ The calculation is invoice Grand Total → operating percentage → operating co
 
 Native depreciation still affects the Company's Asset and accounts. It is excluded from the restored contractual distribution pool. Source locks, repair-cost allocation, source Income account/dimension allocation and native payment permissions remain enforced.
 
-Native operating repair costs follow the selected Timesheet, otherwise their service period/Assignment, independently of invoice/stock posting date. Shared costs allocate once by submitted work hours; period calculations prorate deterministically by service days. Rental Profitability uses accounting posting dates and now includes repair stock/service costs and attributed journals/depreciation. Assignment filtering requires explicit attribution; it cannot allocate general depreciation to a job by guessing.
+Native operating repair costs follow the explicitly selected Timesheet, otherwise the selected Assignment, independently of repair/service or invoice/stock posting dates. With neither link they remain unallocated and are excluded from CPS. Shared costs allocate once by submitted work hours; period calculations prorate deterministically by service days. Rental Profitability uses accounting posting dates and now includes repair stock/service costs and attributed journals/depreciation. Assignment filtering requires explicit attribution; it cannot allocate general depreciation to a job by guessing.
 
 ## Migration and practical boundaries
 

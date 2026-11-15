@@ -37,3 +37,7 @@ heavy_equipment_rental.patches.explicit_settlement_revenue_basis
 heavy_equipment_rental.patches.company_assets_only
 
 heavy_equipment_rental.patches.restore_automatic_revenue_settlements
+
+heavy_equipment_rental.patches.explicit_repair_source
+
+heavy_equipment_rental.patches.submittable_maintenance

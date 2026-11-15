@@ -198,3 +198,18 @@ def recorded_work(assignment, cranes):
 
 def entry_days(row):
 	return list(work_days(*interval(row)))
+
+
+def crane_company(name):
+	crane = frappe.get_doc("Crane", name)
+	return crane.sharing_company or (frappe.db.get_value("Asset", crane.asset, "company") if crane.asset else None)
+
+
+def validate_rental_asset(name):
+	"""Keep historical links, but refuse new work on a disposed linked asset."""
+	asset_name = frappe.db.get_value("Crane", name, "asset")
+	if not asset_name:
+		return
+	asset = frappe.db.get_value("Asset", asset_name, ["docstatus", "status"], as_dict=True, for_update=True)
+	if asset and (asset.docstatus == 2 or asset.status in ("Sold", "Scrapped", "Capitalized")):
+		frappe.throw(_("Crane {0}: linked Asset {1} is cancelled or disposed of; new rental work is not allowed.").format(name, asset_name))

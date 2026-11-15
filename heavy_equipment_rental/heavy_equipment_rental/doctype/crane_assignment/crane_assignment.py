@@ -5,6 +5,8 @@ from frappe.utils import getdate
 
 from heavy_equipment_rental.rental_validation import (
     allocation_window,
+    crane_company,
+    validate_rental_asset,
     allocations,
     booking_conflict,
     check_date_order,
@@ -44,6 +46,15 @@ class CraneAssignment(Document):
         cranes = {row.crane for row in self.assigned_cranes if row.crane} | {
             row.crane for row in old.values() if row.crane}
         lock_cranes(cranes)
+        companies = {crane_company(name) for name in cranes} - {None, ""}
+        if len(companies) > 1:
+            frappe.throw(_("All assigned cranes must belong to the same Company."))
+        if companies:
+            company = next(iter(companies))
+            if self.is_new():
+                self.company = company
+            elif self.company != company:
+                frappe.throw(_("Assignment Company must match the Crane Company."))
         conditions = dict(frappe.db.sql(
             "SELECT name, operational_condition FROM `tabCrane` WHERE name IN %s FOR UPDATE",
             (tuple(sorted(cranes)),),
@@ -75,6 +86,8 @@ class CraneAssignment(Document):
                 str(row.get(field) or "") != str(previous.get(field) or "")
                 for field in ("crane", "start_date", "expected_end_date", "cancelled")
             )
+            if booking_changed and not row.cancelled:
+                validate_rental_asset(row.crane)
             if booking_changed and not row.cancelled and conditions.get(row.crane) == "Inactive":
                 frappe.throw(_("{0}: an Inactive crane cannot be booked.").format(label))
             if booking_changed:
