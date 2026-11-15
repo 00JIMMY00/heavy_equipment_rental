@@ -26,6 +26,7 @@ after_install = ["heavy_equipment_rental.setup.execute", "heavy_equipment_rental
 after_migrate = ["heavy_equipment_rental.setup.execute", "heavy_equipment_rental.branding.apply_branding"]
 
 override_doctype_class = {
+	"Report": "heavy_equipment_rental.general_ledger.RentalReport",
 	"Payment Entry": "heavy_equipment_rental.partner_payment.PartnerPaymentEntry",
 	"Asset Repair": "heavy_equipment_rental.asset_repair.RentalAssetRepair",
 	"Expense Entry": "heavy_equipment_rental.expenses.RentalExpenseEntry",
@@ -94,3 +95,8 @@ doctype_js = {
 }
 
 app_include_js = ["/assets/heavy_equipment_rental/js/rental_cancellation.js?v=20261114-cancel-all"]
+
+
+override_whitelisted_methods = {
+    "frappe.desk.query_report.get_script": "heavy_equipment_rental.general_ledger.get_script",
+}

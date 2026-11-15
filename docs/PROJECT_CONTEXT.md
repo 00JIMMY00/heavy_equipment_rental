@@ -1,5 +1,11 @@
 # Project context
 
+## 2026-11-15 — General Ledger rental filters
+
+Crane/CPS GL filters also trace native Payment Entry References for source invoices/journals and settlement journals (complete payment vouchers, including shared payments). CPS-00008 Cash - T movement verified: receipt 3,600 less expenses 490 and partner payment 988.70 = 2,121.30. Select March 2–November 15 to include all four cash movements.
+
+General Ledger now has Crane and Crane Profit Settlement (CPS) filters. CPS traces immutable source snapshots (Expense Entry → its native journal) plus its settlement journal; Crane traces linked native headers/items, expense journals and settlement snapshots. These are complete voucher filters, not prorated allocations. Native GL dates, account filters, permissions, currencies and totals remain in effect. No GL/schema/backfill changes.
+
 - Expense Entry rental pickers now send only Posting Date, Crane, Company and an explicitly selected Assignment. No empty From/To filters appear. Work choices must include that one posting date; changing it refreshes/clears invalid selections. Maintenance behavior and submitted allocation snapshots are unchanged. Verified frontend filter arguments/date changes and native search against live Timesheet dates; syntax/whitespace checks passed. No schema change.
 
 - Latest date clarification: Expense Entry uses Posting Date as its single expense date. Its legacy service From/To fields remain stored but hidden and ignored for expense date calculation; assignment/timesheet selection no longer fills a range. Explicit rental links remain authoritative. Maintenance retains Actual Start/End dates and its repair-period behavior. Historical submitted snapshots are preserved.

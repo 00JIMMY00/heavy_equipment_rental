@@ -1,5 +1,11 @@
 # Progress
 
+## 2026-11-15 — General Ledger rental filters
+
+Crane/CPS GL filters also trace native Payment Entry References for source invoices/journals and settlement journals (complete payment vouchers, including shared payments). CPS-00008 Cash - T movement verified: receipt 3,600 less expenses 490 and partner payment 988.70 = 2,121.30. Select March 2–November 15 to include all four cash movements.
+
+Added Crane and CPS filters to native General Ledger. Live CPS-00008 trace resolves SI-00006 and journals 00014/00015/00016; income minus expenses reconciles to EGP 2,121.30 over March–November 2026. Four GL regression checks and three rental workflow tests passed; JavaScript syntax/whitespace checked; dev3 cache cleared. No schema migration or ledger mutations. Browser UI was not exercised.
+
 - Expense Entry field order is Crane → Crane Timesheet → Crane Assignment.
 
 - Expense Entry rental pickers now send only Posting Date, Crane, Company and an explicitly selected Assignment. No empty From/To filters appear. Work choices must include that one posting date; changing it refreshes/clears invalid selections. Maintenance behavior and submitted allocation snapshots are unchanged. Verified frontend filter arguments/date changes and native search against live Timesheet dates; syntax/whitespace checks passed. No schema change.
