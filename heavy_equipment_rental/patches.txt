@@ -45,3 +45,5 @@ heavy_equipment_rental.patches.submittable_maintenance
 heavy_equipment_rental.patches.simplify_crane_ownership
 
 heavy_equipment_rental.patches.crane_operating_fees
+
+heavy_equipment_rental.patches.simple_repair_methods

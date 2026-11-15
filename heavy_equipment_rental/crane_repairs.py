@@ -183,15 +183,15 @@ def validate_native_document(doc, method=None):
 		if any(frappe.get_cached_value("Item", row.item_code, "is_stock_item") for row in doc.items) and not doc.update_stock:
 			frappe.throw(_("Enable Update Stock to consume the repair parts exactly once."))
 	elif doc.doctype == "Purchase Invoice":
-		stock_purchase = job.cost_treatment in ("Operating Expense", "Capitalize Improvement") and job.get("repair_source") == "External Parts"
+		stock_purchase = job.cost_treatment in ("Operating Expense", "Capitalize Improvement") and job.get("repair_source") in ("External Parts", "Supplier Bill")
 		if stock_purchase:
-			if not doc.update_stock or doc.is_return or any(not frappe.get_cached_value("Item", r.item_code, "is_stock_item") or r.is_fixed_asset for r in doc.items):
-				frappe.throw(_("External Parts requires a stock-updating Purchase Invoice of stock parts."))
+			if doc.is_return or any(r.is_fixed_asset for r in doc.items) or bool(doc.update_stock) != any(frappe.get_cached_value("Item", r.item_code, "is_stock_item") for r in doc.items):
+				frappe.throw(_("Supplier bills must update stock when they contain stock parts and cannot contain fixed-asset items or returns."))
 		if not stock_purchase and doc.is_return and doc.return_against and frappe.db.exists("Asset Repair", {"purchase_invoice": doc.return_against, "docstatus": 1}):
 			frappe.throw(_("Cancel the Asset Repair before returning its capitalized service invoice."))
 		if not stock_purchase and (doc.update_stock or any(row.is_fixed_asset or frappe.get_cached_value("Item", row.item_code, "is_stock_item") for row in doc.items)):
 			frappe.throw(_("Repair Purchase Invoices are for external services. Purchase spare parts into stock separately, then consume them on the repair."))
-		if not stock_purchase and any(frappe.get_cached_value("Account", row.expense_account, "root_type") != "Expense" for row in doc.items):
+		if any(frappe.get_cached_value("Account", row.expense_account, "root_type") != "Expense" for row in doc.items if not frappe.get_cached_value("Item", row.item_code, "is_stock_item")):
 			frappe.throw(_("Repair service invoices must post to Expense accounts; Asset Repair reclassifies qualifying improvements."))
 	elif doc.doctype == "Asset Repair":
 		crane = frappe.get_doc("Crane", job.crane)
@@ -203,9 +203,9 @@ def validate_native_document(doc, method=None):
 			invoice.check_permission("read")
 			if invoice.docstatus != 1 or invoice.company != doc.company or invoice.crane_maintenance != job.name or invoice.is_return:
 				frappe.throw(_("Select a submitted repair service invoice from this maintenance job."))
-			if invoice.update_stock or any(frappe.get_cached_value("Item", r.item_code, "is_stock_item") for r in invoice.items):
+			if job.get("repair_source") != "Supplier Bill" and (invoice.update_stock or any(frappe.get_cached_value("Item", r.item_code, "is_stock_item") for r in invoice.items)):
 				frappe.throw(_("Purchased parts are capitalized through stock consumption. The Asset Repair invoice field is only for services."))
-			if len({r.expense_account for r in invoice.items}) != 1 or invoice.currency != frappe.get_cached_value("Company", doc.company, "default_currency"):
+			if len({r.expense_account for r in invoice.items if not frappe.get_cached_value("Item", r.item_code, "is_stock_item")}) != 1 or invoice.currency != frappe.get_cached_value("Company", doc.company, "default_currency"):
 				frappe.throw(_("Capitalization requires a company-currency service invoice using one Expense account."))
 			from erpnext.assets.doctype.asset_repair.asset_repair import get_repair_cost_for_purchase_invoice
 			doc.repair_cost = get_repair_cost_for_purchase_invoice(invoice.name)
@@ -243,7 +243,7 @@ def guard_repair_posting(doc, method=None):
 			context.service_from_date, context.service_to_date = frappe.db.get_value(
 				"Crane Timesheet", job.crane_timesheet, ["period_start", "period_end"])
 		guard_expense(context)
-	if doc.doctype == "Purchase Invoice" and method == "before_cancel" and job.get("repair_source") == "External Parts":
+	if doc.doctype == "Purchase Invoice" and method == "before_cancel" and job.get("repair_source") in ("External Parts", "Supplier Bill"):
 		if frappe.db.exists("Stock Entry", {"crane_maintenance": job.name, "docstatus": 1}):
 			frappe.throw(_("Cancel the repair Material Issue before cancelling its parts Purchase Invoice."))
 	if doc.doctype == "Purchase Invoice" and method == "before_cancel" and frappe.db.exists(

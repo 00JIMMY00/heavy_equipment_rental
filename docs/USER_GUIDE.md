@@ -1,5 +1,13 @@
 # Heavy Equipment Rental — user guide
 
+## Fast maintenance entry
+
+Choose **Quick Repair** for a cash/bank repair: enter Description, Cost and Payment Method, then Save and Submit. The repair expense account comes from HER Settings → Maintenance Defaults. Both actual dates default to today.
+
+Choose **Use Stock Parts** to consume items already in your warehouse. Choose **Supplier Bill** to purchase parts and/or labour in one table. Submission posts the supplier invoice, consumes only stock parts and pays the entered amount (full by default; zero leaves it unpaid).
+
+Expand **Advanced Accounting** for asset improvements, owner recovery, no-cost work, or **Use Existing Accounting Documents**. Quick Repair offers cash expense, owner recovery and no-cost treatment; use Stock Parts or Supplier Bill for automatic capitalization. Existing manual repairs retain their original workflow.
+
 **Latest rule (2026-11-15):** Enable Profit Sharing and Hired from Supplier are mutually exclusive. Selecting either clears the other on the Crane form; server validation rejects both together. Both may remain off for ordinary company work. This supersedes earlier combined-hire/profit-sharing guidance. Existing agreements and posted documents are not rewritten.
 
 **Operating Fees:** use the Crane table columns Our Company, Partner, Fee Basis and Operating Fee %. New cranes start with Our Company / Grand Total / 0%. Grand Total uses crane revenue before expenses; Net Profit uses positive revenue minus allocated expenses, before any fees. For revenue 10,000 and expenses 2,000, a 10% Grand Total fee is 1,000; a 10% Net Profit fee is 800. Multiple rows use the same original bases independently. Enable Profit Sharing to apply nonzero fees, and use Change Agreement for later revisions.

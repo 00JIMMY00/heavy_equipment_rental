@@ -1,5 +1,6 @@
 frappe.ui.form.on("Crane Maintenance", {
 	setup(frm) {
+        frm.set_df_property("repair_method", "options", "Quick Repair\nUse Stock Parts\nSupplier Bill");
 		frm.set_query("mode_of_payment", () => ({ filters: { enabled: 1 } }));
 	},
 	refresh(frm) {
@@ -18,7 +19,7 @@ async function render_repair_documents(frm) {
         "Recover from Owner": [["Invoice Owner / Consume Parts", "Sales Invoice"]],
     }[frm.doc.cost_treatment] || [];
     if (frm.is_new()) {
-        wrapper.text(__(is_auto_repair(frm) ? "Enter the repair items, save, then use Submit." : "Save this repair to create its stock and accounting documents."));
+        wrapper.text(__(is_auto_repair(frm) ? "Enter the repair items, save, then use Submit." : "Enter the repair details, save, then use Submit to post the repair."));
         return;
     }
     if (frm.doc.docstatus === 0 && !is_auto_repair(frm)) {
@@ -40,7 +41,7 @@ async function render_repair_documents(frm) {
         if (request !== frm._repair_request || name !== frm.doc.name) return;
         const esc = value => frappe.utils.escape_html(String(value || ""));
         wrapper.html(rows.length ? rows.map(row => `<p><a href="/app/${encodeURIComponent(frappe.router.slug(row.doctype))}/${encodeURIComponent(row.name)}">${esc(__(row.doctype))}: ${esc(row.name)}</a> · ${esc(__(['Draft', 'Submitted', 'Cancelled'][row.docstatus]))}</p>`).join("")
-            : `<p class="text-muted">${esc(__(is_auto_repair(frm) ? "No postings yet. Enter the repair items, save, then use Submit." : "No stock or accounting documents yet. Create the appropriate document, review it and submit before submitting Maintenance."))}</p>`);
+            : `<p class="text-muted">${esc(__(is_auto_repair(frm) ? "No postings yet. Enter the repair items, save, then use Submit." : (frm.doc.cost_treatment === "Cash Expense" ? "Enter the cost and payment method, save, then Submit." : "Create and submit the linked accounting documents before submitting Maintenance.")))}</p>`);
     } catch (error) {
         if (request === frm._repair_request) wrapper.text(__("Accounting document read permission is required to review repair postings."));
     }
@@ -77,9 +78,7 @@ frappe.ui.form.on('Crane Maintenance', {
             frm.refresh_fields();
         }
         if (frm.is_new() && frm.doc.company) set_repair_company_defaults(frm);
-        if (frm.is_new() && ['Operating Expense', 'Capitalize Improvement'].includes(frm.doc.cost_treatment) && !is_auto_repair(frm)) {
-            frm.set_value('repair_source', 'My Stock');
-        }
+        if (frm.is_new() && !frm.doc.repair_method) frm.set_value('repair_method', 'Quick Repair');
         frm.set_query('repair_expense_account', () => ({filters: {
             company: frm.doc.company, root_type: 'Expense', is_group: 0, disabled: 0
         }}));
@@ -90,7 +89,7 @@ frappe.ui.form.on('Crane Maintenance', {
             company: frm.doc.company, is_group: 0, disabled: 0
         }}));
         frm.set_query('item_code', 'repair_items', () => ({filters: {
-            disabled: 0, is_fixed_asset: 0, is_stock_item: frm.doc.repair_source === 'External Service' ? 0 : 1,
+            disabled: 0, is_fixed_asset: 0, ...(frm.doc.repair_method === 'Supplier Bill' ? {} : {is_stock_item: frm.doc.repair_source === 'External Service' ? 0 : 1}),
             has_serial_no: 0, has_batch_no: 0
         }}));
     },
@@ -98,7 +97,7 @@ frappe.ui.form.on('Crane Maintenance', {
         update_cost_treatment_description(frm);
         const automatic = is_auto_repair(frm);
         const locked = !!(frm.doc.docstatus || frm.doc.repair_purchase_invoice || frm.doc.repair_material_issue || ['Completed', 'Cancelled'].includes(frm.doc.status));
-        for (const field of ['repair_source', 'repair_supplier', 'supplier_invoice_no',
+        for (const field of ['repair_method', 'use_existing_documents', 'repair_source', 'repair_supplier', 'supplier_invoice_no',
             'supplier_invoice_date', 'repair_cost_center', 'repair_items', 'supplier_paid_amount', 'mode_of_payment']) {
             frm.set_df_property(field, 'read_only', locked ? 1 : 0);
         }
@@ -112,7 +111,10 @@ frappe.ui.form.on('Crane Maintenance', {
         frm.set_df_property('status', 'read_only', frm.doc.docstatus ? 1 : 0);
         frm.set_df_property('cost_treatment', 'hidden', 0);
         frm.set_df_property('cost_treatment', 'read_only', locked ? 1 : 0);
-        frm.set_df_property('advanced_repair_section', 'hidden', automatic ? 1 : 0);
+        frm.set_df_property('advanced_repair_section', 'hidden', 0);
+        frm.set_df_property('repair_method', 'hidden', !!frm.doc.use_existing_documents);
+        frm.set_df_property('expense_type', 'hidden', !frm.doc.use_existing_documents);
+        frm.set_df_property('cost_treatment', 'options', frm.doc.repair_method === 'Quick Repair' && !frm.doc.use_existing_documents ? 'Cash Expense\nRecover from Owner\nNo Cost' : (automatic ? 'Operating Expense\nCapitalize Improvement\nRecover from Owner\nNo Cost' : 'Cash Expense\nOperating Expense\nCapitalize Improvement\nRecover from Owner\nNo Cost'));
 
     },
     supplier_paid_amount(frm) {
@@ -134,7 +136,7 @@ frappe.ui.form.on('Crane Maintenance', {
 });
 
 async function set_repair_company_defaults(frm) {
-    if (!is_auto_repair(frm) || !frm.doc.company || frm.doc.repair_purchase_invoice || frm.doc.repair_material_issue ||
+    if (!frm.doc.company || frm.doc.repair_purchase_invoice || frm.doc.repair_material_issue ||
         ['Completed', 'Cancelled'].includes(frm.doc.status)) return;
     const company = frm.doc.company;
     const {message} = await frappe.call({method: 'heavy_equipment_rental.maintenance_posting.get_repair_defaults', args: {company}});
@@ -149,7 +151,7 @@ function is_auto_repair(frm) {
 }
 
 async function update_repair_payment_total(frm) {
-    if (!frm.doc.pay_full_amount || !['External Parts', 'External Service'].includes(frm.doc.repair_source)) return;
+    if (!frm.doc.pay_full_amount || !['External Parts', 'External Service', 'Supplier Bill'].includes(frm.doc.repair_source)) return;
     const total = (frm.doc.repair_items || []).reduce((sum, row) => sum + flt(row.qty) * flt(row.rate), 0);
     frm._defaulting_payment = true;
     try { await frm.set_value('supplier_paid_amount', total); }
@@ -167,7 +169,7 @@ function update_cost_treatment_description(frm) {
         'Operating Expense': __('Use for routine repairs, servicing and replacement parts. The cost is recorded as a repair expense without increasing the crane Asset value.'),
         'Capitalize Improvement': __('Use for a major improvement or replacement that adds future benefit to the crane. The cost is added to the crane Asset automatically when you submit Maintenance. Explain the improvement below.'),
         'Recover from Owner': __('Use when the crane owner must reimburse the repair. Select the owner as a Customer and create a Sales Invoice to bill them.'),
-        'Cash Expense': __('Use for a repair paid directly from cash or bank. Enter the Cost, Expense Entry Type and Payment Method; submitting Maintenance creates and submits an Expense Entry.'),
+        'Cash Expense': __('Use for a repair paid directly from cash or bank. Enter the Cost and Payment Method; submitting Maintenance creates and submits an Expense Entry.'),
         'No Cost': __('Use for an inspection or maintenance job with no cost to record. No accounting or stock document is required.'),
     };
     let description = descriptions[frm.doc.cost_treatment]
@@ -196,5 +198,22 @@ frappe.ui.form.on('Crane Maintenance', {
                 }, () => frm.handle_save_fail(btn, on_error));
             } catch (error) { frm.handle_save_fail(btn, on_error); }
         };
+    },
+});
+
+frappe.ui.form.on('Crane Maintenance', {
+    async repair_method(frm) {
+        if (frm.doc.docstatus || frm.doc.use_existing_documents) return;
+        const quick = frm.doc.repair_method === 'Quick Repair';
+        await frm.set_value('cost_treatment', quick ? 'Cash Expense' : 'Operating Expense');
+        await frm.set_value('repair_source', quick ? 'Manual Documents' : (frm.doc.repair_method === 'Use Stock Parts' ? 'My Stock' : 'Supplier Bill'));
+        await set_repair_company_defaults(frm);
+        await update_repair_payment_total(frm);
+        frm.refresh();
+    },
+    async use_existing_documents(frm) {
+        if (frm.doc.use_existing_documents) await frm.set_value('repair_source', 'Manual Documents');
+        else await frm.trigger('repair_method');
+        frm.refresh();
     },
 });

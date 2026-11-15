@@ -207,8 +207,11 @@ class TestMaintenancePosting(FrappeTestCase):
         fixture.asset.submit()
         fixture.link()
         self.crane = fixture.crane
-        for source, amount in [('My Stock', 50), ('External Parts', 80), ('External Service', 80)]:
+        for source, amount in [('My Stock', 50), ('External Parts', 80), ('External Service', 80), ('Supplier Bill', 110)]:
             job = self.repair(source)
+            if source == 'Supplier Bill':
+                job.repair_method = 'Supplier Bill'
+                job.append('repair_items', dict(item_code=self.crane.item, qty=1, rate=30))
             job.cost_treatment = 'Capitalize Improvement'
             job.capitalization_reason = 'Major improvement extends service life'
             job.save()
@@ -249,3 +252,30 @@ class TestMaintenancePosting(FrappeTestCase):
             job.cancel()
             self.assertEqual(repair.reload().docstatus, 2)
             self.assertEqual(fixture.asset.reload().additional_asset_cost, before)
+
+    def test_quick_repair_uses_settings_account_and_cancels(self):
+        job = self.job(repair_method='Quick Repair', cost=125)
+        job.submit()
+        expense = frappe.get_doc('Expense Entry', job.expense_entry)
+        self.assertEqual(expense.docstatus, 1)
+        self.assertEqual(self.gl('Journal Entry', expense.journal_entry, 'Expense'), 125)
+        self.assertEqual(frappe.db.get_value('Expense Entry Type', job.expense_type, 'account'), self.company.default_expense_account)
+        job.cancel()
+        self.assertEqual(expense.reload().docstatus, 2)
+
+    def test_supplier_bill_mixes_parts_and_labour(self):
+        job = self.repair('External Parts')
+        job.repair_method = 'Supplier Bill'
+        job.append('repair_items', dict(item_code=self.crane.item, qty=1, rate=30))
+        job.save().submit()
+        invoice = frappe.get_doc('Purchase Invoice', job.repair_purchase_invoice)
+        issue = frappe.get_doc('Stock Entry', job.repair_material_issue)
+        self.assertEqual(len(invoice.items), 2)
+        self.assertEqual(len(issue.items), 1)
+        self.assertEqual(issue.items[0].item_code, self.part.name)
+        self.assertEqual(self.gl('Purchase Invoice', invoice.name, 'Expense'), 30)
+        self.assertEqual(self.gl('Stock Entry', issue.name, 'Expense'), 80)
+        self.assertEqual(job.supplier_paid_amount, 110)
+        job.cancel()
+        self.assertEqual(invoice.reload().docstatus, 2)
+        self.assertEqual(issue.reload().docstatus, 2)

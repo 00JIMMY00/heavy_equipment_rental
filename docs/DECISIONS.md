@@ -1,5 +1,13 @@
 # Current decisions
 
+## 2026-11-16 — Simple repair entry
+
+The Maintenance form now offers Quick Repair (default), Use Stock Parts, and Supplier Bill. Quick Repair uses the HER company repair expense account and payment method, automatically resolving/creating its Expense Entry Type. Supplier Bill accepts stock parts and non-stock labour together; native purchase posting receives parts, and a Material Issue consumes only stock rows. Supplier payment defaults to full and supports partial/zero payment. Advanced Accounting retains capitalization, owner recovery, no-cost work and existing/manual documents. Legacy source values remain stored for compatibility; migration fills presentation choices without reposting or changing financial history. Mixed improvement bills use native Asset Repair service expenses plus stock consumption.
+
+## 2026-11-16 — Maintenance form defaults
+
+New Crane Maintenance records default Actual Start Date and Actual End Date to Today using native Date field defaults. Maintenance Type is removed from default list columns and retained on the form. Existing dates are preserved. Migrated dev3; verified new-document defaults/live metadata and all three rental workflow tests.
+
 ## 2026-11-15 — General Ledger rental filters
 
 Crane/CPS GL filters also trace native Payment Entry References for source invoices/journals and settlement journals (complete payment vouchers, including shared payments). CPS-00008 Cash - T movement verified: receipt 3,600 less expenses 490 and partner payment 988.70 = 2,121.30. Select March 2–November 15 to include all four cash movements.

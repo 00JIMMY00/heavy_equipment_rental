@@ -1,7 +1,7 @@
 {
  "actions": [],
  "autoname": "naming_series:",
- "creation": "2026-11-13 01:37:29.667726",
+ "creation": "2026-11-16 00:18:30.535864",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -11,28 +11,30 @@
   "crane",
   "actual_start_date",
   "actual_end_date",
+  "description",
+  "attachment",
   "maintenance_column",
+  "mode_of_payment",
   "crane_timesheet",
   "crane_assignment",
-  "maintenance_type",
+  "repair_method",
   "repair_source",
-  "cost_treatment",
-  "company",
   "owner_customer",
-  "column_break_ecru",
-  "mode_of_payment",
   "cost",
+  "column_break_ecru",
+  "company",
   "technician",
   "status",
+  "maintenance_type",
   "advanced_repair_section",
+  "use_existing_documents",
+  "cost_treatment",
   "repair_expense_account",
   "repair_cost_center",
   "work_section",
-  "description",
   "capitalization_reason",
   "work_column",
   "expense_type",
-  "attachment",
   "repair_items_section",
   "repair_supplier",
   "supplier_invoice_no",
@@ -88,9 +90,10 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "Corrective",
    "fieldname": "maintenance_type",
    "fieldtype": "Select",
-   "in_list_view": 1,
+   "hidden": 1,
    "label": "Maintenance Type",
    "options": "Preventive\nCorrective\nInspection\nOther",
    "reqd": 1
@@ -99,20 +102,23 @@
    "default": "Planned",
    "fieldname": "status",
    "fieldtype": "Select",
+   "hidden": 1,
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
+   "no_copy": 1,
    "options": "Planned\nIn Progress\nCompleted\nCancelled",
-   "reqd": 1,
-   "no_copy": 1
+   "reqd": 1
   },
   {
+   "default": "Today",
    "fieldname": "actual_start_date",
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Actual Start Date"
   },
   {
+   "default": "Today",
    "fieldname": "actual_end_date",
    "fieldtype": "Date",
    "label": "Actual End Date"
@@ -153,32 +159,33 @@
    "label": "Posting Documents"
   },
   {
+   "depends_on": "eval:!doc.cost_treatment || doc.cost_treatment=='Cash Expense'",
    "fieldname": "cost",
    "fieldtype": "Currency",
-   "label": "Cost",
+   "label": "Amount (EGP)",
    "mandatory_depends_on": "eval:doc.status=='Completed' && (!doc.cost_treatment || doc.cost_treatment=='Cash Expense')",
    "non_negative": 1,
-   "depends_on": "eval:!doc.cost_treatment || doc.cost_treatment=='Cash Expense'"
+   "options": "EGP"
   },
   {
+   "depends_on": "eval:!doc.cost_treatment || doc.cost_treatment=='Cash Expense'",
    "fieldname": "expense_type",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Expense Entry Type",
-   "mandatory_depends_on": "eval:doc.status=='Completed' && (!doc.cost_treatment || doc.cost_treatment=='Cash Expense')",
-   "options": "Expense Entry Type",
-   "depends_on": "eval:!doc.cost_treatment || doc.cost_treatment=='Cash Expense'"
+   "options": "Expense Entry Type"
   },
   {
    "fieldname": "payment_column",
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval:doc.cost_treatment=='Cash Expense' || ['External Parts','External Service','Supplier Bill'].includes(doc.repair_source)",
    "fieldname": "mode_of_payment",
    "fieldtype": "Link",
    "label": "Payment Method",
    "mandatory_depends_on": "eval:doc.status=='Completed' && (!doc.cost_treatment || doc.cost_treatment=='Cash Expense')",
-   "options": "Mode of Payment",
-   "depends_on": "eval:doc.cost_treatment=='Cash Expense' || ['External Parts','External Service'].includes(doc.repair_source)"
+   "options": "Mode of Payment"
   },
   {
    "fieldname": "credit_account",
@@ -213,35 +220,35 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "Operating Expense",
+   "description": "Routine repair expense is automatic. Change this only for improvements, owner recovery or no-cost work.",
    "fieldname": "cost_treatment",
    "fieldtype": "Select",
-   "label": "Repair Purpose",
+   "label": "Accounting Treatment",
    "options": "Cash Expense\nOperating Expense\nCapitalize Improvement\nRecover from Owner\nNo Cost",
-   "default": "Operating Expense",
-   "reqd": 1,
-   "description": "Routine repairs use Operating Expense automatically. Advanced options cover asset improvements, owner billing, cash-only expenses or no-cost work."
+   "reqd": 1
   },
   {
    "fieldname": "company",
    "fieldtype": "Link",
-   "options": "Company",
    "label": "Company",
-   "mandatory_depends_on": "eval:doc.cost_treatment && doc.cost_treatment!='Cash Expense'"
+   "mandatory_depends_on": "eval:doc.cost_treatment && doc.cost_treatment!='Cash Expense'",
+   "options": "Company"
   },
   {
+   "depends_on": "eval:doc.cost_treatment=='Recover from Owner'",
+   "description": "The owner as an ERPNext Customer for repair billing. This does not change their Shareholder identity.",
    "fieldname": "owner_customer",
    "fieldtype": "Link",
-   "options": "Customer",
    "label": "Bill Repair To",
-   "depends_on": "eval:doc.cost_treatment=='Recover from Owner'",
    "mandatory_depends_on": "eval:doc.cost_treatment=='Recover from Owner'",
-   "description": "The owner as an ERPNext Customer for repair billing. This does not change their Shareholder identity."
+   "options": "Customer"
   },
   {
+   "depends_on": "eval:doc.cost_treatment=='Capitalize Improvement'",
    "fieldname": "capitalization_reason",
    "fieldtype": "Small Text",
    "label": "Capitalization Justification",
-   "depends_on": "eval:doc.cost_treatment=='Capitalize Improvement'",
    "mandatory_depends_on": "eval:doc.cost_treatment=='Capitalize Improvement'"
   },
   {
@@ -250,47 +257,48 @@
    "label": "Repair Accounting Documents"
   },
   {
+   "depends_on": "eval:['Operating Expense','Capitalize Improvement'].includes(doc.cost_treatment)",
    "fieldname": "repair_items_section",
    "fieldtype": "Section Break",
-   "label": "Repair Items",
-   "depends_on": "eval:['Operating Expense','Capitalize Improvement'].includes(doc.cost_treatment)"
+   "label": "Repair Items"
   },
   {
+   "description": "Choose My Stock for parts already purchased, External Parts to buy new parts now, or External Service for supplier labor.",
    "fieldname": "repair_source",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Repair Source",
-   "options": "Manual Documents\nMy Stock\nExternal Parts\nExternal Service",
-   "description": "Choose My Stock for parts already purchased, External Parts to buy new parts now, or External Service for supplier labor."
+   "options": "Manual Documents\nMy Stock\nExternal Parts\nExternal Service\nSupplier Bill"
   },
   {
+   "depends_on": "eval:['External Parts','External Service','Supplier Bill'].includes(doc.repair_source)",
    "fieldname": "repair_supplier",
    "fieldtype": "Link",
    "label": "Supplier",
-   "options": "Supplier",
-   "depends_on": "eval:['External Parts','External Service'].includes(doc.repair_source)"
+   "options": "Supplier"
   },
   {
+   "depends_on": "eval:['External Parts','External Service','Supplier Bill'].includes(doc.repair_source)",
    "fieldname": "supplier_invoice_no",
    "fieldtype": "Data",
-   "label": "Supplier Invoice No",
-   "depends_on": "eval:['External Parts','External Service'].includes(doc.repair_source)"
+   "label": "Supplier Invoice No"
   },
   {
+   "depends_on": "eval:['External Parts','External Service','Supplier Bill'].includes(doc.repair_source)",
    "fieldname": "supplier_invoice_date",
    "fieldtype": "Date",
-   "label": "Supplier Invoice Date",
-   "depends_on": "eval:['External Parts','External Service'].includes(doc.repair_source)"
+   "label": "Supplier Invoice Date"
   },
   {
    "fieldname": "repair_column",
    "fieldtype": "Column Break"
   },
   {
+   "description": "Defaults from HER Settings \u2192 Maintenance Defaults for this Company.",
    "fieldname": "repair_expense_account",
    "fieldtype": "Link",
    "label": "Repair Expense Account",
    "options": "Account",
-   "description": "Defaults from HER Settings \u2192 Maintenance Defaults for this Company.",
    "read_only": 1
   },
   {
@@ -309,17 +317,17 @@
    "fieldname": "repair_purchase_invoice",
    "fieldtype": "Link",
    "label": "Generated Purchase Invoice",
+   "no_copy": 1,
    "options": "Purchase Invoice",
-   "read_only": 1,
-   "no_copy": 1
+   "read_only": 1
   },
   {
    "fieldname": "repair_material_issue",
    "fieldtype": "Link",
    "label": "Generated Material Issue",
+   "no_copy": 1,
    "options": "Stock Entry",
-   "read_only": 1,
-   "no_copy": 1
+   "read_only": 1
   },
   {
    "fieldname": "connections_tab",
@@ -328,17 +336,17 @@
    "show_dashboard": 1
   },
   {
+   "depends_on": "eval:['External Parts','External Service','Supplier Bill'].includes(doc.repair_source)",
+   "description": "Defaults to the full invoice amount. Enter a smaller amount for partial payment, or 0 to leave it unpaid.",
    "fieldname": "supplier_paid_amount",
    "fieldtype": "Currency",
    "label": "Paid Amount to Supplier",
-   "depends_on": "eval:['External Parts','External Service'].includes(doc.repair_source)",
-   "description": "Defaults to the full invoice amount. Enter a smaller amount for partial payment, or 0 to leave it unpaid.",
    "non_negative": 1
   },
   {
+   "default": "1",
    "fieldname": "pay_full_amount",
    "fieldtype": "Check",
-   "default": "1",
    "hidden": 1,
    "label": "Default to Full Invoice Payment"
   },
@@ -346,36 +354,51 @@
    "fieldname": "repair_payment_entry",
    "fieldtype": "Link",
    "label": "Supplier Payment",
+   "no_copy": 1,
    "options": "Payment Entry",
-   "read_only": 1,
-   "no_copy": 1
+   "read_only": 1
   },
   {
+   "collapsible": 1,
    "fieldname": "advanced_repair_section",
    "fieldtype": "Section Break",
-   "label": "Advanced Accounting",
-   "collapsible": 1
+   "label": "Advanced Accounting"
   },
   {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
+   "no_copy": 1,
    "options": "Crane Maintenance",
    "read_only": 1,
-   "no_copy": 1,
    "search_index": 1
   },
   {
    "fieldname": "legacy_lifecycle",
    "fieldtype": "Long Text",
-   "label": "Previous Lifecycle",
    "hidden": 1,
-   "read_only": 1,
-   "no_copy": 1
+   "label": "Previous Lifecycle",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "description": "Quick Repair: enter the total cost and payment method. Stock Parts: consume items you own. Supplier Bill: buy parts and/or labour.",
+   "fieldname": "repair_method",
+   "fieldtype": "Select",
+   "label": "How do you want to record this repair?",
+   "options": "\nQuick Repair\nUse Stock Parts\nSupplier Bill"
+  },
+  {
+   "default": "0",
+   "description": "Advanced: create or link native repair documents yourself before submitting Maintenance.",
+   "fieldname": "use_existing_documents",
+   "fieldtype": "Check",
+   "label": "Use Existing Accounting Documents"
   }
  ],
+ "is_submittable": 1,
  "links": [],
- "modified": "2026-11-13 02:07:14.510393",
+ "modified": "2026-11-16 00:39:02.125598",
  "modified_by": "Administrator",
  "module": "Heavy Equipment Rental",
  "name": "Crane Maintenance",
@@ -383,6 +406,8 @@
  "owner": "Administrator",
  "permissions": [
   {
+   "amend": 1,
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "export": 1,
@@ -390,12 +415,12 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
-   "write": 1,
    "submit": 1,
-   "cancel": 1,
-   "amend": 1
+   "write": 1
   },
   {
+   "amend": 1,
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "export": 1,
@@ -403,12 +428,12 @@
    "read": 1,
    "report": 1,
    "role": "Projects Manager",
-   "write": 1,
    "submit": 1,
-   "cancel": 1,
-   "amend": 1
+   "write": 1
   },
   {
+   "amend": 1,
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "export": 1,
@@ -416,10 +441,8 @@
    "read": 1,
    "report": 1,
    "role": "Projects User",
-   "write": 1,
    "submit": 1,
-   "cancel": 1,
-   "amend": 1
+   "write": 1
   }
  ],
  "row_format": "Dynamic",
@@ -428,6 +451,5 @@
  "sort_order": "DESC",
  "states": [],
  "title_field": "crane",
- "track_changes": 1,
- "is_submittable": 1
+ "track_changes": 1
 }
