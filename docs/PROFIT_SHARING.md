@@ -161,7 +161,7 @@ preserving its original records. No cash/bank posting occurs until Partner Payme
 is created. Create → Partner Payment opens a draft native Payment Entry; ERPNext
 handles partial/full payment and remaining balances.
 
-Use **Change Agreement**, enter a later effective date, edit operating/ownership/
+Enter a later **Agreement Effective From** date, edit operating/ownership/
 remaining-balance terms, then save. The date must follow the previous version and
 all submitted settlements. Split periods at agreement changes. Historical
 snapshots stay fixed. Explicit inactive intervals can be skipped; crane locking

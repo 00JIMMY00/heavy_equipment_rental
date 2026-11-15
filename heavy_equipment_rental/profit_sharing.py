@@ -232,7 +232,7 @@ def validate_agreement(doc):
                     "only if this is intentional. Ownership % does not determine payment by itself.").format(
                         row.idx, row.ownership_percentage), title=_("Owner Has No Profit Share"))
     if version["calculation_method"] != OPERATING_FIRST:
-        frappe.throw(_("Changed agreements must use Operating First. Use Change Agreement to enter new terms."))
+        frappe.throw(_("Changed agreements must use Operating First. Review the agreement terms and effective date before saving."))
     if history and effective <= history[-1]["effective_from"]:
         frappe.throw(_("Changed agreements require an effective date after the previous version."))
     last = last_settlement(doc.name) if not doc.is_new() else None

@@ -102,37 +102,6 @@ frappe.ui.form.on("Crane", {
             row => [row.name, flt(row.ownership_percentage)]));
         frm.toggle_display("availability_tab", !frm.is_new());
         if (frm.is_new()) return;
-        if (frm.doc.agreement_history && frappe.user.has_role(["Accounts Manager", "System Manager"])) {
-            frm.add_custom_button(__("Change Agreement"), () => {
-                frappe.prompt([{
-                    fieldname: "effective_from", fieldtype: "Date", label: __("Effective From"),
-                    reqd: 1, default: frappe.datetime.get_today(),
-                }], values => {
-                    frm.set_value({ agreement_effective_from: values.effective_from,
-                        sharing_calculation: "Operating First" });
-                    frm.scroll_to_field("operating_percentage");
-                    frm.set_intro(__("Edit the operating percentage, operator and remaining balance shares, then save. Previous agreements and submitted settlements retain their original terms."));
-                }, __("Change Agreement"), __("Edit Terms"));
-            });
-        }
-        if (frm.doc.agreement_history && frappe.model.can_create("Crane Profit Settlement")) {
-            frm.add_custom_button(__("Profit Settlement"), async () => {
-                if (frm.is_dirty()) frappe.throw(__("Save your agreement before creating a settlement."));
-                const { message } = await frappe.call({
-                    method: "heavy_equipment_rental.profit_sharing.settlement_defaults",
-                    args: { crane: frm.doc.name },
-                });
-                frappe.new_doc("Crane Profit Settlement", message);
-            }, __("Create"));
-            frm.add_custom_button(__("Profit Settlements"), () =>
-                frappe.set_route("List", "Crane Profit Settlement", { crane: frm.doc.name }), __("View"));
-        }
-        if (frappe.model.can_create("Payment Entry")) {
-            frm.add_custom_button(__("Payment"), async () => {
-                await frappe.require("/assets/heavy_equipment_rental/js/rental_payments.js");
-                return heavy_equipment_rental.create_supplier_payment(frm);
-            }, __("Create"));
-        }
         frm.add_custom_button(__("Resource Calendar"), () => {
             window.location.href = `/rental-calendar/timeline?crane=${encodeURIComponent(frm.doc.name)}`;
         }, __("View"));
@@ -142,9 +111,8 @@ frappe.ui.form.on("Crane", {
             if (doctype === "Crane Assignment") continue;
             frm.add_custom_button(__(label), () => frappe.set_route("List", doctype, { crane: frm.doc.name }), __("View"));
         }
-        if (frappe.model.can_create("Expense Entry"))
-            frm.add_custom_button(__("Expense"), () => frappe.new_doc("Expense Entry", { crane: frm.doc.name }), __("Create"));
-        for (const [label, doctype] of [["Repair / Maintenance", "Crane Maintenance"], ["Timesheet", "Crane Timesheet"]]) {
+        for (const [label, doctype] of [["Timesheet", "Crane Timesheet"],
+            ["Expense", "Expense Entry"], ["Maintenance", "Crane Maintenance"]]) {
             if (frappe.model.can_create(doctype))
                 frm.add_custom_button(__(label), () => frappe.new_doc(doctype, { crane: frm.doc.name, ...(doctype === "Crane Maintenance" ? { company: frm.doc.sharing_company || frappe.defaults.get_user_default("Company"), cost_treatment: "Operating Expense" } : {}) }), __("Create"));
         }
@@ -169,6 +137,24 @@ frappe.ui.form.on("Crane", {
                         : __("No submitted Timesheets found for this Crane."));
                 }
             }), __("Create"));
+        }
+        if (frm.doc.agreement_history && frappe.model.can_create("Crane Profit Settlement")) {
+            frm.add_custom_button(__("Profit Settlement"), async () => {
+                if (frm.is_dirty()) frappe.throw(__("Save your agreement before creating a settlement."));
+                const { message } = await frappe.call({
+                    method: "heavy_equipment_rental.profit_sharing.settlement_defaults",
+                    args: { crane: frm.doc.name },
+                });
+                frappe.new_doc("Crane Profit Settlement", message);
+            }, __("Create"));
+            frm.add_custom_button(__("Profit Settlements"), () =>
+                frappe.set_route("List", "Crane Profit Settlement", { crane: frm.doc.name }), __("View"));
+        }
+        if (frappe.model.can_create("Payment Entry")) {
+            frm.add_custom_button(__("Payment"), async () => {
+                await frappe.require("/assets/heavy_equipment_rental/js/rental_payments.js");
+                return heavy_equipment_rental.create_supplier_payment(frm);
+            }, __("Create"));
         }
         frm._calendar_month = frm._calendar_month || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
         frm.trigger("load_availability");

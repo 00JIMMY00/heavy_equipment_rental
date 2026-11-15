@@ -1,5 +1,9 @@
 # Progress
 
+- 2026-11-16: Crane Create menu ordered Timesheet, Expense, Maintenance, Sales Invoice, Profit Settlement; existing Payment action follows last. Permissions still control available entries. JavaScript syntax/whitespace checks passed; dev3 cache cleared.
+
+- 2026-11-16: Removed the Crane Change Agreement shortcut. Edit terms and Agreement Effective From directly, then Save; dated history and server validation still apply. JavaScript syntax and whitespace checks passed; dev3 cache cleared.
+
 - 2026-11-16: Maintenance cost is displayed as Amount (EGP), using the native Currency field with EGP formatting.
 
 ## 2026-11-16 — Simple repair entry

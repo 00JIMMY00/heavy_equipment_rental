@@ -10,9 +10,9 @@ Expand **Advanced Accounting** for asset improvements, owner recovery, no-cost w
 
 **Latest rule (2026-11-15):** Enable Profit Sharing and Hired from Supplier are mutually exclusive. Selecting either clears the other on the Crane form; server validation rejects both together. Both may remain off for ordinary company work. This supersedes earlier combined-hire/profit-sharing guidance. Existing agreements and posted documents are not rewritten.
 
-**Operating Fees:** use the Crane table columns Our Company, Partner, Fee Basis and Operating Fee %. New cranes start with Our Company / Grand Total / 0%. Grand Total uses crane revenue before expenses; Net Profit uses positive revenue minus allocated expenses, before any fees. For revenue 10,000 and expenses 2,000, a 10% Grand Total fee is 1,000; a 10% Net Profit fee is 800. Multiple rows use the same original bases independently. Enable Profit Sharing to apply nonzero fees, and use Change Agreement for later revisions.
+**Operating Fees:** use the Crane table columns Our Company, Partner, Fee Basis and Operating Fee %. New cranes start with Our Company / Grand Total / 0%. Grand Total uses crane revenue before expenses; Net Profit uses positive revenue minus allocated expenses, before any fees. For revenue 10,000 and expenses 2,000, a 10% Grand Total fee is 1,000; a 10% Net Profit fee is 800. Multiple rows use the same original bases independently. Enable Profit Sharing to apply nonzero fees, and edit the terms and Agreement Effective From, then Save for later revisions.
 
-**Latest Crane setup:** enter owners and their ownership/profit percentages in Owners & Profit Shares. Ownership is calculated automatically. New cranes start with Our Company at 100%. Enable Profit Sharing when distributions or operating fees are required; enter Operating Fees rows (an external Shareholder need not own a share). Hired from Supplier independently enables supplier selection; purchase rates and units stay on Timesheets. Hired cranes may leave ownership unrecorded. When hire and sharing are both enabled, the hire invoice is deducted as an expense before remaining-profit distribution. Use Change Agreement for revised dated financial terms. The former manual Ownership Type and Calculation Method selectors are hidden.
+**Latest Crane setup:** enter owners and their ownership/profit percentages in Owners & Profit Shares. Ownership is calculated automatically. New cranes start with Our Company at 100%. Enable Profit Sharing when distributions or operating fees are required; enter Operating Fees rows (an external Shareholder need not own a share). Hired from Supplier independently enables supplier selection; purchase rates and units stay on Timesheets. Hired cranes may leave ownership unrecorded. When hire and sharing are both enabled, the hire invoice is deducted as an expense before remaining-profit distribution. Edit the terms and Agreement Effective From, then Save for revised financial terms. The former manual Ownership Type and Calculation Method selectors are hidden.
 
 **Current workflow: 13 November 2026**
 
@@ -186,7 +186,7 @@ Under **Operated for Owner**, every partner row must be external. Your company's
 
 Accounting Setup needs the Company, Partner Payable Account and Profit Sharing Cost Center. New agreements automatically use source-revenue debits, Invoice Grand Total and invoice-triggered posting, without depreciation deduction. No Partner Allocation Account is required for Operating First. The Legacy Profit Allocation Account remains for historical Legacy Net Profit agreements only.
 
-Use **Change Agreement** for later terms and a later effective date. Save the changed terms. The system preserves earlier versions and submitted settlement evidence. Work crossing an agreement change needs separate settlement periods.
+Edit the agreement terms, set a later **Agreement Effective From** date, and Save. The system preserves earlier versions and submitted settlement evidence. Work crossing an agreement change needs separate settlement periods.
 
 ## 5. Daily rental workflow
 
@@ -443,7 +443,7 @@ Do not recreate an already posted cost just because a report is filtered to a di
 
 | Situation | Correct approach in this version |
 | --- | --- |
-| Existing crane still posts settlement automatically | It retains its historical agreement. Use Change Agreement with a later effective date to adopt reviewed approval/accounting terms. |
+| Existing crane still posts settlement automatically | It retains its historical agreement. Edit and save the reviewed approval/accounting terms with a later Agreement Effective From date. |
 | Monthly depreciation posted after earlier short Timesheets | Depreciation follows its journal posting date. It is not automatically spread across earlier workdays. Review settlement timing and coverage; use an appropriate period workflow without overlapping already allocated work. |
 | Owner funding is missing | Post the actual native funding transaction using reviewed accounts. Ownership percentages create no funding entry. |
 | Changing ownership should change Asset value | Review recognition/accounting documents. A new percentage or basis does not automatically rescale the Asset. |

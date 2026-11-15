@@ -1,5 +1,7 @@
 # Project context
 
+- 2026-11-16: Removed the Crane Change Agreement shortcut. Edit terms and Agreement Effective From directly, then Save; dated history and server validation still apply. JavaScript syntax and whitespace checks passed; dev3 cache cleared.
+
 ## 2026-11-16 — Simple repair entry
 
 The Maintenance form now offers Quick Repair (default), Use Stock Parts, and Supplier Bill. Quick Repair uses the HER company repair expense account and payment method, automatically resolving/creating its Expense Entry Type. Supplier Bill accepts stock parts and non-stock labour together; native purchase posting receives parts, and a Material Issue consumes only stock rows. Supplier payment defaults to full and supports partial/zero payment. Advanced Accounting retains capitalization, owner recovery, no-cost work and existing/manual documents. Legacy source values remain stored for compatibility; migration fills presentation choices without reposting or changing financial history. Mixed improvement bills use native Asset Repair service expenses plus stock consumption.
