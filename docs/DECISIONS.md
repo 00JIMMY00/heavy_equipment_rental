@@ -1,5 +1,26 @@
 # Current decisions
 
+- Expense Entry rental pickers now send only Posting Date, Crane, Company and an explicitly selected Assignment. No empty From/To filters appear. Work choices must include that one posting date; changing it refreshes/clears invalid selections. Maintenance behavior and submitted allocation snapshots are unchanged. Verified frontend filter arguments/date changes and native search against live Timesheet dates; syntax/whitespace checks passed. No schema change.
+
+- Latest date clarification: Expense Entry uses Posting Date as its single expense date. Its legacy service From/To fields remain stored but hidden and ignored for expense date calculation; assignment/timesheet selection no longer fills a range. Explicit rental links remain authoritative. Maintenance retains Actual Start/End dates and its repair-period behavior. Historical submitted snapshots are preserved.
+
+**Latest rule (2026-11-15):** Enable Profit Sharing and Hired from Supplier are mutually exclusive. Selecting either clears the other on the Crane form; server validation rejects both together. Both may remain off for ordinary company work. This supersedes earlier combined-hire/profit-sharing guidance. Existing agreements and posted documents are not rewritten.
+
+
+## 2026-11-15 — Operating Fees table (latest)
+
+- Crane uses Operating Fees rows: Our Company, Partner (Shareholder), Fee Basis and Operating Fee %. Default is Our Company / Grand Total / 0%. The previous single-recipient fields are hidden and retained for historical agreements.
+- Grand Total means crane-allocated invoice revenue before expenses. Net Profit means positive Grand Total minus allocated expenses, before operating fees. Each row uses its own base independently; rates do not compound. Combined percentages cannot exceed 100%; settlement deficit controls still apply. Revenue remaining after fees and expenses follows Owners & Profit Shares.
+- Fee rows are versioned with the agreement; settlement snapshots retain each base, rate and amount, and native partner entitlements combine operating fees and remaining-profit shares per recipient. Historical single-operator snapshots keep their original calculation and revenue basis. Migration exposes existing fees without reposting or rewriting history. New table-based agreements use Grand Total revenue for the distribution calculation.
+
+
+## 2026-11-15 — Simplified crane ownership, operating fees and hire
+
+- Owners & Profit Shares is the ownership source, including a default 100% Company row for new cranes. Ownership classification is calculated. The manual ownership type and new-agreement calculation selector are hidden; historical internal types and dated agreements remain available for compatibility.
+- Hired from Supplier is independent of ownership and profit sharing. Supplier rates/units remain on Timesheets; supplier invoices are operating costs before residual profit distribution. Ordinary hire may leave ownership unrecorded.
+- Operating Fee % and recipient replace ownership-dependent operator choices. External fee recipients may be any permitted Shareholder in the same Company, including someone outside the owners table. A company-only owner table can pay an external operating fee.
+- Migration fills hire flags/classification and missing Company-owned rows without reposting transactions or changing historical agreement snapshots.
+
 ## 2026-11-15 — Explicit expense attribution for CPS (latest)
 
 - Maintenance and Expense Entry costs require explicit rental links for CPS: a Timesheet charges only its settlement and fills Assignment; Assignment alone shares the cost across its submitted crane Timesheets by working hours. Neither link means a general, unallocated crane expense excluded from CPS. Dates do not choose or automatically fill the charged work. Mismatched links are rejected. Submitted settlement snapshots and ledgers remain unchanged; corrections use Cancel and Amend.

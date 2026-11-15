@@ -30,6 +30,10 @@ class Crane(Document):
 		return self.item
 
 	def validate(self):
+		from heavy_equipment_rental.crane_ownership import validate_ownership
+		validate_ownership(self)
+		from heavy_equipment_rental.operating_fees import validate_rows
+		validate_rows(self)
 		if self.ownership_type == "Rented" and not self.supplier:
 			frappe.throw(_("Select a Supplier for a rented Crane."))
 		if self.crane_image and "/private/files/" in self.crane_image:

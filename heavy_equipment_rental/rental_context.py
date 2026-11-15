@@ -10,13 +10,15 @@ def window(doc):
         start = doc.actual_start_date or today()
         end = doc.actual_end_date or start
     else:
-        start = doc.get("service_from_date") or doc.posting_date
-        end = doc.get("service_to_date") or start
+        start = doc.posting_date
+        end = start
     return getdate(start), getdate(end)
 
 
 @frappe.whitelist()
-def rental_work_options(crane, start=None, end=None, company=None):
+def rental_work_options(crane, start=None, end=None, company=None, posting_date=None):
+    if posting_date:
+        start = end = posting_date
     frappe.get_doc("Crane", crane).check_permission("read")
     start, end = (getdate(start), getdate(end or start)) if start else (getdate("1900-01-01"), getdate("9999-12-31"))
     if start > end:
@@ -72,15 +74,6 @@ def validate_context(doc):
         if doc.get("crane_assignment") and doc.crane_assignment != sheet.assignment:
             frappe.throw(_("Timesheet and Assignment must belong to the same rental job."))
         doc.crane_assignment = sheet.assignment
-        if doc.doctype == "Expense Entry" and not doc.get("service_from_date"):
-            doc.service_from_date, doc.service_to_date = sheet.period_start, sheet.period_end
-    if doc.doctype == "Expense Entry" and doc.get("crane_assignment") and not doc.get("service_from_date"):
-        from heavy_equipment_rental.rental_expenses import work_window
-        doc.service_from_date, doc.service_to_date = work_window(doc)
-    if doc.doctype == "Expense Entry" and doc.get("crane_timesheet"):
-        if (getdate(doc.service_from_date) < getdate(sheet.period_start) or
-                getdate(doc.service_to_date) > getdate(sheet.period_end)):
-            frappe.throw(_("Expense service dates must fit the selected Timesheet."))
     start, end = window(doc)
     if start > end:
         frappe.throw(_("The work period end cannot precede its start."))
@@ -102,7 +95,12 @@ def context_link_query(doctype, txt, searchfield, start, page_len, filters):
     filters = frappe._dict(frappe.parse_json(filters) if isinstance(filters, str) else filters or {})
     if not filters.crane:
         return []
-    options = rental_work_options(filters.crane, filters.get("from_date"), filters.get("to_date"), filters.get("company"))
+    if "posting_date" in filters:
+        if not filters.posting_date:
+            return []
+        options = rental_work_options(filters.crane, company=filters.get("company"), posting_date=filters.posting_date)
+    else:
+        options = rental_work_options(filters.crane, filters.get("from_date"), filters.get("to_date"), filters.get("company"))
     rows = options["assignments"] if doctype == "Crane Assignment" else options["timesheets"] if doctype == "Crane Timesheet" else []
     rows = [r for r in rows if (not filters.get("assignment") or r.get("assignment", r["name"]) == filters.assignment)
             and txt.lower() in (r["name"] + " " + r["label"]).lower()]

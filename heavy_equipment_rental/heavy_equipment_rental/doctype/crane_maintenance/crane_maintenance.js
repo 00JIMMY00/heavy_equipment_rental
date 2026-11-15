@@ -57,7 +57,7 @@ frappe.ui.form.on("Crane Maintenance", {
 
 async function maintenance_rental_context(frm, method) {
     if (frm._setting_rental_context) return;
-    await frappe.require("/assets/heavy_equipment_rental/js/rental_context.js?v=20261115-explicit-links");
+    await frappe.require("/assets/heavy_equipment_rental/js/rental_context.js");
     return heavy_equipment_rental.rental_context[method](frm);
 }
 frappe.ui.form.on("Crane Maintenance", Object.fromEntries([

@@ -1,5 +1,11 @@
 # Heavy Equipment Rental — user guide
 
+**Latest rule (2026-11-15):** Enable Profit Sharing and Hired from Supplier are mutually exclusive. Selecting either clears the other on the Crane form; server validation rejects both together. Both may remain off for ordinary company work. This supersedes earlier combined-hire/profit-sharing guidance. Existing agreements and posted documents are not rewritten.
+
+**Operating Fees:** use the Crane table columns Our Company, Partner, Fee Basis and Operating Fee %. New cranes start with Our Company / Grand Total / 0%. Grand Total uses crane revenue before expenses; Net Profit uses positive revenue minus allocated expenses, before any fees. For revenue 10,000 and expenses 2,000, a 10% Grand Total fee is 1,000; a 10% Net Profit fee is 800. Multiple rows use the same original bases independently. Enable Profit Sharing to apply nonzero fees, and use Change Agreement for later revisions.
+
+**Latest Crane setup:** enter owners and their ownership/profit percentages in Owners & Profit Shares. Ownership is calculated automatically. New cranes start with Our Company at 100%. Enable Profit Sharing when distributions or operating fees are required; enter Operating Fees rows (an external Shareholder need not own a share). Hired from Supplier independently enables supplier selection; purchase rates and units stay on Timesheets. Hired cranes may leave ownership unrecorded. When hire and sharing are both enabled, the hire invoice is deducted as an expense before remaining-profit distribution. Use Change Agreement for revised dated financial terms. The former manual Ownership Type and Calculation Method selectors are hidden.
+
 **Current workflow: 13 November 2026**
 
 This guide explains what changed and how to use HER. It describes the implemented workflow, including its current limits. The examples are illustrations; writing this guide does not create these transactions in your site.

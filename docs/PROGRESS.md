@@ -1,5 +1,52 @@
 # Progress
 
+- Expense Entry field order is Crane → Crane Timesheet → Crane Assignment.
+
+- Expense Entry rental pickers now send only Posting Date, Crane, Company and an explicitly selected Assignment. No empty From/To filters appear. Work choices must include that one posting date; changing it refreshes/clears invalid selections. Maintenance behavior and submitted allocation snapshots are unchanged. Verified frontend filter arguments/date changes and native search against live Timesheet dates; syntax/whitespace checks passed. No schema change.
+
+- Latest date clarification: Expense Entry uses Posting Date as its single expense date. Its legacy service From/To fields remain stored but hidden and ignored for expense date calculation; assignment/timesheet selection no longer fills a range. Explicit rental links remain authoritative. Maintenance retains Actual Start/End dates and its repair-period behavior. Historical submitted snapshots are preserved. Migrated dev3; date checks confirmed Expense Entry uses Posting Date despite stored legacy ranges and Maintenance retains its range. All three rental workflow tests, JavaScript syntax and whitespace checks passed; fixtures rolled back.
+
+## 2026-11-15 — Expense Entry loading fix
+
+- Removed explicit query suffix from the shared rental_context.js require URL in Expense Entry and Maintenance. Frappe AssetManager.extn interprets a query suffix as the extension, then throws before unfreezing the form. Native asset loading already adds cache versions to fetch URLs.
+- Verified both callers with the actual Frappe asset loader: shared script executes and freeze count returns to zero. JavaScript syntax and whitespace checks passed; cleared dev3 cache. No schema changes or accounting changes. Browser interaction was not exercised.
+
+- Crane ownership/profit and operating-fee percentage fields now use one decimal place (100.0).
+
+- Partner links use native Shareholder title display so child tables show partner names while retaining their original linked IDs. Applies to Owners & Profit Shares, Operating Fees and settlement shares. Migrated dev3; native link-title resolution and three rental workflow tests passed. Test records rolled back.
+
+- Crane Operations tab and its shortcut panel removed at the user’s request. The form opens on Details; other tabs retain their order. Migrated dev3; live metadata checks, JavaScript syntax, whitespace checks and three rental workflow tests passed. Test records rolled back.
+
+- Moved ownership_partners directly under the collapsible Owners & Profit Shares section, retaining the other fields in their existing order.
+
+- Crane form: Owners & Profit Shares, Fixed Asset & Ownership Value, and Operating & Distribution Agreement use native collapsible sections, closed initially and expandable by clicking their headings. Field arrangement preserved. Migrated dev3; live metadata checks and three rental workflow tests passed. Native Frappe expands sections with missing required fields so validation remains accessible.
+
+- Mutual-exclusion verification: seven ownership/rental integration tests and JavaScript checks for switching in both directions passed on dev3. Test fixtures rolled back. No schema changes; syntax and whitespace checks passed.
+
+**Latest rule (2026-11-15):** Enable Profit Sharing and Hired from Supplier are mutually exclusive. Selecting either clears the other on the Crane form; server validation rejects both together. Both may remain off for ordinary company work. This supersedes earlier combined-hire/profit-sharing guidance. Existing agreements and posted documents are not rewritten.
+
+## 2026-11-15 — Crane form visibility
+
+- Ownership classification appears only after the Crane is saved. Removed the Agreement Partners section's self-hiding dependency so its Enable Profit Sharing checkbox remains accessible when off. Preserved the user's current field order and clarified the checkbox description. Migrated dev3; live metadata visibility checks and all three rental workflow tests passed. Test records rolled back; whitespace checks passed. Browser interaction was not exercised.
+
+
+## 2026-11-15 — Operating Fees table (latest)
+
+- Migrated cranes-dev3 successfully. Ten integration tests passed across fee calculations, posted external entitlements, default/invalid rows, dated agreement changes, unchanged submitted snapshots, idempotent migration, ownership, combined supplier hire/sharing and rental workflows. Tests rolled back. Python/JavaScript syntax and whitespace checks passed. Browser interaction was not exercised.
+
+- Crane uses Operating Fees rows: Our Company, Partner (Shareholder), Fee Basis and Operating Fee %. Default is Our Company / Grand Total / 0%. The previous single-recipient fields are hidden and retained for historical agreements.
+- Grand Total means crane-allocated invoice revenue before expenses. Net Profit means positive Grand Total minus allocated expenses, before operating fees. Each row uses its own base independently; rates do not compound. Combined percentages cannot exceed 100%; settlement deficit controls still apply. Revenue remaining after fees and expenses follows Owners & Profit Shares.
+- Fee rows are versioned with the agreement; settlement snapshots retain each base, rate and amount, and native partner entitlements combine operating fees and remaining-profit shares per recipient. Historical single-operator snapshots keep their original calculation and revenue basis. Migration exposes existing fees without reposting or rewriting history. New table-based agreements use Grand Total revenue for the distribution calculation.
+
+
+## 2026-11-15 — Simplified crane ownership, operating fees and hire
+
+- Owners & Profit Shares is the ownership source, including a default 100% Company row for new cranes. Ownership classification is calculated. The manual ownership type and new-agreement calculation selector are hidden; historical internal types and dated agreements remain available for compatibility.
+- Hired from Supplier is independent of ownership and profit sharing. Supplier rates/units remain on Timesheets; supplier invoices are operating costs before residual profit distribution. Ordinary hire may leave ownership unrecorded.
+- Operating Fee % and recipient replace ownership-dependent operator choices. External fee recipients may be any permitted Shareholder in the same Company, including someone outside the owners table. A company-only owner table can pay an external operating fee.
+- Migration fills hire flags/classification and missing Company-owned rows without reposting transactions or changing historical agreement snapshots.
+- Migrated cranes-dev3 successfully. Seven integration tests passed: default Company ownership, independent supplier hire, repeatable migration/history preservation, external operator outside the owners table with posted entitlement, combined hire/profit sharing with posted supplier invoice, and three rental workflow regressions. Test fixtures rolled back. Python/JavaScript syntax and whitespace checks passed; browser interaction was not exercised.
+
 ## 2026-11-15 — Explicit Maintenance / Expense attribution to CPS
 
 - Timesheet CPS costs use the selected rental links only: direct Timesheet first, otherwise all submitted crane Timesheets of the selected Assignment weighted by working hours. Unlinked costs remain general crane expenses and are excluded. Removed date-based link autofill; searches and Maintenance attribution allow earlier work independently of repair/posting date. Forms describe the selected allocation and show Unallocated for empty links.

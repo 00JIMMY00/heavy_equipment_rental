@@ -6,6 +6,8 @@ from frappe.utils import getdate, flt
 
 
 def work_window(expense):
+    if expense.get("doctype") == "Expense Entry":
+        return getdate(expense.posting_date), getdate(expense.posting_date)
     start, end = expense.get("service_from_date"), expense.get("service_to_date")
     if bool(start) != bool(end):
         frappe.throw(_("Enter both Service From Date and Service To Date."))
@@ -35,23 +37,6 @@ def validate_expense(expense):
             expense.crane = next(iter(cranes))
         if expense.crane not in cranes:
             frappe.throw(_("Select a Crane from the selected Assignment."))
-    if not expense.crane:
-        if expense.get("service_from_date") or expense.get("service_to_date"):
-            frappe.throw(_("Select a Crane before entering service dates."))
-        return
-    start, end = work_window(expense)
-    if expense.get("crane_assignment"):
-        rows = frappe.get_all("Assigned Crane", filters={"parent": expense.crane_assignment,
-            "crane": expense.crane, "cancelled": 0}, fields=["start_date", "expected_end_date"])
-        # Check the entire interval, including gaps between separate bookings.
-        from frappe.utils import add_days
-        day = start
-        while day <= end:
-            if not any(getdate(r.start_date) <= day <= getdate(r.expected_end_date) for r in rows):
-                frappe.throw(_("Expense service dates must fit the Crane's Assignment booking."))
-            day = getdate(add_days(day, 1))
-    if expense.docstatus == 0 and expense.get("crane_assignment") and not expense.get("service_from_date"):
-        expense.service_from_date, expense.service_to_date = start, end
 
 
 def matches(source, sheet):

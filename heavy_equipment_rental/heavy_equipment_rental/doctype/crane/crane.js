@@ -1,6 +1,4 @@
 function crane_company_share(doc) {
-    if (doc.ownership_type === "Owned") return 100;
-    if (["Rented", "Operated for Owner"].includes(doc.ownership_type)) return 0;
     const history = JSON.parse(doc.agreement_history || "[]");
     const active = history.filter(v => v.effective_from <= frappe.datetime.get_today()).at(-1);
     const owners = history.length ? (active?.enabled ? active.partners : []) : (doc.ownership_partners || []);
@@ -9,7 +7,7 @@ function crane_company_share(doc) {
 
 function update_crane_asset_controls(frm) {
     const share = crane_company_share(frm.doc);
-    const basis = share ? (frm.doc.ownership_type === "Owned" ? "Company Owned" : "Company Interest Only") : "";
+    const basis = share ? (share === 100 ? "Company Owned" : "Company Interest Only") : "";
     frm.toggle_display("asset_section", share > 0 || Boolean(frm.doc.asset));
     frm.set_df_property("asset_accounting_basis", "options", "\nCompany Owned\nCompany Interest Only");
     if (frm.doc.asset_accounting_basis !== basis) {
@@ -18,69 +16,9 @@ function update_crane_asset_controls(frm) {
     }
 }
 
-function render_crane_operations(frm) {
-    const wrapper = frm.fields_dict.operations_hub?.$wrapper;
-    if (!wrapper) return;
-    wrapper.empty();
-    if (frm.is_new()) return;
-    const saved = action => {
-        if (frm.is_dirty()) frappe.throw(__("Save the Crane before starting another document."));
-        return action();
-    };
-    const company = frm.doc.sharing_company || frappe.defaults.get_user_default("Company");
-    const sections = [
-        ["Rental Work", [
-            ["Book Crane", "Crane Assignment", "create", () => frappe.new_doc("Crane Assignment", { company }, doc => {
-                const row = frappe.model.add_child(doc, "Assigned Crane", "assigned_cranes");
-                row.crane = frm.doc.name;
-            })],
-            ["Record Work", "Crane Timesheet", "create", () => frappe.new_doc("Crane Timesheet", { crane: frm.doc.name })],
-            ["Timesheets & Invoices", "Crane Timesheet", "read", () => frappe.set_route("List", "Crane Timesheet", { crane: frm.doc.name })],
-        ]],
-        ["Repairs & Stock", [
-            ["New Repair", "Crane Maintenance", "create", () => frappe.new_doc("Crane Maintenance", {
-                crane: frm.doc.name, company, cost_treatment: "Operating Expense", actual_start_date: frappe.datetime.get_today(),
-            })],
-            ["Repair History", "Crane Maintenance", "read", () => frappe.set_route("List", "Crane Maintenance", { crane: frm.doc.name })],
-            ["Consumed Parts", "Stock Entry", "read", () => frappe.set_route("List", "Stock Entry", { crane: frm.doc.name })],
-        ]],
-        ["Asset & Funding", [
-            [frm.doc.asset ? "Open Asset" : "Create Asset", "Asset", frm.doc.asset ? "read" : "create", () => frm.doc.asset
-                ? frappe.set_route("Form", "Asset", frm.doc.asset)
-                : frappe.call({ method: "heavy_equipment_rental.crane_assets.make_company_asset", args: { crane: frm.doc.name } }).then(({message}) => {
-                    const [doc] = frappe.model.sync(message);
-                    frappe.set_route("Form", doc.doctype, doc.name);
-                })],
-            ["Capital / Owner Funding", "Journal Entry", "create", () => frappe.new_doc("Journal Entry", { company }, doc => {
-                const row = frappe.model.add_child(doc, "Journal Entry Account", "accounts");
-                row.crane = frm.doc.name;
-            })],
-        ]],
-        ["Owners & Results", [
-            ["Review Settlements", "Crane Profit Settlement", "read", () => frappe.set_route("List", "Crane Profit Settlement", { crane: frm.doc.name })],
-            ["Profit Distribution Details", "Crane Profit Settlement", "read", () => frappe.set_route("query-report", "Crane Profit Distribution", { crane: frm.doc.name, company })],
-            ["Owner Balances & Payments", "Crane Profit Settlement", "read", () => frappe.set_route("query-report", "Crane Partner Summary", { crane: frm.doc.name, company })],
-            ["Rental Profitability", "Sales Invoice", "read", () => frappe.set_route("query-report", "Crane Rental Profitability", { crane: frm.doc.name, company })],
-        ]],
-    ];
-    const esc = value => frappe.utils.escape_html(String(value || ""));
-    wrapper.append(`<p class="text-muted">${esc(__("Start work here. ERPNext documents hold stock, Asset values, invoices and payments."))}</p>`);
-    const grid = $('<div class="row"></div>').appendTo(wrapper);
-    for (const [label, actions] of sections) {
-        const available = actions.filter(([, dt, permission]) => (dt !== "Asset" || crane_company_share(frm.doc) > 0) && (permission === "create" ? frappe.model.can_create(dt) : frappe.model.can_read(dt)));
-        if (!available.length) continue;
-        const box = $('<div class="col-sm-6 mb-3"><div class="border rounded p-3 h-100"></div></div>').appendTo(grid).children();
-        box.append(`<h5>${esc(__(label))}</h5>`);
-        for (const [title, , , action] of available) {
-            $('<button type="button" class="btn btn-default btn-sm mr-2 mb-2"></button>')
-                .text(__(title)).on("click", () => saved(action)).appendTo(box);
-        }
-    }
-    if (!frm.doc.asset && crane_company_share(frm.doc) > 0) wrapper.append(`<p class="text-muted">${esc(__("Link the physical Asset in Crane Details after accounting reviews ownership and recognition. Rental prices do not determine asset cost."))}</p>`);
-}
-
 frappe.ui.form.on("Crane", {
     setup(frm) {
+        frm.set_query("shareholder", "operating_fees", () => ({filters:{company:frm.doc.sharing_company}}));
         frm.set_query("asset", () => ({ filters: {
             docstatus: ["<", 2], asset_quantity: 1,
             status: ["not in", ["Sold", "Scrapped", "Capitalized"]],
@@ -98,7 +36,6 @@ frappe.ui.form.on("Crane", {
             company: frm.doc.sharing_company, is_group: 0, disabled: 0,
         } }));
         frm.set_query("operating_shareholder", () => ({ filters: {
-            name: ["in", (frm.doc.ownership_partners || []).filter(r => !r.is_company && r.shareholder).map(r => r.shareholder)],
             company: frm.doc.sharing_company,
         } }));
         frm.set_query("shareholder", "ownership_partners", () => ({ filters: { company: frm.doc.sharing_company } }));
@@ -109,27 +46,23 @@ frappe.ui.form.on("Crane", {
         const { message } = await frappe.call({ method: "heavy_equipment_rental.partner_accounts.agreement_defaults", args: { company } });
         if (frm.doc.sharing_company === company) await frm.set_value(message);
     },
-    async ownership_type(frm) {
+    ownership_type(frm) { update_crane_asset_controls(frm); },
+    async hired_from_supplier(frm) {
+        if (frm.doc.hired_from_supplier) await frm.set_value("enable_profit_sharing", 0);
+        return frm.trigger("ownership_summary");
+    },
+    ownership_summary(frm) {
+        const rows = frm.doc.ownership_partners || [];
+        const share = rows.filter(r => r.is_company).reduce((n,r) => n + flt(r.ownership_percentage), 0);
+        frm.set_df_property("ownership_classification", "description", __("Company ownership: {0}%. Operating fees: {1} row(s). Supplier hire: {2}.", [share, (frm.doc.operating_fees || []).length, frm.doc.hired_from_supplier ? __("Yes") : __("No")]));
+        frm.set_value("ownership_classification", !rows.length ? "Ownership Not Recorded" : share === 100 ? "Company Owned" : share ? "Shared Ownership" : "Externally Owned");
         update_crane_asset_controls(frm);
-        if (["Shared Ownership", "Operated for Owner", "Operated by Partner"].includes(frm.doc.ownership_type)) {
-            frm.set_value("enable_profit_sharing", 1);
-            frm.set_value("operator_type", frm.doc.ownership_type === "Operated by Partner"
-                ? "External Operator" : "Our Company");
-        } else if (frm.doc.ownership_type === "Rented") {
-            frm.set_value("enable_profit_sharing", 0);
-        }
-        return frm.trigger("set_partner_company_rules");
     },
-    async set_partner_company_rules(frm) {
-        const external_only = frm.doc.ownership_type === "Operated for Owner";
-        frm.fields_dict.ownership_partners.grid.update_docfield_property("is_company", "read_only", external_only);
-        if (external_only) {
-            for (const row of frm.doc.ownership_partners || []) {
-                if (row.is_company) await frappe.model.set_value(row.doctype, row.name, "is_company", 0);
-            }
-        }
+    set_partner_company_rules(frm) {
+        frm.fields_dict.ownership_partners.grid.update_docfield_property("is_company", "read_only", 0);
     },
-    enable_profit_sharing(frm) {
+    async enable_profit_sharing(frm) {
+        if (frm.doc.enable_profit_sharing) await frm.set_value("hired_from_supplier", 0);
         if (frm.doc.enable_profit_sharing && !(frm.doc.ownership_partners || []).length) {
             const row = frm.add_child("ownership_partners", {
                 is_company: frm.doc.ownership_type === "Operated for Owner" ? 0 : 1, ownership_percentage: 100,
@@ -142,6 +75,14 @@ frappe.ui.form.on("Crane", {
     },
     onload(frm) {
         if (frm.is_new()) {
+            if (!(frm.doc.operating_fees || []).length) {
+                frm.add_child("operating_fees", {is_company:1,basis:"Grand Total",percentage:0});
+                frm.refresh_field("operating_fees");
+            }
+            if (!(frm.doc.ownership_partners || []).length && !frm.doc.hired_from_supplier) {
+                frm.add_child("ownership_partners", {is_company:1, ownership_percentage:100, profit_percentage:100});
+                frm.refresh_field("ownership_partners");
+            }
             for (const period of ["Hour", "Day", "Month"]) {
                 if (!(frm.doc.period_prices || []).some(row => row.period === period))
                     frm.add_child("period_prices", { period, price: 0 });
@@ -153,9 +94,9 @@ frappe.ui.form.on("Crane", {
         frm.toggle_display("availability_tab", !frm.is_new());
     },
     refresh(frm) {
+        frm.trigger("ownership_summary");
         update_crane_asset_controls(frm);
         frm.trigger("load_asset_values");
-        render_crane_operations(frm);
         frm.trigger("set_partner_company_rules");
         frm._partner_ownership = Object.fromEntries((frm.doc.ownership_partners || []).map(
             row => [row.name, flt(row.ownership_percentage)]));
@@ -347,6 +288,7 @@ frappe.ui.form.on("Crane Partner", {
     async ownership_percentage(frm, cdt, cdn) {
         const row = locals[cdt][cdn];
         frm._partner_ownership = frm._partner_ownership || {};
+        frm.trigger("ownership_summary");
         const previous = frm._partner_ownership[cdn] ?? 0;
         frm._partner_ownership[cdn] = flt(row.ownership_percentage);
         if (!row.allow_zero_profit_share && flt(row.profit_percentage) === previous) {
@@ -358,10 +300,12 @@ frappe.ui.form.on("Crane Partner", {
             return frappe.model.set_value(cdt, cdn, "allow_zero_profit_share", 0);
         }
     },
+    is_company(frm) { frm.trigger("ownership_summary"); },
+    ownership_partners_remove(frm) { frm.trigger("ownership_summary"); },
+});
+
+frappe.ui.form.on("Crane Operating Fee", {
     is_company(frm, cdt, cdn) {
-        if (frm.doc.ownership_type === "Operated for Owner" && locals[cdt][cdn].is_company) {
-            frappe.msgprint(__("Operated for Owner allows external partners only. Our Company receives its operating share separately."));
-            return frappe.model.set_value(cdt, cdn, "is_company", 0);
-        }
-    },
+        if (locals[cdt][cdn].is_company) frappe.model.set_value(cdt, cdn, "shareholder", null);
+    }
 });

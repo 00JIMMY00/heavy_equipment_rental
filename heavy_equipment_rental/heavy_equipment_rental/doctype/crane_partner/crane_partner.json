@@ -32,7 +32,7 @@
    "fieldname": "ownership_percentage",
    "fieldtype": "Percent",
    "label": "Ownership %",
-   "precision": "6",
+   "precision": "1",
    "in_list_view": 1
   },
   {
@@ -40,7 +40,7 @@
    "fieldtype": "Percent",
    "label": "Remaining Balance %",
    "description": "Share of profit after the operating share and expenses. Defaults to Ownership %; change it only when the agreement uses a different split.",
-   "precision": "6",
+   "precision": "1",
    "in_list_view": 1
   },
   {

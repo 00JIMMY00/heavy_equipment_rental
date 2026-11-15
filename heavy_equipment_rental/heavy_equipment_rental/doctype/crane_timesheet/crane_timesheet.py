@@ -96,8 +96,8 @@ class CraneTimesheet(Document):
             crane = frappe.get_doc("Crane", self.crane) if self.crane else None
             if crane:
                 crane.check_permission("read")
-            self.crane_ownership_type = crane.ownership_type if crane else None
-            self.purchase_supplier = crane.supplier if crane and crane.ownership_type == "Rented" else None
+            self.crane_ownership_type = ("Rented" if crane.hired_from_supplier else ("Other" if crane.ownership_type == "Rented" else crane.ownership_type)) if crane else None
+            self.purchase_supplier = crane.supplier if crane and crane.hired_from_supplier else None
             if self.crane_ownership_type != "Rented":
                 self.rented = 0
         if self.driver:

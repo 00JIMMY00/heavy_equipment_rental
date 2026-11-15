@@ -9,18 +9,14 @@ from frappe.utils import flt, getdate, today
 
 
 def company_ownership_percentage(crane):
-	if crane.ownership_type == "Owned":
-		return 100.0
-	if crane.ownership_type in ("Rented", "Operated for Owner"):
-		return 0.0
-	owners = ownership_as_of(crane, today()) if crane.agreement_history else crane.ownership_partners
+	owners = ownership_as_of(crane, today()) if crane.agreement_history and crane.enable_profit_sharing else crane.ownership_partners
 	return sum(flt(row.get("ownership_percentage")) for row in owners if row.get("is_company"))
 
 
 def accounting_basis(crane):
 	if not company_ownership_percentage(crane):
 		return ""
-	return "Company Owned" if crane.ownership_type == "Owned" else "Company Interest Only"
+	return "Company Owned" if company_ownership_percentage(crane) == 100 else "Company Interest Only"
 
 
 def validate_asset_link(crane):

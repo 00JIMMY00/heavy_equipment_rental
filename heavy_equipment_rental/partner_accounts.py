@@ -8,6 +8,12 @@ from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 
 def install():
+    # Native title rendering covers editable Links and read-only child grids.
+    if not frappe.get_meta("Shareholder").show_title_field_in_link:
+        frappe.make_property_setter({
+            "doctype": "Shareholder", "doctype_or_field": "DocType",
+            "property": "show_title_field_in_link", "value": "1", "property_type": "Check",
+        }, module="Heavy Equipment Rental")
     create_custom_fields({
         "Company": [dict(fieldname="crane_partner_payable_account", fieldtype="Link",
             label="Default Crane Partners Account", options="Account", insert_after="default_payable_account")],

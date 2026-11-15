@@ -72,7 +72,7 @@ class CraneProfitSettlement(Document):
             frappe.throw(_("The Journal Entry is assigned automatically on submission."))
         self.calculation_method = agreement.get("calculation_method", LEGACY_NET)
         operating_first = self.calculation_method == OPERATING_FIRST
-        use_grand_total = operating_first and agreement.get("settlement_revenue_basis", "Invoice Grand Total") == "Invoice Grand Total"
+        use_grand_total = operating_first and ("operating_fees" in agreement or agreement.get("settlement_revenue_basis", "Invoice Grand Total") == "Invoice Grand Total")
         if sheet:
             from heavy_equipment_rental.timesheet_settlement import collect_timesheet_sources
             sources = collect_timesheet_sources(sheet, self.company, use_grand_total)
@@ -89,8 +89,10 @@ class CraneProfitSettlement(Document):
         precision = self.precision("net_profit")
         self.revenue = flt(sum(r.get("revenue", 0) for r in sources), precision)
         self.operating_expenses = flt(sum(r.get("expenses", 0) for r in sources), precision)
-        self.operating_percentage = agreement.get("operating_percentage", 0) if operating_first else 0
-        self.operating_fee = flt(self.revenue * self.operating_percentage / 100, precision)
+        from heavy_equipment_rental.operating_fees import calculate
+        fees = calculate(agreement, self.revenue, self.operating_expenses, precision) if operating_first else []
+        self.operating_percentage = sum(r['percentage'] for r in fees)
+        self.operating_fee = flt(sum(r['amount'] for r in fees), precision)
         self.balance_after_operating = flt(self.revenue - self.operating_fee, precision)
         self.net_profit = flt(self.balance_after_operating - self.operating_expenses, precision)
         self.loss_brought_forward = flt(previous.loss_carried_forward if previous else 0, precision)
@@ -121,18 +123,21 @@ class CraneProfitSettlement(Document):
         for partner, amount in zip(agreement["partners"], amounts):
             self.append("shares", dict(partner, residual_amount=amount, operating_amount=0,
                                        amount=amount, currency=self.currency, ledger_party_type="Shareholder"))
-        if self.operating_fee:
+        for fee in fees:
+            if not fee['amount']:
+                continue
             operator = next((r for r in self.shares if
-                (r.is_company if agreement["operator_type"] == "Our Company" else
-                 not r.is_company and r.shareholder == agreement.get("operating_shareholder"))), None)
+                (r.is_company if fee['is_company'] else
+                 not r.is_company and r.shareholder == fee.get('shareholder'))), None)
             if not operator:
-                operator = self.append("shares", dict(is_company=1, ownership_percentage=0,
-                    profit_percentage=0, residual_amount=0, currency=self.currency))
-            operator.operating_amount = self.operating_fee
+                operator = self.append('shares', dict(is_company=fee['is_company'],
+                    shareholder=fee.get('shareholder'), ledger_party_type='Shareholder', ownership_percentage=0,
+                    profit_percentage=0, residual_amount=0, operating_amount=0, currency=self.currency))
+            operator.operating_amount = flt(operator.operating_amount + fee['amount'], precision)
             operator.amount = flt(operator.residual_amount + operator.operating_amount, precision)
         self.company_retained = flt(sum(r.amount for r in self.shares if r.is_company), precision)
         self.external_distribution = flt(sum(r.amount for r in self.shares if not r.is_company), precision)
-        self.agreement_snapshot = dumps(dict(agreement, posting_basis=agreement.get("distribution_posting", "Source Revenue Accounts"))
+        self.agreement_snapshot = dumps(dict(agreement, operating_fee_breakdown=fees, posting_basis=agreement.get("distribution_posting", "Source Revenue Accounts"))
                                         if operating_first else agreement)
         self.source_snapshot = dumps(sources)
 

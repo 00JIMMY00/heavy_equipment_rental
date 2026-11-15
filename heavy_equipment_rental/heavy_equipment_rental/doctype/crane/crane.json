@@ -6,27 +6,36 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "operations_tab",
-  "operations_hub",
   "details_tab",
   "identity_section",
   "naming_series",
   "crane_name",
-  "crane_image",
-  "crane_list_image",
-  "model",
-  "license_plate",
-  "specs_col",
-  "capacity_tons",
+  "ownership_classification",
   "ownership_type",
   "supplier",
+  "crane_image",
+  "crane_list_image",
+  "specs_col",
+  "capacity_tons",
+  "model",
+  "license_plate",
   "column_break_mjyn",
   "operational_condition",
   "maintenance_condition_managed",
-  "sharing_section",
-  "enable_profit_sharing",
   "sharing_company",
+  "pricing_section",
+  "period_prices",
+  "column_break_cztb",
+  "sharing_partners_section",
+  "agreement_history",
+  "column_break_xprd",
+  "section_break_mjem",
+  "ownership_partners",
+  "operating_fees",
+  "enable_profit_sharing",
   "agreement_effective_from",
+  "hired_from_supplier",
+  "sharing_section",
   "operator_type",
   "operating_partner",
   "operating_shareholder",
@@ -40,16 +49,10 @@
   "distribution_posting",
   "settlement_revenue_basis",
   "include_depreciation",
-  "sharing_partners_section",
-  "ownership_partners",
-  "agreement_history",
   "asset_section",
   "asset",
   "asset_accounting_basis",
   "asset_values",
-  "pricing_section",
-  "period_prices",
-  "legacy_year_price",
   "availability_tab",
   "availability_section",
   "availability_overview",
@@ -86,13 +89,13 @@
    "reqd": 1
   },
   {
+   "description": "Invoice product only. Physical ownership, value and depreciation belong to the Asset.",
    "fieldname": "item",
    "fieldtype": "Link",
    "label": "Rental Service Item",
    "no_copy": 1,
    "options": "Item",
-   "read_only": 1,
-   "description": "Invoice product only. Physical ownership, value and depreciation belong to the Asset."
+   "read_only": 1
   },
   {
    "fieldname": "model",
@@ -114,6 +117,7 @@
    "default": "Owned",
    "fieldname": "ownership_type",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Ownership Type",
    "options": "Owned\nRented\nShared Ownership\nOperated for Owner\nOperated by Partner\nOther"
   },
@@ -176,14 +180,6 @@
    "make_attachment_public": 1
   },
   {
-   "fieldname": "legacy_year_price",
-   "fieldtype": "Currency",
-   "hidden": 1,
-   "label": "Legacy Year Price",
-   "no_copy": 1,
-   "read_only": 1
-  },
-  {
    "fieldname": "connections_tab",
    "fieldtype": "Tab Break",
    "label": "Connections",
@@ -209,238 +205,260 @@
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval:doc.hired_from_supplier",
+   "description": "Hire rates and billing units are entered on the Timesheet.",
    "fieldname": "supplier",
    "fieldtype": "Link",
    "label": "Supplier",
-   "options": "Supplier",
-   "depends_on": "eval:doc.ownership_type=='Rented'",
-   "mandatory_depends_on": "eval:doc.ownership_type=='Rented'"
+   "mandatory_depends_on": "eval:doc.hired_from_supplier",
+   "options": "Supplier"
   },
   {
+   "collapsible": 1,
    "fieldname": "sharing_section",
    "fieldtype": "Section Break",
    "label": "Operating & Distribution Agreement"
   },
   {
+   "default": "0",
+   "description": "Enable settlement calculations and partner entitlements from the profit shares and operating fees. Leave off for ordinary company work or supplier hire without profit sharing.",
    "fieldname": "enable_profit_sharing",
    "fieldtype": "Check",
-   "label": "Enable Profit Sharing",
-   "default": "0",
-   "depends_on": "eval:!['Owned','Rented'].includes(doc.ownership_type)",
-   "description": "Ownership and profit percentages are independent. External participants use native Shareholder party records.",
-   "read_only_depends_on": "eval:['Shared Ownership','Operated for Owner','Operated by Partner'].includes(doc.ownership_type)"
+   "label": "Enable Profit Sharing"
   },
   {
    "fieldname": "sharing_company",
    "fieldtype": "Link",
    "label": "Company",
-   "options": "Company",
-   "mandatory_depends_on": "eval:doc.enable_profit_sharing"
+   "mandatory_depends_on": "eval:doc.enable_profit_sharing",
+   "options": "Company"
   },
   {
+   "depends_on": "eval:doc.enable_profit_sharing || doc.agreement_history",
+   "description": "For changed terms, enter a new date after the previous version. Settle each version separately.",
    "fieldname": "agreement_effective_from",
    "fieldtype": "Date",
    "label": "Agreement Effective From",
-   "description": "For changed terms, enter a new date after the previous version. Settle each version separately.",
-   "depends_on": "eval:doc.enable_profit_sharing || doc.agreement_history",
    "mandatory_depends_on": "eval:doc.enable_profit_sharing"
   },
   {
+   "default": "Our Company",
+   "depends_on": "eval:doc.enable_profit_sharing && doc.operating_percentage>0",
    "fieldname": "operator_type",
    "fieldtype": "Select",
-   "label": "Operator",
-   "options": "Our Company\nExternal Operator",
-   "default": "Our Company",
-   "depends_on": "eval:doc.enable_profit_sharing",
-   "read_only_depends_on": "eval:['Operated for Owner','Operated by Partner'].includes(doc.ownership_type)"
+   "hidden": 1,
+   "label": "Operating Fee Recipient",
+   "options": "Our Company\nExternal Operator"
   },
   {
+   "depends_on": "eval:doc.enable_profit_sharing && doc.operator_type=='External Operator'",
    "fieldname": "operating_partner",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Legacy Operating Supplier",
-   "options": "Supplier",
-   "depends_on": "eval:doc.enable_profit_sharing && doc.operator_type=='External Operator'",
-   "mandatory_depends_on": "",
-   "hidden": 1
+   "options": "Supplier"
   },
   {
+   "description": "Ownership totals 100% when recorded. Remaining Profit totals 100% when profit sharing is enabled. Hired cranes may leave ownership unrecorded.",
    "fieldname": "ownership_partners",
    "fieldtype": "Table",
    "label": "Owners & Profit Shares",
-   "options": "Crane Partner",
-   "description": "Ownership and remaining balance percentages each total 100%. Add our Company only if it shares ownership or the remaining balance. The operator receives its operating share separately.",
-   "depends_on": "eval:doc.enable_profit_sharing"
+   "options": "Crane Partner"
   },
   {
+   "collapsible": 1,
+   "depends_on": "eval:doc.enable_profit_sharing",
    "fieldname": "sharing_accounts_column",
    "fieldtype": "Section Break",
-   "depends_on": "eval:doc.enable_profit_sharing",
-   "label": "Accounting Setup",
-   "collapsible": 1
+   "label": "Accounting Setup"
   },
   {
+   "depends_on": "eval:doc.enable_profit_sharing && doc.sharing_calculation=='Legacy Net Profit'",
+   "description": "Historical net-profit agreements only. Operating First settlements use the revenue accounts of their source invoices automatically.",
    "fieldname": "profit_allocation_account",
    "fieldtype": "Link",
    "label": "Legacy Profit Allocation Account",
-   "options": "Account",
-   "description": "Historical net-profit agreements only. Operating First settlements use the revenue accounts of their source invoices automatically.",
-   "depends_on": "eval:doc.enable_profit_sharing && doc.sharing_calculation=='Legacy Net Profit'",
-   "mandatory_depends_on": "eval:doc.enable_profit_sharing && doc.sharing_calculation=='Legacy Net Profit'"
+   "mandatory_depends_on": "eval:doc.enable_profit_sharing && doc.sharing_calculation=='Legacy Net Profit'",
+   "options": "Account"
   },
   {
+   "depends_on": "eval:doc.enable_profit_sharing",
+   "description": "Native Payable account for external Shareholder entitlements; payments are recorded separately.",
    "fieldname": "partner_payable_account",
    "fieldtype": "Link",
    "label": "Partner Payable Account",
-   "options": "Account",
-   "description": "Native Payable account for external Shareholder entitlements; payments are recorded separately.",
-   "depends_on": "eval:doc.enable_profit_sharing",
-   "mandatory_depends_on": "eval:doc.enable_profit_sharing"
+   "mandatory_depends_on": "eval:doc.enable_profit_sharing",
+   "options": "Account"
   },
   {
+   "depends_on": "eval:doc.enable_profit_sharing",
    "fieldname": "sharing_cost_center",
    "fieldtype": "Link",
    "label": "Profit Sharing Cost Center",
-   "options": "Cost Center",
-   "depends_on": "eval:doc.enable_profit_sharing",
-   "mandatory_depends_on": "eval:doc.enable_profit_sharing"
+   "mandatory_depends_on": "eval:doc.enable_profit_sharing",
+   "options": "Cost Center"
   },
   {
    "fieldname": "agreement_history",
    "fieldtype": "Code",
-   "label": "Agreement History",
-   "options": "JSON",
    "hidden": 1,
-   "read_only": 1,
-   "no_copy": 1
+   "label": "Agreement History",
+   "no_copy": 1,
+   "options": "JSON",
+   "read_only": 1
   },
   {
    "fieldname": "sharing_partners_section",
    "fieldtype": "Section Break",
-   "label": "Agreement Partners",
-   "depends_on": "eval:doc.enable_profit_sharing"
+   "label": "Agreement Partners"
   },
   {
+   "default": "Operating First",
+   "depends_on": "eval:doc.enable_profit_sharing",
    "fieldname": "sharing_calculation",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Calculation Method",
    "options": "Operating First\nLegacy Net Profit",
-   "default": "Operating First",
-   "read_only": 1,
-   "depends_on": "eval:doc.enable_profit_sharing"
+   "read_only": 1
   },
   {
-   "fieldname": "operating_percentage",
-   "fieldtype": "Percent",
-   "label": "Operating Share of Grand Total %",
-   "precision": "6",
    "default": "0",
    "depends_on": "eval:doc.enable_profit_sharing && doc.sharing_calculation=='Operating First'",
-   "description": "Deduct this share before expenses. Distribute the remaining balance using the table below."
+   "description": "Revenue minus this operating fee and allocated expenses is distributed using Remaining Profit percentages.",
+   "fieldname": "operating_percentage",
+   "fieldtype": "Percent",
+   "hidden": 1,
+   "label": "Operating Fee %",
+   "precision": "1"
   },
   {
+   "depends_on": "eval:doc.enable_profit_sharing && doc.operating_percentage>0 && doc.operator_type=='External Operator'",
    "fieldname": "operating_shareholder",
    "fieldtype": "Link",
-   "label": "Operating Partner (Shareholder)",
-   "options": "Shareholder",
-   "depends_on": "eval:doc.enable_profit_sharing && doc.operator_type=='External Operator'",
-   "mandatory_depends_on": "eval:doc.enable_profit_sharing && doc.operator_type=='External Operator'"
+   "hidden": 1,
+   "label": "External Fee Recipient",
+   "options": "Shareholder"
   },
   {
+   "collapsible": 1,
    "fieldname": "asset_section",
    "fieldtype": "Section Break",
    "label": "Fixed Asset & Ownership Value"
   },
   {
+   "description": "Company assets only. Owned: full cost. Shared: only the Company interest cost; never other owners\u2019 shares.",
    "fieldname": "asset",
    "fieldtype": "Link",
-   "label": "Asset",
-   "options": "Asset",
-   "unique": 1,
-   "no_copy": 1,
    "in_standard_filter": 1,
-   "description": "Company assets only. Owned: full cost. Shared: only the Company interest cost; never other owners’ shares.",
-   "read_only_depends_on": "eval:!frappe.user.has_role(['Accounts Manager','System Manager'])"
+   "label": "Asset",
+   "no_copy": 1,
+   "options": "Asset",
+   "read_only_depends_on": "eval:!frappe.user.has_role(['Accounts Manager','System Manager'])",
+   "unique": 1
   },
   {
+   "depends_on": "asset",
    "fieldname": "asset_values",
    "fieldtype": "HTML",
-   "label": "Asset Values",
-   "depends_on": "asset"
+   "label": "Asset Values"
   },
   {
+   "depends_on": "asset_accounting_basis",
+   "description": "Automatic: Owned records the full company Asset; shared equipment records only the Company interest. No Company ownership means no Asset.",
    "fieldname": "asset_accounting_basis",
    "fieldtype": "Select",
    "label": "Asset Recognition Basis",
    "options": "\nCompany Owned\nCompany Interest Only",
-   "default": "",
-   "description": "Automatic: Owned records the full company Asset; shared equipment records only the Company interest. No Company ownership means no Asset.",
-   "read_only": 1,
-   "depends_on": "asset_accounting_basis"
+   "read_only": 1
   },
   {
-   "fieldname": "settlement_approval",
-   "fieldtype": "Select",
-   "label": "Settlement Approval",
-   "options": "Review Before Posting\nOn Invoice Submission",
    "default": "On Invoice Submission",
    "depends_on": "enable_profit_sharing",
    "description": "Retained for historical agreement snapshots. New agreements use automatic source-revenue settlements on invoice submission.",
-   "hidden": 1
+   "fieldname": "settlement_approval",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Settlement Approval",
+   "options": "Review Before Posting\nOn Invoice Submission"
   },
   {
-   "fieldname": "distribution_posting",
-   "fieldtype": "Select",
-   "label": "Partner Entitlement Accounting",
-   "options": "Source Revenue Accounts\nPartner Expense\nEquity Distribution",
    "default": "Source Revenue Accounts",
    "depends_on": "enable_profit_sharing",
    "description": "Retained for historical agreement snapshots. New agreements use automatic source-revenue settlements on invoice submission.",
-   "hidden": 1
+   "fieldname": "distribution_posting",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Partner Entitlement Accounting",
+   "options": "Source Revenue Accounts\nPartner Expense\nEquity Distribution"
   },
   {
-   "fieldname": "include_depreciation",
-   "fieldtype": "Check",
-   "label": "Deduct Posted Depreciation in Settlements",
    "default": "0",
    "depends_on": "enable_profit_sharing",
    "description": "Retained for historical agreement snapshots. New agreements use automatic source-revenue settlements on invoice submission.",
-   "hidden": 1
+   "fieldname": "include_depreciation",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Deduct Posted Depreciation in Settlements"
   },
   {
-   "fieldname": "operations_tab",
-   "fieldtype": "Tab Break",
-   "label": "Operations",
-   "depends_on": "eval:!doc.__islocal"
-  },
-  {
-   "fieldname": "operations_hub",
-   "fieldtype": "HTML",
-   "label": "Crane Operations"
-  },
-  {
-   "fieldname": "settlement_revenue_basis",
-   "fieldtype": "Select",
-   "label": "Settlement Revenue Basis",
-   "options": "\nNet Revenue\nInvoice Grand Total",
+   "default": "Invoice Grand Total",
    "depends_on": "enable_profit_sharing",
    "description": "Retained for historical agreement snapshots. New agreements use automatic source-revenue settlements on invoice submission.",
-   "default": "Invoice Grand Total",
-   "hidden": 1
+   "fieldname": "settlement_revenue_basis",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Settlement Revenue Basis",
+   "options": "\nNet Revenue\nInvoice Grand Total"
   },
   {
    "fieldname": "legacy_asset_recognition",
    "fieldtype": "Code",
-   "options": "JSON",
-   "label": "Historical Asset Recognition",
-   "read_only": 1,
    "hidden": 1,
-   "no_copy": 1
+   "label": "Historical Asset Recognition",
+   "no_copy": 1,
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "hired_from_supplier",
+   "fieldtype": "Check",
+   "label": "Hired from Supplier"
+  },
+  {
+   "depends_on": "eval:!doc.__islocal",
+   "fieldname": "ownership_classification",
+   "fieldtype": "Data",
+   "label": "Ownership",
+   "read_only": 1
+  },
+  {
+   "description": "Grand Total: percentage of crane revenue before expenses. Net Profit: percentage of positive revenue minus allocated expenses, before any operating fees. All rows use the same base; fees are not compounded.",
+   "fieldname": "operating_fees",
+   "fieldtype": "Table",
+   "label": "Operating Fees",
+   "options": "Crane Operating Fee"
+  },
+  {
+   "fieldname": "column_break_xprd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_mjem",
+   "fieldtype": "Section Break",
+   "label": "Owners & Profit Shares & operation"
+  },
+  {
+   "fieldname": "column_break_cztb",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 100,
  "image_field": "crane_image",
  "links": [],
- "modified": "2026-10-22 15:01:14.069074",
+ "modified": "2026-11-15 22:13:43.049891",
  "modified_by": "Administrator",
  "module": "Heavy Equipment Rental",
  "name": "Crane",
@@ -478,13 +496,13 @@
    "write": 1
   },
   {
-   "role": "Accounts Manager",
-   "read": 1,
-   "write": 1,
-   "report": 1,
    "export": 1,
    "print": 1,
-   "select": 1
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "select": 1,
+   "write": 1
   }
  ],
  "row_format": "Dynamic",

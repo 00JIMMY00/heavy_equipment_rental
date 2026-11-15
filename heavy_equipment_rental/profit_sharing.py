@@ -129,10 +129,6 @@ def validate_agreement(doc):
         frappe.throw(_("Agreement History is maintained automatically."))
     doc.settlement_revenue_basis = doc.get("settlement_revenue_basis") or (
         history[-1].get("settlement_revenue_basis", "Invoice Grand Total") if history else "Invoice Grand Total")
-    if doc.ownership_type in SHARING_TYPES:
-        doc.enable_profit_sharing = 1
-    if doc.ownership_type == "Rented" and doc.enable_profit_sharing:
-        frappe.throw(_("Use the existing supplier hire workflow for Rented cranes."))
     if not doc.enable_profit_sharing and not history:
         return
     if not doc.agreement_effective_from:
@@ -172,9 +168,6 @@ def validate_agreement(doc):
             frappe.throw(_("Select an enabled, non-group Cost Center in the agreement Company."))
         seen = set()
         for row in doc.ownership_partners:
-            if doc.ownership_type == "Operated for Owner" and row.is_company:
-                frappe.throw(_("Row {0}: Our Company cannot be a partner under Operated for Owner. "
-                    "Select an external Shareholder, or use Shared Ownership when our company is a partner.").format(row.idx))
             if not row.is_company and not row.shareholder and row.supplier:
                 from heavy_equipment_rental.partner_accounts import shareholder_for_supplier
                 row.shareholder = shareholder_for_supplier(row.supplier, company.name)
@@ -197,29 +190,14 @@ def validate_agreement(doc):
                 ownership_percentage=row.ownership_percentage, profit_percentage=row.profit_percentage))
             if row.get("allow_zero_profit_share") and row.ownership_percentage > 0 and not row.profit_percentage:
                 version["partners"][-1]["allow_zero_profit_share"] = 1
-        if not any(not p["is_company"] for p in version["partners"]):
-            frappe.throw(_("Include at least one external partner. Add our Company only if it shares ownership or the remaining balance."))
         for field in ("ownership_percentage", "profit_percentage"):
             if sum(Decimal(str(p[field])) for p in version["partners"]) != 100:
                 frappe.throw(_("Ownership percentages and Profit Share percentages must each total 100%."))
-        if version["distribution_posting"] == "Equity Distribution" and (doc.operator_type == "External Operator" or doc.ownership_type == "Operated by Partner") and version["operating_percentage"]:
-            frappe.throw(_("External operator fees are service costs, not equity distributions. Use Partner Expense or account for the operator separately."))
-        if doc.ownership_type == "Operated by Partner":
-            doc.operator_type = version["operator_type"] = "External Operator"
-        if doc.operator_type == "External Operator":
-            if doc.operating_partner and not doc.operating_shareholder:
-                from heavy_equipment_rental.partner_accounts import shareholder_for_supplier
-                doc.operating_shareholder = shareholder_for_supplier(doc.operating_partner, company.name)
-            version["operating_shareholder"] = doc.operating_shareholder
-            if not doc.operating_shareholder or doc.operating_shareholder not in seen:
-                frappe.throw(_("Select an External Operator from the partner Shareholders."))
-            doc.operating_partner = version["operating_partner"] = frappe.get_cached_value(
-                "Shareholder", doc.operating_shareholder, "crane_partner_supplier") or None
-        else:
-            doc.operating_partner = version["operating_partner"] = None
-            doc.operating_shareholder = version["operating_shareholder"] = None
-        if doc.ownership_type == "Operated for Owner" and doc.operator_type != "Our Company":
-            frappe.throw(_("Operated for Owner requires Our Company as operator."))
+    from heavy_equipment_rental.operating_fees import validate_rows, canonical_rows, agreement_rows
+    fee_rows = validate_rows(doc)
+    version['operating_fees'] = fee_rows
+    if version['distribution_posting'] == 'Equity Distribution' and any(not r['is_company'] and r['percentage'] for r in fee_rows):
+        frappe.throw(_("External operator fees cannot use Equity Distribution."))
     previous = {k: v for k, v in history[-1].items() if k != "effective_from"} if history else None
     if previous:
         previous.setdefault("calculation_method", LEGACY_NET)
@@ -235,6 +213,11 @@ def validate_agreement(doc):
         # The migration changes the current default ledger only. Dated snapshots stay intact.
         if before and before.partner_payable_account == doc.partner_payable_account:
             previous["payable_account"] = before.partner_payable_account
+    if previous and 'operating_fees' not in previous:
+        old_rows = agreement_rows(previous)
+        for row in old_rows:
+            row['basis'] = 'Grand Total'
+        previous['operating_fees'] = canonical_rows(old_rows)
     effective = str(getdate(doc.agreement_effective_from))
     if version == previous:
         if effective != history[-1]["effective_from"]:

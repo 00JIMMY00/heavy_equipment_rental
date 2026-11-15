@@ -3,7 +3,7 @@ heavy_equipment_rental.rental_context = {
     dates(frm) {
         const d = frm.doc;
         return d.doctype === "Expense Entry"
-            ? [d.service_from_date || d.posting_date, d.service_to_date || d.service_from_date || d.posting_date]
+            ? [d.posting_date, d.posting_date]
             : [d.actual_start_date || frappe.datetime.get_today(), d.actual_end_date || d.actual_start_date || frappe.datetime.get_today()];
     },
     editable(frm) {
@@ -18,11 +18,10 @@ heavy_equipment_rental.rental_context = {
             frm.set_df_property(field, "read_only", !editable);
             frm.set_df_property(field, "reqd", 0);
             frm.set_query(field, () => {
-                return {query:"heavy_equipment_rental.rental_context.context_link_query", filters:{
-                    crane:frm.doc.crane, company:frm.doc.company,
-                    from_date:null, to_date:null,
-                    assignment:field === "crane_timesheet" ? frm.doc.crane_assignment : null,
-                }};
+                const filters = {crane:frm.doc.crane, company:frm.doc.company};
+                if (frm.doc.doctype === "Expense Entry") filters.posting_date = frm.doc.posting_date;
+                if (field === "crane_timesheet" && frm.doc.crane_assignment) filters.assignment = frm.doc.crane_assignment;
+                return {query:"heavy_equipment_rental.rental_context.context_link_query", filters};
             });
         }
         const first_load = !frm._rental_context_initialized;
@@ -52,7 +51,8 @@ heavy_equipment_rental.rental_context = {
             return;
         }
         const {message: options} = await frappe.call({method:"heavy_equipment_rental.rental_context.rental_work_options",
-            args:{crane,company:frm.doc.company}});
+            args:{crane,company:frm.doc.company,
+                ...(frm.doc.doctype === "Expense Entry" ? {posting_date:frm.doc.posting_date} : {})}});
         if (request !== frm._work_request || crane !== frm.doc.crane || assignment !== frm.doc.crane_assignment ||
             this.dates(frm).join('|') !== [start,end].join('|')) return;
         const sheets = options.timesheets.filter(r=>!assignment || r.assignment === assignment);
@@ -63,7 +63,6 @@ heavy_equipment_rental.rental_context = {
         if (assignment && !options.assignments.some(r=>r.name === assignment)) {
             values.crane_assignment = null;
             values.crane_timesheet = null;
-            if (frm.doc.doctype === "Expense Entry") Object.assign(values,{service_from_date:null,service_to_date:null});
         } else if (frm.doc.crane_timesheet && !sheets.some(r=>r.name === frm.doc.crane_timesheet)) values.crane_timesheet = null;
         if (Object.keys(values).length) {
             frm._setting_rental_context = true;
@@ -89,8 +88,6 @@ heavy_equipment_rental.rental_context = {
         const sheet = await frappe.db.get_doc("Crane Timesheet",name);
         if (frm.doc.crane_timesheet !== name || sheet.crane !== frm.doc.crane) return;
         const values = {crane_assignment:sheet.assignment};
-        if (frm.doc.doctype === "Expense Entry") Object.assign(values,
-            {service_from_date:sheet.period_start,service_to_date:sheet.period_end});
         frm._setting_rental_context = true;
         try { await frm.set_value(values); }
         finally { frm._setting_rental_context = false; }

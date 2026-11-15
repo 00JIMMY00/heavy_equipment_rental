@@ -1,0 +1,43 @@
+"""Derive ownership independently from supplier hire and operating fees."""
+import frappe
+from frappe import _
+from frappe.utils import flt
+
+
+def validate_ownership(doc):
+    if doc.enable_profit_sharing and doc.hired_from_supplier:
+        frappe.throw(_("Choose either Enable Profit Sharing or Hired from Supplier, not both."))
+    before = doc.get_doc_before_save()
+    if doc.is_new() and not doc.ownership_partners and not doc.hired_from_supplier and doc.ownership_type == 'Owned':
+        doc.append('ownership_partners', dict(is_company=1, ownership_percentage=100, profit_percentage=100))
+    from heavy_equipment_rental.profit_sharing import percentage
+    rows = doc.ownership_partners
+    if not rows and not doc.hired_from_supplier:
+        frappe.throw(_("Enter the crane's owners, or select Hired from Supplier."))
+    if doc.hired_from_supplier and not doc.supplier:
+        frappe.throw(_("Select the rental Supplier."))
+    if rows:
+        if abs(sum(flt(r.ownership_percentage) for r in rows) - 100) > 0.000001:
+            frappe.throw(_("Ownership percentages must total 100%."))
+        seen = set()
+        for row in rows:
+            row.ownership_percentage = percentage(row.ownership_percentage)
+            if not row.is_company and row.shareholder:
+                owner = frappe.get_doc("Shareholder", row.shareholder)
+                owner.check_permission("read")
+                if not doc.sharing_company or owner.company != doc.sharing_company:
+                    frappe.throw(_("Select the Company matching the owner Shareholders."))
+            key = 'company' if row.is_company else row.shareholder
+            if not key or key in seen:
+                frappe.throw(_("Select each owner once using Our Company or a Shareholder."))
+            seen.add(key)
+            if not 0 <= flt(row.ownership_percentage) <= 100:
+                frappe.throw(_("Ownership percentages must be between 0 and 100."))
+    share = sum(flt(r.ownership_percentage) for r in rows if r.is_company)
+    doc.ownership_classification = ('Ownership Not Recorded' if not rows else
+        'Company Owned' if share == 100 else 'Shared Ownership' if share else 'Externally Owned')
+    # Keep the historical field as an internal compatibility value.
+    if before and [(r.is_company, r.shareholder, r.ownership_percentage) for r in rows] == [(r.is_company, r.shareholder, r.ownership_percentage) for r in before.ownership_partners]:
+        doc.ownership_type = before.ownership_type
+        return
+    doc.ownership_type = 'Owned' if share == 100 else 'Shared Ownership' if share else 'Other'
