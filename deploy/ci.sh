@@ -15,7 +15,7 @@ for module in \
   heavy_equipment_rental.heavy_equipment_rental.doctype.rental_contract.test_rental_workflow \
   heavy_equipment_rental.test_maintenance_lifecycle \
   heavy_equipment_rental.test_maintenance_posting \
-  heavy_equipment_rental.test_partner_settlements; do
+  heavy_equipment_rental.test_operating_fees; do
   bench --site her_ci run-tests --module "$module" --skip-test-records
 done
 bench --site her_ci execute heavy_equipment_rental.production_health.check
