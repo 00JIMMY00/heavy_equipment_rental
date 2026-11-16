@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tarfile
@@ -150,6 +151,7 @@ class Release:
         self.compose('run', '--rm', '--no-deps', 'configurator', image=self.old)
         self.bench('set-maintenance-mode', 'off', image=self.old)
         self.compose('up', '-d', '--pull', 'never', '--remove-orphans', image=self.old)
+        self.compose('exec', '-T', 'proxy', 'caddy', 'reload', '--config', '/etc/caddy/Caddyfile', image=self.old)
         self.target = self.old
         self.wait_healthy()
         self.maintenance.unlink(missing_ok=True)
@@ -210,6 +212,7 @@ class Release:
                 if source.resolve() != destination.resolve():
                     shutil.copy2(source, destination)
             self.compose('up', '-d', '--pull', 'missing', 'db', 'redis-cache', 'redis-queue', 'proxy')
+            self.compose('exec', '-T', 'proxy', 'caddy', 'reload', '--config', '/etc/caddy/Caddyfile')
             self.compose('run', '--rm', 'configurator')
             if not installed:
                 # The generated password lives only on the server, outside the repository.
@@ -229,7 +232,8 @@ class Release:
                     os.environ.pop('HER_BOOTSTRAP_ADMIN', None)
                     os.environ.pop('HER_BOOTSTRAP_DB', None)
                 self.bench('set-config', 'host_name', 'https://' + self.site)
-                self.bench('set-config', 'developer_mode', '0')
+            self.bench('set-config', '-p', 'developer_mode', '0')
+            self.bench('set-config', '-p', 'allow_tests', '0')
             self.bench('migrate')
             self.bench('set-maintenance-mode', 'off')
             self.bench('enable-scheduler')
@@ -269,6 +273,10 @@ def main():
     args = parser.parse_args()
     if not IMAGE.fullmatch(args.image):
         parser.error('An immutable HER image digest is required')
+    def interrupted(signum, frame):
+        raise InterruptedError('Deployment interrupted by signal ' + str(signum))
+    for signum in (signal.SIGTERM, signal.SIGHUP):
+        signal.signal(signum, interrupted)
     root = Path(args.root).resolve()
     os.umask(0o077)
     with (root / 'state/deploy.lock').open('w') as lock:
