@@ -70,7 +70,7 @@ jobs:
   image:
     if: needs.validate.outputs.runtime_changed == 'true'
     needs: validate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 45
     permissions:
       contents: read
@@ -89,11 +89,12 @@ jobs:
         with:
           context: .
           file: deploy/Containerfile
+          platforms: linux/arm64
           load: true
           tags: ghcr.io/00jimmy00/heavy_equipment_rental:sha-${{ github.sha }}
           build-args: APP_COMMIT=${{ github.sha }}
-          cache-from: type=gha,scope=her-v15
-          cache-to: type=gha,mode=max,scope=her-v15
+          cache-from: type=gha,scope=her-v15-arm64
+          cache-to: type=gha,mode=max,scope=her-v15-arm64
       - name: Verify exact application revision
         env:
           APP_IMAGE: ghcr.io/00jimmy00/heavy_equipment_rental:sha-${{ github.sha }}

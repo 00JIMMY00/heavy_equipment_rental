@@ -2,7 +2,7 @@
 
 Push to `main` to validate, build a cached Docker image, install and migrate a disposable test site, run critical rental/accounting tests, publish the tested image to GHCR, and deploy its immutable digest over SSH. Pull requests build/test without deploying. Documentation-only pushes validate without rebuilding/deploying. Use **Actions → Test, build, deploy HER → Run workflow** to redeploy a revision on main.
 
-Production: `https://cranes.arab-erp.com`, host `49.12.190.89` (`ssh hetzner3`), stack `/opt/her`. This is a clean site; no development company or demo transactions are copied. Apps: Frappe, ERPNext, `arab_erp_theme`, `heavy_equipment_rental`.
+Production: `https://cranes.arab-erp.com`, host `49.12.190.89` (`ssh hetzner3`), ARM64 host, stack `/opt/her`. Images and integration tests use native ARM64 GitHub runners. This is a clean site; no development company or demo transactions are copied. Apps: Frappe, ERPNext, `arab_erp_theme`, `heavy_equipment_rental`.
 
 ## Speed and versions
 
