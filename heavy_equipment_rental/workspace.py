@@ -38,7 +38,10 @@ def sync_operations_workspace():
     was_in_patch = frappe.flags.in_patch
     frappe.flags.in_patch = True
     try:
-        workspace.save(ignore_permissions=True)
+        if exists:
+            workspace.save(ignore_permissions=True)
+        else:
+            workspace.insert(ignore_permissions=True)
         frappe.db.set_default(LAYOUT_VERSION_KEY, "1")
     finally:
         frappe.flags.in_patch = was_in_patch
