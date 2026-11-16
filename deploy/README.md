@@ -6,7 +6,7 @@ Production: `https://cranes.arab-erp.com`, host `49.12.190.89` (`ssh hetzner3`),
 
 ## Speed and versions
 
-`apps.yaml` selects the Frappe branch and the ordered applications, repositories and refs. CI resolves branch/tag refs to exact commits before building; full commit refs are also supported for apps. Those resolved inputs are baked into the tested image. HER's `ref: main` uses the exact checkout that triggered CI. This version-15 production stack requires ERPNext, arab_erp_theme and HER in that order; additional apps can follow their dependencies.
+`apps.yaml` selects the Frappe branch (and optional `frappe_ref` commit pin) and the ordered applications, repositories and refs. CI resolves branch/tag refs to exact commits before building; full commit refs are also supported for apps. Those resolved inputs are baked into the tested image. HER's `ref: main` uses the exact checkout that triggered CI. This version-15 production stack requires ERPNext, arab_erp_theme and HER in that order; additional apps can follow their dependencies.
 
 `Containerfile` caches the selected dependency apps and their assets in a stable runtime layer. HER updates use separate small layers. A changed dependency ref invalidates the appropriate cache layer. The calendar is built with Node 22 on GitHub. No build tools or Actions runner are installed on production.
 
@@ -32,7 +32,7 @@ apps:
 
 `deploy/apps.py` validates/resolves this file in CI. The generated `deploy/runtime-manifest/` is ignored by Git and included in the image. `deploy/build_apps.py` downloads the listed dependencies; HER comes from the tested checkout. `deploy/site_apps.py` uses the same image manifest for new-site installation and for missing-app installation on existing sites, after the recovery snapshot and before migration. Both CI and production use it. Health checks require every listed app. Removing an installed app stops the rollout and restores its snapshot; app removal requires an explicit data migration. The old `clients.yaml` and `dependencies.json` are no longer used.
 
-Branch refs intentionally track their upstream branch on each runtime build; choose a full commit ref when you want to hold an app at a specific revision. For local image builds, first install PyYAML and run `python deploy/apps.py --output deploy/runtime-manifest`.
+Production currently pins Frappe and ERPNext to their previously validated commits. Testing the latest ERPNext version-15 head exposed a double-capitalization regression, so that upgrade was blocked. The optional `frappe_ref` is a full framework commit SHA; omit it to track `frappe_branch`. Branch refs intentionally track their upstream branch on each runtime build; choose a full commit ref when you want to hold an app at a specific revision. For local image builds, first install PyYAML and run `python deploy/apps.py --output deploy/runtime-manifest`.
 
 ## Deployment transaction and recovery
 

@@ -7,10 +7,12 @@ import subprocess
 
 
 def validate(data):
-    if not isinstance(data, dict) or set(data) != {'frappe_branch', 'apps'}:
+    if not isinstance(data, dict) or not {'frappe_branch', 'apps'} <= set(data) or set(data) - {'frappe_branch', 'frappe_ref', 'apps'}:
         raise ValueError('Expected frappe_branch and apps')
     if data['frappe_branch'] != 'version-15':
         raise ValueError('This production stack supports version-15; framework-major upgrades require a stack upgrade')
+    if 'frappe_ref' in data and (not isinstance(data['frappe_ref'], str) or not re.fullmatch(r'[a-f0-9]{40}', data['frappe_ref'])):
+        raise ValueError('frappe_ref must be a full commit SHA when supplied')
     apps = data['apps']
     if not isinstance(apps, list) or not apps:
         raise ValueError('apps must be a nonempty list')
@@ -55,7 +57,7 @@ def main():
     manifest = validate(yaml.safe_load(Path('apps.yaml').read_text()))
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
-    deps = {'frappe_branch': manifest['frappe_branch'], 'frappe_revision': resolve('https://github.com/frappe/frappe', manifest['frappe_branch']),
+    deps = {'frappe_branch': manifest['frappe_branch'], 'frappe_revision': resolve('https://github.com/frappe/frappe', manifest.get('frappe_ref', manifest['frappe_branch'])),
             'apps': [dict(app, revision=resolve(app['repo'], app['ref'])) for app in manifest['apps'] if app['name'] != 'heavy_equipment_rental']}
     (output/'dependencies.json').write_text(json.dumps(deps, sort_keys=True, indent=2)+'\n')
     (output/'apps.json').write_text(json.dumps(manifest, indent=2)+'\n')
