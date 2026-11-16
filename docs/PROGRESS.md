@@ -1,5 +1,12 @@
 # Progress
 
+## 2026-11-16 — Crane ownership share bar
+
+Applied on dev3. Browser verified 50/30/20 segment widths, Arabic classification, safely displayed owner names, live updates, incomplete-total warnings, empty ownership and mobile layout without overflow. Existing form startup null/join errors observed in earlier checks remain outside this presentation change. Syntax and whitespace checks passed.
+
+Replaced the Crane Ownership field’s plain classification and technical description with a segmented owner share bar. Each owner has a colored segment plus a name/percentage legend, using Shareholder titles when permitted. Updates on ownership, owner selection, add/remove and form refresh. Incomplete draft totals show an explicit warning. Classification, validation, ownership/profit calculations and historical agreements remain unchanged; no schema change.
+
+
 - 2026-11-16: Removed the workspace CSS rule that forced its sidebar hidden. Frappe’s native three-line sidebar toggle now controls navigation visibility and the mobile overlay. Browser verified desktop open/close and mobile overlay open/dismiss with no JavaScript errors.
 
 - 2026-11-16: Highlighted the six frequent workspace destinations (Cranes, Work Log, Servicing, Expense Entries, Sales Invoices and Purchase Invoices) with blue backgrounds, stronger text and an accent border, supporting light/dark themes and both interface languages.

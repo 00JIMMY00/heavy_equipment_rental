@@ -1,3 +1,26 @@
+function crane_ownership_bar(doc, names = {}) {
+    const esc = frappe.utils.escape_html;
+    const colors = ["#4169d1", "#138575", "#9a53c6", "#c47715", "#ce5268", "#387eaa", "#7b8738", "#875c48"];
+    const rows = doc.ownership_partners || [];
+    const owners = rows.map((row, index) => {
+        const raw = Number(row.ownership_percentage);
+        const percentage = Number.isFinite(raw) ? Math.max(0, raw) : 0;
+        const name = row.is_company ? __("Our Company") : (names[row.shareholder] || row.shareholder || row.supplier || __("Partner"));
+        return { percentage, name, color: colors[index % colors.length] };
+    });
+    const total = owners.reduce((sum, owner) => sum + owner.percentage, 0);
+    const base = Math.max(100, total);
+    const percent = value => `${Number(value.toFixed(2))}%`;
+    const segments = owners.filter(owner => owner.percentage > 0).map(owner =>
+        `<span class="crane-ownership__segment" style="width:${owner.percentage / base * 100}%;background:${owner.color}" title="${esc(owner.name)}: ${percent(owner.percentage)}"></span>`).join("");
+    const legend = owners.map(owner => `<span class="crane-ownership__owner"><i style="background:${owner.color}" aria-hidden="true"></i><span>${esc(owner.name)}</span><b>${percent(owner.percentage)}</b></span>`).join("");
+    const labels = {"Company Owned": __("Company Owned"), "Shared Ownership": __("Shared Ownership"), "Externally Owned": __("Externally Owned"), "Ownership Not Recorded": __("Ownership Not Recorded")};
+    const classification = labels[doc.ownership_classification] || __("Ownership Not Recorded");
+    const warning = rows.length && Math.abs(total - 100) > 0.000001
+        ? `<div class="crane-ownership__warning">${esc(__("Ownership percentages must total 100%."))} ${esc(__("Total"))}: ${percent(total)}</div>` : "";
+    return `<div class="crane-ownership"><div class="crane-ownership__heading">${esc(classification)}</div><div class="crane-ownership__bar" role="img" aria-label="${esc(owners.map(o => `${o.name}: ${percent(o.percentage)}`).join(", ") || classification)}">${segments}</div><div class="crane-ownership__legend">${legend}</div>${warning}</div>`;
+}
+
 function crane_company_share(doc) {
     const history = JSON.parse(doc.agreement_history || "[]");
     const active = history.filter(v => v.effective_from <= frappe.datetime.get_today()).at(-1);
@@ -54,8 +77,25 @@ frappe.ui.form.on("Crane", {
     ownership_summary(frm) {
         const rows = frm.doc.ownership_partners || [];
         const share = rows.filter(r => r.is_company).reduce((n,r) => n + flt(r.ownership_percentage), 0);
-        frm.set_df_property("ownership_classification", "description", __("Company ownership: {0}%. Operating fees: {1} row(s). Supplier hire: {2}.", [share, (frm.doc.operating_fees || []).length, frm.doc.hired_from_supplier ? __("Yes") : __("No")]));
+        const field = frm.fields_dict.ownership_classification;
+        field.df.formatter = () => crane_ownership_bar(frm.doc, frm._ownership_names);
+        field.$wrapper.addClass("crane-ownership-field");
+        frm.set_df_property("ownership_classification", "description", "");
         frm.set_value("ownership_classification", !rows.length ? "Ownership Not Recorded" : share === 100 ? "Company Owned" : share ? "Shared Ownership" : "Externally Owned");
+        frm.refresh_field("ownership_classification");
+        frm._ownership_names = frm._ownership_names || {};
+        frm._ownership_name_requests = frm._ownership_name_requests || new Set();
+        for (const row of rows) {
+            if (row.is_company || !row.shareholder || frm._ownership_name_requests.has(row.shareholder)) continue;
+            const shareholder = row.shareholder;
+            frm._ownership_name_requests.add(shareholder);
+            frappe.db.get_value("Shareholder", shareholder, "title").then(({message}) => {
+                if (message?.title) {
+                    frm._ownership_names[shareholder] = message.title;
+                    frm.refresh_field("ownership_classification");
+                }
+            }).catch(() => {}); // Keep the permitted linked ID when the title is unavailable.
+        }
         update_crane_asset_controls(frm);
     },
     set_partner_company_rules(frm) {
@@ -288,6 +328,7 @@ frappe.ui.form.on("Crane Partner", {
     },
     is_company(frm) { frm.trigger("ownership_summary"); },
     ownership_partners_remove(frm) { frm.trigger("ownership_summary"); },
+    shareholder(frm) { frm.trigger("ownership_summary"); },
 });
 
 frappe.ui.form.on("Crane Operating Fee", {

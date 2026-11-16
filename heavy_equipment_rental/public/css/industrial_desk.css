@@ -273,3 +273,29 @@ html[dir="rtl"] .navbar .navbar-home::after {
   letter-spacing: 0;
   font-size: 14px;
 }
+
+/* Owner shares on the Crane form; labels remain readable for very small segments. */
+html .crane-ownership-field .control-value {
+  background: transparent;
+  padding: 0;
+  border: 0;
+  height: auto;
+}
+.crane-ownership { padding-block: 4px; }
+.crane-ownership__heading { font-size: 12px; color: var(--her-muted); margin-bottom: 9px; }
+.crane-ownership__bar {
+  display: flex;
+  height: 16px;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--her-hover);
+  gap: 2px;
+}
+.crane-ownership__segment { flex-shrink: 1; min-width: 0; height: 100%; }
+.crane-ownership__legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 10px; }
+.crane-ownership__owner { display: inline-flex; align-items: center; gap: 6px; color: var(--her-ink); font-size: 12px; max-width: 100%; }
+.crane-ownership__owner > span { overflow-wrap: anywhere; }
+.crane-ownership__owner i { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+.crane-ownership__owner b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.crane-ownership__warning { margin-top: 8px; font-size: 12px; color: var(--text-danger); }
