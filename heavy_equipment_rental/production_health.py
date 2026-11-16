@@ -1,9 +1,12 @@
 """Read-only release health check, called through Bench (not a public endpoint)."""
 import frappe
+from pathlib import Path
+import json
 
 
 def check():
-    required = {"frappe", "erpnext", "arab_erp_theme", "heavy_equipment_rental"}
+    manifest = Path(__file__).resolve().parent.parent / 'deploy/runtime-manifest/apps.json'
+    required = {'frappe'} | {app['name'] for app in json.loads(manifest.read_text())['apps']}
     if not required.issubset(frappe.get_installed_apps()):
         raise RuntimeError("Required production apps are missing")
     frappe.db.sql("select 1")

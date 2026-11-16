@@ -6,15 +6,33 @@ Production: `https://cranes.arab-erp.com`, host `49.12.190.89` (`ssh hetzner3`),
 
 ## Speed and versions
 
-`Containerfile` caches Frappe, ERPNext, theme installation and their assets in a stable runtime layer. Each update builds/copies HER and its assets into separate small layers, so the server reuses the framework layers. Their exact source revisions are in `dependencies.json`, initially matching the development bench. Update these pins intentionally, then push main; the same installation/migration/tests gate framework upgrades. The calendar is built with Node 22 on GitHub. No build tools or Actions runner are installed on production.
+`apps.yaml` selects the Frappe branch and the ordered applications, repositories and refs. CI resolves branch/tag refs to exact commits before building; full commit refs are also supported for apps. Those resolved inputs are baked into the tested image. HER's `ref: main` uses the exact checkout that triggered CI. This version-15 production stack requires ERPNext, arab_erp_theme and HER in that order; additional apps can follow their dependencies.
+
+`Containerfile` caches the selected dependency apps and their assets in a stable runtime layer. HER updates use separate small layers. A changed dependency ref invalidates the appropriate cache layer. The calendar is built with Node 22 on GitHub. No build tools or Actions runner are installed on production.
 
 The deployment uses Docker Compose with MariaDB 10.11, Redis, separate backend/workers/scheduler/websocket/frontend, and Caddy HTTPS. Only 80/443 and SSH are public; the application health port binds to loopback, and database/Redis have no published ports. Container logs rotate at 3 × 10 MB each. Docker starts at boot; services restart automatically.
 
 ## Which apps are installed
 
-`deploy/Containerfile` determines the apps available in the customer bench image: `bench init` downloads Frappe, `bench get-app` downloads ERPNext and arab_erp_theme, and `COPY` adds HER from the tested repository checkout. `deploy/dependencies.json` pins the exact Frappe/ERPNext/theme revisions; it does not select the app list. The customer server pulls this prebuilt image instead of downloading app repositories.
+Edit the repository-root `apps.yaml`:
 
-For a new production site, `deploy/release.py` selects the installed apps using `bench new-site --install-app erpnext --install-app arab_erp_theme --install-app heavy_equipment_rental`; Frappe is installed automatically. Existing-site updates run migrations without automatically installing additional apps. `deploy/ci.sh` defines the corresponding disposable test-site installation. The obsolete `clients.yaml` and its unused renderer have been removed.
+```yaml
+frappe_branch: version-15
+apps:
+  - name: erpnext
+    repo: https://github.com/frappe/erpnext
+    ref: version-15
+  - name: arab_erp_theme
+    repo: https://github.com/00JIMMY00/arab_erp_theme
+    ref: develop
+  - name: heavy_equipment_rental
+    repo: https://github.com/00JIMMY00/heavy_equipment_rental
+    ref: main
+```
+
+`deploy/apps.py` validates/resolves this file in CI. The generated `deploy/runtime-manifest/` is ignored by Git and included in the image. `deploy/build_apps.py` downloads the listed dependencies; HER comes from the tested checkout. `deploy/site_apps.py` uses the same image manifest for new-site installation and for missing-app installation on existing sites, after the recovery snapshot and before migration. Both CI and production use it. Health checks require every listed app. Removing an installed app stops the rollout and restores its snapshot; app removal requires an explicit data migration. The old `clients.yaml` and `dependencies.json` are no longer used.
+
+Branch refs intentionally track their upstream branch on each runtime build; choose a full commit ref when you want to hold an app at a specific revision. For local image builds, first install PyYAML and run `python deploy/apps.py --output deploy/runtime-manifest`.
 
 ## Deployment transaction and recovery
 
@@ -63,7 +81,7 @@ The [2026-11-16 workflow](https://github.com/00JIMMY00/heavy_equipment_rental/ac
 ## Validation
 
 ```bash
-python3 -m unittest deploy.test_rollout
+python3 -m unittest deploy.test_rollout deploy.test_apps
 APP_IMAGE=local/her:test DB_PASSWORD=test docker compose -f deploy/compose.yaml config --quiet
 ```
 

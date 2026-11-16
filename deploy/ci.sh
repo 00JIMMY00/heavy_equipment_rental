@@ -2,8 +2,8 @@
 set -Eeuo pipefail
 export CI=Yes
 bash apps/heavy_equipment_rental/deploy/runtime/configure.sh
-bench new-site her_ci --db-root-password ci-root --admin-password ci-admin \
-  --mariadb-user-host-login-scope=% --install-app erpnext --install-app arab_erp_theme --install-app heavy_equipment_rental
+export HER_BOOTSTRAP_DB=ci-root HER_BOOTSTRAP_ADMIN=ci-admin
+env/bin/python apps/heavy_equipment_rental/deploy/site_apps.py new her_ci
 bench --site her_ci migrate
 bench --site her_ci execute heavy_equipment_rental.ci_fixtures.prepare >/dev/null
 bench --site her_ci set-config allow_tests true

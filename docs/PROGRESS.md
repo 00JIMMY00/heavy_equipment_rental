@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-11-16 — App manifest for image and site installation
+
+The repository-root apps.yaml now selects the Frappe branch and ordered app name/repo/ref entries. CI resolves refs to immutable build inputs; HER uses the exact tested checkout. Image builds, new-site installation, existing-site app additions and health checks share that manifest. Installed apps are never silently removed; removing one from the manifest fails safely under the existing snapshot/rollback transaction. Branch refs track upstream on runtime builds; use full app commit refs to pin versions. This replaces deploy/dependencies.json. The version-15 stack retains ERPNext, arab_erp_theme and HER as required dependencies. Validation/deployment of this change is in progress.
+
 ## 2026-11-16 — Docker production delivery (verified)
 
 Production is live at https://cranes.arab-erp.com on the ARM64 Hetzner host 49.12.190.89 (`hetzner3`), stack `/opt/her`, with Frappe, ERPNext, arab_erp_theme and HER. It started clean, with no development business data; Administrator login and the native setup wizard are available. Developer mode and production tests are disabled.

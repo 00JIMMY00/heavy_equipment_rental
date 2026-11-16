@@ -11,3 +11,5 @@ deploy/.image-history
 deploy/.rollout.lock
 deploy/clients.json
 الخزينه.xlsx
+
+deploy/runtime-manifest/

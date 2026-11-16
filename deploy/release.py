@@ -225,10 +225,7 @@ class Release:
                 try:
                     self.compose('run', '--rm', '--no-deps', '-e', 'HER_BOOTSTRAP_ADMIN',
                                  '-e', 'HER_BOOTSTRAP_DB', 'backend', 'bash', '-ec',
-                                 'bench new-site "$1" --db-root-password "$HER_BOOTSTRAP_DB" '
-                                 '--admin-password "$HER_BOOTSTRAP_ADMIN" '
-                                 '--mariadb-user-host-login-scope=% --install-app erpnext '
-                                 '--install-app arab_erp_theme --install-app heavy_equipment_rental',
+                                 'env/bin/python apps/heavy_equipment_rental/deploy/site_apps.py new "$1"',
                                  'bootstrap', self.site)
                 finally:
                     os.environ.pop('HER_BOOTSTRAP_ADMIN', None)
@@ -236,6 +233,8 @@ class Release:
                 self.bench('set-config', 'host_name', 'https://' + self.site)
             self.bench('set-config', '-p', 'developer_mode', '0')
             self.bench('set-config', '-p', 'allow_tests', '0')
+            self.compose('run', '--rm', '--no-deps', 'backend', 'env/bin/python',
+                         'apps/heavy_equipment_rental/deploy/site_apps.py', 'existing', self.site)
             self.bench('migrate')
             self.bench('set-maintenance-mode', 'off')
             self.bench('enable-scheduler')

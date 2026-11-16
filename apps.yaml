@@ -1,0 +1,12 @@
+frappe_branch: version-15
+apps:
+  - name: erpnext
+    repo: https://github.com/frappe/erpnext
+    ref: version-15
+  - name: arab_erp_theme
+    repo: https://github.com/00JIMMY00/arab_erp_theme
+    ref: develop
+  # HER comes from the exact checkout tested by this workflow.
+  - name: heavy_equipment_rental
+    repo: https://github.com/00JIMMY00/heavy_equipment_rental
+    ref: main
