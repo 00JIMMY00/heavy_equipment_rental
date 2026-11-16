@@ -17,7 +17,8 @@ if __name__ == '__main__':
         name = app['name']
         if name != 'frappe':
             # Local clones allow branch, tag and full commit refs with the same behavior.
-            source = '/tmp/her-source-' + name
+            source = '/tmp/her-build-sources/' + name
+            Path(source).parent.mkdir(parents=True, exist_ok=True)
             run('git', 'clone', '--no-checkout', '--depth=1', app['repo'], source)
             run('git', '-C', source, 'fetch', '--depth=1', 'origin', app['revision'])
             run('git', '-C', source, 'checkout', '-B', 'her-build', app['revision'])
