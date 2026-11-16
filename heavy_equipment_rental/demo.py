@@ -27,6 +27,9 @@ def create_rental_cycle(company, start_date="2026-10-25"):
 def _create_cycle(company, start_date, *, location=None, daily_rate=5000,
                   tax_amount=0, expense_amounts=None, rental_days=3):
     company_doc = frappe.get_doc("Company", company)
+    rental_location = location or DEMO_LOCATION
+    if not frappe.db.exists("Location", rental_location):
+        rental_location = frappe.get_doc(dict(doctype="Location", location_name=rental_location)).insert().name
     start = getdate(start_date)
     if not isinstance(rental_days, int) or rental_days < 1:
         frappe.throw("The demo rental duration must be a positive whole number of days.")
@@ -66,7 +69,7 @@ def _create_cycle(company, start_date, *, location=None, daily_rate=5000,
         capacity_tons=50, ownership_type="Owned", operational_condition="Operational",
         license_plate="HER-DEMO-001", period_prices=[dict(period="Day", price=daily_rate)])).insert()
     assignment = frappe.get_doc(dict(doctype="Rental Contract", company=company,
-        customer=customer.name, location=location or DEMO_LOCATION, assigned_cranes=[dict(crane=crane.name,
+        customer=customer.name, location=rental_location, assigned_cranes=[dict(crane=crane.name,
             start_date=start, expected_end_date=end, rental_rate_unit="Day", rental_rate=daily_rate)])).insert()
     sheet = frappe.get_doc(dict(doctype="Crane Timesheet", assignment=assignment.name, crane=crane.name,
         driver=employee.name, period_start=start, period_end=end, timesheet_entries=[

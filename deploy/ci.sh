@@ -1,5 +1,6 @@
 #!/bin/bash
 set -Eeuo pipefail
+export CI=Yes
 bench set-config -g db_host db
 bench set-config -gp db_port 3306
 bench set-config -g redis_cache redis://redis-cache:6379

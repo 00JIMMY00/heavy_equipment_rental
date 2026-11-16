@@ -9,7 +9,7 @@ RUN bench init --frappe-branch version-15 --no-procfile --no-backups \
     cd frappe-bench && \
     bench get-app --branch version-15 --skip-assets erpnext https://github.com/frappe/erpnext && \
     bench get-app --branch develop --skip-assets arab_erp_theme https://github.com/00JIMMY00/arab_erp_theme && \
-    env/bin/python -c 'import json,subprocess; pins=json.load(open("/tmp/dependencies.json")); [(subprocess.run(["git","-C","apps/"+app,"fetch","--depth=1","origin",sha],check=True),subprocess.run(["git","-C","apps/"+app,"checkout","--detach",sha],check=True)) for app,sha in pins.items()]' && \
+    env/bin/python -c 'import json,subprocess; pins=json.load(open("/tmp/dependencies.json")); [(subprocess.run(["git","-C","apps/"+app,"fetch","--depth=1","upstream",sha],check=True),subprocess.run(["git","-C","apps/"+app,"checkout","--detach",sha],check=True)) for app,sha in pins.items()]' && \
     bench setup requirements --python && \
     bench setup requirements --node
 
@@ -26,6 +26,9 @@ RUN env/bin/pip install --no-deps -e apps/heavy_equipment_rental && \
     chmod -R g=u /home/frappe/frappe-bench
 
 FROM frappe/base:version-15 AS runtime
+ARG APP_COMMIT
+LABEL org.opencontainers.image.source="https://github.com/00JIMMY00/heavy_equipment_rental" \
+      org.opencontainers.image.revision=$APP_COMMIT
 USER frappe
 COPY --from=builder --chown=frappe:0 /home/frappe/frappe-bench /home/frappe/frappe-bench
 WORKDIR /home/frappe/frappe-bench

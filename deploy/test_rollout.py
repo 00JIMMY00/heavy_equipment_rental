@@ -105,12 +105,23 @@ class RolloutTests(unittest.TestCase):
         self.release.cleanup = Release.cleanup.__get__(self.release)
         extra = 'ghcr.io/00jimmy00/heavy_equipment_rental@sha256:' + 'c' * 64
         class Result:
-            stdout = NEW + '\n' + OLD + '\n' + extra + '\nother/repository@sha256:' + 'd'*64
-        self.release.run = lambda *args, **kwargs: Result()
+            def __init__(self, stdout):
+                self.stdout = stdout
+        def fake_run(*args, **kwargs):
+            if args[:3] == ('docker', 'image', 'inspect'):
+                return Result('sha256:current\nsha256:previous\n')
+            return Result('\n'.join(json.dumps(dict(Repository=repo, ID=identity, Tag=tag, Digest=digest))
+                for repo, identity, tag, digest in (
+                    ('ghcr.io/00jimmy00/heavy_equipment_rental', 'sha256:current', 'sha-current', 'sha256:'+'b'*64),
+                    ('ghcr.io/00jimmy00/heavy_equipment_rental', 'sha256:previous', 'sha-previous', 'sha256:'+'a'*64),
+                    ('ghcr.io/00jimmy00/heavy_equipment_rental', 'sha256:obsolete', 'sha-obsolete', 'sha256:'+'c'*64),
+                    ('other/repository', 'sha256:other', 'latest', 'sha256:'+'d'*64))))
+        self.release.run = fake_run
         with patch('deploy.release.subprocess.run') as run:
             self.release.cleanup()
         self.assertEqual(json.loads((self.root / 'state/images.json').read_text()), [NEW, OLD])
-        run.assert_called_once_with(['docker', 'image', 'rm', extra], cwd=self.root, check=False)
+        run.assert_called_once_with(['docker', 'image', 'rm',
+            'ghcr.io/00jimmy00/heavy_equipment_rental:sha-obsolete', extra], cwd=self.root, check=False)
 
     def test_only_immutable_her_images_accepted(self):
         self.assertTrue(IMAGE.fullmatch(NEW))

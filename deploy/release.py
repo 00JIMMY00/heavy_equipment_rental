@@ -161,11 +161,23 @@ class Release:
         keep = list(dict.fromkeys([self.target, self.old] + history))
         keep = [item for item in keep if IMAGE.fullmatch(item)][:2]
         history_path.write_text(json.dumps(keep) + '\n')
-        # Only this application's tagged/digest images are eligible. Never prune volumes.
-        result = self.run('docker', 'image', 'ls', '--digests', '--format', '{{.Repository}}@{{.Digest}}', capture=True)
-        for ref in set(result.stdout.splitlines()):
-            if IMAGE.fullmatch(ref) and ref not in keep:
-                subprocess.run(['docker', 'image', 'rm', ref], cwd=self.root, check=False)
+        # Compare image IDs so stale sha-* tags cannot keep old image layers alive.
+        protected = set(self.run('docker', 'image', 'inspect', '--format', '{{.Id}}',
+                                 *keep, capture=True).stdout.splitlines())
+        result = self.run('docker', 'image', 'ls', '--no-trunc', '--digests',
+                          '--format', '{{json .}}', capture=True)
+        remove = set()
+        for line in result.stdout.splitlines():
+            item = json.loads(line)
+            if item['Repository'] != 'ghcr.io/00jimmy00/heavy_equipment_rental' or item['ID'] in protected:
+                continue
+            if item['Tag'] != '<none>':
+                remove.add(item['Repository'] + ':' + item['Tag'])
+            ref = item['Repository'] + '@' + item['Digest']
+            if IMAGE.fullmatch(ref):
+                remove.add(ref)
+        if remove:
+            subprocess.run(['docker', 'image', 'rm', *sorted(remove)], cwd=self.root, check=False)
         # Retain the latest five complete recovery points, including failed-release files.
         backups = sorted(path for path in (self.root / 'backups').iterdir() if (path / 'release.json').exists())
         for backup in backups[:-5]:
@@ -236,7 +248,10 @@ class Release:
         temp.chmod(0o600)
         temp.replace(self.root / '.env')
         self.maintenance.unlink(missing_ok=True)
-        self.cleanup()
+        try:
+            self.cleanup()
+        except (OSError, ValueError, subprocess.CalledProcessError) as error:
+            print('Release is healthy; cleanup needs attention: ' + str(error), file=sys.stderr)
         print('Deployment verified: ' + self.target, flush=True)
 
 

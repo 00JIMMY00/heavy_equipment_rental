@@ -30,9 +30,10 @@ class TestPartnerSettlements(FrappeTestCase):
             dict(shareholder=p.name, ownership_percentage=25, profit_percentage=25) for p in self.partners])
         self.crane.save()
         self.start = add_days(self.cycle["to_date"], 1)
+        location = frappe.get_doc(dict(doctype="Location", location_name="HER auto " + self.key)).insert().name
         self.assignment = frappe.get_doc(dict(doctype="Rental Contract", company=self.company.name,
             customer=frappe.get_doc("Rental Contract", self.cycle["assignment"]).customer,
-            location="HER auto " + self.key, assigned_cranes=[dict(crane=self.crane.name,
+            location=location, assigned_cranes=[dict(crane=self.crane.name,
                 start_date=self.start, expected_end_date=add_days(self.start, 4), rental_rate_unit="Hour", rental_rate=1000)])).insert()
 
     def sheet(self, offset=0, hours=8):
