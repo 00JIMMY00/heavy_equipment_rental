@@ -1,0 +1,60 @@
+{
+  "rollback_drill": {
+    "status": "passed",
+    "snapshot": "/opt/her/backups/20261116T163455Z-d3d398f7f5e2",
+    "image": "ghcr.io/00jimmy00/heavy_equipment_rental@sha256:ac2b7f38170ee135e877d9f7fa01297bb99c8a1bba0d583f5091d3d398f7f5e2",
+    "checks": [
+      "database restored",
+      "file restored",
+      "site configuration restored",
+      "application health passed",
+      "maintenance cleared",
+      "image preserved"
+    ]
+  },
+  "retained_images": [
+    "ghcr.io/00jimmy00/heavy_equipment_rental@sha256:ac2b7f38170ee135e877d9f7fa01297bb99c8a1bba0d583f5091d3d398f7f5e2",
+    "ghcr.io/00jimmy00/heavy_equipment_rental@sha256:9718c48b9de69c4a63318860ceb5f9cec2c1c260e2a9138a8d6924929e8d8a3d"
+  ],
+  "production_flags": {
+    "developer_mode": 0,
+    "allow_tests": 0,
+    "maintenance_mode": 0,
+    "host_name": "https://cranes.arab-erp.com"
+  },
+  "verified_at_utc": "2026-11-16T16:39:28.521440+00:00",
+  "site": "cranes.arab-erp.com",
+  "host": "49.12.190.89",
+  "architecture": "arm64",
+  "runtime_commit": "2c09208560333bc0a940c07666a8c670d3c5b9a5",
+  "workflow": "https://github.com/00JIMMY00/heavy_equipment_rental/actions/runs/43907282490",
+  "apps": [
+    "frappe",
+    "erpnext",
+    "arab_erp_theme",
+    "heavy_equipment_rental"
+  ],
+  "tests": {
+    "rollout_unit": 8,
+    "rental_workflow": 4,
+    "maintenance_lifecycle": 10,
+    "maintenance_posting": 16,
+    "operating_fees_and_automatic_settlement": 3
+  },
+  "live_checks": [
+    "Cloudflare HTTPS login 200",
+    "origin HTTPS login 200",
+    "API ping pong",
+    "Administrator login and logout",
+    "no development Company/Crane/Rental Contract/Crane Timesheet records",
+    "developer mode and tests disabled",
+    "rollback database/file/config probes removed",
+    "restored files verified inside recreated backend container",
+    "current and previous successful images retained"
+  ],
+  "retention": {
+    "successful_images": 2,
+    "complete_recovery_snapshots": 5,
+    "data_volumes_pruned": false
+  }
+}

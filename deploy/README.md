@@ -50,6 +50,10 @@ python3 release.py IMAGE_DIGEST --incoming /opt/her --rollback-test
 
 For a manual rollback after a previously accepted release, first enable `/opt/her/state/maintenance`, stop application services, and restore the chosen snapshot's `.env`, Compose configuration, site archive and SQL dump together. Merely starting an older image does **not** reverse migrations and must not be treated as a full rollback. Restoring an older snapshot after accepting new production transactions loses those later transactions; inspect/reconcile before doing that. Automatic rollback occurs while writes are paused, before a candidate is exposed to users.
 
+## Verified production delivery
+
+The [2026-11-16 workflow](https://github.com/00JIMMY00/heavy_equipment_rental/actions/runs/43907282490) passed all jobs, including an automatic update from the previous image. A live failure drill restored the SQL database, site files and configuration, removed temporary probes, and verified the recreated containers and public login. [Recorded evidence](../docs/PRODUCTION_DEPLOYMENT_20261116.json). The clean production site is ready for the native ERPNext setup wizard.
+
 ## Validation
 
 ```bash

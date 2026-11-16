@@ -1,8 +1,12 @@
 # Current decisions
 
-## 2026-11-16 — Docker production delivery
+## 2026-11-16 — Docker production delivery (verified)
 
-Replaced the old release workflow with a cached build of pinned Frappe/ERPNext/theme dependencies, production-image installation/migration and critical rental tests, digest publishing to GHCR, and restricted SSH deployment on pushes to main. Production is a clean cranes.arab-erp.com site on hetzner3 (49.12.190.89), with all four required apps. Updates pause writes, verify SQL/files/configuration snapshots, migrate, and check application/DB/Redis health; failures restore the previous database, files and image before reopening. Keep current and previous successful HER images plus five recovery snapshots; never prune data volumes. See [deployment operations](../deploy/README.md). Release tests use the current rental workflow, maintenance lifecycle/posting and operating-fee/automatic-settlement suites; the older partner suite contains superseded service-date and implicit-sharing expectations. Clean-install CI found and corrected workspace setup: insert the named Crane Operations workspace when absent, and retain the existing preserve-on-upgrade behavior. Server provisioning and live rollout verification are in progress.
+Production is live at https://cranes.arab-erp.com on the ARM64 Hetzner host 49.12.190.89 (`hetzner3`), stack `/opt/her`, with Frappe, ERPNext, arab_erp_theme and HER. It started clean, with no development business data; Administrator login and the native setup wizard are available. Developer mode and production tests are disabled.
+
+Pushes to main now validate, build/test native ARM64 images, publish an immutable GHCR digest, and deploy through restricted SSH. Pinned framework/theme dependencies and their assets occupy stable image layers; HER updates transfer small separate layers. Documentation-only pushes validate without deploying. CI tests the production configurator with empty bind mounts, installs/migrates all apps, and passes 33 current workflow tests plus 8 rollout tests. The older partner suite contains superseded service-date and implicit-sharing expectations and is outside this release gate. Fresh installation also exposed/fixed first-time Workspace insertion.
+
+Verified a normal automatic update and a forced post-migration failure. Recovery restored SQL, site files and configuration, recreated bind mounts, removed database/file/configuration probes, and passed health and login checks before reopening traffic. Keep the current and previous successful HER images and five complete recovery snapshots; never prune data volumes. [Verified run](https://github.com/00JIMMY00/heavy_equipment_rental/actions/runs/43907282490), [evidence](PRODUCTION_DEPLOYMENT_20261116.json), [operations](../deploy/README.md).
 
 ## 2026-11-16 — Full-screen Arabic login (latest)
 
