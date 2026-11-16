@@ -13,29 +13,43 @@ RUN bench init --frappe-branch version-15 --no-procfile --no-backups \
     bench setup requirements --python && \
     bench setup requirements --node
 
-FROM dependencies AS builder
-ARG APP_COMMIT
-COPY --chown=frappe:frappe . /home/frappe/frappe-bench/apps/heavy_equipment_rental
-WORKDIR /home/frappe/frappe-bench
-RUN env/bin/pip install --no-deps -e apps/heavy_equipment_rental && \
-    printf '\nheavy_equipment_rental\n' >> sites/apps.txt && \
-    printf '%s\n' "$APP_COMMIT" > apps/heavy_equipment_rental/.source-commit && \
+# Build framework/theme assets once, independently of HER revisions.
+RUN cd /home/frappe/frappe-bench && \
     bench build --production && \
     printf '{}\n' > sites/common_site_config.json && \
     find apps -type d -name .git -prune -exec rm -rf {} + && \
+    cp -a sites/assets /home/frappe/frappe-bench/assets && \
+    rm -rf sites/assets && \
+    ln -s /home/frappe/frappe-bench/assets sites/assets && \
     chmod -R g=u /home/frappe/frappe-bench
 
-FROM frappe/base:version-15 AS runtime
-ARG APP_COMMIT
-LABEL org.opencontainers.image.source="https://github.com/00JIMMY00/heavy_equipment_rental" \
-      org.opencontainers.image.revision=$APP_COMMIT
+FROM frappe/base:version-15 AS runtime-dependencies
 USER frappe
-COPY --from=builder --chown=frappe:0 /home/frappe/frappe-bench /home/frappe/frappe-bench
+COPY --from=dependencies --chown=frappe:0 /home/frappe/frappe-bench /home/frappe/frappe-bench
 WORKDIR /home/frappe/frappe-bench
-RUN cp -a sites/assets /home/frappe/frappe-bench/assets && rm -rf sites/assets
 USER root
 COPY --chmod=755 deploy/runtime/entrypoint.sh /usr/local/bin/her-entrypoint
 COPY --chmod=755 deploy/runtime/start.sh /usr/local/bin/her-start
 USER frappe
 ENTRYPOINT ["her-entrypoint"]
 CMD ["her-start"]
+
+FROM dependencies AS app-builder
+ARG APP_COMMIT
+WORKDIR /home/frappe/frappe-bench
+COPY --chown=frappe:frappe . apps/heavy_equipment_rental
+RUN env/bin/pip install --no-deps -e apps/heavy_equipment_rental && \
+    printf '\nheavy_equipment_rental\n' >> sites/apps.txt && \
+    printf '%s\n' "$APP_COMMIT" > apps/heavy_equipment_rental/.source-commit && \
+    bench build --app heavy_equipment_rental --production && \
+    chmod -R g=u apps/heavy_equipment_rental
+
+# Updating HER does not replace or transfer the large framework dependency layer.
+FROM runtime-dependencies AS runtime
+ARG APP_COMMIT
+LABEL org.opencontainers.image.source="https://github.com/00JIMMY00/heavy_equipment_rental" \
+      org.opencontainers.image.revision=$APP_COMMIT
+COPY --from=app-builder --chown=frappe:0 /home/frappe/frappe-bench/apps/heavy_equipment_rental apps/heavy_equipment_rental
+COPY --from=app-builder --chown=frappe:0 /home/frappe/frappe-bench/assets /home/frappe/frappe-bench/assets
+RUN env/bin/pip install --no-deps -e apps/heavy_equipment_rental && \
+    printf '\nheavy_equipment_rental\n' >> sites/apps.txt

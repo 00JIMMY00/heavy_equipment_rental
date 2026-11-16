@@ -6,7 +6,7 @@ Production: `https://cranes.arab-erp.com`, host `49.12.190.89` (`ssh hetzner3`),
 
 ## Speed and versions
 
-`Containerfile` caches Frappe, ERPNext and theme installation before copying HER. Their exact source revisions are in `dependencies.json`, initially matching the development bench. Update these pins intentionally, then push main; the same installation/migration/tests gate framework upgrades. The calendar is built with Node 22 on GitHub. No build tools or Actions runner are installed on production.
+`Containerfile` caches Frappe, ERPNext, theme installation and their assets in a stable runtime layer. Each update builds/copies HER and its assets into separate small layers, so the server reuses the framework layers. Their exact source revisions are in `dependencies.json`, initially matching the development bench. Update these pins intentionally, then push main; the same installation/migration/tests gate framework upgrades. The calendar is built with Node 22 on GitHub. No build tools or Actions runner are installed on production.
 
 The deployment uses Docker Compose with MariaDB 10.11, Redis, separate backend/workers/scheduler/websocket/frontend, and Caddy HTTPS. Only 80/443 and SSH are public; the application health port binds to loopback, and database/Redis have no published ports. Container logs rotate at 3 × 10 MB each. Docker starts at boot; services restart automatically.
 

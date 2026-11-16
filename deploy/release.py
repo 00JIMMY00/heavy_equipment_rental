@@ -186,7 +186,10 @@ class Release:
 
     def deploy(self):
         self.compose('config', '--quiet', candidate=True)
-        self.run('docker', 'pull', self.target)
+        try:
+            self.run('docker', 'image', 'inspect', self.target, capture=True)
+        except subprocess.CalledProcessError:
+            self.run('docker', 'pull', self.target)
         # Detect empty/incorrect images before touching the running site.
         self.run('docker', 'run', '--rm', '--entrypoint', 'bash', self.target, '-ec',
                  'test -s apps/heavy_equipment_rental/.source-commit; '
@@ -203,7 +206,9 @@ class Release:
                 self.backup()
             self.changed = True
             for name in ('compose.yaml', 'Caddyfile'):
-                shutil.copy2(self.incoming / name, self.root / name)
+                source, destination = self.incoming / name, self.root / name
+                if source.resolve() != destination.resolve():
+                    shutil.copy2(source, destination)
             self.compose('up', '-d', '--pull', 'missing', 'db', 'redis-cache', 'redis-queue', 'proxy')
             self.compose('run', '--rm', 'configurator')
             if not installed:
