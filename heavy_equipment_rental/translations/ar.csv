@@ -10,7 +10,7 @@ Rental Contracts,عقود ايجار المعدات
 Crane Drivers,سائقو المعدات
 Cranes,الرافعات
 Customers,العملاء
-Timesheet Report,تقرير سجلات العمل
+Timesheet Report,تقرير تايم شيت
 Maintenance Report,تقرير الصيانة
 Sales Register,سجل المبيعات
 Accounts Receivable,الذمم المدينة
@@ -36,9 +36,9 @@ Activity and Reservations,النشاط والحجوزات
 Actual End Date,تاريخ الانتهاء الفعلي
 Actual Start Date,تاريخ البدء الفعلي
 Actual end date cannot precede the start date.,لا يمكن أن يسبق تاريخ الانتهاء الفعلي تاريخ البدء الفعلي.
-Add at least one shift before submitting the timesheet.,أضف وردية واحدة على الأقل قبل إرسال سجل الساعات.
+Add at least one shift before submitting the timesheet.,أضف وردية واحدة على الأقل قبل إرسال تايم شيت.
 Allocation Status,حالة التخصيص
-Amend a cancelled Timesheet for this same Project and crane.,عدّل سجل ساعات ملغى للمشروع والمعدة نفسيهما.
+Amend a cancelled Timesheet for this same Project and crane.,عدّل تايم شيت ملغى للمشروع والمعدة نفسيهما.
 Amended From,معدّل من
 Amount,المبلغ
 An active Expense Entry is already linked to this maintenance.,يوجد قيد مصروفات نشط مرتبط بهذا السجل.
@@ -61,7 +61,7 @@ Booked periods,الفترات المحجوزة
 Bookings and recorded work in one timeline.,الحجوزات والعمل المسجل في جدول زمني واحد.
 Calculated from the default start and end times.,يُحتسب من وقتي البدء والانتهاء الافتراضيين.
 Cancel Expense Entry {0} to reverse this Journal Entry.,ألغِ قيد المصروفات {0} لعكس قيد اليومية هذا.
-Cancel or remove Sales Invoice {0} before cancelling this Crane Timesheet.,ألغِ فاتورة المبيعات {0} أو أزلها قبل إلغاء سجل ساعات المعدة هذا.
+Cancel or remove Sales Invoice {0} before cancelling this Crane Timesheet.,ألغِ فاتورة المبيعات {0} أو أزلها قبل إلغاء تايم شيت هذا.
 Cancellation Date,تاريخ الإلغاء
 Cancellation Reason,سبب الإلغاء
 Cancelled,ملغى
@@ -70,11 +70,11 @@ Capacity (tons),السعة (بالأطنان)
 Choose a non-group Asset or Liability Credit Account.,اختر حساباً دائناً غير تجميعي من الأصول أو الالتزامات.
 Choose a non-group Expense account.,اختر حساب مصروفات غير تجميعي.
 Choose a timeline range of at most three years.,اختر نطاقاً زمنياً لا يتجاوز ثلاث سنوات.
-Choose a timesheet period of at most 367 days.,اختر فترة سجل ساعات لا تتجاوز 367 يوماً.
+Choose a timesheet period of at most 367 days.,اختر فترة تايم شيت لا تتجاوز 367 يوماً.
 Choose dates; optionally filter by Project or crane.,اختر التواريخ، ويمكنك التصفية حسب المشروع أو المعدة.
-Choose either a Crane Project or one Crane Timesheet.,اختر مشروع معدة أو سجل ساعات معدة واحداً.
+Choose either a Crane Project or one Crane Timesheet.,اختر مشروع معدة أو تايم شيت واحداً.
 Close,إغلاق
-Closed Projects accept only authorized amendments of cancelled Timesheets.,لا تقبل المشاريع المغلقة إلا تعديلات مصرحاً بها لسجلات الساعات الملغاة.
+Closed Projects accept only authorized amendments of cancelled Timesheets.,لا تقبل المشاريع المغلقة إلا تعديلات مصرحاً بها لتايم شيت الملغاة.
 Company,الشركة
 Completed,مكتمل
 Completed or Cancelled maintenance cannot be reopened.,لا يمكن إعادة فتح الصيانة المكتملة أو الملغاة.
@@ -98,21 +98,21 @@ Crane Project Gantt,مخطط جانت لمشروع المعدات
 Crane Project Sales Invoices,فواتير مبيعات مشروع المعدات
 Crane Project {0},مشروع المعدات {0}
 Crane Reservations and Work,حجوزات المعدات والعمل
-Crane Timesheet,سجل عمل رافعة
-Crane Timesheet {0} was not found.,لم يتم العثور على سجل ساعات المعدة {0}.
-Crane Timesheets,سجلات عمل الرافعات
+Crane Timesheet,تايم شيت
+Crane Timesheet {0} was not found.,لم يتم العثور على تايم شيت {0}.
+Crane Timesheets,تايم شيت
 Crane allocations can only be changed on an Open Project.,لا يمكن تغيير تخصيصات المعدات إلا في مشروع مفتوح.
 Crane maintenance expenses,مصروفات صيانة المعدات
 "Crane prices must contain Hour, Day and Month exactly once.",يجب أن تتضمن أسعار المعدات الساعة واليوم والشهر مرة واحدة لكل منها.
-Crane rental items rebuilt from Timesheets {0} by {1}. Reason: {2},أُعيد إنشاء بنود تأجير المعدات من سجلات الساعات {0} بواسطة {1}. السبب: {2}
+Crane rental items rebuilt from Timesheets {0} by {1}. Reason: {2},أُعيد إنشاء بنود تأجير المعدات من تايم شيت {0} بواسطة {1}. السبب: {2}
 Crane reservations,حجوزات المعدات
 "Crane {0}, row {1}: {2} → {3} by {4}. Cancellation date: {5} → {6}. Reason: {7}",المعدة {0}، الصف {1}: {2} ← {3} بواسطة {4}. تاريخ الإلغاء: {5} ← {6}. السبب: {7}
-Crane {0}: change would invalidate Timesheet {1} on {2}. Keep recorded work within the booking dates.,المعدة {0}: سيؤدي التغيير إلى إبطال سجل الساعات {1} بتاريخ {2}. أبقِ العمل المسجل ضمن تواريخ الحجز.
+Crane {0}: change would invalidate Timesheet {1} on {2}. Keep recorded work within the booking dates.,المعدة {0}: سيؤدي التغيير إلى إبطال تايم شيت {1} بتاريخ {2}. أبقِ العمل المسجل ضمن تواريخ الحجز.
 "Crane {0}: linked Item must be an enabled, sellable, non-stock Hour service.",المعدة {0}: يجب أن يكون الصنف المرتبط خدمة ساعة مفعّلة وقابلة للبيع وغير مخزنية.
 "Crane {0}: row {1} conflicts with rental contract {2}, row {3}, Project {4} ({5} to {6}).",المعدة {0}: يتعارض الصف {1} مع عقد ايجار معدة {2}، الصف {3}، المشروع {4} (من {5} إلى {6}).
-Crane {0}: shift overlaps submitted timesheet {1}. Cancel/amend that sheet before billing the same crane time again.,المعدة {0}: تتداخل الوردية مع سجل الساعات المرسل {1}. ألغِ ذلك السجل أو عدّله قبل فوترة وقت المعدة نفسه مجدداً.
-"Crane {0}; Timesheet {1}; rental contract {2}, row {3}; {4} billable hours at varying hourly prices",المعدة {0}؛ سجل الساعات {1}؛ عقد ايجار معدة {2}، الصف {3}؛ {4} ساعة قابلة للفوترة بأسعار ساعة متفاوتة
-"Crane {0}; Timesheets {1}; rental contract {2}, row {3}; {4} {5} at {6} per {7}",المعدة {0}؛ سجلات الساعات {1}؛ عقد ايجار معدة {2}، الصف {3}؛ {4} {5} بسعر {6} لكل {7}
+Crane {0}: shift overlaps submitted timesheet {1}. Cancel/amend that sheet before billing the same crane time again.,المعدة {0}: تتداخل الوردية مع تايم شيت المرسل {1}. ألغِ ذلك السجل أو عدّله قبل فوترة وقت المعدة نفسه مجدداً.
+"Crane {0}; Timesheet {1}; rental contract {2}, row {3}; {4} billable hours at varying hourly prices",المعدة {0}؛ تايم شيت {1}؛ عقد ايجار معدة {2}، الصف {3}؛ {4} ساعة قابلة للفوترة بأسعار ساعة متفاوتة
+"Crane {0}; Timesheets {1}; rental contract {2}, row {3}; {4} {5} at {6} per {7}",المعدة {0}؛ تايم شيت {1}؛ عقد ايجار معدة {2}، الصف {3}؛ {4} {5} بسعر {6} لكل {7}
 Cranes shown,المعدات المعروضة
 Create,إنشاء
 Create Expense,إنشاء مصروف
@@ -190,15 +190,15 @@ Model,الطراز
 New Crane Projects must be Open.,يجب أن تكون مشاريع المعدات الجديدة مفتوحة.
 No Sales Invoices found.,لم يتم العثور على فواتير مبيعات.
 No reservations or work match these filters.,لا توجد حجوزات أو أعمال تطابق عوامل التصفية هذه.
-No submitted Crane Timesheets are linked to this Sales Invoice.,لا توجد سجلات ساعات معدات مرسلة مرتبطة بفاتورة المبيعات هذه.
-No submitted Crane Timesheets were found for this Crane Project.,لم يتم العثور على سجلات ساعات معدات مرسلة لهذا المشروع.
+No submitted Crane Timesheets are linked to this Sales Invoice.,لا توجد تايم شيت مرسلة مرتبطة بفاتورة المبيعات هذه.
+No submitted Crane Timesheets were found for this Crane Project.,لم يتم العثور على تايم شيت مرسلة لهذا المشروع.
 Notes,ملاحظات
 Only a Completed or Cancelled Crane Project can be reopened.,يمكن إعادة فتح مشروع معدات مكتمل أو ملغى فقط.
 Only an Open Crane Project can be closed.,يمكن إغلاق مشروع معدات مفتوح فقط.
 Only bookings without recorded work can be cancelled.,يمكن إلغاء الحجوزات التي لا تتضمن عملاً مسجلاً فقط.
 Only draft Sales Invoices can be rebuilt.,يمكن إعادة إنشاء فواتير المبيعات المسودة فقط.
 Only planned maintenance without an expense can be deleted.,يمكن حذف الصيانة المخطط لها التي لا تتضمن مصروفاً فقط.
-Only submitted Crane Timesheets can be invoiced.,يمكن إصدار فاتورة لسجلات ساعات المعدات المرسلة فقط.
+Only submitted Crane Timesheets can be invoiced.,يمكن إصدار فاتورة لتايم شيت المرسلة فقط.
 Only this rental contract,هذا عقد ايجار معدة فقط
 Open,مفتوح
 Open rental contract,فتح عقد ايجار معدة
@@ -237,7 +237,7 @@ Rental Rate,سعر التأجير
 Rental Rate Unit,وحدة سعر التأجير
 Rented,مستأجرة
 Reopen Project,إعادة فتح المشروع
-Replaces the draft's current items with charges calculated from its linked submitted Crane Timesheets.,يستبدل البنود الحالية للمسودة برسوم محسوبة من سجلات ساعات المعدات المرسلة والمرتبطة بها.
+Replaces the draft's current items with charges calculated from its linked submitted Crane Timesheets.,يستبدل البنود الحالية للمسودة برسوم محسوبة من تايم شيت المرسلة والمرتبطة بها.
 Reserved,محجوزة
 Resolve these crane allocations before closing the Crane Project:<br>{0},عالج تخصيصات المعدات هذه قبل إغلاق مشروع المعدات:<br>{0}
 Review,مراجعة
@@ -264,15 +264,15 @@ Selected crane rows must belong to this rental contract.,يجب أن تنتمي 
 Series,التسلسل
 Set a Company on the Crane Project or a default Company for this user.,حدد شركة في مشروع المعدات أو شركة افتراضية لهذا المستخدم.
 Set the actual start date before the end date.,حدد تاريخ البدء الفعلي قبل تاريخ الانتهاء.
-Signed Timesheet,سجل ساعات موقع
+Signed Timesheet,تايم شيت موقع
 Start,البداية
 Start Date,تاريخ البدء
 Start Time,وقت البدء
 Status,الحالة
 Status Before Cancel,الحالة قبل الإلغاء
-Submit or remove these draft Crane Timesheets before closing the Crane Project: {0}.,أرسل سجلات ساعات المعدات المسودة هذه أو أزلها قبل إغلاق مشروع المعدات: {0}.
+Submit or remove these draft Crane Timesheets before closing the Crane Project: {0}.,أرسل تايم شيت المسودة هذه أو أزلها قبل إغلاق مشروع المعدات: {0}.
 Submitted,مرسل
-Submitted timesheets without an active invoice,سجلات الساعات المرسلة دون فاتورة نشطة
+Submitted timesheets without an active invoice,تايم شيت المرسلة دون فاتورة نشطة
 Technician,الفني
 The Crane Project Company must match the expense accounts.,يجب أن تطابق شركة مشروع المعدات شركات حسابات المصروفات.
 The Employee link is created automatically when the Crane Driver is saved.,يُنشأ رابط الموظف تلقائياً عند حفظ بيانات سائق المعدة.
@@ -286,14 +286,14 @@ The linked sales Item cannot be changed manually.,لا يمكن تغيير صن�
 The linked sales Item for crane {0} is missing.,صنف المبيعات المرتبط بالمعدة {0} غير موجود.
 This Expense Entry already has a Journal Entry.,قيد المصروفات هذا مرتبط بالفعل بقيد يومية.
 This Sales Invoice also links to another Crane Project.,ترتبط فاتورة المبيعات هذه أيضاً بمشروع معدات آخر.
-This draft contains days already covered by another invoice. Review the linked timesheets before rebuilding.,تتضمن هذه المسودة أياماً تغطيها فاتورة أخرى بالفعل. راجع سجلات الساعات المرتبطة قبل إعادة الإنشاء.
+This draft contains days already covered by another invoice. Review the linked timesheets before rebuilding.,تتضمن هذه المسودة أياماً تغطيها فاتورة أخرى بالفعل. راجع تايم شيت المرتبطة قبل إعادة الإنشاء.
 Timeline,الجدول الزمني
-Timesheet Entry,إدخال سجل الساعات
-Timesheet period,فترة سجل الساعات
-Timesheet {0} has no billable crane hours.,لا يحتوي سجل الساعات {0} على ساعات معدات قابلة للفوترة.
-Timesheet {0} has no positive hourly price.,لا يحتوي سجل الساعات {0} على سعر ساعة موجب.
-"Timesheet {0}: set a positive Day or Month rental rate on rental contract {1}, row {2}.",سجل الساعات {0}: حدد سعر تأجير موجباً لليوم أو الشهر في عقد ايجار معدة {1}، الصف {2}.
-Timesheet {0}: work must fit one Reserved crane allocation with an agreed rental rate.,سجل الساعات {0}: يجب أن يقع العمل ضمن تخصيص معدة محجوز واحد بسعر تأجير متفق عليه.
+Timesheet Entry,إدخال تايم شيت
+Timesheet period,فترة تايم شيت
+Timesheet {0} has no billable crane hours.,لا يحتوي تايم شيت {0} على ساعات معدات قابلة للفوترة.
+Timesheet {0} has no positive hourly price.,لا يحتوي تايم شيت {0} على سعر ساعة موجب.
+"Timesheet {0}: set a positive Day or Month rental rate on rental contract {1}, row {2}.",تايم شيت {0}: حدد سعر تأجير موجباً لليوم أو الشهر في عقد ايجار معدة {1}، الصف {2}.
+Timesheet {0}: work must fit one Reserved crane allocation with an agreed rental rate.,تايم شيت {0}: يجب أن يقع العمل ضمن تخصيص معدة محجوز واحد بسعر تأجير متفق عليه.
 To,إلى
 Today,اليوم
 Total,الإجمالي
@@ -311,10 +311,10 @@ View,عرض
 Work Date,تاريخ العمل
 Work recorded,عمل مسجل
 Worked Hours,ساعات العمل
-You cannot create Crane Timesheets.,لا يمكنك إنشاء سجلات ساعات المعدات.
+You cannot create Crane Timesheets.,لا يمكنك إنشاء تايم شيت.
 You cannot create Sales Invoices.,لا يمكنك إنشاء فواتير مبيعات.
 You cannot select Employees.,لا يمكنك اختيار الموظفين.
-You cannot view Crane Timesheets or Sales Invoices.,لا يمكنك عرض سجلات ساعات المعدات أو فواتير المبيعات.
+You cannot view Crane Timesheets or Sales Invoices.,لا يمكنك عرض تايم شيت أو فواتير المبيعات.
 Zero total — review this invoice,الإجمالي صفر — راجع هذه الفاتورة
 Zoom,التكبير
 allocations,تخصيصات
@@ -336,8 +336,8 @@ driver hours,ساعات السائق
 {0}: new rows must be Draft. Use Reserve Selected to commit them.,{0}: يجب أن تكون الصفوف الجديدة مسودة. استخدم «حجز المحدد» لتثبيتها.
 {0}: no Reserved allocation covers this work.,{0}: لا يوجد تخصيص محجوز يغطي هذا العمل.
 {0}: provide a start date on or before the end date.,{0}: أدخل تاريخ بدء يسبق تاريخ الانتهاء أو يساويه.
-"{0}: recorded work exists, including draft Timesheets. Keep the booking Reserved.",{0}: يوجد عمل مسجل، بما في ذلك سجلات الساعات المسودة. أبقِ الحجز محجوزاً.
-{0}: shift is outside the timesheet period.,{0}: الوردية خارج فترة سجل الساعات.
+"{0}: recorded work exists, including draft Timesheets. Keep the booking Reserved.",{0}: يوجد عمل مسجل، بما في ذلك تايم شيت المسودة. أبقِ الحجز محجوزاً.
+{0}: shift is outside the timesheet period.,{0}: الوردية خارج فترة تايم شيت.
 {0}: terminal booking history cannot be rewritten.,{0}: لا يمكن إعادة كتابة سجل الحجز النهائي.
 {0}: use an Actions button to change booking state.,{0}: استخدم زر الإجراءات لتغيير حالة الحجز.
 Operating & Distribution Agreement,اتفاق التشغيل وتوزيع المتبقي
@@ -497,7 +497,7 @@ Operating %,نسبة التشغيل
 Service From Date,بداية فترة الخدمة
 Service To Date,نهاية فترة الخدمة
 Settlement,التسوية
-Timesheet,سجل العمل
+Timesheet,تايم شيت
 Voucher,المستند
 Voucher Type,نوع المستند
 All,الكل
@@ -555,7 +555,7 @@ Capitalization Justification,مبرر الرسملة
 Capitalize Improvement,رسملة التحسين
 Capitalized Improvements,التحسينات المرسملة
 Cash Expense,مصروف نقدي
-Choose Crane for Timesheet,اختر رافعة لسجل العمل
+Choose Crane for Timesheet,اختر رافعة لتايم شيت
 Choose Rental Period,اختر فترة التأجير
 Company Interest Only,حصة الشركة فقط
 Company Owned,مملوك للشركة
@@ -615,7 +615,7 @@ Manual Documents,مستندات يدوية
 My Stock,من مخزوني
 Native Workflow Migrated,نُقل إلى سير العمل الأصلي
 Net Revenue,صافي الإيراد
-New Timesheet,سجل عمل جديد
+New Timesheet,تايم شيت جديد
 Next month,الشهر التالي
 No Cost,بلا تكلفة
 No upcoming reservations,لا توجد حجوزات قادمة
@@ -685,15 +685,15 @@ Supplier Purchase,شراء من المورد
 A repair document cannot be detached from its maintenance job.,لا يمكن فصل مستند الإصلاح عن سجل الصيانة.
 Add an active Crane to the Rental Contract first.,أضف رافعة نشطة إلى عقد ايجار معدة أولًا.
 Add at least one crane to the rental contract.,أضف رافعة واحدة على الأقل إلى عقد ايجار معدة.
-Add at least one shift before submitting the Timesheet.,أضف وردية واحدة على الأقل قبل اعتماد سجل العمل.
+Add at least one shift before submitting the Timesheet.,أضف وردية واحدة على الأقل قبل اعتماد تايم شيت.
 Add the repair items or services.,أضف بنود الإصلاح أو الخدمات.
 Agreement History is maintained automatically.,يُحدَّث سجل الاتفاقيات تلقائيًا.
 All assigned cranes must belong to the same Company.,يجب أن تتبع جميع الرافعات المكلفة الشركة نفسها.
 All submitted work for this Crane is already billed.,تمت فوترة جميع الأعمال المعتمدة لهذه الرافعة.
 All submitted work is already billed.,تمت فوترة جميع الأعمال المعتمدة.
 "Allocation: selected Rental Contract, shared by working hours.",عقد ايجار معدة: عقد ايجار معدة المحدد، ويُوزّع حسب ساعات العمل.
-Allocation: selected Timesheet only.,التخصيص: سجل العمل المحدد فقط.
-Amend a cancelled Timesheet for the same Rental Contract and crane.,عدّل سجل عمل ملغى للعقد ايجار معدة والرافعة نفسيهما.
+Allocation: selected Timesheet only.,التخصيص: تايم شيت المحدد فقط.
+Amend a cancelled Timesheet for the same Rental Contract and crane.,عدّل تايم شيت ملغى للعقد ايجار معدة والرافعة نفسيهما.
 Amount must be greater than zero.,يجب أن يكون المبلغ أكبر من الصفر.
 An amendment cannot supply unrelated generated document links.,لا يمكن أن يحتوي التعديل على روابط لمستندات منشأة غير مرتبطة.
 Asset read permission is required to view financial values.,يلزم إذن قراءة الأصول لعرض القيم المالية.
@@ -708,9 +708,9 @@ Cancel the Asset Repair before its capitalized service invoice.,ألغِ إصل�
 Change the agreement terms before setting a new effective date.,غيّر شروط الاتفاقية قبل تحديد تاريخ سريان جديد.
 Change the dates on this row or add a separate crane row.,غيّر تواريخ هذا الصف أو أضف صفًا مستقلًا للرافعة.
 Choose Grand Total or Net Profit for each operating fee.,اختر الإجمالي الكلي أو صافي الربح لكل رسم تشغيل.
-Choose a Crane or Crane Timesheet.,اختر رافعة أو سجل عمل رافعة.
+Choose a Crane or Crane Timesheet.,اختر رافعة أو تايم شيت.
 Choose a calendar range of at most 120 days.,اختر نطاقًا لا يتجاوز ١٢٠ يومًا في التقويم.
-Choose an Rental Contract or one Timesheet.,اختر عقد ايجار معدة أو سجل عمل واحدًا.
+Choose an Rental Contract or one Timesheet.,اختر عقد ايجار معدة أو تايم شيت واحدًا.
 Choose the Crane before selecting rental work.,اختر الرافعة قبل اختيار أعمال التأجير.
 Combined operating fee percentages cannot exceed 100%.,لا يجوز أن يتجاوز مجموع نسب رسوم التشغيل ١٠٠٪.
 Company and Report Date are required.,الشركة وتاريخ التقرير مطلوبان.
@@ -737,14 +737,14 @@ From Date must be before To Date.,يجب أن يسبق تاريخ البداية
 From Date must not be after To Date.,لا يجوز أن يأتي تاريخ البداية بعد تاريخ النهاية.
 Generated repair links cannot be edited.,لا يمكن تعديل روابط الإصلاح المنشأة.
 Generated repair links cannot be supplied on a new Maintenance.,لا يمكن إدخال روابط إصلاح منشأة في صيانة جديدة.
-Hire rates and billing units are entered on the Timesheet.,تُدخل أسعار الاستئجار ووحدات الفوترة في سجل العمل.
+Hire rates and billing units are entered on the Timesheet.,تُدخل أسعار الاستئجار ووحدات الفوترة في تايم شيت.
 How do you want to record this repair?,كيف تريد تسجيل هذا الإصلاح؟
 Include our Company once and each external Supplier once.,أدخل شركتنا مرة واحدة وكل مورد خارجي مرة واحدة.
 Invalid agreement calculation method.,طريقة حساب الاتفاقية غير صالحة.
 Invalid entitlement status.,حالة الاستحقاق غير صالحة.
 Invalid report view or date basis.,طريقة العرض أو أساس التاريخ غير صالح.
 Invalid settlement status or participant.,حالة التسوية أو الطرف غير صالح.
-Invoice Crane attribution conflicts with its rental Timesheets.,نسبة الرافعة في الفاتورة تتعارض مع سجلات عمل التأجير.
+Invoice Crane attribution conflicts with its rental Timesheets.,نسبة الرافعة في الفاتورة تتعارض مع تايم شيت.
 Invoice the owner Customer selected on maintenance.,أصدر الفاتورة للعميل المالك المحدد في الصيانة.
 Legacy cancellation flags cannot be edited.,لا يمكن تعديل علامات الإلغاء القديمة.
 Legacy cancelled booking,حجز قديم ملغى
@@ -756,7 +756,7 @@ No active profit-sharing agreement covers this period.,لا تغطي هذه ال
 No further active profit-sharing agreement is available.,لا توجد اتفاقية توزيع أرباح نشطة لاحقة.
 No posted revenue or costs in this period.,لا توجد إيرادات أو تكاليف مرحلة في هذه الفترة.
 "No postings yet. Enter the repair items, save, then use Submit.",لا توجد قيود مرحلة بعد. أدخل بنود الإصلاح واحفظ ثم اضغط اعتماد.
-No submitted Timesheets found for this Crane.,لا توجد سجلات عمل معتمدة لهذه الرافعة.
+No submitted Timesheets found for this Crane.,لا توجد تايم شيت معتمدة لهذه الرافعة.
 No unpaid submitted Purchase Invoices are linked to this record.,لا توجد فواتير مشتريات معتمدة وغير مدفوعة مرتبطة بهذا السجل.
 Only submitted Maintenance can be cancelled.,يمكن إلغاء الصيانة المعتمدة فقط.
 Operating fee Partners must belong to the Crane Company.,يجب أن يتبع شركاء رسم التشغيل شركة الرافعة.
@@ -771,7 +771,7 @@ Posting Date must be on or after the period end.,يجب أن يوافق تاري
 Repair document Crane does not match maintenance.,رافعة مستند الإصلاح لا تطابق سجل الصيانة.
 Repair document and maintenance must use the same Company.,يجب أن يتبع مستند الإصلاح وسجل الصيانة الشركة نفسها.
 Save maintenance before creating accounting documents.,احفظ الصيانة قبل إنشاء المستندات المحاسبية.
-Save the Rental Contract before creating a Timesheet.,احفظ عقد ايجار معدة قبل إنشاء سجل عمل.
+Save the Rental Contract before creating a Timesheet.,احفظ عقد ايجار معدة قبل إنشاء تايم شيت.
 Save your agreement before creating a settlement.,احفظ الاتفاقية قبل إنشاء تسوية.
 Save your changes before creating a Payment.,احفظ تغييراتك قبل إنشاء دفعة.
 Select Crane Maintenance to attribute repair stock consumption.,اختر صيانة الرافعة لنسبة صرف مخزون الإصلاح إليها.
@@ -779,11 +779,11 @@ Select a Crane from the selected Rental Contract.,اختر رافعة من عق�
 Select a Crane from this Rental Contract.,اختر رافعة من هذا عقد ايجار معدة.
 Select a Supplier for a rented Crane.,اختر موردًا للرافعة المستأجرة.
 Select a Supplier on the rented Crane first.,اختر موردًا في الرافعة المستأجرة أولًا.
-Select a Timesheet belonging to this Crane and Rental Contract.,اختر سجل عمل تابعًا لهذه الرافعة وهذا عقد ايجار معدة.
+Select a Timesheet belonging to this Crane and Rental Contract.,اختر تايم شيت تابعًا لهذه الرافعة وهذا عقد ايجار معدة.
 Select a draft or active Asset that has not been disposed of.,اختر أصلًا مسودة أو نشطًا لم يُستبعد.
-Select a non-cancelled Timesheet for this Crane.,اختر سجل عمل غير ملغى لهذه الرافعة.
+Select a non-cancelled Timesheet for this Crane.,اختر تايم شيت غير ملغى لهذه الرافعة.
 Select a partner from this settlement.,اختر شريكًا من هذه التسوية.
-Select a submitted Crane Timesheet.,اختر سجل عمل رافعة معتمدًا.
+Select a submitted Crane Timesheet.,اختر تايم شيت معتمدًا.
 Select a submitted settlement with a partner payable.,اختر تسوية معتمدة تتضمن مستحقات للشريك.
 Select a valid Repair Source.,اختر مصدر إصلاح صالحًا.
 Select a valid repair method.,اختر طريقة إصلاح صالحة.
@@ -830,10 +830,10 @@ My Settings,إعداداتي
 Report an Issue,الإبلاغ عن مشكلة
 The linked Journal Entry is missing.,قيد اليومية المرتبط مفقود.
 This Crane already has an Asset.,لهذه الرافعة أصل مرتبط بالفعل.
-Timesheet Defaults,إعدادات سجل العمل الافتراضية
-Timesheet Details,تفاصيل سجل العمل
-Timesheet Entries,بنود سجل العمل
-Timesheet Hard Copy,نسخة سجل العمل الورقية
+Timesheet Defaults,إعدادات تايم شيت الافتراضية
+Timesheet Details,تفاصيل تايم شيت
+Timesheet Entries,بنود تايم شيت
+Timesheet Hard Copy,نسخة تايم شيت الورقية
 Treasury Transaction,حركة خزينة
 Unsupported rental document.,مستند التأجير غير مدعوم.
 Upcoming reservations,الحجوزات القادمة
@@ -855,13 +855,13 @@ User Forum,منتدى المستخدمين
 Search or type a command ({0}),ابحث أو اكتب أمرًا ({0})
 Work period. Also used when creating a new Rental Contract.,فترة العمل، وتُستخدم أيضًا عند إنشاء عقد ايجار معدة جديد.
 Quick Repair: enter the total cost and payment method. Stock Parts: consume items you own. Supplier Bill: buy parts and/or labour.,الإصلاح السريع: أدخل التكلفة الإجمالية وطريقة الدفع. قطع المخزون: اصرف القطع المملوكة لك. فاتورة المورد: اشترِ قطعًا أو خدمات.
-Choose a Timesheet to charge only its settlement. Its Rental Contract is filled automatically. Leave both links empty for a general crane expense excluded from CPS.,اختر سجل عمل لتحميل التكلفة على تسويته فقط؛ يُملأ عقد ايجار معدة تلقائيًا. اترك الرابطين فارغين لمصروف رافعة عام لا يدخل في تسوية الأرباح.
-Unallocated: general crane expense; excluded from CPS. Select an Rental Contract or Timesheet to allocate it.,غير مخصص: مصروف رافعة عام لا يدخل في تسوية الأرباح. اختر عقد ايجار معدة أو سجل عمل لتخصيصه.
+Choose a Timesheet to charge only its settlement. Its Rental Contract is filled automatically. Leave both links empty for a general crane expense excluded from CPS.,اختر تايم شيت لتحميل التكلفة على تسويته فقط؛ يُملأ عقد ايجار معدة تلقائيًا. اترك الرابطين فارغين لمصروف رافعة عام لا يدخل في تسوية الأرباح.
+Unallocated: general crane expense; excluded from CPS. Select an Rental Contract or Timesheet to allocate it.,غير مخصص: مصروف رافعة عام لا يدخل في تسوية الأرباح. اختر عقد ايجار معدة أو تايم شيت لتخصيصه.
 Add Row,إضافة صف
 results found,نتائج مطابقة
 No results found,لا توجد نتائج
-Prefills the Billing Unit on new Timesheets. The selected Crane supplies its reference price for this unit; existing Rental Contract terms take precedence.,يملأ وحدة الفوترة في سجلات العمل الجديدة. توفر الرافعة سعرها المرجعي لهذه الوحدة، وتبقى شروط عقد ايجار معدة الحالية أولى بالتطبيق.
-Prefills the Supplier Billing UOM on new Timesheets. The Purchase Invoice uses that Timesheet unit and its entered purchase price.,يملأ وحدة فوترة المورد في سجلات العمل الجديدة. تستخدم فاتورة المشتريات وحدة سجل العمل وسعر الشراء المدخل فيه.
+Prefills the Billing Unit on new Timesheets. The selected Crane supplies its reference price for this unit; existing Rental Contract terms take precedence.,يملأ وحدة الفوترة في تايم شيت الجديدة. توفر الرافعة سعرها المرجعي لهذه الوحدة، وتبقى شروط عقد ايجار معدة الحالية أولى بالتطبيق.
+Prefills the Supplier Billing UOM on new Timesheets. The Purchase Invoice uses that Timesheet unit and its entered purchase price.,يملأ وحدة فوترة المورد في تايم شيت الجديدة. تستخدم فاتورة المشتريات وحدة تايم شيت وسعر الشراء المدخل فيه.
 Shared non-stock Hour service for new Cranes. Existing Crane invoice Items are preserved.,خدمة مشتركة بالساعة وغير مخزنية للرافعات الجديدة. تبقى بنود فواتير الرافعات الحالية كما هي.
 A repair document cannot be moved to a different maintenance job.,لا يمكن نقل مستند الإصلاح إلى وظيفة صيانة مختلفة.
 A Crane must link to an Asset with quantity 1. Split grouped assets using ERPNext first.,يجب ربط الرافعة بأصل بكمية 1. قسّم الأصول المجمعة باستخدام نظام تخطيط الموارد أولاً.
@@ -878,8 +878,8 @@ Automatic completion supports routine repairs and asset improvements.,يدعم �
 Cancel Crane Maintenance {0} to reverse its related documents together.,إلغاء صيانة الرافعة {0} لإلغاء مستنداتها ذات الصلة معًا.
 Automatic: Owned records the full company Asset; shared equipment records only the Company interest. No Company ownership means no Asset.,تلقائي: تسجل الملكية أصل الشركة بالكامل؛ وتسجل المعدات المشتركة حصة الشركة فقط. عدم وجود ملكية للشركة يعني عدم وجود أصل.
 Cancel Crane Profit Settlement {0} to reverse its Journal Entry.,إلغاء تسوية أرباح الرافعة {0} لعكس قيد دفتر اليومية الخاص بها.
-Cancel Purchase Invoice {0} before cancelling this Timesheet.,إلغاء فاتورة الشراء {0} قبل إلغاء جدول الدوام هذا.
-Cancel Sales Invoice {0} before cancelling this Timesheet.,قم بإلغاء فاتورة المبيعات {0} قبل إلغاء جدول الدوام هذا.
+Cancel Purchase Invoice {0} before cancelling this Timesheet.,إلغاء فاتورة الشراء {0} قبل إلغاء تايم شيت هذا.
+Cancel Sales Invoice {0} before cancelling this Timesheet.,قم بإلغاء فاتورة المبيعات {0} قبل إلغاء تايم شيت هذا.
 Cancel and amend Maintenance before creating new repair documents.,إلغاء الصيانة وتعديلها قبل إنشاء مستندات إصلاح جديدة.
 Cancel or unreconcile payments against this settlement before cancelling it.,قم بإلغاء المدفوعات أو إلغاء تسويتها مقابل هذه التسوية قبل إلغائها.
 Cancel Treasury Transaction {0} to reverse this Journal Entry.,إلغاء معاملة الخزينة {0} لعكس هذا القيد اليومي.
@@ -887,7 +887,7 @@ Cancel the Asset Repair before returning its capitalized service invoice.,إلغ
 Cancel the Asset Repair to reverse its consumed stock and capitalized value together.,إلغاء إصلاح الأصل لعكس مخزونه المستهلك وقيمته المرسملة معًا.
 Cancel/delete the repair accounting documents before cancelling maintenance.,قم بإلغاء/حذف مستندات محاسبة الإصلاح قبل إلغاء الصيانة.
 Cancel the repair Material Issue before cancelling its parts Purchase Invoice.,قم بإلغاء إصدار مواد الإصلاح قبل إلغاء فاتورة شراء قطع الغيار الخاصة به.
-Cannot allocate source {0}: linked Timesheets have zero billing weight.,لا يمكن تخصيص المصدر {0}: تحتوي الجداول الزمنية المرتبطة على وزن فوترة يساوي صفرًا.
+Cannot allocate source {0}: linked Timesheets have zero billing weight.,لا يمكن تخصيص المصدر {0}: تحتوي تايم شيت المرتبطة على وزن فوترة يساوي صفرًا.
 Capitalization requires a company-currency service invoice using one Expense account.,يتطلب الرسملة فاتورة خدمة بعملة الشركة باستخدام حساب مصروفات واحد.
 Changed agreements must use Operating First. Review the agreement terms and effective date before saving.,يجب أن تستخدم الاتفاقيات التي تم تغييرها التشغيل أولًا. راجع شروط الاتفاقية وتاريخ السريان قبل الحفظ.
 Cannot allocate a non-zero invoice Grand Total across zero net item amounts.,لا يمكن تخصيص إجمالي عام للفاتورة غير صفري عبر مبالغ البنود الصافية الصفرية.
@@ -898,30 +898,30 @@ Changed agreements require an effective date after the previous version.,تتط�
 Company assets only. Owned: full cost. Shared: only the Company interest cost; never other owners’ shares.,أصول الشركة فقط. مملوكة: التكلفة الكاملة. المشتركة: تكلفة حصة الشركة فقط؛ ولا تشمل أبدًا حصص المالكين الآخرين.
 Choose how this repair is recorded in accounting. Routine repairs use Operating Expense.,اختر كيفية تسجيل هذا الإصلاح في المحاسبة. تستخدم الإصلاحات الروتينية بند المصروفات التشغيلية.
 Company ownership: {0}%. Operating fees: {1} row(s). Supplier hire: {2}.,ملكية الشركة: {0}%. رسوم التشغيل: {1} صف (صفوف). توظيف الموردين: {2}.
-"Choose the rental contract that bears this cost. Without a Timesheet, its cost is shared across that rental contract's submitted timesheets by working hours.",اختر المهمة التي تتحمل هذه التكلفة. بدون جدول زمني، يتم تقاسم تكلفته عبر الجداول الزمنية المقدمة لهذا التعيين حسب ساعات العمل.
+"Choose the rental contract that bears this cost. Without a Timesheet, its cost is shared across that rental contract's submitted timesheets by working hours.",اختر المهمة التي تتحمل هذه التكلفة. بدون تايم شيت، يتم تقاسم تكلفته عبر تايم شيت المقدمة لهذا التعيين حسب ساعات العمل.
 Complete or cancel repair {0} before closing its profit settlement.,أكمل أو ألغِ الإصلاح {0} قبل إغلاق تسوية الربح الخاصة به.
 Company {0} needs a Liability group for the Partners account.,تحتاج الشركة {0} إلى مجموعة مطلوبات لحساب الشركاء.
 Company ownership: {0}%. The Asset amounts already represent our interest; they are not multiplied by ownership again.,ملكية الشركة: {0}%. تمثل مبالغ الأصول بالفعل حصتنا؛ ولا يتم ضربها في الملكية مرة أخرى.
 "Confirm repair parts, external services, hire and agreed depreciation costs are complete before closing.",تأكد من اكتمال قطع الغيار والإصلاحات والخدمات الخارجية والتأجير وتكاليف الاستهلاك المتفق عليها قبل الإغلاق.
 Rental Contract {0}; Location {1},عقد ايجار معدة {0}؛ الموقع {1}
-Crane Timesheet {0}; Rental Contract {1}; service period {2} to {3},الجدول الزمني للرافعة {0}؛ المهمة {1}؛ فترة الخدمة من {2} إلى {3}
+Crane Timesheet {0}; Rental Contract {1}; service period {2} to {3},تايم شيت {0}؛ المهمة {1}؛ فترة الخدمة من {2} إلى {3}
 "Crane Profit Settlement {0}: {1}, {2} to {3}",تسوية أرباح الرافعة {0}: {1}، {2} إلى {3}
 Crane {0} belongs to another agreement Company.,تنتمي الرافعة {0} إلى شركة اتفاقية أخرى.
 "Crane {0}, row {1}",الرافعة {0}، الصف {1}
 Crane {0} is not in this Rental Contract.,الرافعة {0} ليست في هذه المهمة.
 Crane {0}: linked Asset {1} is cancelled or disposed of; new rental work is not allowed.,الرافعة {0}: تم إلغاء الأصل المرتبط {1} أو التصرف فيه؛ ولا يُسمح بأعمال تأجير جديدة.
 Crane {0}: linked Item must be an enabled non-stock Hour sales service.,الرافعة {0}: يجب أن يكون العنصر المرتبط خدمة مبيعات بالساعة غير مخزنة ومفعّلة.
-Crane {0}: shift overlaps submitted Timesheet {1}.,الرافعة {0}: تتداخل المناوبة مع السجل الزمني {1} المقدم.
-"Crane {0}; Rental Contract {1}, row {2}; Timesheets {3}; {4} {5} at {6} per {5}",الرافعة {0}؛ المهمة {1}، الصف {2}؛ الجداول الزمنية {3}؛ {4} {5} بسعر {6} لكل {5}
-Crane {0}; Timesheet {1}; {2} to {3}; {4} {5} at {6} per {5},الرافعة {0}؛ الجدول الزمني {1}؛ من {2} إلى {3}؛ {4} {5} بسعر {6} لكل {5}
+Crane {0}: shift overlaps submitted Timesheet {1}.,الرافعة {0}: تتداخل المناوبة مع تايم شيت {1} المقدم.
+"Crane {0}; Rental Contract {1}, row {2}; Timesheets {3}; {4} {5} at {6} per {5}",الرافعة {0}؛ المهمة {1}، الصف {2}؛ تايم شيت {3}؛ {4} {5} بسعر {6} لكل {5}
+Crane {0}; Timesheet {1}; {2} to {3}; {4} {5} at {6} per {5},الرافعة {0}؛ تايم شيت {1}؛ من {2} إلى {3}؛ {4} {5} بسعر {6} لكل {5}
 "Crane/CPS filters show complete linked accounting vouchers, including shared vouchers. Amounts are not prorated to the CPS. Posting date and other GL filters still apply.",تعرض عوامل تصفية الرافعة والتسوية قسائم المحاسبة المرتبطة الكاملة، بما في ذلك القسائم المشتركة. لا يتم تقسيم المبالغ بالتناسب إلى نظام تسعير العقود. لا يزال تاريخ الترحيل وعوامل تصفية دفتر الأستاذ العام الأخرى سارية.
 Customer and location cannot change after work has been recorded.,لا يمكن تغيير العميل والموقع بعد تسجيل العمل.
 Create the repair from Crane Maintenance to classify its costs before posting.,أنشئ الإصلاح من صيانة الرافعة لتصنيف تكاليفه قبل الترحيل.
 Defaults from HER Settings → Maintenance Defaults for this Company.,الإعدادات الافتراضية من إعدادات التطبيق ← الإعدادات الافتراضية للصيانة لهذه الشركة.
-Defaults from Heavy Equipment Rental Settings and is saved with this Timesheet.,القيم الافتراضية من إعدادات تأجير المعدات الثقيلة ويتم حفظها مع جدول الدوام هذا.
+Defaults from Heavy Equipment Rental Settings and is saved with this Timesheet.,القيم الافتراضية من إعدادات تأجير المعدات الثقيلة ويتم حفظها مع تايم شيت هذا.
 Delete draft repair documents before cancelling Maintenance. Drafts have no accounting to reverse.,احذف مسودات مستندات الإصلاح قبل إلغاء الصيانة. لا تحتوي المسودات على أي محاسبة لإلغائها.
 "Defaults to the full invoice amount. Enter a smaller amount for partial payment, or 0 to leave it unpaid.",الافتراضي هو مبلغ الفاتورة الكامل. أدخل مبلغًا أقل للدفع الجزئي، أو 0 لتركه غير مدفوع.
-Delete or reassign linked Timesheets before deleting this rental contract.,احذف أو أعد تعيين الجداول الزمنية المرتبطة قبل حذف هذه المهمة.
+Delete or reassign linked Timesheets before deleting this rental contract.,احذف أو أعد تعيين تايم شيت المرتبطة قبل حذف هذه المهمة.
 Draft or cancelled Asset: these values do not confirm posted asset balances.,الأصل في صيغة مسودة أو ملغى: لا تؤكد هذه القيم أرصدة الأصول المُرحَّلة.
 Enter a positive Purchase Price per {0}.,أدخِل سعر شراء موجبًا لكل {0}.
 Enable settlement calculations and partner entitlements from the profit shares and operating fees. Leave off for ordinary company work or supplier hire without profit sharing.,تمكين حسابات التسوية واستحقاقات الشركاء من حصص الأرباح ورسوم التشغيل. اتركه معطلاً للعمل العادي للشركة أو توظيف الموردين دون مشاركة في الأرباح.
@@ -937,7 +937,7 @@ For purchased repair parts. Leave unset to create a Maintenance warehouse automa
 "Invoice product only. Physical ownership, value and depreciation belong to the Asset.",فاتورة المنتج فقط. الملكية المادية والقيمة والاستهلاك تخص الأصل.
 "Grand Total: percentage of crane revenue before expenses. Net Profit: percentage of positive revenue minus allocated expenses, before any operating fees. All rows use the same base; fees are not compounded.",الإجمالي الكلي: النسبة المئوية لإيرادات الرافعة قبل المصروفات. صافي الربح: النسبة المئوية للإيرادات الإيجابية مطروحًا منها المصروفات المخصصة، قبل أي رسوم تشغيل. تستخدم جميع الصفوف الأساس نفسه؛ ولا تُجمع الرسوم.
 Invoice {0} has ambiguous Crane links.,تحتوي الفاتورة {0} على روابط الرافعة غامضة.
-Invoice {0} has ambiguous rental links; review its Timesheets.,تحتوي الفاتورة {0} على روابط تأجير غامضة؛ راجع الجداول الزمنية الخاصة بها.
+Invoice {0} has ambiguous rental links; review its Timesheets.,تحتوي الفاتورة {0} على روابط تأجير غامضة؛ راجع تايم شيت الخاصة بها.
 Invoice {0} has settled partner entitlements. Cancel its settlements before adding work.,تمت تسوية استحقاقات الشريك في الفاتورة {0}. قم بإلغاء تسوياتها قبل إضافة العمل.
 Journal {0} has multiple source documents. Review it before reporting.,تحتوي دفتر اليومية {0} على عدة مستندات مصدرية. راجعها قبل الإبلاغ.
 Items / Services,،العناصر،الخدمات
@@ -965,7 +965,7 @@ Read permission for {0} is required for this report.,إذن القراءة لـ 
 Record only this Company's recognized improvement cost. Other owners' costs require separate recovery/funding documents.,سجّل فقط تكلفة التحسين المعترف بها لهذه الشركة. تتطلب تكاليف المالكين الآخرين مستندات استرداد/تمويل منفصلة.
 "Rental Service Item must be enabled, non-stock, non-fixed-asset, purchasable and sellable, with Hour UOM.",يجب تمكين عنصر خدمة التأجير، وأن يكون غير مخزون، وغير أصل ثابت، وقابل للشراء والبيع، مع وحدة قياس بالساعة.
 Repair Company must match the Crane's Asset/agreement Company.,يجب أن تتطابق شركة الإصلاح مع شركة أصل/اتفاقية الرافعة.
-Rented Timesheets require positive recorded work and a positive Purchase Price per Unit.,تتطلب الجداول الزمنية للإيجار تسجيل عمل موجب وسعر شراء موجب لكل وحدة.
+Rented Timesheets require positive recorded work and a positive Purchase Price per Unit.,تتطلب تايم شيت للإيجار تسجيل عمل موجب وسعر شراء موجب لكل وحدة.
 "Repair Purchase Invoices are for external services. Purchase spare parts into stock separately, then consume them on the repair.",فواتير شراء الإصلاح مخصصة للخدمات الخارجية. اشترِ قطع الغيار وأضفها إلى المخزون بشكل منفصل، ثم استخدمها في الإصلاح.
 Repair accounting documents already exist. Cancel/delete them before changing the job's financial attribution.,مستندات محاسبة الإصلاح موجودة بالفعل. قم بإلغائها/حذفها قبل تغيير التخصيص المالي للمهمة.
 Repair inputs cannot change after accounting documents exist. Create a separate repair for corrections.,لا يمكن تغيير مدخلات الإصلاح بعد وجود مستندات محاسبية. أنشئ إصلاحًا منفصلاً للتصحيحات.
@@ -975,7 +975,7 @@ Repair stock accounting requires perpetual inventory for this Company.,يتطل�
 Repair service invoices must post to Expense accounts; Asset Repair reclassifies qualifying improvements.,يجب قيد فواتير خدمة الإصلاح في حسابات المصروفات؛ ويعيد تصنيف إصلاح الأصول التحسينات المؤهلة.
 Resolve the historical carried loss before starting an Operating First agreement.,"تسوية الخسارة المرحلة التاريخية قبل بدء اتفاقية ""التشغيل أولاً""."
 Repair stock issues must use an Expense account. Asset Repair handles capitalization separately.,يجب أن تستخدم مشاكل مخزون الإصلاح حساب المصروفات. يتعامل إصلاح الأصول مع الرسملة بشكل منفصل.
-Resolve the historical carried loss with a period settlement before using automatic Timesheet settlements.,قم بتسوية الخسارة المنقولة التاريخية بتسوية فترة قبل استخدام تسويات الجدول الزمني التلقائية.
+Resolve the historical carried loss with a period settlement before using automatic Timesheet settlements.,قم بتسوية الخسارة المنقولة التاريخية بتسوية فترة قبل استخدام تسويات تايم شيت التلقائية.
 Retained for historical agreement snapshots. New agreements use automatic source-revenue settlements on invoice submission.,تم الاحتفاظ بها للقطات اتفاقيات سابقة. تستخدم الاتفاقيات الجديدة تسويات إيرادات المصدر التلقائية عند تقديم الفاتورة.
 Revenue account is missing for {0}. Recalculate the settlement.,حساب الإيرادات غير موجود لـ {0}. أعد حساب التسوية.
 Revenue account {0} must be an enabled Income account in the settlement Company currency.,يجب أن يكون حساب الإيرادات {0} حساب إيرادات مُفعَّل بعملة الشركة الخاصة بالتسوية.
@@ -989,7 +989,7 @@ Row {0}: a shift must fit exactly one booked crane period.,الصف {0}: يجب 
 Row {0}: overtime cannot exceed worked hours.,الصف {0}: لا يمكن أن تتجاوز ساعات العمل الإضافي ساعات العمل.
 Row {0}: work falls outside the agreed rental dates. Extend the Rental Contract deliberately.,الصف {0}: يقع العمل خارج تواريخ الإيجار المتفق عليها. مدد المهمة عن قصد.
 Save the Crane to view the linked Asset and dated ownership values.,احفظ الرافعة لعرض الأصل المرتبط وقيم الملكية المؤرخة.
-Row {0}: work is outside the Timesheet period.,الصف {0}: العمل خارج فترة الجدول الزمني.
+Row {0}: work is outside the Timesheet period.,الصف {0}: العمل خارج فترة تايم شيت.
 "Row {0}: this owner has {1}% ownership but 0% Remaining Balance. Enter their agreed profit share, or select Confirm Owner Receives No Remaining Profit only if this is intentional. Ownership % does not determine payment by itself.","الصف {0}: يمتلك هذا المالك {1}% من الملكية ولكن رصيده المتبقي 0%. أدخل حصته المتفق عليها من الأرباح، أو حدد ""تأكيد عدم حصول المالك على أي أرباح متبقية"" فقط إذا كان ذلك مقصودًا. لا تحدد نسبة الملكية المدفوعات وحدها."
 "Save to calculate: agreed invoice revenue, less operating share, less expenses, then distribute the remaining balance. A deficit stops the settlement. Submit to close the period and create partner payables. Historical agreements retain their original revenue basis.",احفظ للحساب: إيرادات الفاتورة المتفق عليها، مطروحًا منها حصة التشغيل، مطروحًا منها المصروفات، ثم توزيع الرصيد المتبقي. يؤدي العجز إلى إيقاف التسوية. أرسل لإغلاق الفترة وإنشاء مبالغ مستحقة الدفع للشركاء. تحتفظ الاتفاقيات السابقة بأساس الإيرادات الأصلي الخاص بها.
 Select a submitted repair service invoice from this maintenance job.,اختر فاتورة خدمة إصلاح تم إرسالها من مهمة الصيانة هذه.
@@ -1004,7 +1004,7 @@ Set the Repair Expense Account in HER Settings → Maintenance Defaults.,عيّ�
 Set the repair expense account and supplier payment method once per Company. Purchased parts use the Maintenance warehouse automatically.,عيّن حساب نفقات الإصلاح وطريقة دفع المورد مرة واحدة لكل شركة. تستخدم القطع المشتراة مستودع الصيانة تلقائيًا.
 Settle consecutive periods without overlaps or gaps. Next From Date is {0}.,تسوية الفترات المتتالية دون تداخلات أو فجوات. التاريخ التالي من هو {0}.
 Source is included in settlement {0}. Cancel that settlement first.,المصدر مدرج في التسوية {0}. ألغِ هذه التسوية أولاً.
-Several rental contracts cover this work. Choose the Rental Contract on the Timesheet.,تغطي عدة مهام هذا العمل. اختر عقد ايجار معدة في الجدول الزمني.
+Several rental contracts cover this work. Choose the Rental Contract on the Timesheet.,تغطي عدة مهام هذا العمل. اختر عقد ايجار معدة في تايم شيت.
 Source {0} is already covered by settlement {1}.,المصدر {0} مشمول بالفعل بالتسوية {1}.
 Share of profit after the operating share and expenses. Defaults to Ownership %; change it only when the agreement uses a different split.,حصة الأرباح بعد خصم حصة التشغيل والمصروفات. الافتراضي هو نسبة الملكية؛ لا تقم بتغييره إلا عندما تستخدم الاتفاقية تقسيمًا مختلفًا.
 "Submit Maintenance to create its expense. To correct a submitted repair, use Cancel and Amend.","أرسل الصيانة لإنشاء مصروفاتها. لتصحيح إصلاح تم إرساله، استخدم ""إلغاء"" و""تعديل""."
@@ -1039,15 +1039,15 @@ Purchase Price per {0},سعر الشراء لكل {0}
 This repair uses native accounting documents; a second cash expense is not allowed.,يستخدم هذا الإصلاح مستندات محاسبية أصلية؛ لا يجوز تسجيل مصروف نقدي ثانٍ.
 "This reverses accounting, including supplier payments. It does not recover money already paid. Use Amend to correct the repair and submit new entries.",يعكس هذا القيود المحاسبية، بما فيها دفعات المورد. لا يسترد الأموال المدفوعة فعليًا. استخدم تعديل لتصحيح الإصلاح واعتماد قيود جديدة.
 This service invoice is already assigned to another Asset Repair.,فاتورة الخدمة هذه مرتبطة بإصلاح أصل آخر بالفعل.
-Timesheet already has settlement {0}.,لسجل العمل تسوية {0} بالفعل.
-Timesheet and Rental Contract must belong to the same rental job.,يجب أن يتبع سجل العمل وعقد ايجار معدة عملية التأجير نفسها.
-Timesheet customer and location must match the Rental Contract.,يجب أن يطابق عميل سجل العمل وموقعه بيانات عقد ايجار معدة.
-Timesheet is already covered by settlement {0}.,سجل العمل مشمول بالفعل بالتسوية {0}.
-Timesheet period is covered by settlement {0}. Cancel the settlement before changing its work allocation.,فترة سجل العمل مشمولة بالتسوية {0}. ألغِ التسوية قبل تغيير تخصيص العمل.
-Timesheet is covered by period settlement {0}.,سجل العمل مشمول بتسوية الفترة {0}.
-Timesheet {0} has work on {1}; keep that crane and date in the rental contract.,يحتوي سجل العمل {0} على عمل بتاريخ {1}؛ احتفظ بهذه الرافعة وهذا التاريخ في عقد ايجار معدة.
-Uncheck to submit this Timesheet without creating a supplier Purchase Invoice.,ألغِ التحديد لاعتماد سجل العمل دون إنشاء فاتورة مشتريات للمورد.
-Timesheet {0}: work must fit one crane period on its Rental Contract.,سجل العمل {0}: يجب أن يقع العمل ضمن فترة رافعة واحدة في عقد ايجار معدة.
+Timesheet already has settlement {0}.,لتايم شيت تسوية {0} بالفعل.
+Timesheet and Rental Contract must belong to the same rental job.,يجب أن يتبع تايم شيت وعقد ايجار معدة عملية التأجير نفسها.
+Timesheet customer and location must match the Rental Contract.,يجب أن يطابق عميل تايم شيت وموقعه بيانات عقد ايجار معدة.
+Timesheet is already covered by settlement {0}.,تايم شيت مشمول بالفعل بالتسوية {0}.
+Timesheet period is covered by settlement {0}. Cancel the settlement before changing its work allocation.,فترة تايم شيت مشمولة بالتسوية {0}. ألغِ التسوية قبل تغيير تخصيص العمل.
+Timesheet is covered by period settlement {0}.,تايم شيت مشمول بتسوية الفترة {0}.
+Timesheet {0} has work on {1}; keep that crane and date in the rental contract.,يحتوي تايم شيت {0} على عمل بتاريخ {1}؛ احتفظ بهذه الرافعة وهذا التاريخ في عقد ايجار معدة.
+Uncheck to submit this Timesheet without creating a supplier Purchase Invoice.,ألغِ التحديد لاعتماد تايم شيت دون إنشاء فاتورة مشتريات للمورد.
+Timesheet {0}: work must fit one crane period on its Rental Contract.,تايم شيت {0}: يجب أن يقع العمل ضمن فترة رافعة واحدة في عقد ايجار معدة.
 Treasury Transaction {0}: {1},حركة الخزينة {0}: {1}
 Unreconcile adjustment {0} before cancelling Maintenance.,ألغِ مطابقة التسوية {0} قبل إلغاء الصيانة.
 Use Material Issue for repair consumption.,استخدم صرف المواد لصرف قطع الإصلاح.
@@ -1062,7 +1062,7 @@ Use when the crane owner must reimburse the repair. Select the owner as a Custom
 Use the Crane's Asset and enable Capitalize Repair Cost for an improvement. Routine stock repairs use Material Issue.,استخدم أصل الرافعة وفعّل رسملة تكلفة الإصلاح للتحسينات. تستخدم إصلاحات المخزون الدورية صرف المواد.
 Use stock Items for parts and non-stock Items for external services.,استخدم بنودًا مخزنية للقطع وبنودًا غير مخزنية للخدمات الخارجية.
 Work costs are closed by settlement {0}. Cancel the settlement first.,أُغلقت تكاليف العمل بالتسوية {0}. ألغِ التسوية أولًا.
-You cannot view Timesheets or Sales Invoices.,ليس لديك صلاحية عرض سجلات العمل أو فواتير المبيعات.
+You cannot view Timesheets or Sales Invoices.,ليس لديك صلاحية عرض تايم شيت أو فواتير المبيعات.
 Work expenses are closed by settlement {0}. Cancel the affected settlement before posting or cancelling this expense.,أُغلقت مصروفات العمل بالتسوية {0}. ألغِ التسوية المتأثرة قبل ترحيل هذا المصروف أو إلغائه.
 "When Rented is checked, submission purchases actual recorded work using the Supplier Billing UOM and purchase price. Prices use the Rental Contract company currency.",عند تحديد مستأجر، يشتري الاعتماد العمل الفعلي المسجل بوحدة فوترة المورد وسعر الشراء. الأسعار بعملة شركة عقد ايجار معدة.
 {0}: an Inactive crane cannot be booked.,{0}: لا يمكن حجز رافعة غير نشطة.
@@ -1070,11 +1070,40 @@ Work expenses are closed by settlement {0}. Cancel the affected settlement befor
 {0} - Company {1}% interest,{0} - حصة الشركة {1}٪
 "{0}: enter a positive agreed Hour, Day or Month rate.",{0}: أدخل سعرًا متفقًا عليه أكبر من صفر للساعة أو اليوم أو الشهر.
 Use for a major improvement or replacement that adds future benefit to the crane. The cost is added to the crane Asset automatically when you submit Maintenance. Explain the improvement below.,استخدمه لتحسين كبير أو استبدال يضيف منفعة مستقبلية للرافعة. تُضاف التكلفة تلقائيًا إلى أصل الرافعة عند اعتماد الصيانة. اشرح التحسين أدناه.
-Crane Work Log,سرك الونش
+Crane Work Log,تايم شيت
 Crane Servicing,صيانة الونش
 Ownership Not Recorded,الملكية غير مسجلة
 Externally Owned,مملوك للغير
 "Enter a positive agreed rate and an Hour, Day or Month Billing Unit.",أدخل سعرًا متفقًا عليه أكبر من صفر ووحدة فوترة بالساعة أو اليوم أو الشهر.
-Timesheets for the same crane rental day must use matching billing terms.,يجب توحيد شروط الفوترة في سجلات العمل لنفس يوم تأجير الونش.
-Equipment Work Log,سرك
+Timesheets for the same crane rental day must use matching billing terms.,يجب توحيد شروط الفوترة في تايم شيت لنفس يوم تأجير الونش.
+Equipment Work Log,تايم شيت
 Equipment Expense,مصروف خاص بالمعدة
+Timesheets,تايم شيت
+سجلات ساعات المعدات,تايم شيت
+سجلات ساعات معدات,تايم شيت
+سجل ساعات المعدة,تايم شيت
+سجل ساعات معدة,تايم شيت
+سجلات ساعات,تايم شيت
+سجلات الساعات,تايم شيت
+سجل الساعات,تايم شيت
+سجل ساعات,تايم شيت
+سجلات عمل الرافعات,تايم شيت
+سجلات عمل المعدات,تايم شيت
+سجلات عمل التأجير,تايم شيت
+سجل عمل المعدة,تايم شيت
+سجل عمل رافعة,تايم شيت
+سجل عمل الرافعة,تايم شيت
+سجل عمل المعدات,تايم شيت
+سجلات العمل,تايم شيت
+سجلات عمل,تايم شيت
+سجل العمل,تايم شيت
+سجل عمل,تايم شيت
+سجلات الدوام,تايم شيت
+سجل الدوام,تايم شيت
+جداول الدوام,تايم شيت
+جدول الدوام,تايم شيت
+الجدول الزمني للرافعة,تايم شيت
+سرك الونش,تايم شيت
+سرك,تايم شيت
+Create Timesheet,إنشاء تايم شيت
+Timesheet Work,عمل تايم شيت

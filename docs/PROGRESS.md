@@ -1,5 +1,11 @@
 # Progress
 
+## 2026-11-16 — Unified Arabic Timesheet terminology
+
+Browser verified Timesheet form tabs and workspace use «تايم شيت»; runtime translation checks cover main labels, plural, create action and legacy Work Log names. Audited all Timesheet/Work Log catalog entries for the canonical term. Timeline build and whitespace checks passed; site cache cleared.
+
+Use «تايم شيت» consistently for Timesheet, Crane Timesheet, plural Timesheets, Crane Work Log and Equipment Work Log. Updated app translations, related messages, reports and timeline category. Legacy Arabic Timesheet labels resolve to the same wording, while Timeline retains «الجدول الزمني». Internal DocType names, IDs and data remain unchanged. Supersedes earlier «سرك» / «سجل العمل» terminology.
+
 ## 2026-11-16 — Compact crane timeline
 
 Production build passed. Browser checked the exact ASG-00010 contract scope: two crane rows, November 3–7 with booking padding, Arabic controls and date labels, timeline beginning 206px from page top, activity toggle round trips, native detail link/Escape dismissal, collapsed filter controls and mobile without horizontal page overflow; no JavaScript errors. Removed zero-count activity controls after visual review. No documents changed.

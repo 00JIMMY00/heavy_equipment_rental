@@ -1,5 +1,9 @@
 # Project context
 
+## 2026-11-16 — Unified Arabic Timesheet terminology
+
+Use «تايم شيت» consistently for Timesheet, Crane Timesheet, plural Timesheets, Crane Work Log and Equipment Work Log. Updated app translations, related messages, reports and timeline category. Legacy Arabic Timesheet labels resolve to the same wording, while Timeline retains «الجدول الزمني». Internal DocType names, IDs and data remain unchanged. Supersedes earlier «سرك» / «سجل العمل» terminology.
+
 ## 2026-11-16 — Compact crane timeline
 
 Replaced the timeline hero, summary cards and repeated legends with a compact heading, period controls and counted activity toggles (only types with records appear). Default grouping is one row per Crane. Contract-scoped URLs automatically fit the booked dates (one day padding, bounded to the existing 120-day range limit). Filters, search and custom dates are collapsed behind Filters. Timeline day columns fill available width for short bookings and scroll for long ranges; reduced sticky resource width. Clickable event details/native links and Escape dismissal remain available. Added Arabic timeline controls/date labels using the user's existing language, preserving theme and backend permission checks. No rental data or billing logic changed.
