@@ -17,12 +17,12 @@ def get_calendar_events(start_date, end_date):
     events = []
     cranes = dict(frappe.get_list("Crane", fields=["name", "crane_name"],
                                  as_list=True, limit_page_length=0)) if frappe.has_permission("Crane", "read") else {}
-    if frappe.has_permission("Crane Assignment", "read"):
+    if frappe.has_permission("Rental Contract", "read"):
         for row in visible_allocations():
             if getdate(row.start_date) > end or getdate(row.expected_end_date) < start:
                 continue
             events.append({
-                "id": f"reservation:{row.name}", "type": "reservation", "doctype": "Crane Assignment",
+                "id": f"reservation:{row.name}", "type": "reservation", "doctype": "Rental Contract",
                 "docname": row.parent, "title": f"{row.crane_name} · {row.customer}",
                 "participant": row.crane_name, "venue": row.location,
                 "fromDate": str(row.start_date), "toDate": str(row.expected_end_date),

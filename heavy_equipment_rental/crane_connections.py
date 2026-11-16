@@ -52,7 +52,7 @@ def dashboard_data(sources=None):
 	remaining = set(sources) | masters | {"Asset Depreciation Schedule", "Purchase Receipt", "Purchase Invoice", "Payment Entry"}
 	groups = []
 	for label, doctypes in (
-		("Rental", ["Crane Assignment", "Crane Timesheet", "Sales Invoice", "Purchase Invoice"]),
+		("Rental", ["Rental Contract", "Crane Timesheet", "Sales Invoice", "Purchase Invoice"]),
 		("Operations", ["Crane Maintenance", "Expense Entry", "Stock Entry", "Asset Repair"]),
 		("Profit Sharing & Payments", ["Crane Profit Settlement", "Journal Entry", "Payment Entry"]),
 		("Masters", sorted(masters)),

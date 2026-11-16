@@ -10,7 +10,7 @@ def install_item_price_field():
 			"fieldname": "crane_prices_section",
 			"fieldtype": "Section Break",
 			"label": "Crane Period Prices",
-			"insert_after": "standard_rate",
+			"insert_after": "uoms",
 			"depends_on": "eval:doc.item_code && doc.item_code.startsWith('CRANE-')",
 		},
 		{

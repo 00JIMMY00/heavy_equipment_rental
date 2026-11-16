@@ -11,23 +11,47 @@ from heavy_equipment_rental.billing import generate_crane_sales_invoices, genera
 
 
 class TestRentalWorkflow(FrappeTestCase):
+    def setUp(self):
+        for name in ("Defaults test", "Test yard", "Other yard", "Second yard", "Monthly yard"):
+            if not frappe.db.exists("Location", name):
+                frappe.get_doc({"doctype": "Location", "location_name": name}).insert()
+
+    def test_location_links_migrate_existing_text(self):
+        from heavy_equipment_rental.patches.link_rental_locations import execute
+        for doctype in ("Rental Contract", "Crane Timesheet"):
+            field = frappe.get_meta(doctype).get_field("location")
+            self.assertEqual((field.fieldtype, field.options), ("Link", "Location"))
+        name = frappe.db.get_value("Rental Contract", {}, "name")
+        before = frappe.get_doc("Rental Contract", name).as_dict()
+        legacy = "Legacy rental location " + frappe.generate_hash(length=8)
+        frappe.db.set_value("Rental Contract", name, "location", legacy, update_modified=False)
+        execute()
+        self.assertTrue(frappe.db.exists("Location", legacy))
+        after = frappe.get_doc("Rental Contract", name).as_dict()
+        self.assertEqual(after.location, legacy)
+        self.assertEqual(after.modified, before.modified)
+        self.assertEqual(after.assigned_cranes, before.assigned_cranes)
+        execute()
+        self.assertEqual(frappe.db.count("Location", {"location_name": legacy}), 1)
+
     def test_assignment_defaults_use_settings_and_crane_prices(self):
         original = frappe.db.get_single_value("Heavy Equipment Rental Settings", "default_selling_uom")
         try:
             settings = frappe.get_single("Heavy Equipment Rental Settings")
             settings.default_selling_uom = "Day"
             settings.save()
-            crane = frappe.get_doc(dict(doctype="Crane", crane_name="Assignment defaults " + frappe.generate_hash(length=8),
+            crane = frappe.get_doc(dict(doctype="Crane", crane_name="Rental Contract defaults " + frappe.generate_hash(length=8),
                 operational_condition="Operational")).insert()
             for row in crane.period_prices:
                 row.price = {"Hour": 100, "Day": 700, "Month": 15000}[row.period]
             crane.save()
             day = getdate(today()) + timedelta(days=400)
-            assignment = frappe.get_doc(dict(doctype="Crane Assignment",
+            assignment = frappe.get_doc(dict(doctype="Rental Contract",
                 customer=frappe.db.get_value("Customer", {}, "name"), location="Defaults test",
                 assigned_cranes=[dict(crane=crane.name, start_date=day, expected_end_date=day)])).insert()
+            self.assertTrue(assignment.name.startswith("RC-"))
             self.assertEqual((assignment.assigned_cranes[0].rental_rate_unit, assignment.assigned_cranes[0].rental_rate), ("Day", 700))
-            from heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.crane_assignment import get_assignment_defaults
+            from heavy_equipment_rental.heavy_equipment_rental.doctype.rental_contract.rental_contract import get_assignment_defaults
             self.assertEqual(get_assignment_defaults(crane.name, "Month")["rental_rate"], 15000)
             settings.default_selling_uom = "Month"
             settings.save()
@@ -111,7 +135,7 @@ class TestRentalWorkflow(FrappeTestCase):
         day = start + timedelta(days=1)
         end = start + timedelta(days=9)
         rental = frappe.get_doc({
-            "doctype": "Crane Assignment", "customer": customer.name, "location": "Test yard",
+            "doctype": "Rental Contract", "customer": customer.name, "location": "Test yard",
             "assigned_cranes": [{
                 "crane": crane.name, "start_date": start, "expected_end_date": end,
                 "rental_rate_unit": "Day", "rental_rate": 90,
@@ -119,7 +143,7 @@ class TestRentalWorkflow(FrappeTestCase):
         }).insert()
         with self.assertRaises(frappe.ValidationError):
             frappe.get_doc({
-                "doctype": "Crane Assignment", "customer": customer.name, "location": "Other yard",
+                "doctype": "Rental Contract", "customer": customer.name, "location": "Other yard",
                 "assigned_cranes": [{
                     "crane": crane.name, "start_date": day, "expected_end_date": end,
                     "rental_rate_unit": "Hour", "rental_rate": 50,
@@ -175,7 +199,7 @@ class TestRentalWorkflow(FrappeTestCase):
             }],
         }).insert()
         self.assertTrue(first.assignment)
-        booking = frappe.get_doc("Crane Assignment", first.assignment).assigned_cranes[0]
+        booking = frappe.get_doc("Rental Contract", first.assignment).assigned_cranes[0]
         self.assertEqual(getdate(booking.start_date), later)
         self.assertEqual(getdate(booking.expected_end_date), later + timedelta(days=9))
         second_day = later + timedelta(days=1)

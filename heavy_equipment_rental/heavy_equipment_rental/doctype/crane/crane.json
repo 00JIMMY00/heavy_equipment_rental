@@ -12,7 +12,6 @@
   "crane_name",
   "ownership_classification",
   "ownership_type",
-  "supplier",
   "crane_image",
   "crane_list_image",
   "specs_col",
@@ -32,10 +31,11 @@
   "column_break_xprd",
   "section_break_mjem",
   "enable_profit_sharing",
+  "hired_from_supplier",
+  "supplier",
   "agreement_effective_from",
   "ownership_partners",
   "operating_fees",
-  "hired_from_supplier",
   "sharing_section",
   "operator_type",
   "operating_partner",
@@ -101,7 +101,6 @@
   {
    "fieldname": "model",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Model"
   },
   {
@@ -432,7 +431,8 @@
    "fieldname": "ownership_classification",
    "fieldtype": "Data",
    "label": "Ownership",
-   "read_only": 1
+   "read_only": 1,
+   "in_list_view": 1
   },
   {
    "description": "Grand Total: percentage of crane revenue before expenses. Net Profit: percentage of positive revenue minus allocated expenses, before any operating fees. All rows use the same base; fees are not compounded.",
@@ -465,7 +465,7 @@
  "grid_page_length": 100,
  "image_field": "crane_image",
  "links": [],
- "modified": "2026-11-16 11:38:29.291033",
+ "modified": "2026-11-16 13:24:14.823885",
  "modified_by": "Administrator",
  "module": "Heavy Equipment Rental",
  "name": "Crane",

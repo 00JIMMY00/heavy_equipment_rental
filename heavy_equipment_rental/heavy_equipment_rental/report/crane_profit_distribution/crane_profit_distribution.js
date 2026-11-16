@@ -21,7 +21,7 @@ frappe.query_reports["Crane Profit Distribution"] = {
             depends_on: "eval:['Participant Summary', 'Distribution Details', 'Entitlement Movements'].includes(doc.view)"},
         {fieldname: "settlement", label: __("Settlement"), fieldtype: "Link", options: "Crane Profit Settlement",
             get_query: () => ({filters: {company: frappe.query_report.get_filter_value("company"), docstatus: ["!=", 2]}})},
-        {fieldname: "assignment", label: __("Assignment"), fieldtype: "Link", options: "Crane Assignment",
+        {fieldname: "assignment", label: __("Rental Contract"), fieldtype: "Link", options: "Rental Contract",
             get_query: () => ({filters: {company: frappe.query_report.get_filter_value("company")}})},
         {fieldname: "timesheet", label: __("Timesheet"), fieldtype: "Link", options: "Crane Timesheet"},
         {fieldname: "sales_invoice", label: __("Sales Invoice"), fieldtype: "Link", options: "Sales Invoice",

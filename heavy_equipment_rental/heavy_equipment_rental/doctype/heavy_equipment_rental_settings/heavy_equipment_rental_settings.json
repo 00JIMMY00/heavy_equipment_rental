@@ -23,7 +23,7 @@
    "options": "Hour\nDay\nMonth",
    "default": "Hour",
    "reqd": 1,
-   "description": "Prefills the Billing Unit on new Timesheets. The selected Crane supplies its reference price for this unit; existing Assignment terms take precedence."
+   "description": "Prefills the Billing Unit on new Timesheets. The selected Crane supplies its reference price for this unit; existing Rental Contract terms take precedence."
   },
   {
    "fieldname": "billing_column",

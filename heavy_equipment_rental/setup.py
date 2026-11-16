@@ -10,6 +10,8 @@ from heavy_equipment_rental.item_prices import install_item_price_field
 
 
 def execute():
+	from heavy_equipment_rental.employee_entry import setup as setup_employee_entry
+	setup_employee_entry()
 	for unit in ("Hour", "Day", "Month"):
 		if not frappe.db.exists("UOM", unit):
 			frappe.get_doc({"doctype": "UOM", "uom_name": unit, "must_be_whole_number": 0}).insert(ignore_permissions=True)
@@ -76,8 +78,8 @@ def execute():
 		}, {
 			"fieldname": "crane_assignment",
 			"fieldtype": "Link",
-			"label": "Crane Assignment",
-			"options": "Crane Assignment",
+			"label": "Rental Contract",
+			"options": "Rental Contract",
 			"insert_after": "crane_timesheet",
 			"in_standard_filter": 1,
 		}, {
@@ -95,7 +97,7 @@ def execute():
 			"read_only": 1,
 			"insert_after": "crane_assignment",
 			"depends_on": "crane",
-			"description": "Work period charged by this expense, independent of Posting Date. Assignment bookings supply the default period.",
+			"description": "Work period charged by this expense, independent of Posting Date. Rental Contract bookings supply the default period.",
 		}, {
 			"fieldname": "service_to_date",
 			"hidden": 1,

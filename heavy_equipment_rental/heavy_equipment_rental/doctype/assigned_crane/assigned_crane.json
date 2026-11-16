@@ -11,7 +11,7 @@
   {
    "fieldname": "assignment_section",
    "fieldtype": "Section Break",
-   "label": "Assignment"
+   "label": "Rental Contract"
   },
   {
    "fieldname": "crane",

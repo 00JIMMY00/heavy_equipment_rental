@@ -19,7 +19,7 @@ from heavy_equipment_rental.rental_validation import (
 
 
 def _invoice_summaries(assignment, sheets):
-	"""Resolve Assignment → Timesheet → Sales Invoice links."""
+	"""Resolve Rental Contract → Timesheet → Sales Invoice links."""
 	grouped = defaultdict(list)
 	for sheet in sheets:
 		if sheet.sales_invoice and frappe.db.exists("Sales Invoice", sheet.sales_invoice):
@@ -55,13 +55,13 @@ def _rental_allocation(sheet, days):
                 if (window := allocation_window(row)) and
                 all(window[0] <= day <= window[1] for day in days)]
     if len(matching) != 1:
-        frappe.throw(_("Timesheet {0}: work must fit one crane period on its Assignment.").format(sheet.name))
+        frappe.throw(_("Timesheet {0}: work must fit one crane period on its Rental Contract.").format(sheet.name))
     row = frappe._dict(matching[0])
     if sheet.rental_rate_unit:
         row.rental_rate_unit = sheet.rental_rate_unit
         row.rental_rate = sheet.rental_rate
     if row.rental_rate_unit not in ("Hour", "Day", "Month") or flt(row.rental_rate) <= 0:
-        frappe.throw(_("Assignment {0}, row {1}: set a positive agreed rental rate.").format(
+        frappe.throw(_("Rental Contract {0}, row {1}: set a positive agreed rental rate.").format(
             sheet.assignment, row.idx))
     if flt(sheet.total_crane_billable_hours) <= 0:
         frappe.throw(_("Timesheet {0} has no billable crane hours.").format(sheet.name))
@@ -93,7 +93,7 @@ def _invoice_line(sheets, allocation, charged_days):
         "conversion_factor": sum(flt(sheet.total_crane_billable_hours) for sheet in sheets) / float(quantity),
         "qty": float(quantity),
         "rate": flt(allocation.rental_rate),
-        "description": _("Crane {0}; Assignment {1}, row {2}; Timesheets {3}; {4} {5} at {6} per {5}").format(
+        "description": _("Crane {0}; Rental Contract {1}, row {2}; Timesheets {3}; {4} {5} at {6} per {5}").format(
             crane.crane_name, sheets[0].assignment, allocation.idx,
             ", ".join(sheet.name for sheet in sheets), float(quantity), unit, allocation.rental_rate),
     }]
@@ -166,7 +166,7 @@ def assignment_invoice_summary(assignment):
 def generate_sales_invoice(assignment=None, timesheet=None, crane=None):
     """Create a draft Sales Invoice directly from submitted crane work."""
     if bool(assignment) == bool(timesheet):
-        frappe.throw(_("Choose an Assignment or one Timesheet."))
+        frappe.throw(_("Choose an Rental Contract or one Timesheet."))
     if not frappe.has_permission("Sales Invoice", "create"):
         frappe.throw(_("You cannot create Sales Invoices."), frappe.PermissionError)
     if timesheet:
@@ -197,13 +197,13 @@ def generate_sales_invoice(assignment=None, timesheet=None, crane=None):
         lines, billed, covered = _billing_lines(unbilled, all_sheets, active)
         company = rental.company or erpnext.get_default_company()
         if lines and not company:
-            frappe.throw(_("Set a Company on the Assignment or a default Company."))
+            frappe.throw(_("Set a Company on the Rental Contract or a default Company."))
         invoice = None
         if lines:
             invoice = frappe.get_doc({
                 "doctype": "Sales Invoice", "company": company, "customer": rental.customer,
                 "posting_date": today(), "due_date": today(),
-                "remarks": _("Crane Assignment {0}; Location {1}").format(rental.name, rental.location),
+                "remarks": _("Rental Contract {0}; Location {1}").format(rental.name, rental.location),
                 "items": lines,
             })
             invoice.insert()
@@ -230,7 +230,7 @@ def generate_sales_invoice(assignment=None, timesheet=None, crane=None):
 
 @frappe.whitelist()
 def generate_crane_sales_invoices(crane):
-    """Create one draft invoice per Assignment for this Crane's submitted work."""
+    """Create one draft invoice per Rental Contract for this Crane's submitted work."""
     frappe.get_doc("Crane", crane).check_permission("read")
     if not frappe.has_permission("Sales Invoice", "create"):
         frappe.throw(_("You cannot create Sales Invoices."), frappe.PermissionError)

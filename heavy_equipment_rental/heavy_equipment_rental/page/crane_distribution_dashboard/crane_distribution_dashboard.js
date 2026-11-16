@@ -51,7 +51,7 @@ class CraneDistributionDashboard {
             ['view', 'طريقة عرض التفاصيل', 'Select', select(['Settlement Summary', 'Participant Summary', 'Distribution Details', 'Source Details', 'Entitlement Movements'])],
             ['date_basis', 'اختيار الفترة حسب', 'Select', select(['Work Period', 'Settlement Posting Date'])],
             ['participant', 'الأطراف المعروضة', 'Select', select(['All', 'Our Company', 'External Partners'])],
-            ['settlement', 'التسوية', 'Link', 'Crane Profit Settlement'], ['assignment', 'أمر الإيجار', 'Link', 'Crane Assignment'],
+            ['settlement', 'التسوية', 'Link', 'Crane Profit Settlement'], ['assignment', 'أمر الإيجار', 'Link', 'Rental Contract'],
             ['timesheet', 'سجل العمل', 'Link', 'Crane Timesheet'], ['sales_invoice', 'فاتورة البيع', 'Link', 'Sales Invoice'], ['customer', 'العميل', 'Link', 'Customer']
         ];
         const defaults = this.defaults();
@@ -154,7 +154,7 @@ CraneDistributionDashboard.labels = {
     "Account": "الحساب",
     "Company": "الشركة",
     "Crane": "المعدة",
-    "Crane Assignment": "تخصيص المعدات",
+    "Rental Contract": "تخصيص المعدات",
     "Crane Name": "اسم المعدة",
     "Crane Timesheet": "سجل ساعات المعدة",
     "Customer": "العميل",
@@ -244,7 +244,7 @@ CraneDistributionDashboard.labels = {
     "Participant Summary": "ملخص الشركة والشركاء",
     "Settlement Count": "عدد التسويات",
     "Expense Burden compares rounded residual shares before and after saved costs, after prior losses. Deficit drafts may contain costs beyond the distributable pool. This is explanatory, not another expense posting. Ownership % and Remaining Balance % are independent.": "أثر المصروفات يقارن نصيب المتبقي المقرب قبل التكاليف وبعدها، بعد الخسائر السابقة. قد تحتوي المسودات العاجزة على تكاليف تتجاوز وعاء التوزيع. هذا شرح للحساب وليس قيد مصروف إضافيًا. نسبة الملكية مستقلة عن نسبة توزيع المتبقي.",
-    "Assignment": "أمر الإيجار",
+    "Rental Contract": "أمر الإيجار",
     "Expense Type": "نوع المصروف",
     "Income Account": "حساب الإيراد",
     "Loss Brought Forward": "الخسائر المرحلة",

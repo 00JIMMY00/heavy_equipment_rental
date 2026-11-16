@@ -25,7 +25,7 @@ class TestCraneConnections(FrappeTestCase):
 		return {row["doctype"]: row for row in data["internal_links_found"]}
 
 	def test_child_assignments_and_invoice_header_and_rows_are_unioned(self):
-		assignment = self.stub("Crane Assignment")
+		assignment = self.stub("Rental Contract")
 		for _ in range(2):
 			self.stub("Assigned Crane", parent=assignment.name, parenttype=assignment.doctype,
 				parentfield="assigned_cranes", crane=self.crane.name)
@@ -35,8 +35,8 @@ class TestCraneConnections(FrappeTestCase):
 		for parent in (header, child, child):
 			self.stub("Sales Invoice Item", parent=parent.name, parenttype=parent.doctype,
 				parentfield="items", crane=self.crane.name)
-		rows = self.counts("Crane Assignment", "Sales Invoice")
-		self.assertEqual(rows["Crane Assignment"]["names"], [assignment.name])
+		rows = self.counts("Rental Contract", "Sales Invoice")
+		self.assertEqual(rows["Rental Contract"]["names"], [assignment.name])
 		self.assertEqual(rows["Sales Invoice"]["names"], sorted([header.name, child.name]))
 		self.assertEqual(rows["Sales Invoice"]["count"], 2)
 		self.assertNotIn(unrelated.name, rows["Sales Invoice"]["names"])
@@ -51,7 +51,7 @@ class TestCraneConnections(FrappeTestCase):
 		data = dashboard_data()
 		self.assertEqual(data["internal_links"]["Asset"], "asset")
 		items = {dt for group in data["transactions"] for dt in group["items"]}
-		self.assertTrue({"Sales Invoice", "Journal Entry", "Payment Entry", "Crane Assignment"} <= items)
+		self.assertTrue({"Sales Invoice", "Journal Entry", "Payment Entry", "Rental Contract"} <= items)
 
 	def test_target_permissions_and_unrequested_doctypes(self):
 		original = frappe.has_permission

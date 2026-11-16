@@ -99,7 +99,7 @@ async function load_rental_terms(frm, reset = false) {
     if (frm.doc.docstatus !== 0 || !frm.doc.assignment) return;
     const { assignment, crane, period_start, period_end } = frm.doc;
     if (![crane, period_start, period_end].every(Boolean)) return;
-    const rental = await frappe.db.get_doc("Crane Assignment", assignment);
+    const rental = await frappe.db.get_doc("Rental Contract", assignment);
     if ([assignment, crane, period_start, period_end].join("|") !==
         [frm.doc.assignment, frm.doc.crane, frm.doc.period_start, frm.doc.period_end].join("|")) return;
     const rows = rental.assigned_cranes.filter(row => row.crane === crane && !row.cancelled &&
@@ -133,10 +133,10 @@ function suggest_assignment(frm) {
         if (matches?.length === 1) frm.set_value("assignment", matches[0]);
         if (matches?.length > 1) {
             const dialog = new frappe.ui.Dialog({
-                title: __("Choose the rental Assignment"),
-                fields: [{ fieldname: "assignment", fieldtype: "Select", label: __("Assignment"),
+                title: __("Choose the rental Rental Contract"),
+                fields: [{ fieldname: "assignment", fieldtype: "Select", label: __("Rental Contract"),
                     options: ["", ...matches].join("\n"), reqd: 1 }],
-                primary_action_label: __("Use Assignment"),
+                primary_action_label: __("Use Rental Contract"),
                 primary_action(values) {
                     frm.set_value("assignment", values.assignment);
                     dialog.hide();
@@ -159,7 +159,7 @@ frappe.ui.form.on("Crane Timesheet", {
     },
     async assignment(frm) {
         if (!frm.doc.assignment) return;
-        const { message } = await frappe.db.get_value("Crane Assignment", frm.doc.assignment, ["customer", "location"]);
+        const { message } = await frappe.db.get_value("Rental Contract", frm.doc.assignment, ["customer", "location"]);
         if (message) {
             await frm.set_value({ customer: message.customer, location: message.location });
         }
@@ -248,7 +248,7 @@ async function fill_entry_rental_terms(frm) {
     if (frm.doc.docstatus !== 0 || !frm.doc.assignment || !frm.doc.crane) return;
     const assignment = frm.doc.assignment, crane = frm.doc.crane;
     const request = frm._entry_terms_request = (frm._entry_terms_request || 0) + 1;
-    const doc = await frappe.db.get_doc("Crane Assignment", assignment);
+    const doc = await frappe.db.get_doc("Rental Contract", assignment);
     if (request !== frm._entry_terms_request || frm.doc.assignment !== assignment || frm.doc.crane !== crane || frm.doc.docstatus !== 0) return;
     for (const row of frm.doc.timesheet_entries || []) {
         const day = row.work_date || frm.doc.period_start;

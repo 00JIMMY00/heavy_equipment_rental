@@ -18,6 +18,9 @@ from heavy_equipment_rental.purchasing import (
 class TestCraneTimesheet(FrappeTestCase):
     def setUp(self):
         self.key = frappe.generate_hash(length=8)
+        for name in ["Supplier test yard " + self.key, "Default terms " + self.key,
+                     "Override defaults " + self.key] + ["Unit test yard " + unit + self.key for unit in ("Hour", "Day", "Month")]:
+            frappe.get_doc({"doctype": "Location", "location_name": name}).insert()
         self.company = erpnext.get_default_company()
         self.employee = frappe.db.get_value("Employee", {}, "name")
         self.assertTrue(self.company and self.employee, "Development tests need a Company and Employee")
@@ -39,7 +42,7 @@ class TestCraneTimesheet(FrappeTestCase):
         }).insert()
         self.day = getdate(today()) - timedelta(days=120)
         self.assignment = frappe.get_doc({
-            "doctype": "Crane Assignment", "company": self.company,
+            "doctype": "Rental Contract", "company": self.company,
             "customer": self.customer.name, "location": "Supplier test yard " + self.key,
             "assigned_cranes": [{
                 "crane": self.crane.name, "start_date": self.day,
@@ -78,7 +81,7 @@ class TestCraneTimesheet(FrappeTestCase):
 
     def test_editable_selling_terms_reach_invoice_without_changing_assignment(self):
         from heavy_equipment_rental.billing import generate_sales_invoice
-        from heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.crane_assignment import get_assignment_defaults
+        from heavy_equipment_rental.heavy_equipment_rental.doctype.rental_contract.rental_contract import get_assignment_defaults
         self.crane.default_selling_uom = "Day"
         self.crane.period_prices[1].price = 1500
         self.crane.save()
@@ -135,7 +138,7 @@ class TestCraneTimesheet(FrappeTestCase):
         self.assertEqual(sheet.rental_rate_unit, "Day")
         self.assertEqual(sheet.rental_rate, 350)
         self.assertEqual(sheet.purchase_uom, "Month")
-        booking = frappe.get_doc("Crane Assignment", sheet.assignment).assigned_cranes[0]
+        booking = frappe.get_doc("Rental Contract", sheet.assignment).assigned_cranes[0]
         self.assertEqual((booking.rental_rate_unit, booking.rental_rate), ("Day", 350))
         frappe.db.set_single_value("Heavy Equipment Rental Settings", {
             "default_selling_uom": "Hour", "default_supplier_uom": "Hour",
@@ -220,7 +223,7 @@ class TestCraneTimesheet(FrappeTestCase):
             assignment = self.assignment
             if offset:
                 assignment = frappe.get_doc({
-                    "doctype": "Crane Assignment", "company": self.company,
+                    "doctype": "Rental Contract", "company": self.company,
                     "customer": self.customer.name, "location": "Unit test yard " + unit + self.key,
                     "assigned_cranes": [{
                         "crane": self.crane.name, "start_date": self.day + timedelta(days=offset),

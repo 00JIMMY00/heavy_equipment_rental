@@ -12,7 +12,7 @@ DEMO_LOCATION = "HER DEMO - One crane rental cycle"
 def create_rental_cycle(company, start_date="2026-10-25"):
     """Run manually on a development site; all records use ordinary controllers."""
     frappe.only_for("System Manager")
-    existing = frappe.db.get_value("Crane Assignment", {"company": company, "location": DEMO_LOCATION}, "name")
+    existing = frappe.db.get_value("Rental Contract", {"company": company, "location": DEMO_LOCATION}, "name")
     if existing:
         return describe_cycle(existing)
     frappe.db.savepoint("her_demo_cycle")
@@ -65,7 +65,7 @@ def _create_cycle(company, start_date, *, location=None, daily_rate=5000,
     crane = frappe.get_doc(dict(doctype="Crane", crane_name="HER DEMO 50 Ton Crane",
         capacity_tons=50, ownership_type="Owned", operational_condition="Operational",
         license_plate="HER-DEMO-001", period_prices=[dict(period="Day", price=daily_rate)])).insert()
-    assignment = frappe.get_doc(dict(doctype="Crane Assignment", company=company,
+    assignment = frappe.get_doc(dict(doctype="Rental Contract", company=company,
         customer=customer.name, location=location or DEMO_LOCATION, assigned_cranes=[dict(crane=crane.name,
             start_date=start, expected_end_date=end, rental_rate_unit="Day", rental_rate=daily_rate)])).insert()
     sheet = frappe.get_doc(dict(doctype="Crane Timesheet", assignment=assignment.name, crane=crane.name,
@@ -120,7 +120,7 @@ def _create_cycle(company, start_date, *, location=None, daily_rate=5000,
 
 
 def describe_cycle(assignment):
-    rental = frappe.get_doc("Crane Assignment", assignment)
+    rental = frappe.get_doc("Rental Contract", assignment)
     sheets = frappe.get_all("Crane Timesheet", filters={"assignment": assignment},
                             fields=["name", "sales_invoice", "total_crane_billable_hours"])
     return dict(assignment=assignment, company=rental.company, crane=rental.assigned_cranes[0].crane,

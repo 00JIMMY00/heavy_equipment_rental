@@ -1,4 +1,5 @@
 [pre_model_sync]
+heavy_equipment_rental.patches.rename_rental_contract
 heavy_equipment_rental.patches.remove_direct_driver_payments
 heavy_equipment_rental.patches.rename_crane_operator
 heavy_equipment_rental.patches.rename_crane_workspace
@@ -51,3 +52,7 @@ heavy_equipment_rental.patches.simple_repair_methods
 heavy_equipment_rental.patches.crane_default_selling_uom
 
 heavy_equipment_rental.patches.rented_crane_classification
+
+heavy_equipment_rental.patches.link_rental_locations
+
+heavy_equipment_rental.patches.rename_rental_contract_workspace

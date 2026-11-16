@@ -44,8 +44,8 @@ def matching_assignments(crane, customer, location, start, end):
     """Only whole-period matches qualify. The caller chooses when several match."""
     if not all((crane, customer, location, start, end)):
         return []
-    return frappe.db.sql("""SELECT DISTINCT a.name FROM `tabCrane Assignment` a
-        JOIN `tabAssigned Crane` r ON r.parent=a.name AND r.parenttype='Crane Assignment'
+    return frappe.db.sql("""SELECT DISTINCT a.name FROM `tabRental Contract` a
+        JOIN `tabAssigned Crane` r ON r.parent=a.name AND r.parenttype='Rental Contract'
         WHERE a.customer=%s AND a.location=%s AND r.crane=%s AND COALESCE(r.cancelled,0)=0
         AND r.start_date<=%s AND r.expected_end_date>=%s ORDER BY a.name""",
         (customer, location, crane, start, end), pluck=True)
@@ -53,11 +53,11 @@ def matching_assignments(crane, customer, location, start, end):
 
 @frappe.whitelist()
 def find_assignments(crane, customer, location, period_start, period_end):
-    if not frappe.has_permission("Crane Assignment", "read"):
-        frappe.throw(_("You cannot read Crane Assignments."), frappe.PermissionError)
+    if not frappe.has_permission("Rental Contract", "read"):
+        frappe.throw(_("You cannot read Rental Contracts."), frappe.PermissionError)
     check_date_order(period_start, period_end, _("Work period"))
     names = matching_assignments(crane, customer, location, period_start, period_end)
-    return [name for name in names if frappe.has_permission("Crane Assignment", "read", name)]
+    return [name for name in names if frappe.has_permission("Rental Contract", "read", name)]
 
 
 @frappe.whitelist()
@@ -109,7 +109,7 @@ class CraneTimesheet(Document):
         matches = matching_assignments(
             self.crane, self.customer, self.location, self.period_start, self.period_end)
         if len(matches) > 1:
-            frappe.throw(_("Several assignments cover this work. Choose the Crane Assignment on the Timesheet."))
+            frappe.throw(_("Several rental contracts cover this work. Choose the Rental Contract on the Timesheet."))
         if matches:
             assignment_doc(matches[0], "read")
             self.assignment = matches[0]
@@ -120,12 +120,12 @@ class CraneTimesheet(Document):
             if default_price:
                 self.rental_rate = defaults.get("rental_rate", 0)
         if not self.rental_rate_unit or self.rental_rate is None:
-            frappe.throw(_("No assignment covers this work. Enter the billing unit and agreed rate."))
+            frappe.throw(_("No rental contract covers this work. Enter the billing unit and agreed rate."))
         check_date_order(self.period_start, self.period_end, _("Rental period"))
-        if not frappe.has_permission("Crane Assignment", "create"):
-            frappe.throw(_("Creating a rental requires Crane Assignment create permission."), frappe.PermissionError)
+        if not frappe.has_permission("Rental Contract", "create"):
+            frappe.throw(_("Creating a rental requires Rental Contract create permission."), frappe.PermissionError)
         assignment = frappe.get_doc({
-            "doctype": "Crane Assignment", "customer": self.customer,
+            "doctype": "Rental Contract", "customer": self.customer,
             "company": crane_company(self.crane) or frappe.defaults.get_user_default("Company"),
             "location": self.location,
             "assigned_cranes": [{
@@ -166,17 +166,17 @@ class CraneTimesheet(Document):
                 frappe.throw(_("Enter a positive Purchase Price per {0}.").format(self.purchase_uom))
         check_date_order(self.period_start, self.period_end, _("Timesheet period"))
         if not self.assignment:
-            frappe.throw(_("Select a Crane Assignment or enter billing terms for a new rental."))
+            frappe.throw(_("Select a Rental Contract or enter billing terms for a new rental."))
         lock_cranes([self.crane])
         if self.docstatus != 2:
             validate_rental_asset(self.crane)
         assignment = assignment_doc(self.assignment, "read", lock=True)
         if self.customer != assignment.customer or self.location != assignment.location:
-            frappe.throw(_("Timesheet customer and location must match the Assignment."))
+            frappe.throw(_("Timesheet customer and location must match the Rental Contract."))
         bookings = [row for row in assignment.assigned_cranes
                     if row.crane == self.crane and not row.cancelled]
         if not bookings:
-            frappe.throw(_("Crane {0} is not in this Assignment.").format(crane_display_name(self.crane)))
+            frappe.throw(_("Crane {0} is not in this Rental Contract.").format(crane_display_name(self.crane)))
         if not previous or previous.docstatus == 0:
             covering = [row for row in bookings if getdate(row.start_date) <= getdate(self.period_start)
                         and getdate(row.expected_end_date) >= getdate(self.period_end)]
@@ -192,7 +192,7 @@ class CraneTimesheet(Document):
             source = frappe.get_doc("Crane Timesheet", self.amended_from, for_update=True)
             source.check_permission("amend")
             if source.docstatus != 2 or source.assignment != self.assignment or source.crane != self.crane:
-                frappe.throw(_("Amend a cancelled Timesheet for the same Assignment and crane."))
+                frappe.throw(_("Amend a cancelled Timesheet for the same Rental Contract and crane."))
         if not self.timesheet_entries and self.docstatus == 1:
             frappe.throw(_("Add at least one shift before submitting the Timesheet."))
         intervals, operator_hours, flat_days, flat_rows = [], 0, {}, []
@@ -214,7 +214,7 @@ class CraneTimesheet(Document):
                     frappe.throw(_("Row {0}: work is outside the Timesheet period.").format(row.idx))
                 if not any(getdate(booking.start_date) <= day <= getdate(booking.expected_end_date)
                            for booking in bookings):
-                    frappe.throw(_("Row {0}: work falls outside the agreed rental dates. Extend the Assignment deliberately.").format(row.idx))
+                    frappe.throw(_("Row {0}: work falls outside the agreed rental dates. Extend the Rental Contract deliberately.").format(row.idx))
             # Initialize omitted legacy/API values once; explicit values, including
             # zero downtime rows, are never derived again from clock times.
             if row.worked_hours is None:

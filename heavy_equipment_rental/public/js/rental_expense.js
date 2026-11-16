@@ -26,7 +26,7 @@ async function rental_expense_defaults(frm) {
     const crane = frm.doc.crane;
     const request = frm._rental_expense_request = (frm._rental_expense_request || 0) + 1;
     if (!assignment) return;
-    const doc = await frappe.db.get_doc("Crane Assignment", assignment);
+    const doc = await frappe.db.get_doc("Rental Contract", assignment);
     if (request !== frm._rental_expense_request || assignment !== frm.doc.crane_assignment || crane !== frm.doc.crane) return;
     const booked = (doc.assigned_cranes || []).filter(r => !r.cancelled);
     const cranes = [...new Set(booked.map(r => r.crane))];

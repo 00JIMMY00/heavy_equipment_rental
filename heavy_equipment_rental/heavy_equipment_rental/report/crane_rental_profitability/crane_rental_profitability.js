@@ -6,7 +6,7 @@ frappe.query_reports["Crane Rental Profitability"] = {
             default: frappe.datetime.month_start(), reqd: 1},
         {fieldname: "to_date", label: __("To Date"), fieldtype: "Date",
             default: frappe.datetime.get_today(), reqd: 1},
-        {fieldname: "assignment", label: __("Assignment"), fieldtype: "Link", options: "Crane Assignment",
+        {fieldname: "assignment", label: __("Rental Contract"), fieldtype: "Link", options: "Rental Contract",
             get_query: () => ({filters: {company: frappe.query_report.get_filter_value("company")}})},
         {fieldname: "crane", label: __("Crane"), fieldtype: "Link", options: "Crane"},
     ],

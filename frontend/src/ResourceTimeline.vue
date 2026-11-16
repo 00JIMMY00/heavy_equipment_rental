@@ -13,7 +13,7 @@ const selected = ref(null)
 const loading = ref(false)
 const error = ref('')
 const view = ref(initialRange ? 'Custom' : 'Month')
-const groupBy = ref('Assignment')
+const groupBy = ref('Rental Contract')
 const anchor = ref(new Date())
 const customRange = ref(initialRange)
 const fromDate = ref('')
@@ -100,7 +100,7 @@ const records = computed(() => {
   }
   for (const event of shown.value) {
     let keys
-    if (groupBy.value === 'Assignment') {
+    if (groupBy.value === 'Rental Contract') {
       keys = event.assignment ? [`assignment:${event.assignment}`] : event.crane ? [`unassigned-crane:${event.crane}`] : ['unassigned']
     } else {
       const cranes = event.crane ? [event.crane] : [...(assignmentCranes.value.get(event.assignment) || [])]
@@ -114,9 +114,9 @@ const records = computed(() => {
           : kind === 'crane' || kind === 'unassigned-crane' ? (craneNames.get(value) || value)
             : 'Unassigned'
         const detail = kind === 'assignment' ? [value, sourceEvents.value.find(item => item.assignment === value)?.venue].filter(Boolean).join(' · ')
-          : kind === 'unassigned-crane' ? 'No linked assignment'
+          : kind === 'unassigned-crane' ? 'No linked rental contract'
             : kind === 'unassigned-assignment' ? `No linked crane · ${assignmentNames.get(value) || value}`
-              : isAssignment ? value : kind === 'crane' ? value : 'No linked assignment or crane'
+              : isAssignment ? value : kind === 'crane' ? value : 'No linked rental contract or crane'
         result.set(id, { id, title, detail, events: [] })
       }
       result.get(id).events.push(event)
@@ -232,11 +232,11 @@ function dateLabel(event) {
       </div>
       <div class="timeline-toolbar">
         <div class="timeline-category-row"><span class="timeline-control-label">Event types</span><div class="timeline-filters"><button v-for="item in categories" :key="item.key" type="button" :class="{ off: !enabled[item.key] }" :aria-pressed="enabled[item.key]" @click="enabled[item.key] = !enabled[item.key]"><i :style="{ background: item.color }"></i>{{ item.label }}</button></div>
-          <div class="timeline-views"><div class="timeline-control-switch"><span class="timeline-control-label">Rows</span><div class="timeline-switch" aria-label="Group timeline rows"><button type="button" :class="{ active: groupBy === 'Assignment' }" :aria-pressed="groupBy === 'Assignment'" @click="groupBy = 'Assignment'">Assignment</button><button type="button" :class="{ active: groupBy === 'Crane' }" :aria-pressed="groupBy === 'Crane'" @click="groupBy = 'Crane'">Crane</button></div></div>
+          <div class="timeline-views"><div class="timeline-control-switch"><span class="timeline-control-label">Rows</span><div class="timeline-switch" aria-label="Group timeline rows"><button type="button" :class="{ active: groupBy === 'Rental Contract' }" :aria-pressed="groupBy === 'Rental Contract'" @click="groupBy = 'Rental Contract'">Rental Contract</button><button type="button" :class="{ active: groupBy === 'Crane' }" :aria-pressed="groupBy === 'Crane'" @click="groupBy = 'Crane'">Crane</button></div></div>
             <div class="timeline-control-switch"><span class="timeline-control-label">View</span><div class="timeline-switch" aria-label="Timeline period"><button type="button" :class="{ active: view === 'Week' }" @click="changeView('Week')">Week</button><button type="button" :class="{ active: view === 'Month' }" @click="changeView('Month')">Month</button><button v-if="customRange" type="button" :class="{ active: view === 'Custom' }" @click="changeView('Custom')">Custom</button></div></div></div>
         </div>
         <div class="timeline-control-row">
-          <SearchSelect v-model="assignmentFilter" label="Assignment" placeholder="Search or choose assignment" :options="assignmentOptions" />
+          <SearchSelect v-model="assignmentFilter" label="Rental Contract" placeholder="Search or choose rental contract" :options="assignmentOptions" />
           <SearchSelect v-model="craneFilter" label="Crane" placeholder="Search or choose crane" :options="craneOptions" />
           <form class="timeline-inline-dates" @submit.prevent="applyRange"><label>From <input v-model="fromDate" type="date" aria-label="From date" required /></label><span aria-hidden="true">→</span><label>To <input v-model="toDate" type="date" aria-label="To date" required /></label><button type="submit">Show dates</button><span v-if="rangeError" class="timeline-range-error" role="alert">{{ rangeError }}</span></form>
           <label class="timeline-search"><span>⌕</span><input v-model="search" type="search" placeholder="Search events" aria-label="Search timeline events" /></label>
@@ -247,7 +247,7 @@ function dateLabel(event) {
         <div class="timeline-grid" :style="{ '--day-width': `${dayWidth}px`, '--track-width': `${totalWidth}px` }">
           <div class="timeline-row timeline-header"><div class="timeline-resource-head">{{ groupBy.toUpperCase() }} <span>RELATED DETAILS</span></div><div class="timeline-track timeline-dates"><div v-for="day in days" :key="day.key" class="timeline-day" :class="{ today: day.isToday, weekend: day.isWeekend }"><strong>{{ day.day }}</strong><small>{{ day.weekday }}</small></div></div></div>
           <div v-for="row in lanes" :key="row.id" class="timeline-row timeline-data-row" :style="{ height: `${row.height}px` }"><div class="timeline-resource"><strong :title="row.title">{{ row.title }}</strong><small :title="row.detail">{{ row.detail }}</small></div><div class="timeline-track timeline-lane"><span v-for="day in days" :key="day.key" class="timeline-cell" :class="{ today: day.isToday, weekend: day.isWeekend }"></span><button v-for="segment in row.segments" :key="segment.event.id" type="button" class="timeline-bar" :class="[segment.event.type, { draft: segment.event.isDraft, cancelled: segment.event.isDeclined }]" :style="{ left: `${segment.first * dayWidth + 3}px`, width: `${(segment.last - segment.first + 1) * dayWidth - 6}px`, top: `${10 + segment.lane * 27}px` }" :title="`${segment.event.title} · ${segment.event.status}`" @click="selected = segment.event">{{ segment.event.title }}</button></div></div>
-          <div v-if="!lanes.length && !loading" class="timeline-empty">No matching activity. Change the assignment, crane, event type, dates, or search.</div>
+          <div v-if="!lanes.length && !loading" class="timeline-empty">No matching activity. Change the rental contract, crane, event type, dates, or search.</div>
         </div>
       </div>
       <div class="timeline-footer"><span><i class="footline today"></i> Today</span><span><i class="footline reservation"></i> Booking</span><span><i class="footline timesheet"></i> Timesheet work</span><span><i class="footline maintenance"></i> Maintenance</span><span class="timeline-tip">Select a bar for details · {{ loading ? 'Loading…' : `${shown.length} events across ${records.length} rows` }}</span></div>

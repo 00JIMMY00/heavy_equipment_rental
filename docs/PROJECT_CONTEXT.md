@@ -1,5 +1,37 @@
 # Project context
 
+## 2026-11-16 — Rental Contract rename (latest)
+
+Renamed Crane Assignment in place to Rental Contract, Arabic «عقد ايجار معدة». A pre-model migration uses native DocType rename to retain existing IDs, child rows, permissions and all rental links. Existing ASG numbers remain valid; new documents use RC-.##### (legacy naming series remains accepted for saved records). Updated controllers, linked field labels/options, dashboards, workspace seed/saved links, reports, messages and calendar source. Stable internal assignment/crane_assignment fieldnames and API parameters remain for historical/integration compatibility; old Python controller imports forward to the new module. Current document route is /app/rental-contract. The old documentation below records prior milestones.
+
+## 2026-11-16 — Full-width maintenance repair table
+
+Removed the repair_column layout divider from Crane Maintenance. Items / Services spans the full width within the original Repair Items section; supplier details remain above the table. Section visibility rules and repair accounting behavior remain unchanged. Applied metadata migration to dev3.
+
+## 2026-11-16 — Employee names in driver links
+
+Enabled Employee show_title_field_in_link using the existing employee_name title field. Native Employee Link controls and grid cells, including Timesheet Entries drivers, display employee names while saving the same Employee IDs. HER setup persists the Property Setter; existing payroll, shifts and employee references are untouched. Reload Desk after applying to refresh boot link-title settings.
+
+## 2026-11-16 — Minimal Employee creation
+
+Enabled native Employee Quick Entry with Employee Name (stored in first_name), Date of Birth, Status and Date of Joining. Company uses native defaults and is requested only when missing. Gender defaults to Male and is hidden; Salutation is hidden. Existing employee values are preserved. Full-form advanced employment fields and native validation remain available. HER setup installs Property Setters, and a scoped Employee QuickEntry subclass controls only the creation popup.
+
+## 2026-11-16 — Restore standard Item Details visibility
+
+Moved the HER Crane Period Prices custom section from after standard_rate to after uoms, at the end of the native Details tab. Its crane-only depends_on previously swallowed the intervening native Item fields into a hidden section for ordinary Items. Item Group, stock UOM, Maintain Stock, Is Fixed Asset and related standard options now retain ERPNext's native visibility and edit rules. No inventory or asset values are changed. Setup updates the Custom Field placement on existing sites and future migrations.
+
+## 2026-11-16 — Crane list render fix
+
+Ownership before_render now passes Crane to frappe.get_list_view, with a missing-instance guard. The previous missing argument resolved no list instance and stopped row rendering. Browser verified all nine Crane rows and segmented/rental ownership bars in Arabic; focused rendering-hook regression and syntax/whitespace checks passed. Existing unrelated null/join startup errors remain observable but do not prevent the list rendering.
+
+## 2026-11-16 — Native rental Location links
+
+Assignment and Timesheet Location fields now link to ERPNext Location. Assignment selection still fills the Timesheet location, and matching requires the same Location record. Migration creates missing native Locations from historical text and changes references only if native naming normalizes the value; submitted work, dates, rates and modification timestamps remain intact. Applied to dev3 and verified every saved rental location resolves. New entries use the native searchable Link control and normal Location permissions.
+
+## 2026-11-16 — Crane list ownership column
+
+Replaced Model in default Crane list columns with Ownership: compact classification and segmented owner-share bar, with owner/percentage tooltip. Supplier-hired cranes show their rental classification and orange bar instead of retained ownership shares. Shares are batch loaded only for permission-visible cranes. Model stays editable in the form. Applied metadata migration on dev3; verified endpoint permissions and list metadata.
+
 ## 2026-11-16 — Invoice deletion circular-link fix
 
 Sales/Purchase Invoice on_trash clears only its managed Timesheet reverse link for draft/cancelled documents. Invoice cancellation retains historical links using the existing narrow ignore rule. Other native payment, settlement and repair links remain protected. Draft ACC-SINV-2026-00007 backed up privately and deleted at user request; TS-00008 and TS-00009 remain submitted with empty sales_invoice links. Regression verifies draft deletion and regeneration. Workflow suites: 18 passed, one legacy test skipped.

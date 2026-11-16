@@ -45,3 +45,19 @@ def validate_ownership(doc):
         doc.ownership_type = before.ownership_type
         return
     doc.ownership_type = 'Owned' if share == 100 else 'Shared Ownership' if share else 'Other'
+
+
+@frappe.whitelist()
+def list_ownership(cranes):
+    """Return owner shares only for cranes visible under normal list permissions."""
+    names = frappe.parse_json(cranes)
+    if not isinstance(names, list) or len(names) > 500:
+        frappe.throw(_("Invalid crane selection."))
+    visible = frappe.get_list("Crane", filters={"name": ["in", names]}, pluck="name", limit_page_length=500)
+    result = {name: [] for name in visible}
+    if not visible:
+        return result
+    for row in frappe.get_all("Crane Partner", filters={"parent": ["in", visible], "parenttype": "Crane", "parentfield": "ownership_partners"},
+                             fields=["parent", "is_company", "shareholder", "ownership_percentage"], order_by="idx"):
+        result[row.parent].append(row)
+    return result

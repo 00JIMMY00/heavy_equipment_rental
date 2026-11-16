@@ -274,7 +274,7 @@ def repair_expense_sources(crane, company):
 				start, end = frappe.db.get_value("Crane Timesheet", job.crane_timesheet, ["period_start", "period_end"])
 			if amount:
 				yield dict(doctype=doctype, name=name, posting_date=str(doc.posting_date),
-					basis="Selected Timesheet" if job.crane_timesheet else "Selected Assignment / worked hours" if job.crane_assignment else "Unallocated crane repair", expenses=amount,
+					basis="Selected Timesheet" if job.crane_timesheet else "Selected Rental Contract / worked hours" if job.crane_assignment else "Unallocated crane repair", expenses=amount,
 					rental_assignment=job.crane_assignment, rental_timesheet=job.crane_timesheet,
 					service_from_date=str(start), service_to_date=str(end))
 

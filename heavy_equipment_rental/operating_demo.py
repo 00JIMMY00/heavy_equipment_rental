@@ -25,9 +25,9 @@ def create_operating_cycles(company="cranes company", start_date="2026-11-01"):
         ("Deficit Rejected", [100], [100], (40000, 1000, 40000, 10000)),
     ):
         location = PREFIX + case
-        existing = frappe.db.get_value("Crane Assignment", {"company": company, "location": location}, "name")
+        existing = frappe.db.get_value("Rental Contract", {"company": company, "location": location}, "name")
         if existing:
-            crane = frappe.get_doc("Crane Assignment", existing).assigned_cranes[0].crane
+            crane = frappe.get_doc("Rental Contract", existing).assigned_cranes[0].crane
             settlements = frappe.get_all("Crane Profit Settlement", filters={"crane": crane, "docstatus": 1},
                                         pluck="name", order_by="from_date")
             if settlements:

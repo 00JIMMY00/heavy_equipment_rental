@@ -18,7 +18,7 @@ MASTERS = ("Company", "Account", "Cost Center", "Warehouse", "Employee", "Custom
 TRANSACTIONS = (
     "Payment Entry", "GL Entry", "Journal Entry", "Payment Ledger Entry",
     "Sales Invoice", "Purchase Invoice", "Expense Entry", "Treasury Transaction", "Crane Profit Settlement",
-    "Crane Assignment", "Lead", "Opportunity", "Task", "Project",
+    "Rental Contract", "Lead", "Opportunity", "Task", "Project",
     "Sales Order", "Purchase Order", "Delivery Note", "Purchase Receipt", "Stock Entry", "Stock Ledger Entry",
 )
 
@@ -29,7 +29,7 @@ def reset_plan():
     for doctype in TRANSACTIONS:
         if frappe.db.exists("DocType", doctype) and frappe.get_meta(doctype).has_field("company"):
             targets[doctype] = sorted(frappe.get_all(doctype, filters={"company": COMPANY}, pluck="name"))
-    assignments = targets.get("Crane Assignment", [])
+    assignments = targets.get("Rental Contract", [])
     invoices = targets.get("Sales Invoice", [])
     purchases = targets.get("Purchase Invoice", [])
     sheets = set()

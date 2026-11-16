@@ -50,7 +50,7 @@ def execute(filters=None, *, dashboard=False):
     ctx = ReportContext()
     company = ctx.doc("Company", f.company)
     precision = frappe.get_precision("Crane Profit Settlement", "revenue", currency=company.default_currency)
-    for doctype in ("Crane Profit Settlement", "Crane", "Crane Timesheet", "Crane Assignment",
+    for doctype in ("Crane Profit Settlement", "Crane", "Crane Timesheet", "Rental Contract",
                     "Sales Invoice", "Journal Entry", "Payment Entry", "Shareholder"):
         frappe.has_permission(doctype, "read", throw=True)
     if f.shareholder and ctx.doc("Shareholder", f.shareholder).company != f.company:
@@ -91,7 +91,7 @@ def execute(filters=None, *, dashboard=False):
             if source["doctype"] == "Sales Invoice":
                 invoices.add(source["name"])
         for assignment in assignments:
-            customer = ctx.doc("Crane Assignment", assignment).customer
+            customer = ctx.doc("Rental Contract", assignment).customer
             if customer:
                 customers.add(customer)
         for invoice in invoices:
@@ -318,7 +318,7 @@ def columns(view, filtered=False):
               c("crane_name", "Crane Name", "Data", None, 150), c("settlement_status", "Settlement Status", "Data", None)]
     context = [c("from_date", "Work From", "Date", None, 110), c("to_date", "Work To", "Date", None, 110),
         c("posting_date", "Settlement Posting Date", "Date", None, 130),
-        c("assignment", "Assignment", "Link", "Crane Assignment"), c("timesheet", "Timesheet", "Link", "Crane Timesheet"),
+        c("assignment", "Rental Contract", "Link", "Rental Contract"), c("timesheet", "Timesheet", "Link", "Crane Timesheet"),
         c("sales_invoice", "Sales Invoice", "Link", "Sales Invoice", 175), c("customer", "Customer", "Link", "Customer"),
         c("journal_entry", "Entitlement Journal", "Link", "Journal Entry", 175)]
     if view == "Settlement Summary":

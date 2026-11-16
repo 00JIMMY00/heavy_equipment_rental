@@ -12,7 +12,7 @@ from heavy_equipment_rental.rental_validation import (
 
 
 def visible_allocations(assignment=None, crane=None):
-    parents = frappe.get_list("Crane Assignment", filters={"name": assignment} if assignment else {},
+    parents = frappe.get_list("Rental Contract", filters={"name": assignment} if assignment else {},
                               fields=["name", "customer", "location"], limit_page_length=0)
     if not parents:
         return []
@@ -23,7 +23,7 @@ def visible_allocations(assignment=None, crane=None):
     parent_map = {row.name: row for row in parents}
     crane_map = {row.name: row.crane_name for row in cranes}
     rows = frappe.get_all("Assigned Crane", filters={
-        "parent": ["in", list(parent_map)], "parenttype": "Crane Assignment",
+        "parent": ["in", list(parent_map)], "parenttype": "Rental Contract",
         "crane": ["in", list(crane_map)], "cancelled": 0,
     }, fields=["name", "parent", "crane", "start_date", "expected_end_date",
                "rental_rate", "rental_rate_unit", "cancelled"],

@@ -19,7 +19,7 @@ def work_window(expense):
         rows = frappe.get_all("Assigned Crane", filters={"parent": expense.crane_assignment,
             "crane": expense.crane, "cancelled": 0}, fields=["start_date", "expected_end_date"])
         if not rows:
-            frappe.throw(_("The Crane must belong to the selected Assignment."))
+            frappe.throw(_("The Crane must belong to the selected Rental Contract."))
         return min(getdate(r.start_date) for r in rows), max(getdate(r.expected_end_date) for r in rows)
     return getdate(expense.posting_date), getdate(expense.posting_date)
 
@@ -28,15 +28,15 @@ def validate_expense(expense):
     from heavy_equipment_rental.rental_context import validate_context
     validate_context(expense)
     if expense.get("crane_assignment"):
-        assignment = frappe.get_doc("Crane Assignment", expense.crane_assignment)
+        assignment = frappe.get_doc("Rental Contract", expense.crane_assignment)
         assignment.check_permission("read")
         if assignment.company and assignment.company != expense.company:
-            frappe.throw(_("Expense and Assignment must belong to the same Company."))
+            frappe.throw(_("Expense and Rental Contract must belong to the same Company."))
         cranes = {r.crane for r in assignment.assigned_cranes if not r.cancelled}
         if not expense.crane and len(cranes) == 1:
             expense.crane = next(iter(cranes))
         if expense.crane not in cranes:
-            frappe.throw(_("Select a Crane from the selected Assignment."))
+            frappe.throw(_("Select a Crane from the selected Rental Contract."))
 
 
 def matches(source, sheet):
@@ -58,7 +58,7 @@ def expense_sources(crane, company):
             posting_date=str(expense.posting_date), rental_assignment=expense.crane_assignment,
             rental_timesheet=expense.get("crane_timesheet"),
             service_from_date=str(start), service_to_date=str(end),
-            basis="Selected Timesheet" if expense.get("crane_timesheet") else "Selected Assignment / worked hours",
+            basis="Selected Timesheet" if expense.get("crane_timesheet") else "Selected Rental Contract / worked hours",
             expenses=sum(flt(r.amount) for r in expense.expenses))
 
 
@@ -127,7 +127,7 @@ def assignment_cranes(doctype, txt, searchfield, start, page_len, filters):
     filters = frappe._dict(frappe.parse_json(filters) if isinstance(filters, str) else filters or {})
     if not filters.assignment:
         return []
-    assignment = frappe.get_doc("Crane Assignment", filters.assignment)
+    assignment = frappe.get_doc("Rental Contract", filters.assignment)
     assignment.check_permission("read")
     names = list({r.crane for r in assignment.assigned_cranes if not r.cancelled and r.crane})
     if not names:

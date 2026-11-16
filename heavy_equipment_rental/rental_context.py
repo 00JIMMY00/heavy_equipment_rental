@@ -23,7 +23,7 @@ def rental_work_options(crane, start=None, end=None, company=None, posting_date=
     start, end = (getdate(start), getdate(end or start)) if start else (getdate("1900-01-01"), getdate("9999-12-31"))
     if start > end:
         frappe.throw(_("From Date must not be after To Date."))
-    bookings = frappe.get_all("Assigned Crane", filters={"parenttype": "Crane Assignment", "crane": crane, "cancelled": 0,
+    bookings = frappe.get_all("Assigned Crane", filters={"parenttype": "Rental Contract", "crane": crane, "cancelled": 0,
         "start_date": ["<=", end], "expected_end_date": [">=", start]},
         fields=["parent", "start_date", "expected_end_date"], order_by="start_date, parent")
     assignments = []
@@ -31,7 +31,7 @@ def rental_work_options(crane, start=None, end=None, company=None, posting_date=
     for row in bookings:
         if row.parent in names:
             continue
-        doc = frappe.get_doc("Crane Assignment", row.parent)
+        doc = frappe.get_doc("Rental Contract", row.parent)
         if company and doc.company and doc.company != company:
             continue
         doc.check_permission("read")
@@ -72,21 +72,21 @@ def validate_context(doc):
         if sheet.docstatus == 2 or sheet.crane != doc.crane:
             frappe.throw(_("Select a non-cancelled Timesheet for this Crane."))
         if doc.get("crane_assignment") and doc.crane_assignment != sheet.assignment:
-            frappe.throw(_("Timesheet and Assignment must belong to the same rental job."))
+            frappe.throw(_("Timesheet and Rental Contract must belong to the same rental job."))
         doc.crane_assignment = sheet.assignment
     start, end = window(doc)
     if start > end:
         frappe.throw(_("The work period end cannot precede its start."))
     options = rental_work_options(doc.crane, company=doc.get("company"))
     if doc.get("crane_assignment"):
-        assignment = frappe.get_doc("Crane Assignment", doc.crane_assignment)
+        assignment = frappe.get_doc("Rental Contract", doc.crane_assignment)
         assignment.check_permission("read")
         if doc.get("company") and assignment.company and assignment.company != doc.company:
-            frappe.throw(_("Expense and Assignment must belong to the same Company."))
+            frappe.throw(_("Expense and Rental Contract must belong to the same Company."))
         if doc.crane_assignment not in {r["name"] for r in options["assignments"]}:
-            frappe.throw(_("Select an Assignment containing this Crane."))
+            frappe.throw(_("Select an Rental Contract containing this Crane."))
         if doc.get("crane_timesheet") and doc.crane_timesheet not in {r["name"] for r in options["timesheets"]}:
-            frappe.throw(_("Select a Timesheet belonging to this Crane and Assignment."))
+            frappe.throw(_("Select a Timesheet belonging to this Crane and Rental Contract."))
 
 
 @frappe.whitelist()
@@ -101,7 +101,7 @@ def context_link_query(doctype, txt, searchfield, start, page_len, filters):
         options = rental_work_options(filters.crane, company=filters.get("company"), posting_date=filters.posting_date)
     else:
         options = rental_work_options(filters.crane, filters.get("from_date"), filters.get("to_date"), filters.get("company"))
-    rows = options["assignments"] if doctype == "Crane Assignment" else options["timesheets"] if doctype == "Crane Timesheet" else []
+    rows = options["assignments"] if doctype == "Rental Contract" else options["timesheets"] if doctype == "Crane Timesheet" else []
     rows = [r for r in rows if (not filters.get("assignment") or r.get("assignment", r["name"]) == filters.assignment)
             and txt.lower() in (r["name"] + " " + r["label"]).lower()]
     return [(r["name"], r["label"]) for r in rows[start:start + page_len]]

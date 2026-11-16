@@ -255,7 +255,7 @@ class TestCrane(FrappeTestCase):
 		self.link()
 		scrap_asset(self.asset.name, today())
 		with self.assertRaisesRegex(frappe.ValidationError, "disposed"):
-			frappe.get_doc(dict(doctype="Crane Assignment", customer=frappe.db.get_value("Customer", {}, "name"),
+			frappe.get_doc(dict(doctype="Rental Contract", customer=frappe.db.get_value("Customer", {}, "name"),
 				location=self.key, assigned_cranes=[dict(crane=self.crane.name, start_date=today(),
 				expected_end_date=today(), rental_rate_unit="Day", rental_rate=1000)])).insert()
 		restore_asset(self.asset.name)
@@ -270,7 +270,7 @@ class TestCrane(FrappeTestCase):
 
 	def test_assignment_derives_asset_company(self):
 		self.link()
-		assignment = frappe.get_doc(dict(doctype="Crane Assignment",
+		assignment = frappe.get_doc(dict(doctype="Rental Contract",
 			customer=frappe.db.get_value("Customer", {}, "name"), location=self.key,
 			assigned_cranes=[dict(crane=self.crane.name, start_date=today(), expected_end_date=today(),
 				rental_rate_unit="Day", rental_rate=1000)])).insert()

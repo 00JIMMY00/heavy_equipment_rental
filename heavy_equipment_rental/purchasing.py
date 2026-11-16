@@ -34,9 +34,9 @@ def create_purchase_invoice(sheet):
     quantity, conversion_factor = purchase_work_quantity(sheet)
     if quantity <= 0 or flt(sheet.purchase_rate) <= 0:
         frappe.throw(_("Rented Timesheets require positive recorded work and a positive Purchase Price per Unit."))
-    company = frappe.db.get_value("Crane Assignment", sheet.assignment, "company") or erpnext.get_default_company()
+    company = frappe.db.get_value("Rental Contract", sheet.assignment, "company") or erpnext.get_default_company()
     if not company:
-        frappe.throw(_("Set a Company on the Assignment or a default Company."))
+        frappe.throw(_("Set a Company on the Rental Contract or a default Company."))
     crane = frappe.get_doc("Crane", sheet.crane)
     item = frappe.get_doc("Item", crane.item)
     if item.disabled or item.is_stock_item or not item.is_purchase_item or item.stock_uom != "Hour":
@@ -46,7 +46,7 @@ def create_purchase_invoice(sheet):
         "doctype": "Purchase Invoice", "company": company, "supplier": sheet.purchase_supplier,
         "currency": currency, "conversion_rate": 1,
         "posting_date": today(), "due_date": today(), "update_stock": 0,
-        "remarks": _("Crane Timesheet {0}; Assignment {1}; service period {2} to {3}").format(
+        "remarks": _("Crane Timesheet {0}; Rental Contract {1}; service period {2} to {3}").format(
             sheet.name, sheet.assignment, sheet.period_start, sheet.period_end),
         "items": [{
             "crane": sheet.crane,

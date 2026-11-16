@@ -107,7 +107,7 @@ function dateLabel(event) {
         <button class="refresh-button" type="button" :disabled="loading" @click="loadRange()"><span v-if="loading" class="her-loading-mark" aria-hidden="true"></span><span v-else aria-hidden="true">↻</span> {{ loading ? 'Loading…' : 'Refresh' }}</button>
       </div>
       <div class="toolbar">
-        <div v-if="assignmentScope" class="calendar-scope">Assignment: <strong>{{ assignmentScopeLabel }}</strong><button type="button" aria-label="Clear assignment filter" @click="clearAssignmentScope">×</button></div>
+        <div v-if="assignmentScope" class="calendar-scope">Rental Contract: <strong>{{ assignmentScopeLabel }}</strong><button type="button" aria-label="Clear rental contract filter" @click="clearAssignmentScope">×</button></div>
         <div class="filter-pills" aria-label="Event filters">
           <button v-for="category in categories" :key="category.key" type="button" class="filter-pill" :class="{ inactive: !visible[category.key] }" :aria-pressed="visible[category.key]" @click="toggle(category.key)">
             <span class="pill-dot" :style="{ background: category.color }"></span>{{ category.label }} <small>{{ counts[category.key] || 0 }}</small>

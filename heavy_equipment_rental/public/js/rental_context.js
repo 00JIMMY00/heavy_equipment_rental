@@ -11,8 +11,8 @@ heavy_equipment_rental.rental_context = {
     },
     setup(frm) {
         const editable = this.editable(frm);
-        frm.set_df_property("crane_assignment", "description", __("Choose the assignment that bears this cost. Without a Timesheet, its cost is shared across that assignment's submitted timesheets by working hours."));
-        frm.set_df_property("crane_timesheet", "description", __("Choose a Timesheet to charge only its settlement. Its Assignment is filled automatically. Leave both links empty for a general crane expense excluded from CPS."));
+        frm.set_df_property("crane_assignment", "description", __("Choose the rental contract that bears this cost. Without a Timesheet, its cost is shared across that rental contract's submitted timesheets by working hours."));
+        frm.set_df_property("crane_timesheet", "description", __("Choose a Timesheet to charge only its settlement. Its Rental Contract is filled automatically. Leave both links empty for a general crane expense excluded from CPS."));
         this.show_allocation(frm);
         for (const field of ["crane_assignment", "crane_timesheet"]) {
             frm.set_df_property(field, "read_only", !editable);
@@ -35,8 +35,8 @@ heavy_equipment_rental.rental_context = {
         const description = frm.doc.crane_timesheet
             ? __("Allocation: selected Timesheet only.")
             : frm.doc.crane_assignment
-                ? __("Allocation: selected Assignment, shared by working hours.")
-                : __("Unallocated: general crane expense; excluded from CPS. Select an Assignment or Timesheet to allocate it.");
+                ? __("Allocation: selected Rental Contract, shared by working hours.")
+                : __("Unallocated: general crane expense; excluded from CPS. Select an Rental Contract or Timesheet to allocate it.");
         frm.set_df_property("crane_assignment", "description", description);
     },
     async changed(frm, clear_invalid = true) {

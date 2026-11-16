@@ -6,7 +6,7 @@ def get_data():
         "fieldname": "amended_from",
         "non_standard_fieldnames": {"Expense Entry": "crane_timesheet", "Crane Maintenance": "crane_timesheet"},
         "internal_links": {
-            "Crane Assignment": "assignment",
+            "Rental Contract": "assignment",
             "Crane": "crane",
             "Customer": "customer",
             "Sales Invoice": "sales_invoice",
@@ -16,7 +16,7 @@ def get_data():
         },
         "transactions": [
             {"label": _("Operations"), "items": ["Expense Entry", "Crane Maintenance"]},
-            {"label": _("Rental"), "items": ["Crane Assignment", "Crane", "Customer"]},
+            {"label": _("Rental"), "items": ["Rental Contract", "Crane", "Customer"]},
             {"label": _("Documents"), "items": ["Sales Invoice", "Purchase Invoice", "Crane Timesheet", "Crane Profit Settlement"]},
         ],
     }

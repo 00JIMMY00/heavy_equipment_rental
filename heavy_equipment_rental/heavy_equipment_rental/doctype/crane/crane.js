@@ -152,14 +152,14 @@ frappe.ui.form.on("Crane", {
         frm.add_custom_button(__("Resource Calendar"), () => {
             window.location.href = `/rental-calendar/timeline?crane=${encodeURIComponent(frm.doc.name)}`;
         }, __("View"));
-        for (const [label, doctype] of [["Assignments", "Crane Assignment"],
+        for (const [label, doctype] of [["Rental Contracts", "Rental Contract"],
             ["Timesheets", "Crane Timesheet"], ["Maintenance", "Crane Maintenance"],
             ["Expenses", "Expense Entry"]]) {
-            if (doctype === "Crane Assignment") continue;
+            if (doctype === "Rental Contract") continue;
             frm.add_custom_button(__(label), () => frappe.set_route("List", doctype, { crane: frm.doc.name }), __("View"));
         }
-        for (const [label, doctype] of [["Timesheet", "Crane Timesheet"],
-            ["Expense", "Expense Entry"], ["Maintenance", "Crane Maintenance"]]) {
+        for (const [label, doctype] of [["Equipment Work Log", "Crane Timesheet"],
+            ["Equipment Expense", "Expense Entry"], ["Maintenance", "Crane Maintenance"]]) {
             if (frappe.model.can_create(doctype))
                 frm.add_custom_button(__(label), () => frappe.new_doc(doctype, { crane: frm.doc.name, ...(doctype === "Crane Maintenance" ? { company: frm.doc.sharing_company || frappe.defaults.get_user_default("Company"), cost_treatment: "Operating Expense" } : {}) }), __("Create"));
         }
@@ -285,7 +285,7 @@ frappe.ui.form.on("Crane", {
             }
             const upcoming = bookings.filter(row => row.expected_end_date >= frappe.datetime.get_today()).slice(0, 5);
             const list = upcoming.length ? `<ul>${upcoming.map(row =>
-                `<li><a href="/app/crane-assignment/${encodeURIComponent(row.assignment)}">${esc(row.assignment)}</a> · ${esc(row.start_date)} – ${esc(row.expected_end_date)} · ${esc(row.customer)}${row.location ? ` · ${esc(row.location)}` : ""}</li>`
+                `<li><a href="/app/rental-contract/${encodeURIComponent(row.assignment)}">${esc(row.assignment)}</a> · ${esc(row.start_date)} – ${esc(row.expected_end_date)} · ${esc(row.customer)}${row.location ? ` · ${esc(row.location)}` : ""}</li>`
             ).join("")}</ul>` : `<p class="text-muted">${__("No upcoming reservations")}</p>`;
             const title = first.toLocaleDateString(frappe.boot.lang || undefined, { month: "long", year: "numeric" });
             wrapper.html(`<div class="crane-calendar">

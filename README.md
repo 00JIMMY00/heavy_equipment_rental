@@ -1,6 +1,6 @@
 # Heavy Equipment Rental
 
-Crane rentals for Frappe/ERPNext. Install `arab_erp_theme` first for the shared expense models. HER supplies its own industrial theme and branding. Start from **Crane Operations → Cranes → Operations**. The Crane is the main hub for bookings, work, repairs, Assets and owner settlements. Assignment-first and Timesheet-first entry remain available. ERPNext's native Project is independent of this workflow.
+Crane rentals for Frappe/ERPNext. Install `arab_erp_theme` first for the shared expense models. HER supplies its own industrial theme and branding. Start from **Crane Operations → Cranes → Operations**. The Crane is the main hub for bookings, work, repairs, Assets and owner settlements. Rental Contract-first and Timesheet-first entry remain available. ERPNext's native Project is independent of this workflow.
 
 ## Native workflow redesign
 
@@ -10,29 +10,29 @@ See [the complete operational and accounting design](docs/NATIVE_CRANE_WORKFLOW.
 
 ## Workflow
 
-### Start with an Assignment
+### Start with an Rental Contract
 
-1. Create a Crane Assignment with a customer and location.
-2. Add one or more cranes. Billing unit defaults from HER Settings and rate from the Crane reference price; both are visible in the table and editable. Give each crane its full agreed rental dates. Saving the Assignment books those dates.
-3. Use Create → New Timesheet; choose a crane when the Assignment has several active cranes. Create one or more Crane Timesheets for each crane. A Timesheet has one Assignment, one crane, and dated operator shifts. Select an optional default Driver (ERPNext Employee) to fill new shifts, then change individual rows as needed. The form shows each driver's name and total shift hours below Operator Shifts. Attach a hard copy if available; it remains accessible and can be updated after submission. Record overtime hours within each shift when applicable.
-4. Submit Timesheets when work is approved. Use **Generate Sales Invoice** from a submitted Timesheet or its Assignment. Review and submit the resulting draft Sales Invoice in ERPNext.
+1. Create a Rental Contract with a customer and location.
+2. Add one or more cranes. Billing unit defaults from HER Settings and rate from the Crane reference price; both are visible in the table and editable. Give each crane its full agreed rental dates. Saving the Rental Contract books those dates.
+3. Use Create → New Timesheet; choose a crane when the Rental Contract has several active cranes. Create one or more Crane Timesheets for each crane. A Timesheet has one Rental Contract, one crane, and dated operator shifts. Select an optional default Driver (ERPNext Employee) to fill new shifts, then change individual rows as needed. The form shows each driver's name and total shift hours below Operator Shifts. Attach a hard copy if available; it remains accessible and can be updated after submission. Record overtime hours within each shift when applicable.
+4. Submit Timesheets when work is approved. Use **Generate Sales Invoice** from a submitted Timesheet or its Rental Contract. Review and submit the resulting draft Sales Invoice in ERPNext.
 
 Customer payments use ERPNext's normal invoice/payment workflow. Sales Invoices do not allocate amounts to drivers or record customer-to-driver payments. Driver names and hours remain on Timesheets. Migration preserves previously saved direct-payment details in a hidden legacy archive and leaves posted invoices/journals unchanged.
 
 ### Start with a Timesheet
 
-1. Select the crane, customer, location, and period start and end dates. These dates also become the rental dates if a new Assignment is created.
-2. The form finds an existing Assignment that covers the work. If several match, choose one.
-3. If none matches, Rental Terms defaults the billing unit from Settings and the agreed rate from the selected Crane's reference price for that unit. Review or override these defaults as needed. Saving creates a single-crane Assignment for the Timesheet period and links it in the same transaction.
-4. Later Timesheets with the same customer, location, crane, and covered dates reuse that Assignment.
+1. Select the crane, customer, location, and period start and end dates. These dates also become the rental dates if a new Rental Contract is created.
+2. The form finds an existing Rental Contract that covers the work. If several match, choose one.
+3. If none matches, Rental Terms defaults the billing unit from Settings and the agreed rate from the selected Crane's reference price for that unit. Review or override these defaults as needed. Saving creates a single-crane Rental Contract for the Timesheet period and links it in the same transaction.
+4. Later Timesheets with the same customer, location, crane, and covered dates reuse that Rental Contract.
 
-Extend the Assignment explicitly if work continues beyond its booked dates. The Timesheet Connections tab uses Frappe's standard related-document dashboard.
+Extend the Rental Contract explicitly if work continues beyond its booked dates. The Timesheet Connections tab uses Frappe's standard related-document dashboard.
 
 ## Billing defaults
 
 Open **Heavy Equipment Rental Settings → Billing Defaults**. Set **Default Selling UOM** and **Default Supplier Billing UOM** to Hour, Day, or Month; both initially default to Hour.
 
-Set **Crane → Default Selling UOM** to Hour, Day, or Month, and enter its matching reference prices. The Crane default initially comes from HER Settings. New Assignment rows show that unit and price; both can be edited. Timesheets visibly inherit their Assignment terms, or the Crane defaults when starting a new rental. You can change **Billing unit** and **Agreed rate** on a draft Timesheet; saving retains the choice without changing the Assignment. Its submitted terms determine sales billing. Master default changes do not reprice saved work.
+Set **Crane → Default Selling UOM** to Hour, Day, or Month, and enter its matching reference prices. The Crane default initially comes from HER Settings. New Rental Contract rows show that unit and price; both can be edited. Timesheets visibly inherit their Rental Contract terms, or the Crane defaults when starting a new rental. You can change **Billing unit** and **Agreed rate** on a draft Timesheet; saving retains the choice without changing the Rental Contract. Its submitted terms determine sales billing. Master default changes do not reprice saved work.
 
 Generated Sales Invoice items display the selected UOM, worked quantity and rate: for example, **3 Day × 1,500**, rather than **1 Hour × 4,500**. Monthly quantities are fractions of calendar months. Draft invoice rows remain editable using ERPNext's normal controls. Hour stock quantities track actual crane work; they do not replace the invoice billing unit. Flat-rate Timesheets for the same booked crane/day must use matching terms to avoid double billing.
 
@@ -40,26 +40,26 @@ Supplier Billing UOM still defaults separately from Settings and remains editabl
 
 ## Booking and work rules
 
-- Saved Assignment date ranges determine crane availability. Overlapping bookings for one crane are rejected, including in separate Assignments. There is no manual Released state.
-- A Timesheet crane must belong to its Assignment. Customer, location, and each work date must agree with the booked period.
+- Saved Rental Contract date ranges determine crane availability. Overlapping bookings for one crane are rejected, including in separate Assignments. There is no manual Released state.
+- A Timesheet crane must belong to its Rental Contract. Customer, location, and each work date must agree with the booked period.
 - Timesheets use native Draft, Submitted, and Cancelled states. Work in a submitted Timesheet is the basis for billing. An active Sales Invoice must be cancelled before cancelling its source Timesheet.
 - Each shift records an Employee, work times, optional overtime hours, and editable actual worked hours excluding downtime. Entered hours are retained when clock times change. Overlapping operators contribute to operator hours individually, while crane billable hours count the time only once. A submitted crane shift cannot overlap another submitted Timesheet for that crane.
 - Hourly billing uses the agreed rate times entered crane operating hours, deduplicating simultaneous operators over their scheduled windows. Daily billing charges each worked calendar day once per booked crane period. Monthly billing prorates distinct worked days by the number of days in each month. An active invoice prevents those hours or days from being billed again.
 - Crane Maintenance uses native Submit → Cancel → Amend. Draft repairs hold dates, items and payment details; Submit creates their native invoices, stock movements, Asset Repair and payments automatically for the selected source/purpose. Cancel previews and reverses the related documents atomically; Amend creates an editable replacement that posts fresh entries. Cash Expense creates its Expense Entry on submission. Existing posted repairs are migrated without reposting. See [repair workflow](docs/NATIVE_CRANE_WORKFLOW.md#repairs-including-company-owned-shared-and-external-cranes).
 - Upload the Crane image from its side panel; these images are public and appear as thumbnails in the regular Crane List view. Legacy per-crane Items retain their image mirror; the shared service Item is not overwritten by individual cranes. The form stores a license plate and Hour, Day, and Month reference prices in Crane Details. Legacy per-crane Items display the same prices read-only. After saving, Availability shows a compact month calendar with reserved dates; Connections links related documents.
-- From a saved Crane's **Create** menu, start an Expense, Maintenance record, or Timesheet with the Crane preselected. **Sales Invoice** creates draft invoices for the Crane's submitted, unbilled Timesheets, grouped by Assignment so each invoice has one customer.
-- The shared Expense Entry has optional Crane and Crane Assignment links supplied by this app. **Create → Expense** on a saved Crane or Crane Assignment opens a new Expense Entry with the corresponding link filled in; neither link is required for other expenses.
+- From a saved Crane's **Create** menu, start an Expense, Maintenance record, or Timesheet with the Crane preselected. **Sales Invoice** creates draft invoices for the Crane's submitted, unbilled Timesheets, grouped by Rental Contract so each invoice has one customer.
+- The shared Expense Entry has optional Crane and Rental Contract links supplied by this app. **Create → Expense** on a saved Crane or Rental Contract opens a new Expense Entry with the corresponding link filled in; neither link is required for other expenses.
 - Selecting a Crane Driver (Employee) on Expense Entry fills Party Type **Employee** and that employee's ID on its Journal Entry expense debit rows. These identify the expense recipient on the journal; General Ledger expense rows remain without a party under ERPNext's native accounting rules. Migration fills missing parties on matching historical journals without changing posted amounts or ledger balances.
 
 ## Rented cranes and supplier payments
 
 1. Set the Crane's Ownership Type to **Rented** and select its ERPNext **Supplier**.
-2. Selecting a rented Crane on a Timesheet shows **Rented**, checked by default. The **Supplier Billing UOM** defaults from Settings; review it and enter a positive **Purchase Price** per that unit. Uncheck **Rented** when this Timesheet should not create a supplier invoice; the choice is saved. Prices use the Assignment company currency and remain separate from the customer agreed rate.
+2. Selecting a rented Crane on a Timesheet shows **Rented**, checked by default. The **Supplier Billing UOM** defaults from Settings; review it and enter a positive **Purchase Price** per that unit. Uncheck **Rented** when this Timesheet should not create a supplier invoice; the choice is saved. Prices use the Rental Contract company currency and remain separate from the customer agreed rate.
 3. Submitting with **Rented** checked automatically creates and submits one **Purchase Invoice** for the Crane's linked Item: **UOM = Supplier Billing UOM** and **Rate = the entered Purchase Price per that unit**. Hour uses **Total Crane Billable Hours**, counting overlapping drivers only once. Day counts distinct worked calendar dates; Month sums each worked date's fraction of its calendar month. Idle dates add no purchase quantity. The invoice conversion to the Item's Hour stock UOM represents actual distinct crane hours. For example, 8 worked hours at 250 per hour produces **8 Hour × 250 = 2,000**, regardless of the Timesheet's date span or customer Billing Unit.
 4. Users need normal ERPNext Purchase Invoice create and submit permissions. The Item must allow purchases, and standard supplier/company accounting must be configured. Failed invoice posting rolls back Timesheet submission.
 5. Use **Create → Payment** on a saved Crane or submitted, invoiced Timesheet. Choose an unpaid invoice if several are available. Review the draft native **Payment Entry**, choose bank/payment details and amount, then save and submit it. ERPNext Payment Entry create permission is required; this action does not submit a payment automatically.
 
-Timesheet periods may overlap when their actual crane shifts do not overlap. Existing Assignment booking and submitted-shift overlap checks still apply. Customer billing continues to follow the Assignment's agreed terms; hourly sales use the same worked crane hours as purchases.
+Timesheet periods may overlap when their actual crane shifts do not overlap. Existing Rental Contract booking and submitted-shift overlap checks still apply. Customer billing continues to follow the Rental Contract's agreed terms; hourly sales use the same worked crane hours as purchases.
 
 Cancel the Purchase Invoice before cancelling its Timesheet. To correct submitted work, cancel both and amend the Timesheet; its replacement gets a new invoice when **Rented** is checked. Existing submitted Timesheets do not create retroactive Purchase Invoices, and historical invoices keep their original quantities, units, rates, and amounts. Migration archives previous purchase terms; Day/Month purchase prices on existing drafts are cleared so users enter an hourly price before submission. Rented Cranes still require their Supplier on the master record.
 
@@ -96,9 +96,9 @@ and journal rows covers other revenue/costs. Rental Profitability retains its
 net-sales basis. See [configuration and accounting](docs/PROFIT_SHARING.md) and
 [the full numerical development example](docs/OPERATING_FIRST_DEMO.md).
 
-Maintenance and expenses show editable **Crane Assignment** and **Crane Timesheet** links directly. Choose Crane and start date to default uniquely matching rental links. Both links are optional and editable; ambiguous Timesheets remain for manual selection. Maintenance uses Actual Start/End dates only. A Timesheet fills its Assignment automatically; Crane-only records are allowed when no work matches. Maintenance carries its selection into the generated expense.
+Maintenance and expenses show editable **Rental Contract** and **Crane Timesheet** links directly. Choose Crane and start date to default uniquely matching rental links. Both links are optional and editable; ambiguous Timesheets remain for manual selection. Maintenance uses Actual Start/End dates only. A Timesheet fills its Rental Contract automatically; Crane-only records are allowed when no work matches. Maintenance carries its selection into the generated expense.
 
-Rental expenses display **Crane**, **Crane Assignment**, optional **Crane Timesheet**, and read-only **Service From/To Date**. The Assignment defaults its Crane booking period; select a Timesheet to use its work period. Settlement uses that work attribution even if the expense is posted later, allocating it once among eligible submitted Timesheets by billable hours. Enter all costs before approving the settlement. Under historical automatic agreements, costs must be complete before invoice submission. Reopen affected settlements before adding costs for closed work. Posted accounting dates and existing submitted settlements are preserved. See [expense allocation rules](docs/PROFIT_SHARING.md).
+Rental expenses display **Crane**, **Rental Contract**, optional **Crane Timesheet**, and read-only **Service From/To Date**. The Rental Contract defaults its Crane booking period; select a Timesheet to use its work period. Settlement uses that work attribution even if the expense is posted later, allocating it once among eligible submitted Timesheets by billable hours. Enter all costs before approving the settlement. Under historical automatic agreements, costs must be complete before invoice submission. Reopen affected settlements before adding costs for closed work. Posted accounting dates and existing submitted settlements are preserved. See [expense allocation rules](docs/PROFIT_SHARING.md).
 
 ## Treasury transfers
 
@@ -117,7 +117,7 @@ Open **Crane Operations → Treasury Workbook** for the seven-column RTL treasur
 ## Rental income and expenses
 
 Open **Crane Operations → Rental Profitability** (or search **Crane Rental Profitability**).
-Choose Company and posting-date range; optionally filter by Assignment or Crane. The report
+Choose Company and posting-date range; optionally filter by Rental Contract or Crane. The report
 shows Total Income, Total Expenses, and **Net Sales = Income − Expenses**, with linked
 documents and the actual cash/custody source account for expenses.
 
@@ -125,7 +125,7 @@ Income is submitted Sales Invoice item net amounts linked through submitted rent
 Costs include linked supplier hire invoices, rental Expense Entries, native repair stock/service postings and attributed depreciation/other journals. Native invoice returns reduce the corresponding amounts. Drafts, cancelled records,
 payments, and treasury transfers are excluded. Invoice values exclude taxes and use company
 currency. This is recorded rental margin, not cash receipts or a complete company profit and loss.
-Unbilled Timesheets are excluded. An Assignment filter requires an explicit Assignment link on
+Unbilled Timesheets are excluded. An Rental Contract filter requires an explicit Rental Contract link on
 expenses; a Crane filter requires an explicit Crane link. Users need read access to the rental and
 accounting source documents; the report does not grant accounting permissions.
 Historical expenses with a missing, draft, cancelled, or wrong-company Journal Entry are
@@ -137,7 +137,7 @@ and the explicit, repeatable demo command. Demo records are never created by mig
 
 ## Existing records
 
-On migration, existing Crane Project or native Project references are used once to populate Assignment customer, company, and location, and to link historical Timesheets to Assignments. A legacy project name becomes the location when no separate location existed. Review those locations and any old overlapping bookings or zero rates before invoicing historical work. The custom Crane Project DocType is removed after migration; ERPNext's native Project DocType is unchanged. Existing signed Timesheet uploads move to the new hard-copy attachment field. Previous Year reference prices move to a hidden legacy field on Crane.
+On migration, existing Crane Project or native Project references are used once to populate Rental Contract customer, company, and location, and to link historical Timesheets to Assignments. A legacy project name becomes the location when no separate location existed. Review those locations and any old overlapping bookings or zero rates before invoicing historical work. The custom Crane Project DocType is removed after migration; ERPNext's native Project DocType is unchanged. Existing signed Timesheet uploads move to the new hard-copy attachment field. Previous Year reference prices move to a hidden legacy field on Crane.
 
 Existing rental Expense Types migrate to `arab_erp_theme` Expense Entry Types, and existing Expense Entry amounts move into the shared expense rows. Earlier migrations removed the rental-owned Expense Type and Expense Entry DocTypes and handed branding to the base theme. HER now supplies its own theme and branding again; unrelated custom site branding is preserved.
 
@@ -149,7 +149,7 @@ bench --site YOUR_SITE migrate
 
 ## Calendar
 
-`/rental-calendar` and `/rental-calendar/timeline` show bookings, Timesheet work, and maintenance. The timeline can group by Assignment or crane. After changing `frontend/src`, rebuild the tracked assets:
+`/rental-calendar` and `/rental-calendar/timeline` show bookings, Timesheet work, and maintenance. The timeline can group by Rental Contract or crane. After changing `frontend/src`, rebuild the tracked assets:
 
 ```bash
 cd frontend
@@ -254,3 +254,5 @@ bench --site YOUR_SITE run-tests --module heavy_equipment_rental.test_distributi
 ## Customize Crane Operations
 
 Crane Operations groups daily work, billing/treasury, partners, reports and setup into editable native workspace cards. Use **Customize → Save** as Administrator or Workspace Manager to arrange it on your site. Site edits survive later app migrations. See [workspace editing and deployment](docs/WORKSPACE.md).
+
+Rental Contract and Timesheet **Location** is a link to ERPNext **Location**. Select an existing location or create one through the picker when permitted. The Rental Contract location fills into its Timesheets. Existing text locations are preserved as native Location records by migration.

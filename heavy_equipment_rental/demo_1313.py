@@ -137,7 +137,7 @@ def create():
     driver = frappe.get_doc(dict(doctype="Employee", first_name="HER1313 مشغل تجريبي", company=COMPANY,
         gender=frappe.db.get_value("Gender", {}, "name"), date_of_birth="1990-01-01",
         date_of_joining="2026-01-01", status="Active")).insert()
-    assignment = frappe.get_doc(dict(doctype="Crane Assignment", company=COMPANY, customer=customer.name,
+    assignment = frappe.get_doc(dict(doctype="Rental Contract", company=COMPANY, customer=customer.name,
         location="HER1313 موقع إيجار تجريبي", assigned_cranes=[dict(crane=crane.name, start_date=START,
             expected_end_date=END, rental_rate_unit="Day", rental_rate=50000)])).insert()
     sheet = frappe.get_doc(dict(doctype="Crane Timesheet", crane=crane.name, assignment=assignment.name,

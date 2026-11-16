@@ -88,7 +88,7 @@ def collect_timesheet_sources(sheet, company, grand_total):
     all_sheets = frappe.get_all("Crane Timesheet", filters={"crane": sheet.crane, "docstatus": 1},
         fields=["name", "assignment", "period_start", "period_end", "sales_invoice", "purchase_invoice", "total_amount", "total_crane_billable_hours"],
         order_by="name")
-    all_sheets = [s for s in all_sheets if frappe.get_cached_value("Crane Assignment", s.assignment, "company") in (None, "", company)]
+    all_sheets = [s for s in all_sheets if frappe.get_cached_value("Rental Contract", s.assignment, "company") in (None, "", company)]
     result = []
     for source in sources:
         kind = source["doctype"]

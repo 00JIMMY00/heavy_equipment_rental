@@ -84,7 +84,7 @@ class CraneMaintenance(Document):
 		assignment = self.crane_assignment
 		if self.crane_timesheet:
 			assignment = frappe.db.get_value("Crane Timesheet", self.crane_timesheet, "assignment")
-		company = (frappe.db.get_value("Crane Assignment", assignment, "company") if assignment else None) or crane_company(self.crane)
+		company = (frappe.db.get_value("Rental Contract", assignment, "company") if assignment else None) or crane_company(self.crane)
 		if self.is_new() and company:
 			self.company = company
 		elif company and self.company != company:

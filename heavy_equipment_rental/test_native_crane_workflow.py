@@ -165,7 +165,7 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 		from heavy_equipment_rental.heavy_equipment_rental.report.crane_rental_profitability.crane_rental_profitability import execute
 
 		other = frappe.get_doc(dict(doctype="Crane", crane_name=self.key + " second crane")).insert()
-		assignment = frappe.get_doc(dict(doctype="Crane Assignment", company=self.company.name,
+		assignment = frappe.get_doc(dict(doctype="Rental Contract", company=self.company.name,
 			customer=frappe.db.get_value("Customer", {}, "name"), location=self.key,
 			assigned_cranes=[dict(crane=crane, start_date=today(), expected_end_date=today(),
 				rental_rate_unit="Hour", rental_rate=rate) for crane, rate in ((self.crane.name, 1000), (other.name, 500))])).insert()

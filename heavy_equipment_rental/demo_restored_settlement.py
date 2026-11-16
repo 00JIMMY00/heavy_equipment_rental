@@ -56,7 +56,7 @@ def create():
 	assert cash and income
 	before_cash = cash_balance(cash)
 	assert before_cash >= 1500
-	assignment = frappe.get_doc(dict(doctype="Crane Assignment", company=company, customer=previous.customer,
+	assignment = frappe.get_doc(dict(doctype="Rental Contract", company=company, customer=previous.customer,
 		location="تجربة استعادة توزيع الربحية التلقائي", assigned_cranes=[dict(crane=crane.name,
 			start_date=day, expected_end_date=day, rental_rate_unit="Day", rental_rate=10000)])).insert()
 	sheet = frappe.get_doc(dict(doctype="Crane Timesheet", crane=crane.name, assignment=assignment.name,

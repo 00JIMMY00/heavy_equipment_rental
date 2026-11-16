@@ -74,8 +74,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Crane Assignment",
-   "options": "Crane Assignment"
+   "label": "Rental Contract",
+   "options": "Rental Contract"
   },
   {
    "fetch_from": "assignment.customer",
@@ -89,9 +89,10 @@
   {
    "fetch_from": "assignment.location",
    "fieldname": "location",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "label": "Location",
-   "reqd": 1
+   "reqd": 1,
+   "options": "Location"
   },
   {
    "fieldname": "crane",
@@ -107,14 +108,14 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "Work period. Also used when creating a new Assignment.",
+   "description": "Work period. Also used when creating a new Rental Contract.",
    "fieldname": "period_start",
    "fieldtype": "Date",
    "label": "Period Start",
    "reqd": 1
   },
   {
-   "description": "Work period. Also used when creating a new Assignment.",
+   "description": "Work period. Also used when creating a new Rental Contract.",
    "fieldname": "period_end",
    "fieldtype": "Date",
    "label": "Period End",
@@ -261,7 +262,7 @@
    "fieldtype": "Section Break",
    "label": "Supplier Purchase",
    "depends_on": "eval:doc.crane_ownership_type=='Rented'",
-   "description": "When Rented is checked, submission purchases actual recorded work using the Supplier Billing UOM and purchase price. Prices use the Assignment company currency."
+   "description": "When Rented is checked, submission purchases actual recorded work using the Supplier Billing UOM and purchase price. Prices use the Rental Contract company currency."
   },
   {
    "fieldname": "rented",

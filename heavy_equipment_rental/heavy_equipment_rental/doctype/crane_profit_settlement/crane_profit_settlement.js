@@ -58,7 +58,7 @@ frappe.ui.form.on("Crane Profit Settlement", {
             <td class="text-right">${format_currency(row.expenses, frm.doc.currency)}</td></tr>`).join("");
         frm.fields_dict.source_details.$wrapper.html(rows
             ? `<div class="table-responsive"><table class="table table-bordered"><thead><tr>
-                ${["Posting Date", "Crane Assignment", "Service Period", "Document Type", "Document", "Revenue Account", "Revenue", "Operating Expenses"].map(label => `<th>${esc(__(label))}</th>`).join("")}
+                ${["Posting Date", "Rental Contract", "Service Period", "Document Type", "Document", "Revenue Account", "Revenue", "Operating Expenses"].map(label => `<th>${esc(__(label))}</th>`).join("")}
                 </tr></thead><tbody>${rows}</tbody></table></div>`
             : `<p class="text-muted">${__("No posted revenue or costs in this period.")}</p>`);
         frm.set_intro(__("Save to calculate: agreed invoice revenue, less operating share, less expenses, then distribute the remaining balance. A deficit stops the settlement. Submit to close the period and create partner payables. Historical agreements retain their original revenue basis."));

@@ -1,11 +1,11 @@
-frappe.ui.form.on("Crane Assignment", {
+frappe.ui.form.on("Rental Contract", {
     refresh(frm) {
         if (frm.is_new()) return;
         if (frappe.model.can_create("Expense Entry"))
             frm.add_custom_button(__("Expense"), () =>
                 frappe.new_doc("Expense Entry", { crane_assignment: frm.doc.name }), __("Create"));
         frm.add_custom_button(__("New Timesheet"), () => {
-            if (frm.is_dirty()) return frappe.msgprint(__("Save the Assignment before creating a Timesheet."));
+            if (frm.is_dirty()) return frappe.msgprint(__("Save the Rental Contract before creating a Timesheet."));
             const cranes = [...new Set((frm.doc.assigned_cranes || []).filter(r => !r.cancelled && r.crane).map(r => r.crane))];
             const create = crane => {
                 const bookings = frm.doc.assigned_cranes.filter(r => !r.cancelled && r.crane === crane);
@@ -24,13 +24,13 @@ frappe.ui.form.on("Crane Assignment", {
                         label: `${r.start_date} → ${r.expected_end_date}` })),
                 }], values => open(bookings[Number(values.booking)]), __("Choose Rental Period"), __("Create Timesheet"));
             };
-            if (!cranes.length) return frappe.msgprint(__("Add an active Crane to the Assignment first."));
+            if (!cranes.length) return frappe.msgprint(__("Add an active Crane to the Rental Contract first."));
             if (cranes.length === 1) return create(cranes[0]);
             frappe.prompt([{
                 fieldname: "crane", fieldtype: "Link", label: __("Crane"), options: "Crane", reqd: 1,
                 get_query: () => ({ filters: { name: ["in", cranes] } }),
             }], values => {
-                if (!cranes.includes(values.crane)) return frappe.msgprint(__("Select a Crane from this Assignment."));
+                if (!cranes.includes(values.crane)) return frappe.msgprint(__("Select a Crane from this Rental Contract."));
                 return create(values.crane);
             }, __("Choose Crane for Timesheet"), __("Create Timesheet"));
         }, __("Create"));
@@ -66,7 +66,7 @@ async function assignment_row_defaults(frm, cdt, cdn) {
     const crane = row.crane, unit = row.rental_rate_unit, rate = row.rental_rate;
     const request = row._rental_defaults_request = (row._rental_defaults_request || 0) + 1;
     const { message } = await frappe.call({
-        method: "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.crane_assignment.get_assignment_defaults",
+        method: "heavy_equipment_rental.heavy_equipment_rental.doctype.rental_contract.rental_contract.get_assignment_defaults",
         args: { crane, rental_rate_unit: unit === row._default_rental_unit ? null : unit },
     });
     if (locals[cdt]?.[cdn] !== row || request !== row._rental_defaults_request || row.crane !== crane || row.rental_rate_unit !== unit) return;

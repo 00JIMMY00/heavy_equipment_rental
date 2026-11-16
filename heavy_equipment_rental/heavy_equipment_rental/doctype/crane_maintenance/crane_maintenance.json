@@ -41,7 +41,6 @@
   "supplier_invoice_date",
   "supplier_paid_amount",
   "pay_full_amount",
-  "repair_column",
   "repair_items",
   "repair_purchase_invoice",
   "repair_material_issue",
@@ -206,8 +205,8 @@
   {
    "fieldname": "crane_assignment",
    "fieldtype": "Link",
-   "label": "Crane Assignment",
-   "options": "Crane Assignment"
+   "label": "Rental Contract",
+   "options": "Rental Contract"
   },
   {
    "fieldname": "crane_timesheet",
@@ -290,11 +289,7 @@
    "label": "Supplier Invoice Date"
   },
   {
-   "fieldname": "repair_column",
-   "fieldtype": "Column Break"
-  },
-  {
-   "description": "Defaults from HER Settings \u2192 Maintenance Defaults for this Company.",
+   "description": "Defaults from HER Settings → Maintenance Defaults for this Company.",
    "fieldname": "repair_expense_account",
    "fieldtype": "Link",
    "label": "Repair Expense Account",

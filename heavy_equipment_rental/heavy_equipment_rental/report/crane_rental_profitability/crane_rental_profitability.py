@@ -15,13 +15,13 @@ def execute(filters=None):
         frappe.throw(_("From Date must be before To Date."))
     frappe.get_doc("Company", filters.company).check_permission("read")
     # Never return a plausible but incomplete profit because a source is inaccessible.
-    for doctype in ("Crane Assignment", "Crane", "Crane Timesheet", "Sales Invoice",
+    for doctype in ("Rental Contract", "Crane", "Crane Timesheet", "Sales Invoice",
                     "Purchase Invoice", "Expense Entry", "Journal Entry"):
         if not frappe.has_permission(doctype, "read"):
             frappe.throw(_("Read permission for {0} is required for this report.").format(doctype),
                          frappe.PermissionError)
     currency = frappe.get_cached_value("Company", filters.company, "default_currency")
-    assignments = frappe.get_list("Crane Assignment", filters={"company": filters.company},
+    assignments = frappe.get_list("Rental Contract", filters={"company": filters.company},
                                   pluck="name", limit_page_length=0)
     if filters.assignment:
         assignments = [name for name in assignments if name == filters.assignment]
@@ -130,7 +130,7 @@ def execute(filters=None):
                 "Includes posted repair stock consumption, external repair services and attributed journals/depreciation. "
                 "Net Sales means rental income minus recorded costs, not cash collected. "
                 "Treasury transfers and invoice payments are excluded to avoid counting costs twice. "
-                "Assignment filters require expenses to have an Assignment link; crane filters require a Crane link.")
+                "Rental Contract filters require expenses to have an Rental Contract link; crane filters require a Crane link.")
     if unposted_expenses:
         message += "<br><strong>" + _("Expenses excluded from totals because they have no valid submitted Journal Entry: {0}. "
                                     "Review these historical records before relying on the totals.").format(
@@ -143,7 +143,7 @@ def get_columns():
         dict(fieldname="posting_date", label=_("Posting Date"), fieldtype="Date", width=105),
         dict(fieldname="voucher_type", label=_("Document Type"), fieldtype="Data", width=125),
         dict(fieldname="voucher", label=_("Document"), fieldtype="Dynamic Link", options="voucher_type", width=175),
-        dict(fieldname="assignment", label=_("Assignment"), fieldtype="Link", options="Crane Assignment", width=125),
+        dict(fieldname="assignment", label=_("Rental Contract"), fieldtype="Link", options="Rental Contract", width=125),
         dict(fieldname="crane", label=_("Crane"), fieldtype="Link", options="Crane", width=125),
         dict(fieldname="description", label=_("Description"), fieldtype="Data", width=240),
         dict(fieldname="mode_of_payment", label=_("Mode of Payment"), fieldtype="Link", options="Mode of Payment", width=150),

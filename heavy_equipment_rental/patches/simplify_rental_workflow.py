@@ -1,4 +1,4 @@
-"""Preserve legacy rentals while moving active work from Crane Project to Assignment."""
+"""Preserve legacy rentals while moving active work from Crane Project to Rental Contract."""
 
 import frappe
 from frappe.utils import getdate
@@ -6,7 +6,7 @@ from frappe.utils import getdate
 
 def execute():
     if not frappe.db.table_exists("Crane Project") or not all((
-        frappe.db.has_column("Crane Assignment", "project"),
+        frappe.db.has_column("Rental Contract", "project"),
         frappe.db.has_column("Crane Timesheet", "project"),
     )):
         return
@@ -14,19 +14,19 @@ def execute():
         "SELECT name, project_name, customer, company, expected_start_date, expected_end_date "
         "FROM `tabCrane Project`", as_dict=True)}
     assignments = frappe.db.sql(
-        "SELECT name, project FROM `tabCrane Assignment` WHERE project IS NOT NULL", as_dict=True)
+        "SELECT name, project FROM `tabRental Contract` WHERE project IS NOT NULL", as_dict=True)
     for assignment in assignments:
         project = projects.get(assignment.project)
         if not project:
             continue
-        frappe.db.set_value("Crane Assignment", assignment.name, {
+        frappe.db.set_value("Rental Contract", assignment.name, {
             "customer": project.customer,
             "company": project.company,
             "location": (project.project_name or project.name).strip(),
         }, update_modified=False)
     if frappe.db.has_column("Assigned Crane", "status"):
         frappe.db.sql("""UPDATE `tabAssigned Crane` SET cancelled=1
-            WHERE status='Cancelled' AND parenttype='Crane Assignment'""")
+            WHERE status='Cancelled' AND parenttype='Rental Contract'""")
     if frappe.db.has_column("Timesheet Entry", "crane_operator"):
         frappe.db.sql("""UPDATE `tabTimesheet Entry` e
             JOIN `tabCrane Driver` d ON d.name=e.crane_operator
@@ -44,14 +44,14 @@ def execute():
         if not days:
             days = {getdate(sheet.period_start), getdate(sheet.period_end)}
         rows = frappe.db.sql("""SELECT a.name AS assignment, r.start_date, r.expected_end_date
-            FROM `tabCrane Assignment` a JOIN `tabAssigned Crane` r ON r.parent=a.name
+            FROM `tabRental Contract` a JOIN `tabAssigned Crane` r ON r.parent=a.name
             WHERE a.project=%s AND r.crane=%s AND COALESCE(r.cancelled,0)=0""",
             (sheet.project, sheet.crane), as_dict=True)
         candidates = sorted({row.assignment for row in rows if all(
             any(other.assignment == row.assignment and
                 getdate(other.start_date) <= day <= getdate(other.expected_end_date)
                 for other in rows) for day in days)})
-        if sheet.assignment and frappe.db.exists("Crane Assignment", sheet.assignment):
+        if sheet.assignment and frappe.db.exists("Rental Contract", sheet.assignment):
             selected = sheet.assignment
         elif candidates:
             # Legacy records can contain duplicate assignments; keep the earliest stable link.
@@ -61,7 +61,7 @@ def execute():
             rate = prices[0] if prices else frappe.db.get_value(
                 "Crane Period Price", {"parent": sheet.crane, "period": "Hour"}, "price") or 0
             rental = frappe.get_doc({
-                "doctype": "Crane Assignment", "customer": project.customer,
+                "doctype": "Rental Contract", "customer": project.customer,
                 "company": project.company, "location": (project.project_name or project.name).strip(),
                 "assigned_cranes": [{
                     "crane": sheet.crane,

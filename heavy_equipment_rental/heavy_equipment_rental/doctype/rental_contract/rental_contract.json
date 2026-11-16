@@ -1,6 +1,6 @@
 {
  "doctype": "DocType",
- "name": "Crane Assignment",
+ "name": "Rental Contract",
  "module": "Heavy Equipment Rental",
  "engine": "InnoDB",
  "creation": "2026-10-13 00:00:00.000000",
@@ -11,7 +11,7 @@
   {
    "fieldname": "details_tab",
    "fieldtype": "Tab Break",
-   "label": "Assignment Details"
+   "label": "Rental Contract Details"
   },
   {
    "fieldname": "project_section",
@@ -22,8 +22,8 @@
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
-   "options": "ASG-.#####",
-   "default": "ASG-.#####",
+   "options": "RC-.#####\nASG-.#####",
+   "default": "RC-.#####",
    "reqd": 1,
    "hidden": 1
   },
@@ -38,10 +38,11 @@
   },
   {
    "fieldname": "location",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "label": "Location",
    "reqd": 1,
-   "in_list_view": 1
+   "in_list_view": 1,
+   "options": "Location"
   },
   {
    "fieldname": "dates_col",

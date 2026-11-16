@@ -20,7 +20,7 @@ def check_non_negative(value, label):
 
 
 def assignment_doc(name, permission="read", lock=False):
-	doc = frappe.get_doc("Crane Assignment", name, for_update=lock)
+	doc = frappe.get_doc("Rental Contract", name, for_update=lock)
 	doc.check_permission(permission)
 	return doc
 
@@ -64,7 +64,7 @@ def ranges_overlap(start, end, other_start, other_end):
 
 
 def allocations(cranes=None, assignment=None, exclude=None, lock=True):
-	conditions = ["a.parenttype='Crane Assignment'", "COALESCE(a.cancelled, 0)=0"]
+	conditions = ["a.parenttype='Rental Contract'", "COALESCE(a.cancelled, 0)=0"]
 	args = {}
 	if cranes:
 		conditions.append("a.crane IN %(cranes)s")
@@ -77,7 +77,7 @@ def allocations(cranes=None, assignment=None, exclude=None, lock=True):
 		args["exclude"] = exclude
 	return frappe.db.sql(
 		"""SELECT a.*, p.customer, p.location, p.name AS assignment
-        FROM `tabAssigned Crane` a JOIN `tabCrane Assignment` p ON p.name=a.parent
+        FROM `tabAssigned Crane` a JOIN `tabRental Contract` p ON p.name=a.parent
         WHERE """
 		+ " AND ".join(conditions)
 		+ (" FOR UPDATE" if lock else ""),

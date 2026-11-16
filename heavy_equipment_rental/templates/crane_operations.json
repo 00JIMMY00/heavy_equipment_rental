@@ -65,9 +65,9 @@
   },
   {
    "type": "Link",
-   "label": "Crane Job Assignment",
+   "label": "Rental Contract",
    "link_type": "DocType",
-   "link_to": "Crane Assignment"
+   "link_to": "Rental Contract"
   },
   {
    "type": "Card Break",
