@@ -18,13 +18,17 @@ Edit the repository-root `apps.yaml`:
 
 ```yaml
 frappe_branch: version-15
+# Hold the currently validated production framework revision.
+frappe_ref: b0b5b99a1d9d2cb3d54b32293d3854bf2c15f4a4
 apps:
   - name: erpnext
     repo: https://github.com/frappe/erpnext
-    ref: version-15
+    # A branch/tag is also supported; pin production until its upgrade passes tests.
+    ref: bfd8100d42162048248b7b947f2e21fdf7999a91
   - name: arab_erp_theme
     repo: https://github.com/00JIMMY00/arab_erp_theme
     ref: develop
+  # HER comes from the exact checkout tested by this workflow.
   - name: heavy_equipment_rental
     repo: https://github.com/00JIMMY00/heavy_equipment_rental
     ref: main
