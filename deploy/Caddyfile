@@ -1,0 +1,14 @@
+cranes.arab-erp.com {
+    encode zstd gzip
+    @maintenance file {
+        root /srv/state
+        try_files maintenance
+    }
+    handle @maintenance {
+        header Retry-After 120
+        respond "Deployment in progress. Please try again shortly." 503
+    }
+    handle {
+        reverse_proxy frontend:8080
+    }
+}

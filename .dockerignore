@@ -1,0 +1,10 @@
+.git
+.github
+**/__pycache__
+**/*.pyc
+**/node_modules
+frontend
+*.xlsx
+deploy/.env
+deploy/deploy.conf
+deploy/clients.json

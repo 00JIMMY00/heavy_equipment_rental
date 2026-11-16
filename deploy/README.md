@@ -1,127 +1,62 @@
-# Two-site production deployment
+# HER production deployment
 
-`clients.yaml` in the repository root is the source of truth. The deployment image
-contains the union of apps required by both sites. Each site installs only its
-listed apps:
+Push to `main` to validate, build a cached Docker image, install and migrate a disposable test site, run critical rental/accounting tests, publish the tested image to GHCR, and deploy its immutable digest over SSH. Pull requests build/test without deploying. Use **Actions → Test, build, deploy HER → Run workflow** to redeploy a revision on main.
 
-| Site | Apps |
-| --- | --- |
-| `elsakr.arab-erp.com` | ERPNext, Arab ERP Theme |
-| `cranes.arab-erp.com` | ERPNext, Heavy Equipment Rental |
+Production: `https://cranes.arab-erp.com`, host `49.12.190.89` (`ssh hetzner3`), stack `/opt/her`. This is a clean site; no development company or demo transactions are copied. Apps: Frappe, ERPNext, `arab_erp_theme`, `heavy_equipment_rental`.
 
-To add another app later, add its public Git URL and actual branch or tag under
-`apps`, then add its name to the intended site's list. The deployment image
-contains the app code, but the site still needs a one-time `bench --site SITE
-install-app APP`. The first rollout will fail its app-list check and restore
-the previous image; complete the site installation with the new image, then
-rerun the deploy job. The rollout never installs or removes site apps automatically.
+## Speed and versions
 
-## GitHub settings
+`Containerfile` caches Frappe, ERPNext and theme installation before copying HER. Their exact source revisions are in `dependencies.json`, initially matching the development bench. Update these pins intentionally, then push main; the same installation/migration/tests gate framework upgrades. The calendar is built with Node 22 on GitHub. No build tools or Actions runner are installed on production.
 
-Add these **repository Actions secrets** (Settings → Secrets and variables →
-Actions → Secrets):
+The deployment uses Docker Compose with MariaDB 10.11, Redis, separate backend/workers/scheduler/websocket/frontend, and Caddy HTTPS. Only 80/443 and SSH are public; the application health port binds to loopback, and database/Redis have no published ports. Container logs rotate at 3 × 10 MB each. Docker starts at boot; services restart automatically.
 
-| Kind | Name | Value |
-| --- | --- | --- |
-| Secret | `DEPLOY_SSH_KEY` | Complete contents of the dedicated, unencrypted SSH private key file |
-| Secret | `DEPLOY_SSH_HOST` | Server address |
-| Secret | `DEPLOY_SSH_USER` | Server login name |
-| Secret | `DEPLOY_DIR` | Absolute path to the server deployment directory |
-| Secret | `DEPLOY_SSH_KNOWN_HOSTS` | Verified SSH host-key line |
+## Deployment transaction and recovery
 
-The private key must begin with `-----BEGIN OPENSSH PRIVATE KEY-----` and end
-with `-----END OPENSSH PRIVATE KEY-----`. Paste the file contents, not its path,
-public key, or a quoted/escaped string. The deploy script validates the key
-before it connects. If using the GitHub CLI, copy the file without changing its
-format: `gh secret set DEPLOY_SSH_KEY --repo 00JIMMY00/heavy_equipment_rental < ~/.ssh/heavy_equipment_rental_deploy_ed25519`.
+1. Validate configuration, pull the candidate digest and check its contents while the current release serves traffic.
+2. Enable proxy maintenance, stop application services and workers, then take and verify a SQL dump plus site files/configuration snapshot. DB/Redis and the proxy remain running.
+3. Install the candidate configuration, migrate using a one-off container, and start its services.
+4. Check all six app services, HTTP ping/login, database, Redis, installed applications and rental DocType tables.
+5. Commit the image digest and reopen the site only after checks pass. On failure, restore the previous SQL database, site directory, Compose configuration and image; verify the restored release before reopening traffic. If restoration fails, maintenance remains enabled.
 
-`GITHUB_TOKEN` is provided by GitHub Actions and authenticates both publication
-and the temporary server pull session. No GHCR personal token is needed. The
-database password stays in the server's `.env`, never in GitHub.
+Failed initial installation has no previous site and remains behind maintenance for diagnosis. Backups live under `/opt/her/backups`; five complete pre-update recovery points are retained. Failed-release site files are retained alongside their recovery point. SQL and file archives are kept outside the site so migrations cannot delete them. These local backups protect updates; arrange off-server copies for host/disk loss.
 
-## Initial server setup
+After each successful release, retain the current image and the immediately previous successful image. Remove older HER image references and Compose orphans only. Database, site, Redis and Caddy volumes are never pruned. No global Docker prune is used.
 
-The server uses Docker Compose and the existing Caddy container on Docker's
-external `reverse_proxy` network. Copy `compose.yaml`, `rollout.sh`, and
-`clients_runtime.py` to the server directory named by `DEPLOY_DIR`. Copy
-`.env.example` to `.env`, generate a strong `DB_PASSWORD`, and copy
-`deploy.conf.example` to `deploy.conf`. Keep both files readable only by the
-deployment user.
-The rollout copies the rendered `clients.json` from the deployment each time.
+## Credentials and operations
 
-If using the existing Caddy server, add `Caddyfile.fragment` to its Caddyfile,
-validate it, and reload Caddy. It preserves the original Host header and routes
-only the two new names to `rental-frontend:8080`.
+GitHub secrets: `DEPLOY_SSH_HOST`, `DEPLOY_SSH_USER`, `DEPLOY_SSH_KEY`, `DEPLOY_SSH_KNOWN_HOSTS`. The generated key has a forced deployment command and disables forwarding/interactive access. It accepts only a validated HER digest and the five expected archive files. Registry login uses the job's temporary `GITHUB_TOKEN`; its temporary Docker configuration is removed when deployment exits. No personal registry token is required.
 
-For a Cloudflare Tunnel on the same host, the frontend also listens on
-`127.0.0.1:8083`. In the tunnel's **Public Hostnames**, route each hostname
-(`cranes.arab-erp.com` and `elsakr.arab-erp.com`) to the HTTP service URL
-`http://localhost:8083`. Cloudflare must create a DNS CNAME for each hostname
-pointing to that tunnel; remove any conflicting A/AAAA/CNAME records first.
-The tunnel terminates public HTTPS, so its service URL uses HTTP. Both sites
-share the port and Frappe selects the site from the original Host header.
-Use `elsakr` in the tunnel hostname, matching `clients.yaml` and the Bench
-site directory.
-
-For a new server, the first push to `main` can start the stack but will report
-failure until the sites exist. Create the sites in that stack and install their apps:
+The server's `/opt/her/.env` stores its generated database password (root-only). Retrieve the generated initial Administrator password over your existing administrator SSH connection:
 
 ```bash
-cd /path/to/deploy
-set -a
-. ./.env
-set +a
-read -rsp 'Elsakr Administrator password: ' ADMIN_PASSWORD; echo
-docker compose exec backend bench new-site --db-root-password "$DB_PASSWORD" --admin-password "$ADMIN_PASSWORD" --mariadb-user-host-login-scope='%' elsakr.arab-erp.com
-unset ADMIN_PASSWORD
-docker compose exec backend bench --site elsakr.arab-erp.com install-app erpnext
-
-read -rsp 'Cranes Administrator password: ' ADMIN_PASSWORD; echo
-docker compose exec backend bench new-site --db-root-password "$DB_PASSWORD" --admin-password "$ADMIN_PASSWORD" --mariadb-user-host-login-scope='%' cranes.arab-erp.com
-unset ADMIN_PASSWORD DB_PASSWORD
-docker compose exec backend bench --site cranes.arab-erp.com install-app erpnext
-docker compose exec backend bench --site cranes.arab-erp.com install-app heavy_equipment_rental
+ssh hetzner3 'cat /opt/her/state/administrator-password'
 ```
 
-Rerun the failed workflow. It rechecks installed apps, migrates both
-sites, and checks both local site endpoints even when the image digest is already
-running.
-
-## Deployment behavior
-
-Push a commit to `main`. One workflow runs Bench tests, checks the frontend
-assets, builds and smoke-tests the image, then pushes it to GHCR and deploys it.
-Pushes to `develop`, pull requests, and tags do not start automatic workflows.
-The optional linter workflow can still be run manually. The image build verifies
-that the rental app checkout matches the tested `main` commit. The deployment
-uses the registry digest, which identifies the exact image that passed the smoke test.
-
-The server pulls before changing containers. It backs up both sites, recreates
-app services, verifies their installed app sets, migrates both sites, and checks
-each site's ping endpoint on the local frontend port with its Host header. On
-startup, migration, or health failure, it restores the previous image digest.
-Docker Compose removes replaced app containers. After success, only the current
-and previous app images are retained; the image from two successful releases
-ago is removed. Database,
-Redis, and site volumes are never pruned.
-
-Container rollback does not reverse database changes. Site backups are created
-before migration and remain available for a reviewed restore. Keep independent
-off-server backups too.
-
-## El Sakr retail workspace
-
-`retail_workspace.py` publishes the site-specific **El Sakr Retail** workspace
-and its custom HTML overview through the Frappe API. The El Sakr site does not
-install the rental app, so this workspace is not synced by `bench migrate`.
-Run the script again after changing its layout or overview assets:
+Change the password in Desk after first login. The file records the initial password only.
 
 ```bash
-python deploy/retail_workspace.py --site https://elsakr.arab-erp.com
+ssh hetzner3
+cd /opt/her
+docker compose ps
+docker compose logs --tail 100 backend queue-short proxy
+cat state/images.json
 ```
 
-The script prompts for the API key and secret unless `FRAPPE_API_KEY` and
-`FRAPPE_API_SECRET` are set. Do not commit credentials. It validates the site's
-company, roles, DocTypes, and reports, then creates or updates the workspace
-and HTML block. The overview reports EGP invoice balances; the linked standard
-Accounts Receivable and Accounts Payable reports provide the full account view.
+The installed `/opt/her/release.py` supports an explicit rollback rehearsal against the running digest. It backs up the current site, migrates it, deliberately fails after health checks, restores the snapshot, and exits unsuccessfully as expected:
+
+```bash
+python3 release.py IMAGE_DIGEST --incoming /opt/her --rollback-test
+```
+
+For a manual rollback after a previously accepted release, first enable `/opt/her/state/maintenance`, stop application services, and restore the chosen snapshot's `.env`, Compose configuration, site archive and SQL dump together. Merely starting an older image does **not** reverse migrations and must not be treated as a full rollback. Restoring an older snapshot after accepting new production transactions loses those later transactions; inspect/reconcile before doing that. Automatic rollback occurs while writes are paused, before a candidate is exposed to users.
+
+## Validation
+
+```bash
+python3 -m unittest deploy.test_rollout
+APP_IMAGE=local/her:test DB_PASSWORD=test docker compose -f deploy/compose.yaml config --quiet
+```
+
+GitHub tests the actual production image against a disposable database and runs rental workflow, maintenance lifecycle/posting and partner settlement regressions. `ci_setup.py` explicitly rejects any site except `her_ci`; fixture setup is never called by production install/migrate. `production_health.check` is a read-only Bench command, not a public API.
+
+This workflow replaces the previous multi-client/client-manifest deployment. Files such as the old client renderer and retail workspace tools are not part of the production pipeline.

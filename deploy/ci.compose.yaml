@@ -1,0 +1,29 @@
+name: her-ci
+services:
+  db:
+    image: mariadb:10.11
+    environment:
+      MARIADB_ROOT_PASSWORD: ci-root
+    command: [--character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci]
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  redis-cache:
+    image: redis:7-alpine
+  redis-queue:
+    image: redis:7-alpine
+  test:
+    image: ${APP_IMAGE:?}
+    volumes:
+      - ci-sites:/home/frappe/frappe-bench/sites
+      - ci-logs:/home/frappe/frappe-bench/logs
+    command: [bash, apps/heavy_equipment_rental/deploy/ci.sh]
+    depends_on:
+      db: {condition: service_healthy}
+      redis-cache: {condition: service_started}
+      redis-queue: {condition: service_started}
+volumes:
+  ci-sites:
+  ci-logs:

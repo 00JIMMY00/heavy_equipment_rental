@@ -1,35 +1,17 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-
-for name in SSH_HOST SSH_USER SSH_KEY SSH_KNOWN_HOSTS DEPLOY_DIR IMAGE_REF GHCR_USER GHCR_TOKEN; do
-  [[ -n "${!name:-}" ]] || { echo "Missing $name" >&2; exit 2; }
-done
-[[ "$SSH_HOST" =~ ^[a-zA-Z0-9.-]+$ && "$SSH_USER" =~ ^[a-zA-Z0-9_-]+$ \
-  && "$DEPLOY_DIR" =~ ^/[a-zA-Z0-9._/-]+$ && "$GHCR_USER" =~ ^[a-zA-Z0-9_-]+$ \
-  && "$IMAGE_REF" =~ ^ghcr\.io/[a-z0-9._/-]+@sha256:[a-f0-9]{64}$ ]] || {
-  echo "Invalid SSH or deployment setting" >&2
-  exit 2
-}
-
-key_file="$(mktemp)"
-hosts_file="$(mktemp)"
-trap 'rm -f "$key_file" "$hosts_file"' EXIT
-chmod 600 "$key_file" "$hosts_file"
-printf '%s\n' "$SSH_KEY" > "$key_file"
-printf '%s\n' "$SSH_KNOWN_HOSTS" > "$hosts_file"
-if ! ssh-keygen -y -P '' -f "$key_file" >/dev/null 2>&1; then
-  echo "DEPLOY_SSH_KEY is not a valid unencrypted SSH private key. Set the secret to the complete contents of the dedicated private key file." >&2
-  exit 2
-fi
-if ! ssh-keygen -F "$SSH_HOST" -f "$hosts_file" >/dev/null 2>&1; then
-  echo "DEPLOY_SSH_KNOWN_HOSTS has no entry for DEPLOY_SSH_HOST." >&2
-  exit 2
-fi
-ssh_opts=(-i "$key_file" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$hosts_file")
-target="$SSH_USER@$SSH_HOST"
-
-ssh "${ssh_opts[@]}" "$target" "mkdir -p '$DEPLOY_DIR'"
-scp "${ssh_opts[@]}" deploy/rollout.sh deploy/compose.yaml \
-  deploy/clients_runtime.py deploy/clients.json "$target:$DEPLOY_DIR/"
-printf '%s' "$GHCR_TOKEN" | ssh "${ssh_opts[@]}" "$target" \
-  "set -e; export DOCKER_CONFIG=\"\$(mktemp -d)\"; trap 'rm -rf \"\$DOCKER_CONFIG\"' EXIT; docker login ghcr.io --username '$GHCR_USER' --password-stdin; cd '$DEPLOY_DIR'; bash rollout.sh '$IMAGE_REF'"
+: "${SSH_HOST:?}" "${SSH_USER:?}" "${SSH_KEY:?}" "${SSH_KNOWN_HOSTS:?}" "${IMAGE_REF:?}" "${GHCR_USER:?}" "${GHCR_TOKEN:?}"
+[[ $IMAGE_REF =~ ^ghcr\.io/00jimmy00/heavy_equipment_rental@sha256:[a-f0-9]{64}$ ]]
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+chmod 700 "$work"
+printf '%s\n' "$SSH_KEY" > "$work/key"
+printf '%s\n' "$SSH_KNOWN_HOSTS" > "$work/known_hosts"
+chmod 600 "$work/key" "$work/known_hosts"
+mkdir "$work/deploy"
+cp deploy/compose.yaml deploy/Caddyfile deploy/release.py "$work/deploy/"
+printf '%s' "$GHCR_USER" > "$work/registry-user"
+printf '%s' "$GHCR_TOKEN" > "$work/registry-token"
+tar -C "$work" -czf - deploy registry-user registry-token | \
+  ssh -i "$work/key" -o BatchMode=yes -o StrictHostKeyChecking=yes \
+  -o UserKnownHostsFile="$work/known_hosts" "$SSH_USER@$SSH_HOST" "$IMAGE_REF"

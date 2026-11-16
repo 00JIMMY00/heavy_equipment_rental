@@ -1,5 +1,9 @@
 # Current decisions
 
+## 2026-11-16 — Docker production delivery
+
+Replaced the old release workflow with a cached build of pinned Frappe/ERPNext/theme dependencies, production-image installation/migration and critical rental tests, digest publishing to GHCR, and restricted SSH deployment on pushes to main. Production is a clean cranes.arab-erp.com site on hetzner3 (49.12.190.89), with all four required apps. Updates pause writes, verify SQL/files/configuration snapshots, migrate, and check application/DB/Redis health; failures restore the previous database, files and image before reopening. Keep current and previous successful HER images plus five recovery snapshots; never prune data volumes. See [deployment operations](../deploy/README.md). Server provisioning and live rollout verification are in progress.
+
 ## 2026-11-16 — Full-screen Arabic login (latest)
 
 Revised login to fill the viewport with white, pale sky blue and soft yellow, local crane photography and a locally hosted Cairo Arabic font (OFL). Arabic is the default for guest GET /login requests, even with English browser/cookie preferences; explicit _lang remains available. The request hook does not change stored user or site language settings. Login stays light regardless of the OS theme. Added conversational Arabic copy and retained native authentication, recovery, email-link and signup flows. Supersedes the centered navy login design. No schema migration required.

@@ -1,113 +1,100 @@
-x-app-image: &app-image
+name: her
+x-app: &app
   image: ${APP_IMAGE:?set APP_IMAGE}
   restart: unless-stopped
-
-x-bench: &bench
-  <<: *app-image
   volumes:
-    - sites:/home/frappe/frappe-bench/sites
-  depends_on:
-    configurator:
-      condition: service_completed_successfully
+    - ./sites:/home/frappe/frappe-bench/sites
+    - ./logs:/home/frappe/frappe-bench/logs
+  logging: &logging
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: '3'
 
 services:
   db:
     image: mariadb:10.11
     restart: unless-stopped
-    command:
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
-      - --skip-character-set-client-handshake
+    command: [--character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --skip-character-set-client-handshake]
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
-    volumes:
-      - db-data:/var/lib/mysql
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+    volumes: [db-data:/var/lib/mysql]
     healthcheck:
       test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
       interval: 5s
       timeout: 5s
-      retries: 10
-
+      retries: 30
+    logging: *logging
   redis-cache:
     image: redis:7-alpine
     restart: unless-stopped
-
+    logging: *logging
   redis-queue:
     image: redis:7-alpine
+    command: [redis-server, --appendonly, 'yes']
     restart: unless-stopped
-    volumes:
-      - redis-queue-data:/data
-
+    volumes: [redis-data:/data]
+    logging: *logging
   configurator:
-    <<: *app-image
-    volumes:
-      - sites:/home/frappe/frappe-bench/sites
-    restart: on-failure:5
-    entrypoint: [bash, -c]
+    <<: *app
+    restart: 'no'
+    entrypoint: [bash, -ec]
     command:
-      - >-
-        ls -1 apps > sites/apps.txt;
-        bench set-config -g db_host db;
-        bench set-config -gp db_port 3306;
-        bench set-config -g redis_cache redis://redis-cache:6379;
-        bench set-config -g redis_queue redis://redis-queue:6379;
-        bench set-config -g redis_socketio redis://redis-queue:6379;
+      - |
+        ls -1 apps > sites/apps.txt
+        bench set-config -g db_host db
+        bench set-config -gp db_port 3306
+        bench set-config -g redis_cache redis://redis-cache:6379
+        bench set-config -g redis_queue redis://redis-queue:6379
+        bench set-config -g redis_socketio redis://redis-queue:6379
         bench set-config -gp socketio_port 9000
     depends_on:
-      db:
-        condition: service_healthy
-      redis-cache:
-        condition: service_started
-      redis-queue:
-        condition: service_started
-
+      db: {condition: service_healthy}
+      redis-cache: {condition: service_started}
+      redis-queue: {condition: service_started}
   backend:
-    <<: *bench
+    <<: *app
     environment:
-      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-2}
-      GUNICORN_THREADS: ${GUNICORN_THREADS:-4}
-
+      GUNICORN_WORKERS: '2'
+    depends_on:
+      configurator: {condition: service_completed_successfully}
+  websocket:
+    <<: *app
+    command: [node, /home/frappe/frappe-bench/apps/frappe/socketio.js]
+  queue-short:
+    <<: *app
+    command: [bench, worker, --queue, 'short,default']
+    stop_grace_period: 120s
+  queue-long:
+    <<: *app
+    command: [bench, worker, --queue, 'long,default,short']
+    stop_grace_period: 120s
+  scheduler:
+    <<: *app
+    command: [bench, schedule]
   frontend:
-    <<: *app-image
+    <<: *app
     command: [nginx-entrypoint.sh]
-    ports:
-      - "127.0.0.1:8083:8080"
-    networks:
-      default:
-      reverse_proxy:
-        aliases:
-          - rental-frontend
+    ports: ['127.0.0.1:8083:8080']
     environment:
       BACKEND: backend:8000
       SOCKETIO: websocket:9000
-      FRAPPE_SITE_NAME_HEADER: $$host
+      FRAPPE_SITE_NAME_HEADER: ${SITE_NAME:-cranes.arab-erp.com}
+      PROXY_READ_TIMEOUT: '120'
+      CLIENT_MAX_BODY_SIZE: 50m
+    depends_on: [backend, websocket]
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ['80:80', '443:443', '443:443/udp']
     volumes:
-      - sites:/home/frappe/frappe-bench/sites
-    depends_on:
-      - backend
-      - websocket
-
-  websocket:
-    <<: *bench
-    command: [node, /home/frappe/frappe-bench/apps/frappe/socketio.js]
-
-  queue-short:
-    <<: *bench
-    command: [bench, worker, --queue, "short,default"]
-
-  queue-long:
-    <<: *bench
-    command: [bench, worker, --queue, "long,default,short"]
-
-  scheduler:
-    <<: *bench
-    command: [bench, schedule]
-
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./state:/srv/state:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    logging: *logging
 volumes:
-  sites:
   db-data:
-  redis-queue-data:
-
-networks:
-  reverse_proxy:
-    external: true
+  redis-data:
+  caddy-data:
+  caddy-config:

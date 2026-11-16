@@ -1,106 +1,127 @@
-
-name: CI
+name: Test, build, deploy HER
 
 on:
-  workflow_call:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: her-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  tests:
+  validate:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    name: Server
-
-    services:
-      redis-cache:
-        image: redis:alpine
-        ports:
-          - 13000:6379
-      redis-queue:
-        image: redis:alpine
-        ports:
-          - 11000:6379
-      mariadb:
-        image: mariadb:10.6
-        env:
-          MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 3306:3306
-        options: --health-cmd="mariadb-admin ping" --health-interval=5s --health-timeout=2s --health-retries=3
-
     steps:
-      - name: Clone
-        uses: actions/checkout@v4
-
-      - name: Find tests
-        run: |
-          echo "Finding tests"
-          grep -rn "def test" > /dev/null
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
-          check-latest: true
-
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/*requirements.txt', '**/pyproject.toml', '**/setup.py', '**/setup.cfg') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-            ${{ runner.os }}-
-
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: 'echo "dir=$(yarn cache dir)" >> "$GITHUB_OUTPUT"'
-
-      - uses: actions/cache@v4
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Install MariaDB Client
-        run: sudo apt-get update && sudo apt-get install -y mariadb-client
-
-      - name: Setup
-        run: |
-          pip install frappe-bench
-          bench init --frappe-branch version-15 --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
-          mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL character_set_server = 'utf8mb4'"
-          mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL collation_server = 'utf8mb4_unicode_ci'"
-
-      - name: Install
-        working-directory: /home/runner/frappe-bench
-        run: |
-          bench get-app --branch version-15 erpnext https://github.com/frappe/erpnext
-          bench get-app heavy_equipment_rental "$GITHUB_WORKSPACE"
-          bench setup requirements --dev
-          bench new-site --db-root-password root --admin-password admin test_site
-          bench --site test_site install-app erpnext
-          bench --site test_site install-app heavy_equipment_rental
-          bench --site test_site execute erpnext.setup.utils.before_tests
-          bench build
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: python -m compileall -q heavy_equipment_rental deploy
+      - run: python -m unittest deploy.test_rollout
+      - name: Build calendar
+        working-directory: frontend
+        run: npm ci && npm run build
+      - name: Validate compose configuration
         env:
-          CI: 'Yes'
-
-      - name: Run Tests
-        working-directory: /home/runner/frappe-bench
+          APP_IMAGE: local/her:test
+          DB_PASSWORD: config-validation-only
         run: |
-          bench --site test_site set-config allow_tests true
-          bench --site test_site run-tests --app heavy_equipment_rental --skip-test-records
+          docker compose -f deploy/compose.yaml config --quiet
+          docker compose -f deploy/ci.compose.yaml config --quiet
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend
+          path: |
+            heavy_equipment_rental/public/frontend
+            heavy_equipment_rental/www/rental_calendar.html
+          retention-days: 1
+
+  image:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      ref: ${{ steps.publish.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend
+          path: heavy_equipment_rental
+      - uses: docker/setup-buildx-action@v3
+      - name: Build production image using cached dependencies
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/Containerfile
+          load: true
+          tags: ghcr.io/00jimmy00/heavy_equipment_rental:sha-${{ github.sha }}
+          build-args: APP_COMMIT=${{ github.sha }}
+          cache-from: type=gha,scope=her-v15
+          cache-to: type=gha,mode=max,scope=her-v15
+      - name: Verify exact application revision
         env:
-          TYPE: server
+          APP_IMAGE: ghcr.io/00jimmy00/heavy_equipment_rental:sha-${{ github.sha }}
+        run: |
+          docker run --rm --entrypoint cat "$APP_IMAGE" apps/heavy_equipment_rental/.source-commit | grep -Fx "$GITHUB_SHA"
+      - name: Test installation, migrations and critical rental workflows in the production image
+        env:
+          APP_IMAGE: ghcr.io/00jimmy00/heavy_equipment_rental:sha-${{ github.sha }}
+        run: docker compose -f deploy/ci.compose.yaml up --abort-on-container-exit --exit-code-from test test
+      - name: Remove disposable CI database
+        if: always()
+        env:
+          APP_IMAGE: ghcr.io/00jimmy00/heavy_equipment_rental:sha-${{ github.sha }}
+        run: docker compose -f deploy/ci.compose.yaml down --volumes --remove-orphans
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish tested immutable image
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        id: publish
+        env:
+          IMAGE: ghcr.io/00jimmy00/heavy_equipment_rental:sha-${{ github.sha }}
+        run: |
+          set -euo pipefail
+          docker push "$IMAGE" | tee /tmp/her-push.log
+          digest=$(awk '/digest: sha256:/ {print $3}' /tmp/her-push.log | tail -1)
+          [[ $digest =~ ^sha256:[a-f0-9]{64}$ ]]
+          echo "ref=${IMAGE%:*}@$digest" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy and verify, restoring the previous release on failure
+        env:
+          SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_REF: ${{ needs.image.outputs.ref }}
+        run: bash deploy/remote.sh
