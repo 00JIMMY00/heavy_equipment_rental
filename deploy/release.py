@@ -150,7 +150,9 @@ class Release:
             raise RuntimeError('Database restoration failed; maintenance remains enabled')
         self.compose('run', '--rm', '--no-deps', 'configurator', image=self.old)
         self.bench('set-maintenance-mode', 'off', image=self.old)
-        self.compose('up', '-d', '--pull', 'never', '--remove-orphans', image=self.old)
+        # Bind mounts retain directory inodes: recreate services after replacing sites.
+        self.compose('up', '-d', '--force-recreate', '--no-deps', '--pull', 'never',
+                     '--remove-orphans', 'configurator', *SERVICES, image=self.old)
         self.compose('exec', '-T', 'proxy', 'caddy', 'reload', '--config', '/etc/caddy/Caddyfile', image=self.old)
         self.target = self.old
         self.wait_healthy()
