@@ -29,6 +29,10 @@ class Crane(Document):
 		frappe.db.set_value("Crane", self.name, "item", self.item, update_modified=False)
 		return self.item
 
+	def before_validate(self):
+		if not self.default_selling_uom:
+			self.default_selling_uom = frappe.db.get_single_value("Heavy Equipment Rental Settings", "default_selling_uom") or "Hour"
+
 	def validate(self):
 		from heavy_equipment_rental.crane_ownership import validate_ownership
 		validate_ownership(self)

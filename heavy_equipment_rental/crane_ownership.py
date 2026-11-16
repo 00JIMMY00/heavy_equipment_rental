@@ -16,6 +16,10 @@ def validate_ownership(doc):
         frappe.throw(_("Enter the crane's owners, or select Hired from Supplier."))
     if doc.hired_from_supplier and not doc.supplier:
         frappe.throw(_("Select the rental Supplier."))
+    if doc.hired_from_supplier:
+        doc.ownership_classification = "Hired from Supplier"
+        doc.ownership_type = "Rented"
+        return
     if rows:
         if abs(sum(flt(r.ownership_percentage) for r in rows) - 100) > 0.000001:
             frappe.throw(_("Ownership percentages must total 100%."))

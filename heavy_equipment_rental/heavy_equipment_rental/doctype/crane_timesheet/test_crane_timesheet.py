@@ -34,7 +34,7 @@ class TestCraneTimesheet(FrappeTestCase):
         }).insert()
         self.crane = frappe.get_doc({
             "doctype": "Crane", "crane_name": "Rented crane " + self.key,
-            "ownership_type": "Rented", "supplier": self.supplier.name,
+            "hired_from_supplier": 1, "supplier": self.supplier.name,
             "operational_condition": "Operational",
         }).insert()
         self.day = getdate(today()) - timedelta(days=120)
@@ -65,10 +65,60 @@ class TestCraneTimesheet(FrappeTestCase):
         settings.default_selling_uom, settings.default_supplier_uom = selling, supplier
         settings.save()
 
+    def test_delete_draft_sales_invoice_releases_timesheet(self):
+        from heavy_equipment_rental.billing import generate_sales_invoice
+        sheet = self.make_sheet().insert().submit()
+        name = generate_sales_invoice(timesheet=sheet.name)["name"]
+        frappe.delete_doc("Sales Invoice", name)
+        self.assertFalse(frappe.db.exists("Sales Invoice", name))
+        self.assertFalse(sheet.reload().sales_invoice)
+        self.assertEqual(sheet.docstatus, 1)
+        replacement = generate_sales_invoice(timesheet=sheet.name)["name"]
+        self.assertTrue(frappe.db.exists("Sales Invoice", replacement))
+
+    def test_editable_selling_terms_reach_invoice_without_changing_assignment(self):
+        from heavy_equipment_rental.billing import generate_sales_invoice
+        from heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.crane_assignment import get_assignment_defaults
+        self.crane.default_selling_uom = "Day"
+        self.crane.period_prices[1].price = 1500
+        self.crane.save()
+        self.assertEqual(get_assignment_defaults(self.crane.name)["rental_rate_unit"], "Day")
+        self.assertEqual(get_assignment_defaults(self.crane.name, "Hour")["rental_rate_unit"], "Hour")
+        sheet = self.make_sheet().insert()
+        self.assertEqual(sheet.rental_rate_unit, "Hour")
+        sheet.rental_rate_unit, sheet.rental_rate = "Day", 1500
+        sheet.save()
+        sheet.reload()
+        self.assertEqual((sheet.rental_rate_unit, sheet.rental_rate), ("Day", 1500))
+        self.assertEqual(sheet.total_amount, 1500)
+        self.assertEqual(sheet.timesheet_entries[0].rental_rate_unit, "Day")
+        sheet.submit()
+        invoice = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=sheet.name)["name"])
+        self.assertEqual((invoice.items[0].uom, invoice.items[0].qty, invoice.items[0].rate), ("Day", 1, 1500))
+        self.assertEqual(invoice.items[0].stock_qty, 4)
+        self.assertEqual(self.assignment.reload().assigned_cranes[0].rental_rate_unit, "Hour")
+        invoice.items[0].rate = 1600
+        invoice.save()
+        self.assertEqual(invoice.reload().items[0].rate, 1600)
+        conflicting = self.make_sheet()
+        conflicting.rental_rate_unit, conflicting.rental_rate = "Day", 2000
+        conflicting.timesheet_entries[0].start_time = "15:00"
+        conflicting.timesheet_entries[0].end_time = "16:00"
+        conflicting.insert().submit()
+        with self.assertRaises(frappe.ValidationError):
+            generate_sales_invoice(timesheet=conflicting.name)
+
+        from heavy_equipment_rental.patches.crane_default_selling_uom import execute
+        execute()
+        self.assertEqual(self.crane.reload().default_selling_uom, "Day")
+        self.assertEqual(sheet.reload().rental_rate_unit, "Day")
+        self.assertEqual(invoice.reload().items[0].rate, 1600)
+
     def test_new_timesheet_defaults_create_assignment_and_preserve_snapshot(self):
         from heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.crane_timesheet import get_timesheet_defaults
 
         self.set_billing_defaults(selling="Day", supplier="Month")
+        self.crane.default_selling_uom = "Day"
         self.crane.period_prices[1].price = 350
         self.crane.save()
         defaults = get_timesheet_defaults(self.crane.name)
@@ -335,7 +385,8 @@ class TestCraneTimesheet(FrappeTestCase):
         self.assertTrue(generate_sales_invoice(timesheet=sheet.name)["name"])
 
     def test_owned_crane_never_creates_purchase_invoice(self):
-        self.crane.ownership_type = "Owned"
+        self.crane.hired_from_supplier = 0
+        self.crane.append("ownership_partners", {"is_company": 1, "ownership_percentage": 100, "profit_percentage": 100})
         self.crane.save()
         sheet = self.make_sheet(rate=0)
         sheet.rented = 1

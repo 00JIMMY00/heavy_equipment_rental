@@ -146,15 +146,13 @@
    "fieldtype": "Select",
    "label": "Billing unit",
    "no_copy": 1,
-   "options": "\nHour\nDay\nMonth",
-   "read_only_depends_on": "eval:!!doc.assignment"
+   "options": "\nHour\nDay\nMonth"
   },
   {
    "fieldname": "rental_rate",
    "fieldtype": "Currency",
    "label": "Agreed rate",
-   "no_copy": 1,
-   "read_only_depends_on": "eval:!!doc.assignment"
+   "no_copy": 1
   },
   {
    "fieldname": "entries_tab",

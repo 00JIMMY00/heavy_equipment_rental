@@ -96,3 +96,15 @@ def make_supplier_payment(source_doctype, source_name, purchase_invoice):
     # ERPNext supplies the supplier, company, outstanding amount and invoice reference.
     # Return an unsaved Payment Entry so the user can choose bank and payment details.
     return get_payment_entry("Purchase Invoice", purchase_invoice)
+
+
+def unlink_deleted_timesheet_invoice(invoice, method=None):
+    """Release managed reverse links only when a draft/cancelled invoice is deleted.
+
+    Other native links (payments, settlements, repairs) still block deletion.
+    Frappe rolls this change back if any later deletion check fails.
+    """
+    if invoice.docstatus == 1:
+        return
+    field = "sales_invoice" if invoice.doctype == "Sales Invoice" else "purchase_invoice"
+    frappe.db.sql(f"UPDATE `tabCrane Timesheet` SET `{field}`=NULL WHERE `{field}`=%s", invoice.name)

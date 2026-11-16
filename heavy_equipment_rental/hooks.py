@@ -61,6 +61,7 @@ doc_events = {
 		"before_submit": "heavy_equipment_rental.profit_sharing.guard_closed_period",
 		"before_cancel": "heavy_equipment_rental.profit_sharing.guard_closed_period",
 		"on_cancel": "heavy_equipment_rental.purchasing.allow_timesheet_invoice_cancel",
+		"on_trash": "heavy_equipment_rental.purchasing.unlink_deleted_timesheet_invoice",
 	},
 	"Expense Entry": {
 		"before_submit": "heavy_equipment_rental.profit_sharing.guard_closed_period",
@@ -78,6 +79,7 @@ doc_events = {
 		"validate": "heavy_equipment_rental.crane_repairs.validate_native_document",
 		"on_submit": "heavy_equipment_rental.timesheet_settlement.invoice_submitted",
 		"on_cancel": "heavy_equipment_rental.purchasing.allow_timesheet_invoice_cancel",
+		"on_trash": "heavy_equipment_rental.purchasing.unlink_deleted_timesheet_invoice",
 		"before_submit": "heavy_equipment_rental.profit_sharing.guard_closed_period",
 		"before_cancel": "heavy_equipment_rental.profit_sharing.guard_closed_period",
 	},

@@ -24,7 +24,7 @@ def get_assignment_defaults(crane=None, rental_rate_unit=None):
         frappe.throw(_("You cannot edit Crane Assignments."), frappe.PermissionError)
     settings = frappe.get_single("Heavy Equipment Rental Settings")
     settings.check_permission("read")
-    unit = rental_rate_unit or settings.default_selling_uom or "Hour"
+    unit = rental_rate_unit or (frappe.get_cached_value("Crane", crane, "default_selling_uom") if crane else None) or settings.default_selling_uom or "Hour"
     if unit not in ("Hour", "Day", "Month"):
         frappe.throw(_("Select an Hour, Day or Month Rental Rate Unit."))
     result = dict(rental_rate_unit=unit)

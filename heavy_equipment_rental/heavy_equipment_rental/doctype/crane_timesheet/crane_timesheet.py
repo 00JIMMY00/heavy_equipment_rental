@@ -66,7 +66,7 @@ def get_timesheet_defaults(crane=None, selling_uom=None):
         frappe.throw(_("You cannot create Crane Timesheets."), frappe.PermissionError)
     settings = frappe.get_single("Heavy Equipment Rental Settings")
     settings.check_permission("read")
-    unit = selling_uom or settings.default_selling_uom or "Hour"
+    unit = selling_uom or (frappe.get_cached_value("Crane", crane, "default_selling_uom") if crane else None) or settings.default_selling_uom or "Hour"
     if unit not in ("Hour", "Day", "Month"):
         frappe.throw(_("Select an Hour, Day or Month Billing Unit."))
     defaults = {
@@ -87,11 +87,6 @@ class CraneTimesheet(Document):
         if self.is_new():
             defaults = get_timesheet_defaults(self.crane, self.rental_rate_unit)
             self.purchase_uom = self.purchase_uom or defaults["purchase_uom"]
-            if not self.assignment:
-                default_price = self.rental_rate is None or (not self.rental_rate and not self.rental_rate_unit)
-                self.rental_rate_unit = self.rental_rate_unit or defaults["rental_rate_unit"]
-                if default_price:
-                    self.rental_rate = defaults.get("rental_rate", 0)
         if not previous or previous.docstatus == 0:
             crane = frappe.get_doc("Crane", self.crane) if self.crane else None
             if crane:
@@ -119,6 +114,11 @@ class CraneTimesheet(Document):
             assignment_doc(matches[0], "read")
             self.assignment = matches[0]
             return
+        if self.is_new():
+            default_price = self.rental_rate is None or (not self.rental_rate and not self.rental_rate_unit)
+            self.rental_rate_unit = self.rental_rate_unit or defaults["rental_rate_unit"]
+            if default_price:
+                self.rental_rate = defaults.get("rental_rate", 0)
         if not self.rental_rate_unit or self.rental_rate is None:
             frappe.throw(_("No assignment covers this work. Enter the billing unit and agreed rate."))
         check_date_order(self.period_start, self.period_end, _("Rental period"))
@@ -181,8 +181,13 @@ class CraneTimesheet(Document):
             covering = [row for row in bookings if getdate(row.start_date) <= getdate(self.period_start)
                         and getdate(row.expected_end_date) >= getdate(self.period_end)]
             if len(covering) == 1:
-                self.rental_rate_unit = covering[0].rental_rate_unit
-                self.rental_rate = covering[0].rental_rate
+                if not self.rental_rate_unit:
+                    self.rental_rate_unit = covering[0].rental_rate_unit
+                    self.rental_rate = covering[0].rental_rate
+                elif self.rental_rate is None:
+                    self.rental_rate = covering[0].rental_rate
+            if self.rental_rate_unit and (self.rental_rate_unit not in ("Hour", "Day", "Month") or flt(self.rental_rate) <= 0):
+                frappe.throw(_("Enter a positive agreed rate and an Hour, Day or Month Billing Unit."))
         if self.amended_from:
             source = frappe.get_doc("Crane Timesheet", self.amended_from, for_update=True)
             source.check_permission("amend")
@@ -226,7 +231,10 @@ class CraneTimesheet(Document):
                 getdate(booking.start_date) <= day <= getdate(booking.expected_end_date) for day in days)]
             if len(matching) != 1:
                 frappe.throw(_("Row {0}: a shift must fit exactly one booked crane period.").format(row.idx))
-            booking = matching[0]
+            booking = frappe._dict(matching[0].as_dict())
+            if self.rental_rate_unit:
+                booking.rental_rate_unit = self.rental_rate_unit
+                booking.rental_rate = self.rental_rate
             if not submitted_update:
                 row.rental_rate = booking.rental_rate
                 row.rental_rate_unit = booking.rental_rate_unit

@@ -66,14 +66,17 @@ async function load_timesheet_defaults(frm) {
     frm._rental_defaults_request = request;
     const { message: defaults } = await frappe.call({
         method: "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.crane_timesheet.get_timesheet_defaults",
-        args: { crane, selling_uom: unit },
+        args: { crane, selling_uom: unit === frm._default_selling_unit ? null : unit },
     });
     if (request !== frm._rental_defaults_request || frm.doc.crane !== crane ||
         frm.doc.rental_rate_unit !== unit || !frm.is_new() || frm.doc.docstatus !== 0) return;
     const values = {};
     if (!frm.doc.purchase_uom) values.purchase_uom = defaults.purchase_uom;
     if (!frm.doc.assignment) {
-        if (!frm.doc.rental_rate_unit) values.rental_rate_unit = defaults.rental_rate_unit;
+        if (!unit || unit === frm._default_selling_unit) {
+            values.rental_rate_unit = defaults.rental_rate_unit;
+            frm._default_selling_unit = defaults.rental_rate_unit;
+        }
         if (defaults.rental_rate !== undefined && frm.doc.rental_rate === rate &&
             (!rate || rate === frm._default_selling_rate)) {
             values.rental_rate = defaults.rental_rate;
@@ -92,7 +95,7 @@ function purchase_price_label(frm) {
     frm.set_df_property("purchase_rate", "label", __("Purchase Price per {0}", [frm.doc.purchase_uom || "Hour"]));
 }
 
-async function load_rental_terms(frm) {
+async function load_rental_terms(frm, reset = false) {
     if (frm.doc.docstatus !== 0 || !frm.doc.assignment) return;
     const { assignment, crane, period_start, period_end } = frm.doc;
     if (![crane, period_start, period_end].every(Boolean)) return;
@@ -101,6 +104,14 @@ async function load_rental_terms(frm) {
         [frm.doc.assignment, frm.doc.crane, frm.doc.period_start, frm.doc.period_end].join("|")) return;
     const rows = rental.assigned_cranes.filter(row => row.crane === crane && !row.cancelled &&
         row.start_date <= period_start && row.expected_end_date >= period_end);
+    const key = [assignment, crane, rows.map(r => r.name).join(",")].join("|");
+    if (frm._loaded_rental_terms === key) return;
+    const inherited = frm._inherited_rental_terms;
+    if (!reset && frm.doc.rental_rate_unit && (!inherited ||
+        frm.doc.rental_rate_unit !== inherited.unit || frm.doc.rental_rate !== inherited.rate)) return;
+    frm._loaded_rental_terms = key;
+    frm._inherited_rental_terms = {unit: rows.length === 1 ? rows[0].rental_rate_unit : "",
+        rate: rows.length === 1 ? rows[0].rental_rate : 0};
     await frm.set_value({
         rental_rate_unit: rows.length === 1 ? rows[0].rental_rate_unit : "",
         rental_rate: rows.length === 1 ? rows[0].rental_rate : 0,
@@ -138,7 +149,8 @@ function suggest_assignment(frm) {
 
 frappe.ui.form.on("Crane Timesheet", {
     onload: load_timesheet_defaults,
-    rental_rate_unit: load_timesheet_defaults,
+    async rental_rate_unit(frm) { await load_timesheet_defaults(frm); await fill_entry_rental_terms(frm); },
+    rental_rate: fill_entry_rental_terms,
     purchase_uom: purchase_price_label,
     setup(frm) {
         frm.set_query("assignment", () => ({ filters: Object.fromEntries([
@@ -151,7 +163,7 @@ frappe.ui.form.on("Crane Timesheet", {
         if (message) {
             await frm.set_value({ customer: message.customer, location: message.location });
         }
-        await load_rental_terms(frm);
+        await load_rental_terms(frm, true);
         await fill_entry_rental_terms(frm);
     },
     async crane(frm) {
@@ -167,7 +179,7 @@ frappe.ui.form.on("Crane Timesheet", {
             });
         }
         await load_timesheet_defaults(frm);
-        await load_rental_terms(frm);
+        await load_rental_terms(frm, true);
         await fill_entry_rental_terms(frm);
         suggest_assignment(frm);
     },
@@ -192,7 +204,7 @@ frappe.ui.form.on("Crane Timesheet", {
     refresh(frm) {
         fill_entry_rental_terms(frm);
         purchase_price_label(frm);
-        load_rental_terms(frm);
+        if (!frm.doc.rental_rate_unit) load_rental_terms(frm);
         if (frm.doc.profit_settlement) frm.add_custom_button(__("Profit Settlement"), () =>
             frappe.set_route("Form", "Crane Profit Settlement", frm.doc.profit_settlement), __("View"));
         if (frm.doc.docstatus === 1 && frm.doc.purchase_invoice && frappe.model.can_create("Payment Entry")) {
@@ -243,8 +255,8 @@ async function fill_entry_rental_terms(frm) {
         const bookings = (doc.assigned_cranes || []).filter(r => !r.cancelled && r.crane === crane &&
             day && r.start_date <= day && day <= r.expected_end_date);
         await frappe.model.set_value(row.doctype, row.name, {
-            rental_rate: bookings.length === 1 ? bookings[0].rental_rate : null,
-            rental_rate_unit: bookings.length === 1 ? bookings[0].rental_rate_unit : "",
+            rental_rate: frm.doc.rental_rate_unit ? frm.doc.rental_rate : (bookings.length === 1 ? bookings[0].rental_rate : null),
+            rental_rate_unit: frm.doc.rental_rate_unit || (bookings.length === 1 ? bookings[0].rental_rate_unit : ""),
         });
     }
 }

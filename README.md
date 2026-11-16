@@ -32,7 +32,11 @@ Extend the Assignment explicitly if work continues beyond its booked dates. The 
 
 Open **Heavy Equipment Rental Settings → Billing Defaults**. Set **Default Selling UOM** and **Default Supplier Billing UOM** to Hour, Day, or Month; both initially default to Hour.
 
-New Timesheets prefill their selling Billing Unit and Supplier Billing UOM from these settings. Selecting a Crane fills its matching reference price into Agreed Rate. Changing the selling unit updates an automatically filled price; manually entered rates remain yours to edit. Set the Crane's Hour/Day/Month reference prices to avoid repeatedly entering selling rates. Purchase prices remain entered separately. An existing Assignment supplies its agreed selling unit/rate and takes precedence over defaults. Settings changes affect new Timesheets; saved purchase units and agreed terms remain unchanged.
+Set **Crane → Default Selling UOM** to Hour, Day, or Month, and enter its matching reference prices. The Crane default initially comes from HER Settings. New Assignment rows show that unit and price; both can be edited. Timesheets visibly inherit their Assignment terms, or the Crane defaults when starting a new rental. You can change **Billing unit** and **Agreed rate** on a draft Timesheet; saving retains the choice without changing the Assignment. Its submitted terms determine sales billing. Master default changes do not reprice saved work.
+
+Generated Sales Invoice items display the selected UOM, worked quantity and rate: for example, **3 Day × 1,500**, rather than **1 Hour × 4,500**. Monthly quantities are fractions of calendar months. Draft invoice rows remain editable using ERPNext's normal controls. Hour stock quantities track actual crane work; they do not replace the invoice billing unit. Flat-rate Timesheets for the same booked crane/day must use matching terms to avoid double billing.
+
+Supplier Billing UOM still defaults separately from Settings and remains editable. Purchase prices are entered separately.
 
 ## Booking and work rules
 

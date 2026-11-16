@@ -1,5 +1,22 @@
 # Progress
 
+## 2026-11-16 — Invoice deletion circular-link fix
+
+Sales/Purchase Invoice on_trash clears only its managed Timesheet reverse link for draft/cancelled documents. Invoice cancellation retains historical links using the existing narrow ignore rule. Other native payment, settlement and repair links remain protected. Draft ACC-SINV-2026-00007 backed up privately and deleted at user request; TS-00008 and TS-00009 remain submitted with empty sales_invoice links. Regression verifies draft deletion and regeneration. Workflow suites: 18 passed, one legacy test skipped.
+
+## 2026-11-16 — Supplier rental classification
+
+Hired from Supplier takes precedence over retained owner rows: classification is Hired from Supplier and compatibility type Rented. The form shows the supplier instead of a company share bar and hides the ownership table. Migration corrects existing hired cranes including CR-00009 without deleting ownership rows or dated agreements.
+
+## 2026-11-16 — Editable rental units through sales billing
+
+Applied migration/setup to dev3. Rental workflow and Timesheet suites: 18 tests run, 17 passed, one legacy-column test skipped because those removed columns are absent. Regression coverage verifies editable Timesheet terms, master/explicit default precedence, monthly quantity precision, draft invoice edits, migration preservation and rejection of conflicting same-day flat terms. Browser verified visible Crane default, Assignment-derived Day/1,500, editable Timesheet Month/45,000 surviving refresh/date edits, and the corrected draft invoice rows. JavaScript syntax and whitespace checks passed.
+
+Crane now stores an editable Default Selling UOM, initially filled from HER Settings. Assignment rows inherit the Crane unit and matching reference price; explicit choices remain editable. Timesheets inherit Assignment terms as visible defaults, with editable unit/rate overrides retained on save and used for shift amounts and sales billing. Submitted Timesheet terms are the billing snapshot; changing a master default does not reprice existing work. Sales Invoice lines use the actual Hour/Day/Month quantity and agreed unit rate, with actual crane hours as the stock-UOM conversion and nine-decimal sales quantity precision for monthly fractions. Conflicting flat billing terms for the same booked crane/day are rejected to prevent duplicate charges. Supplier billing remains independent.
+
+Migration fills only missing Crane defaults, preserving historical rentals and invoices. The user's draft ACC-SINV-2026-00007 was backed up and corrected from 1 Hour × 4,500 to 3 Day × 1,500 for CR-00009; its other line and total 9,000 are unchanged.
+
+
 ## 2026-11-16 — Crane ownership share bar
 
 Applied on dev3. Browser verified 50/30/20 segment widths, Arabic classification, safely displayed owner names, live updates, incomplete-total warnings, empty ownership and mobile layout without overflow. Existing form startup null/join errors observed in earlier checks remain outside this presentation change. Syntax and whitespace checks passed.

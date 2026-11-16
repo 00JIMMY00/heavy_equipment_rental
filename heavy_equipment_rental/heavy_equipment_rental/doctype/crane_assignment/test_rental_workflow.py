@@ -216,8 +216,10 @@ class TestRentalWorkflow(FrappeTestCase):
         monthly.submit()
         self.assertEqual((monthly.timesheet_entries[0].rental_rate, monthly.timesheet_entries[0].rental_rate_unit), (930, "Month"))
         monthly_invoice = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=monthly.name)["name"])
-        self.assertAlmostEqual(monthly_invoice.items[0].rate,
-                               930 / monthrange(monthly_day.year, monthly_day.month)[1], delta=0.02)
+        self.assertEqual(monthly_invoice.items[0].uom, "Month")
+        self.assertEqual(monthly_invoice.items[0].rate, 930)
+        self.assertAlmostEqual(monthly_invoice.items[0].qty,
+                               1 / monthrange(monthly_day.year, monthly_day.month)[1], places=6)
         second.submit()
         next_monthly_day = monthly_day + timedelta(days=1)
         monthly_followup = frappe.get_doc({

@@ -67,11 +67,14 @@ async function assignment_row_defaults(frm, cdt, cdn) {
     const request = row._rental_defaults_request = (row._rental_defaults_request || 0) + 1;
     const { message } = await frappe.call({
         method: "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.crane_assignment.get_assignment_defaults",
-        args: { crane, rental_rate_unit: unit },
+        args: { crane, rental_rate_unit: unit === row._default_rental_unit ? null : unit },
     });
     if (locals[cdt]?.[cdn] !== row || request !== row._rental_defaults_request || row.crane !== crane || row.rental_rate_unit !== unit) return;
     const values = {};
-    if (!unit) values.rental_rate_unit = message.rental_rate_unit;
+    if (!unit || unit === row._default_rental_unit) {
+        values.rental_rate_unit = message.rental_rate_unit;
+        row._default_rental_unit = message.rental_rate_unit;
+    }
     if (message.rental_rate !== undefined && row.rental_rate === rate &&
             (!rate || rate === row._default_rental_rate)) {
         values.rental_rate = message.rental_rate;

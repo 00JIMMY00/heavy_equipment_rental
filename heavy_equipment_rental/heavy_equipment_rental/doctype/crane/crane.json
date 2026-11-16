@@ -24,6 +24,7 @@
   "maintenance_condition_managed",
   "sharing_company",
   "pricing_section",
+  "default_selling_uom",
   "period_prices",
   "column_break_cztb",
   "sharing_partners_section",
@@ -347,7 +348,7 @@
    "label": "Fixed Asset & Ownership Value"
   },
   {
-   "description": "Company assets only. Owned: full cost. Shared: only the Company interest cost; never other owners\u2019 shares.",
+   "description": "Company assets only. Owned: full cost. Shared: only the Company interest cost; never other owners’ shares.",
    "fieldname": "asset",
    "fieldtype": "Link",
    "in_standard_filter": 1,
@@ -453,6 +454,12 @@
   {
    "fieldname": "column_break_cztb",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_selling_uom",
+   "fieldtype": "Select",
+   "label": "Default Selling UOM",
+   "options": "\nHour\nDay\nMonth"
   }
  ],
  "grid_page_length": 100,

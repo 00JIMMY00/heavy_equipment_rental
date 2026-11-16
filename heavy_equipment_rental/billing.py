@@ -56,7 +56,10 @@ def _rental_allocation(sheet, days):
                 all(window[0] <= day <= window[1] for day in days)]
     if len(matching) != 1:
         frappe.throw(_("Timesheet {0}: work must fit one crane period on its Assignment.").format(sheet.name))
-    row = matching[0]
+    row = frappe._dict(matching[0])
+    if sheet.rental_rate_unit:
+        row.rental_rate_unit = sheet.rental_rate_unit
+        row.rental_rate = sheet.rental_rate
     if row.rental_rate_unit not in ("Hour", "Day", "Month") or flt(row.rental_rate) <= 0:
         frappe.throw(_("Assignment {0}, row {1}: set a positive agreed rental rate.").format(
             sheet.assignment, row.idx))
@@ -86,9 +89,10 @@ def _invoice_line(sheets, allocation, charged_days):
         "crane": crane.name,
         "item_code": crane.item,
         "item_name": crane.crane_name,
-        "uom": item.stock_uom,
-        "qty": float(quantity) if unit == "Hour" else 1,
-        "rate": flt(allocation.rental_rate) if unit == "Hour" else float(quantity * Decimal(str(allocation.rental_rate))),
+        "uom": unit,
+        "conversion_factor": sum(flt(sheet.total_crane_billable_hours) for sheet in sheets) / float(quantity),
+        "qty": float(quantity),
+        "rate": flt(allocation.rental_rate),
         "description": _("Crane {0}; Assignment {1}, row {2}; Timesheets {3}; {4} {5} at {6} per {5}").format(
             crane.crane_name, sheets[0].assignment, allocation.idx,
             ", ".join(sheet.name for sheet in sheets), float(quantity), unit, allocation.rental_rate),
@@ -97,6 +101,19 @@ def _invoice_line(sheets, allocation, charged_days):
 
 def _billing_lines(selected, all_sheets, active_invoices):
     """Charge each submitted crane hour or rental day once per agreed crane period."""
+    terms_by_day = {}
+    relevant = {sheet.name for sheet in selected} | set(active_invoices)
+    for sheet in all_sheets:
+        if sheet.name not in relevant:
+            continue
+        row = _rental_allocation(sheet, _work_days(sheet))
+        terms = (row.rental_rate_unit, flt(row.rental_rate))
+        for day in _work_days(sheet):
+            key = (row.name, day)
+            prior = terms_by_day.get(key)
+            if prior and prior != terms and (prior[0] != "Hour" or terms[0] != "Hour"):
+                frappe.throw(_("Timesheets for the same crane rental day must use matching billing terms."))
+            terms_by_day[key] = terms
     charged = {}
     for sheet in all_sheets:
         if sheet.name in active_invoices:
@@ -106,12 +123,12 @@ def _billing_lines(selected, all_sheets, active_invoices):
     for sheet in selected:
         days = _work_days(sheet)
         row = _rental_allocation(sheet, days)
-        groups[row.name].append((sheet, row, days))
+        groups[(row.name, row.rental_rate_unit, row.rental_rate)].append((sheet, row, days))
     lines, billed, covered = [], [], {}
     for group in groups.values():
         row = group[0][1]
         if row.rental_rate_unit == "Hour":
-            for sheet, _, _ in group:
+            for sheet, allocation, days in group:
                 lines.extend(_invoice_line([sheet], row, set()))
                 billed.append(sheet)
             continue
@@ -122,7 +139,7 @@ def _billing_lines(selected, all_sheets, active_invoices):
             sheets = [sheet for sheet, _, days in group if days & new_days]
             lines.extend(_invoice_line(sheets, row, new_days))
             billed.extend(sheets)
-        for sheet, _, days in group:
+        for sheet, allocation, days in group:
             if not days & new_days:
                 covered[sheet.name] = next(
                     (charged[(row.name, day)] for day in sorted(days)

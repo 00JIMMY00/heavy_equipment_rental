@@ -1,5 +1,6 @@
 function crane_ownership_bar(doc, names = {}) {
     const esc = frappe.utils.escape_html;
+    if (doc.hired_from_supplier) return `<div class="crane-ownership"><strong>${esc(__("Hired from Supplier"))}</strong><div>${esc(doc.supplier || "")}</div></div>`;
     const colors = ["#4169d1", "#138575", "#9a53c6", "#c47715", "#ce5268", "#387eaa", "#7b8738", "#875c48"];
     const rows = doc.ownership_partners || [];
     const owners = rows.map((row, index) => {
@@ -22,6 +23,7 @@ function crane_ownership_bar(doc, names = {}) {
 }
 
 function crane_company_share(doc) {
+    if (doc.hired_from_supplier) return 0;
     const history = JSON.parse(doc.agreement_history || "[]");
     const active = history.filter(v => v.effective_from <= frappe.datetime.get_today()).at(-1);
     const owners = history.length ? (active?.enabled ? active.partners : []) : (doc.ownership_partners || []);
@@ -75,13 +77,14 @@ frappe.ui.form.on("Crane", {
         return frm.trigger("ownership_summary");
     },
     ownership_summary(frm) {
+        frm.toggle_display("ownership_partners", !frm.doc.hired_from_supplier);
         const rows = frm.doc.ownership_partners || [];
         const share = rows.filter(r => r.is_company).reduce((n,r) => n + flt(r.ownership_percentage), 0);
         const field = frm.fields_dict.ownership_classification;
         field.df.formatter = () => crane_ownership_bar(frm.doc, frm._ownership_names);
         field.$wrapper.addClass("crane-ownership-field");
         frm.set_df_property("ownership_classification", "description", "");
-        frm.set_value("ownership_classification", !rows.length ? "Ownership Not Recorded" : share === 100 ? "Company Owned" : share ? "Shared Ownership" : "Externally Owned");
+        frm.set_value("ownership_classification", frm.doc.hired_from_supplier ? "Hired from Supplier" : !rows.length ? "Ownership Not Recorded" : share === 100 ? "Company Owned" : share ? "Shared Ownership" : "Externally Owned");
         frm.refresh_field("ownership_classification");
         frm._ownership_names = frm._ownership_names || {};
         frm._ownership_name_requests = frm._ownership_name_requests || new Set();
@@ -113,7 +116,11 @@ frappe.ui.form.on("Crane", {
             frm.refresh_field("ownership_partners");
         }
     },
-    onload(frm) {
+    async onload(frm) {
+        if (!frm.doc.default_selling_uom) {
+            const unit = await frappe.db.get_single_value("Heavy Equipment Rental Settings", "default_selling_uom");
+            if (!frm.doc.default_selling_uom) await frm.set_value("default_selling_uom", unit || "Hour");
+        }
         if (frm.is_new()) {
             if (!(frm.doc.operating_fees || []).length) {
                 frm.add_child("operating_fees", {is_company:1,basis:"Grand Total",percentage:0});

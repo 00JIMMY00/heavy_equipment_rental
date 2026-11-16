@@ -47,3 +47,7 @@ heavy_equipment_rental.patches.simplify_crane_ownership
 heavy_equipment_rental.patches.crane_operating_fees
 
 heavy_equipment_rental.patches.simple_repair_methods
+
+heavy_equipment_rental.patches.crane_default_selling_uom
+
+heavy_equipment_rental.patches.rented_crane_classification

@@ -1078,3 +1078,6 @@ Crane Servicing,صيانة الونش
 Crane Job Assignment,تكليف الونش
 Ownership Not Recorded,الملكية غير مسجلة
 Externally Owned,مملوك للغير
+
+"Enter a positive agreed rate and an Hour, Day or Month Billing Unit.","أدخل سعرًا متفقًا عليه أكبر من صفر ووحدة فوترة بالساعة أو اليوم أو الشهر."
+"Timesheets for the same crane rental day must use matching billing terms.","يجب توحيد شروط الفوترة في سجلات العمل لنفس يوم تأجير الونش."
