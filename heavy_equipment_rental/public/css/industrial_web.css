@@ -1,46 +1,81 @@
-/* Only the login surface is restyled; authentication markup and actions stay native. */
-html body:has(#page-login) {
-  color: var(--her-ink);
-  background:
-    radial-gradient(ellipse at 15% 0%, rgb(245 197 24 / 10%), transparent 52%),
-    linear-gradient(135deg, var(--her-canvas), var(--her-subtle));
+@font-face { font-family: 'HER Cairo'; src: url('/assets/heavy_equipment_rental/fonts/cairo-variable.woff2') format('woff2'); font-weight: 200 1000; font-display: swap; }
+/* Full-viewport light login. Native authentication forms and routing stay in place. */
+html body:has(#page-login) { background: #fff; color: #263e4b; }
+html body:has(#page-login) .navbar, html body:has(#page-login) .web-footer { display: none; }
+html body:has(#page-login) .container:has(#page-login),
+html body:has(#page-login) .page-content-wrapper,
+html body:has(#page-login) main { width: 100%; max-width: none; padding: 0; margin: 0 !important; }
+html #page-login { width: 100%; max-width: none; padding: 0; margin: 0; font-family: 'HER Cairo', Tahoma, sans-serif; }
+html #page-login .her-login-shell { display: grid; grid-template-columns: 1.45fr 1fr; min-height: 100svh; background: #fff; }
+html #page-login .her-login-hero { display: flex; flex-direction: column; position: relative; isolation: isolate; overflow: hidden; background: #edf5f8; color: #263e4b; }
+html #page-login .her-login-brand { display: flex; align-items: center; gap: 20px; padding: 40px 7vw 0; z-index: 1; }
+html #page-login .her-login-monogram { font: 850 42px/1 Arial, sans-serif; letter-spacing: -2px; direction: ltr; }
+html #page-login .her-login-monogram span { color: #d8a62d; }
+html #page-login .her-login-brand > span:last-child { font-size: 13px; border-inline-start: 1px solid #c9d8df; padding-inline-start: 20px; color: #516875; }
+html #page-login .her-login-story { padding: 64px 7vw 24px; z-index: 1; }
+html #page-login .her-login-eyebrow { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #516875; margin-bottom: 24px; }
+html #page-login .her-login-eyebrow > span { width: 8px; height: 8px; border-radius: 50%; background: #d6a22c; box-shadow: 0 0 0 5px #e8c66522; }
+html #page-login .her-login-story h1 { color: #263e4b; font-size: clamp(40px, 4.6vw, 72px); font-weight: 800; line-height: 1.55; margin: 0 0 16px; }
+html #page-login .her-login-story h1 em { font-style: normal; position: relative; white-space: nowrap; }
+html #page-login .her-login-story h1 em::after { content: ''; position: absolute; inset-inline: 0; bottom: 9%; height: 11px; background: #f6cf66; z-index: -1; border-radius: 6px; transform: rotate(-2deg); }
+html #page-login .her-login-description { max-width: 460px; color: #5d7480; line-height: 2; font-size: 15px; margin: 0; }
+html #page-login .her-login-features { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 30px; color: #445d6b; font-size: 12px; }
+html #page-login .her-login-features > span { display: inline-flex; align-items: center; gap: 8px; }
+html #page-login .her-login-features b { font-family: Arial, sans-serif; color: #8b731d; font-size: 10px; background: #fff8e4; padding: 6px; border-radius: 6px; }
+html #page-login .her-login-photo { min-height: 270px; flex: 1; background: linear-gradient(#edf5f8, #edf5f800 30%), url('/assets/heavy_equipment_rental/branding/cranes-banner.png') center 65% / cover; }
+html #page-login .her-login-caption { display: flex; align-items: center; gap: 12px; padding: 20px 7vw; color: #526773; font-size: 12px; background: #edf5f8; }
+html #page-login .her-login-stripe { width: 24px; height: 8px; background: repeating-linear-gradient(-55deg, #c99823 0 3px, transparent 3px 7px); }
+html #page-login .her-login-forms { min-width: 0; padding: 40px clamp(28px, 5vw, 100px); align-self: center; }
+html #page-login .her-login-form-intro { max-width: 400px; margin: 0 auto 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+html #page-login .her-login-access { font-size: 12px; color: #7c8890; }
+html #page-login .her-login-small-brand { font: bold 21px Arial, sans-serif; color: #9baeb7; }
+html #page-login .her-login-forms > section { padding: 0; margin: 0; min-height: 0; }
+html #page-login .page-card-head { text-align: start; padding: 0; margin: 0 auto 32px; max-width: 400px; }
+html #page-login .page-card-head .app-logo { width: 80px; height: 64px; max-height: none; object-fit: contain; margin: 0 0 22px; }
+html #page-login .page-card-head h4 { font-size: 29px; font-weight: 800; line-height: 1.6; color: #263e4b; margin: 0 0 8px; }
+html #page-login .her-login-hint { color: #73838d; font-size: 13px; line-height: 1.9; margin: 0; }
+html #page-login .page-card, html #page-login .login-content.page-card { max-width: 400px; padding: 0; border: 0; box-shadow: none; background: transparent; }
+html #page-login .page-card form { max-width: 400px; }
+html #page-login .form-group { margin-bottom: 22px; }
+html #page-login .form-label.sr-only { position: static; width: auto; height: auto; clip: auto; overflow: visible; white-space: normal; display: block; margin: 0 0 10px; font-size: 12px; font-weight: 650; color: #3b5360; }
+html #page-login .form-control { height: 54px; background: #f7f9fa; color: #263e4b; border: 1px solid #e1e8ec; border-radius: 12px; font-family: inherit; font-size: 12px; text-align: start; }
+html #page-login .form-control:focus { background: #fff; border-color: #97b7c6; box-shadow: 0 0 0 3px #bedbe733; }
+html #page-login .form-control::placeholder { color: #8b9ba5; }
+html #page-login .field-icon { top: 19px; }
+html #page-login .toggle-password { top: 18px; font-size: 11px; cursor: pointer; }
+html #page-login .password-field input { padding-inline-end: 64px; }
+html #page-login .her-login-shell[dir="rtl"] .field-icon { left: auto; right: 14px; }
+html #page-login .her-login-shell[dir="rtl"] .toggle-password { right: auto; left: 14px; }
+html #page-login .her-login-shell[dir="rtl"] .email-field input,
+html #page-login .her-login-shell[dir="rtl"] .password-field input { padding-inline-start: 40px; }
+html #page-login .btn-primary { min-height: 52px; background: #f5cc61; color: #3d391f; border: 1px solid #f5cc61; border-radius: 12px; font-size: 14px; font-weight: 750; box-shadow: 0 5px 14px #dcb34a20; transition: background .2s; }
+html #page-login .btn-primary:hover { background: #f9d77f; border-color: #f9d77f; }
+html #page-login .btn-default { min-height: 48px; border: 1px solid #e1e8ec; color: #526b79; background: #fff; border-radius: 12px; font-size: 12px; }
+html #page-login a { color: #557787; }
+html #page-login :focus-visible { outline: 2px solid #789daa; outline-offset: 4px; }
+html #page-login .text-muted, html #page-login .forgot-password-message { color: #73838d !important; }
+html #page-login .forgot-password-message { font-size: 12px; text-align: end; }
+html #page-login .sign-up-message { margin-top: 24px; font-size: 12px; }
+html #page-login .her-login-note { margin: 40px auto 0; max-width: 400px; padding-top: 20px; border-top: 1px solid #eef1f3; color: #8998a1; font-size: 11px; text-align: center; }
+@media (max-width: 1000px) {
+  html #page-login .her-login-shell { grid-template-columns: 1.15fr 1fr; }
+  html #page-login .her-login-brand { padding: 32px 32px 0; }
+  html #page-login .her-login-story { padding: 50px 32px 24px; }
+  html #page-login .her-login-caption { padding-inline: 32px; }
+  html #page-login .her-login-brand > span:last-child { font-size: 11px; }
 }
-html body:has(#page-login) .navbar {
-  background: #171d22;
-  border-bottom: 2px solid var(--her-yellow);
-  box-shadow: 0 3px 14px rgb(0 0 0 / 12%);
+@media (max-width: 700px) {
+  html #page-login .her-login-shell { grid-template-columns: 1fr; }
+  html #page-login .her-login-brand { padding: 24px 24px 0; }
+  html #page-login .her-login-monogram { font-size: 30px; }
+  html #page-login .her-login-story { padding: 24px; }
+  html #page-login .her-login-eyebrow { margin-bottom: 12px; font-size: 11px; }
+  html #page-login .her-login-story h1 { font-size: 36px; line-height: 1.5; margin: 0; }
+  html #page-login .her-login-description, html #page-login .her-login-features, html #page-login .her-login-caption { display: none; }
+  html #page-login .her-login-photo { min-height: 130px; }
+  html #page-login .her-login-forms { padding: 30px 24px; }
+  html #page-login .her-login-form-intro, html #page-login .page-card-head .app-logo { display: none; }
+  html #page-login .page-card-head h4 { font-size: 26px; }
+  html #page-login .her-login-note { margin-top: 28px; }
 }
-html body:has(#page-login) .navbar a,
-html body:has(#page-login) .navbar .icon { color: #e2e7eb; stroke: #e2e7eb; }
-html body:has(#page-login) .navbar-brand img { height: 36px; width: 46px; object-fit: contain; background: #fff; border-radius: 6px; padding: 2px; }
-html #page-login .page-card-head .app-logo {
-  width: 144px;
-  height: 116px;
-  max-width: 144px;
-  max-height: 116px;
-  object-fit: contain;
-  filter: drop-shadow(0 8px 10px rgb(0 0 0 / 10%));
-}
-html #page-login .page-card-head h4 { color: var(--her-heading); font-size: 22px; font-weight: 750; letter-spacing: -.03em; }
-html #page-login .page-card-head p { color: var(--her-muted); }
-html #page-login .page-card,
-html #page-login .login-content.page-card {
-  background: var(--her-surface);
-  border: 1px solid var(--her-line);
-  border-top: 3px solid var(--her-yellow);
-  border-radius: 14px;
-  box-shadow: var(--her-shadow-raised);
-}
-html #page-login .form-control { background: var(--her-field); color: var(--her-ink); border: 1px solid var(--her-line); border-radius: 8px; }
-html #page-login .form-control:focus { background: var(--her-surface); border-color: var(--her-accent-text); box-shadow: var(--her-focus); }
-html #page-login .form-control::placeholder { color: var(--her-muted); }
-html #page-login .btn-primary { background: var(--her-yellow); color: var(--her-on-yellow); border: 1px solid var(--her-yellow); border-radius: 8px; font-weight: 700; }
-html #page-login .btn-primary:hover { background: var(--her-yellow-hover); }
-html #page-login a { color: var(--her-accent-text); }
-html #page-login :focus-visible { outline: 2px solid var(--her-accent-text); outline-offset: 3px; }
-html #page-login .text-muted,
-html #page-login .forgot-password-message { color: var(--her-muted) !important; }
-@media (max-width: 400px) {
-  html #page-login .page-card { padding: 24px 18px; }
-  html #page-login .page-card-head h4 { font-size: 20px; }
-}
+@media (prefers-reduced-motion: reduce) { html #page-login .btn-primary { transition: none; } }

@@ -1,5 +1,9 @@
 # HER industrial theme
 
+## 2026-11-16 — Full-screen Arabic login (latest)
+
+Revised login to fill the viewport with white, pale sky blue and soft yellow, local crane photography and a locally hosted Cairo Arabic font (OFL). Arabic is the default for guest GET /login requests, even with English browser/cookie preferences; explicit _lang remains available. The request hook does not change stored user or site language settings. Login stays light regardless of the OS theme. Added conversational Arabic copy and retained native authentication, recovery, email-link and signup flows. Supersedes the centered navy login design. No schema migration required.
+
 2026-11-16 reference revision: `operations_workspace.css` and `operations_workspace.js` provide the supplied reference-style workspace presentation over native blocks. Eight cards use four desktop columns, with pills, section markers, row icons and permission-filtered counts. Customize opens the native editor; styling remains app-managed.
 
 2026-11-16: The latest user request replaces the yellow/graphite presentation with slate blue, a light sidebar in light mode, coordinated dark surfaces and flatter controls. Existing `--her-yellow` token names remain for compatibility but now resolve to blue. The compact Crane Operations workspace uses native action tiles and link panels. Earlier palette descriptions below are historical.
@@ -10,8 +14,8 @@ HER's visual layer lives entirely in `heavy_equipment_rental`; the shared expens
 - `public/css/industrial_desk.css`: navigation, existing workspace sidebar/cards, forms, lists/grids/reports, buttons, dropdowns, and dialogs. No workspace definitions or DOM reordering.
 - `public/css/industrial_loading.css`: native splash and `#freeze` presentation. `.grid-form` backdrops are explicitly excluded. Frappe still controls insertion, request nesting, and dismissal.
 - `public/css/industrial_web.css`: login styling scoped to `#page-login`.
-- `public/js/industrial_login.js`: anonymous login follows the system color preference; it does not change Desk's saved theme or authentication behavior.
-- `public/branding/`: a 512px main logo (`mobile-crane-logo.png`) and multi-size favicon derived from the supplied **Yellow Mobile Crane Truck with Raised Boom.png**, the unmodified **AR_Crane_Loader_Reverse_Loop.gif**, and a still frame for reduced-motion users. The earlier `logo.png` remains available for existing links; the distinct main-logo filename avoids reusing a cached previous logo. Assets are local; no CDN or new font dependency.
+- `public/js/industrial_login.js`: login uses the light palette and Arabic copy by default; it does not change Desk's saved theme or authentication behavior.
+- `public/branding/`: a 512px main logo (`mobile-crane-logo.png`) and multi-size favicon derived from the supplied **Yellow Mobile Crane Truck with Raised Boom.png**, the unmodified **AR_Crane_Loader_Reverse_Loop.gif**, and a still frame for reduced-motion users. The earlier `logo.png` remains available for existing links; the distinct main-logo filename avoids reusing a cached previous logo. Assets are local; no CDN dependency. The login uses its own local Cairo variable font under `public/fonts/`, with its OFL license.
 - `frontend/src/industrial.css`: matching calendar and timeline surfaces. Main initializes presentation from the user's existing Desk theme preference, supplied in the calendar boot context. It does not write user preferences.
 - `branding.py`: idempotent presentation settings only. It can run separately from `setup.execute`, avoiding workspace/permission synchronization for theme-only deployments. Recognized defaults from Frappe, ERPNext, Arab ERP, or previous HER branding are replaced; unrelated custom branding remains unchanged.
 

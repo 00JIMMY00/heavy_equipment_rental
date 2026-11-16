@@ -15,9 +15,9 @@ app_include_css = [
 web_include_css = [
 	"/assets/heavy_equipment_rental/css/industrial_tokens.css?v=20261116-panorama-v2",
 	"/assets/heavy_equipment_rental/css/industrial_loading.css",
-	"/assets/heavy_equipment_rental/css/industrial_web.css",
+	"/assets/heavy_equipment_rental/css/industrial_web.css?v=20261116-login-light-4",
 ]
-web_include_js = ["/assets/heavy_equipment_rental/js/industrial_login.js"]
+web_include_js = ["/assets/heavy_equipment_rental/js/industrial_login.js?v=20261116-login-light-4"]
 website_context = {
 	"favicon": "/assets/heavy_equipment_rental/branding/favicon.ico",
 	"splash_image": "/assets/heavy_equipment_rental/branding/loader.gif",
@@ -105,3 +105,6 @@ override_whitelisted_methods = {
 }
 
 app_include_js.append("/assets/heavy_equipment_rental/js/employee_entry.js?v=20261116-1")
+
+# Arabic is the default on the public login only.
+before_request = ["heavy_equipment_rental.login_presentation.set_login_language"]
