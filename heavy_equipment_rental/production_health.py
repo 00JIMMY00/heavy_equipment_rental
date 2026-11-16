@@ -8,6 +8,8 @@ def check():
         raise RuntimeError("Required production apps are missing")
     frappe.db.sql("select 1")
     frappe.cache().ping()
+    from frappe.utils.background_jobs import get_redis_conn
+    get_redis_conn().ping()
     for doctype in ("Crane", "Rental Contract", "Crane Timesheet", "Expense Entry"):
         frappe.get_meta(doctype)
         frappe.db.count(doctype)

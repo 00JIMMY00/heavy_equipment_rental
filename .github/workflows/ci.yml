@@ -16,8 +16,29 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    outputs:
+      runtime_changed: ${{ steps.changes.outputs.runtime_changed }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Detect runtime changes
+        id: changes
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          runtime_changed=true
+          if [[ "$GITHUB_EVENT_NAME" == push && "$BEFORE" =~ ^[0-9a-f]{40}$ ]] && git cat-file -e "$BEFORE^{commit}"; then
+            runtime_changed=false
+            git diff --name-only -z "$BEFORE" "$GITHUB_SHA" > "$RUNNER_TEMP/her-changes"
+            while IFS= read -r -d '' path; do
+              case "$path" in
+                docs/*|*.md) ;;
+                *) runtime_changed=true ;;
+              esac
+            done < "$RUNNER_TEMP/her-changes"
+          fi
+          echo "runtime_changed=$runtime_changed" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
@@ -47,6 +68,7 @@ jobs:
           retention-days: 1
 
   image:
+    if: needs.validate.outputs.runtime_changed == 'true'
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 45
