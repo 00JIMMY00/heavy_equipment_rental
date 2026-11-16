@@ -1,5 +1,9 @@
 # Current decisions
 
+## 2026-11-16 — Compact crane timeline
+
+Replaced the timeline hero, summary cards and repeated legends with a compact heading, period controls and counted activity toggles (only types with records appear). Default grouping is one row per Crane. Contract-scoped URLs automatically fit the booked dates (one day padding, bounded to the existing 120-day range limit). Filters, search and custom dates are collapsed behind Filters. Timeline day columns fill available width for short bookings and scroll for long ranges; reduced sticky resource width. Clickable event details/native links and Escape dismissal remain available. Added Arabic timeline controls/date labels using the user's existing language, preserving theme and backend permission checks. No rental data or billing logic changed.
+
 ## 2026-11-16 — Rental Contract rename (latest)
 
 Renamed Crane Assignment in place to Rental Contract, Arabic «عقد ايجار معدة». A pre-model migration uses native DocType rename to retain existing IDs, child rows, permissions and all rental links. Existing ASG numbers remain valid; new documents use RC-.##### (legacy naming series remains accepted for saved records). Updated controllers, linked field labels/options, dashboards, workspace seed/saved links, reports, messages and calendar source. Stable internal assignment/crane_assignment fieldnames and API parameters remain for historical/integration compatibility; old Python controller imports forward to the new module. Current document route is /app/rental-contract. The old documentation below records prior milestones.

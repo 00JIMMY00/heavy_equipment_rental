@@ -1,5 +1,11 @@
 # Progress
 
+## 2026-11-16 — Compact crane timeline
+
+Production build passed. Browser checked the exact ASG-00010 contract scope: two crane rows, November 3–7 with booking padding, Arabic controls and date labels, timeline beginning 206px from page top, activity toggle round trips, native detail link/Escape dismissal, collapsed filter controls and mobile without horizontal page overflow; no JavaScript errors. Removed zero-count activity controls after visual review. No documents changed.
+
+Replaced the timeline hero, summary cards and repeated legends with a compact heading, period controls and counted activity toggles. Default grouping is one row per Crane. Contract-scoped URLs automatically fit the booked dates (one day padding, bounded to the existing 120-day range limit). Filters, search and custom dates are collapsed behind Filters. Timeline day columns fill available width for short bookings and scroll for long ranges; reduced sticky resource width. Clickable event details/native links and Escape dismissal remain available. Added Arabic timeline controls/date labels using the user's existing language, preserving theme and backend permission checks. No rental data or billing logic changed.
+
 ## 2026-11-16 — Rental Contract rename (latest)
 
 Backed up dev3 before migration. Native DocType rename and saved workspace migration completed; all existing Timesheet/Expense/Maintenance rental links resolve, with no old Link targets left. Browser verified Arabic «عقد ايجار معدة», existing ASG-00008 opens with its crane rows, and new records default to RC-.#####. Twenty workflow tests ran: 19 passed, one legacy-column test skipped. Calendar production build and whitespace checks passed. Updated retained naming-series Property Setters to avoid ASG overriding the new RC default.

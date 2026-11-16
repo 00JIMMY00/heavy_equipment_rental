@@ -16,5 +16,6 @@ def get_context(context):
     context.boot = {
         "csrf_token": frappe.sessions.get_csrf_token(),
         "user": frappe.session.user,
+        "her_language": str(frappe.lang),
         "her_desk_theme": frappe.db.get_value("User", frappe.session.user, "desk_theme") or "Light",
     }

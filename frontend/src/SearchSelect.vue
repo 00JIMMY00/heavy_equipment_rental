@@ -1,4 +1,5 @@
 <script setup>
+const arabic = (window.her_language || "").startsWith("ar")
 import { computed, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 
 const props = defineProps({
@@ -90,12 +91,12 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onOutside))
     <label :for="inputId">{{ label }}</label>
     <div class="timeline-combobox-input">
       <input :id="inputId" ref="input" :value="query" :placeholder="placeholder" role="combobox" aria-autocomplete="list" :aria-expanded="open" :aria-controls="listId" :aria-activedescendant="open && matches.length ? `${listId}-${active}` : undefined" autocomplete="off" @focus="onFocus" @input="onInput" @keydown="onKeydown" />
-      <button type="button" :aria-label="modelValue ? `Clear ${label} filter` : `Show ${label} choices`" @click="modelValue ? clear() : input?.focus()">{{ modelValue ? '×' : '⌄' }}</button>
+      <button type="button" :aria-label="modelValue ? (arabic ? `مسح تصفية ${label}` : `Clear ${label} filter`) : (arabic ? `عرض خيارات ${label}` : `Show ${label} choices`)" @click="modelValue ? clear() : input?.focus()">{{ modelValue ? '×' : '⌄' }}</button>
     </div>
     <div v-if="open" :id="listId" class="timeline-combobox-list" role="listbox">
-      <button type="button" class="timeline-combobox-option" :class="{ active: !modelValue && !query }" role="option" :aria-selected="!modelValue" @mousedown.prevent @click="chooseAll">All {{ label.toLowerCase() }}s</button>
+      <button type="button" class="timeline-combobox-option" :class="{ active: !modelValue && !query }" role="option" :aria-selected="!modelValue" @mousedown.prevent @click="chooseAll">{{ arabic ? "الكل" : `All ${label.toLowerCase()}s` }}</button>
       <button v-for="(option, index) in matches" :id="`${listId}-${index}`" :key="option.id" type="button" class="timeline-combobox-option" :class="{ active: index === active }" role="option" :aria-selected="option.id === modelValue" @mouseenter="active = index" @mousedown.prevent @click="choose(option)"><span>{{ option.label }}</span><small v-if="option.label !== option.id">{{ option.id }}</small></button>
-      <div v-if="!matches.length" class="timeline-combobox-empty">No matches</div>
+      <div v-if="!matches.length" class="timeline-combobox-empty">{{ arabic ? "لا توجد نتائج" : "No matches" }}</div>
     </div>
   </div>
 </template>
