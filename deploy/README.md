@@ -10,6 +10,12 @@ Production: `https://cranes.arab-erp.com`, host `49.12.190.89` (`ssh hetzner3`),
 
 The deployment uses Docker Compose with MariaDB 10.11, Redis, separate backend/workers/scheduler/websocket/frontend, and Caddy HTTPS. Only 80/443 and SSH are public; the application health port binds to loopback, and database/Redis have no published ports. Container logs rotate at 3 × 10 MB each. Docker starts at boot; services restart automatically.
 
+## Which apps are installed
+
+`deploy/Containerfile` determines the apps available in the customer bench image: `bench init` downloads Frappe, `bench get-app` downloads ERPNext and arab_erp_theme, and `COPY` adds HER from the tested repository checkout. `deploy/dependencies.json` pins the exact Frappe/ERPNext/theme revisions; it does not select the app list. The customer server pulls this prebuilt image instead of downloading app repositories.
+
+For a new production site, `deploy/release.py` selects the installed apps using `bench new-site --install-app erpnext --install-app arab_erp_theme --install-app heavy_equipment_rental`; Frappe is installed automatically. Existing-site updates run migrations without automatically installing additional apps. `deploy/ci.sh` defines the corresponding disposable test-site installation. The obsolete `clients.yaml` and its unused renderer have been removed.
+
 ## Deployment transaction and recovery
 
 1. Validate configuration, pull the candidate digest and check its contents while the current release serves traffic.
@@ -63,4 +69,4 @@ APP_IMAGE=local/her:test DB_PASSWORD=test docker compose -f deploy/compose.yaml 
 
 GitHub tests the actual production image with empty bind-mounted site/log directories and the same configurator as production, against a disposable database and runs rental workflow, maintenance lifecycle/posting and current operating-fee/automatic-settlement regressions. The older `test_partner_settlements` module still includes superseded service-date proration and implicit-sharing assumptions; it is not part of this release gate. `ci_fixtures.prepare` explicitly rejects any site except `her_ci`; fixture setup is never called by production install/migrate. `production_health.check` is a read-only Bench command, not a public API.
 
-This workflow replaces the previous multi-client/client-manifest deployment. Files such as the old client renderer and retail workspace tools are not part of the production pipeline.
+This workflow replaces the previous multi-client/client-manifest deployment. The remaining legacy retail workspace tools are not part of the production pipeline.
