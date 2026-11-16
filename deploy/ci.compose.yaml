@@ -17,13 +17,10 @@ services:
   test:
     image: ${APP_IMAGE:?}
     volumes:
-      - ci-sites:/home/frappe/frappe-bench/sites
-      - ci-logs:/home/frappe/frappe-bench/logs
+      - ${CI_SITES_PATH:-./ci-sites}:/home/frappe/frappe-bench/sites
+      - ${CI_LOGS_PATH:-./ci-logs}:/home/frappe/frappe-bench/logs
     command: [bash, apps/heavy_equipment_rental/deploy/ci.sh]
     depends_on:
       db: {condition: service_healthy}
       redis-cache: {condition: service_started}
       redis-queue: {condition: service_started}
-volumes:
-  ci-sites:
-  ci-logs:

@@ -103,11 +103,18 @@ jobs:
       - name: Test installation, migrations and critical rental workflows in the production image
         env:
           APP_IMAGE: ghcr.io/00jimmy00/heavy_equipment_rental:sha-${{ github.sha }}
-        run: docker compose -f deploy/ci.compose.yaml up --abort-on-container-exit --exit-code-from test test
+          CI_SITES_PATH: ${{ runner.temp }}/her-ci-sites
+          CI_LOGS_PATH: ${{ runner.temp }}/her-ci-logs
+        run: |
+          mkdir -p "$CI_SITES_PATH" "$CI_LOGS_PATH"
+          sudo chown 1000:1000 "$CI_SITES_PATH" "$CI_LOGS_PATH"
+          docker compose -f deploy/ci.compose.yaml up --abort-on-container-exit --exit-code-from test test
       - name: Remove disposable CI database
         if: always()
         env:
           APP_IMAGE: ghcr.io/00jimmy00/heavy_equipment_rental:sha-${{ github.sha }}
+          CI_SITES_PATH: ${{ runner.temp }}/her-ci-sites
+          CI_LOGS_PATH: ${{ runner.temp }}/her-ci-logs
         run: docker compose -f deploy/ci.compose.yaml down --volumes --remove-orphans
       - uses: docker/login-action@v3
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

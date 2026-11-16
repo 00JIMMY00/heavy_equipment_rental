@@ -57,6 +57,6 @@ python3 -m unittest deploy.test_rollout
 APP_IMAGE=local/her:test DB_PASSWORD=test docker compose -f deploy/compose.yaml config --quiet
 ```
 
-GitHub tests the actual production image against a disposable database and runs rental workflow, maintenance lifecycle/posting and current operating-fee/automatic-settlement regressions. The older `test_partner_settlements` module still includes superseded service-date proration and implicit-sharing assumptions; it is not part of this release gate. `ci_fixtures.prepare` explicitly rejects any site except `her_ci`; fixture setup is never called by production install/migrate. `production_health.check` is a read-only Bench command, not a public API.
+GitHub tests the actual production image with empty bind-mounted site/log directories and the same configurator as production, against a disposable database and runs rental workflow, maintenance lifecycle/posting and current operating-fee/automatic-settlement regressions. The older `test_partner_settlements` module still includes superseded service-date proration and implicit-sharing assumptions; it is not part of this release gate. `ci_fixtures.prepare` explicitly rejects any site except `her_ci`; fixture setup is never called by production install/migrate. `production_health.check` is a read-only Bench command, not a public API.
 
 This workflow replaces the previous multi-client/client-manifest deployment. Files such as the old client renderer and retail workspace tools are not part of the production pipeline.

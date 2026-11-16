@@ -1,11 +1,7 @@
 #!/bin/bash
 set -Eeuo pipefail
 export CI=Yes
-bench set-config -g db_host db
-bench set-config -gp db_port 3306
-bench set-config -g redis_cache redis://redis-cache:6379
-bench set-config -g redis_queue redis://redis-queue:6379
-bench set-config -g redis_socketio redis://redis-queue:6379
+bash apps/heavy_equipment_rental/deploy/runtime/configure.sh
 bench new-site her_ci --db-root-password ci-root --admin-password ci-admin \
   --mariadb-user-host-login-scope=% --install-app erpnext --install-app arab_erp_theme --install-app heavy_equipment_rental
 bench --site her_ci migrate
