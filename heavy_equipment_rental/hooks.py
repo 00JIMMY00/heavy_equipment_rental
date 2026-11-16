@@ -7,12 +7,13 @@ app_license = "mit"
 app_logo_url = "/assets/heavy_equipment_rental/branding/mobile-crane-logo.png"
 app_include_css = [
 	"/assets/heavy_equipment_rental/css/crane_availability.css",
-	"/assets/heavy_equipment_rental/css/industrial_tokens.css",
-	"/assets/heavy_equipment_rental/css/industrial_desk.css",
+	"/assets/heavy_equipment_rental/css/industrial_tokens.css?v=20261116-panorama-v2",
+	"/assets/heavy_equipment_rental/css/industrial_desk.css?v=20261116-panorama-v2",
+	"/assets/heavy_equipment_rental/css/operations_workspace.css?v=20261116-sidebar-1",
 	"/assets/heavy_equipment_rental/css/industrial_loading.css",
 ]
 web_include_css = [
-	"/assets/heavy_equipment_rental/css/industrial_tokens.css",
+	"/assets/heavy_equipment_rental/css/industrial_tokens.css?v=20261116-panorama-v2",
 	"/assets/heavy_equipment_rental/css/industrial_loading.css",
 	"/assets/heavy_equipment_rental/css/industrial_web.css",
 ]
@@ -94,7 +95,7 @@ doctype_js = {
     "Payment Entry": "public/js/partner_payment.js",
 }
 
-app_include_js = ["/assets/heavy_equipment_rental/js/rental_cancellation.js?v=20261114-cancel-all"]
+app_include_js = ["/assets/heavy_equipment_rental/js/operations_workspace.js?v=20261116-panorama-v2", "/assets/heavy_equipment_rental/js/rental_cancellation.js?v=20261114-cancel-all"]
 
 
 override_whitelisted_methods = {

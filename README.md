@@ -246,3 +246,7 @@ Comprehensive profit distribution report tests:
 ```bash
 bench --site YOUR_SITE run-tests --module heavy_equipment_rental.test_distribution_reporting
 ```
+
+## Customize Crane Operations
+
+Crane Operations groups daily work, billing/treasury, partners, reports and setup into editable native workspace cards. Use **Customize → Save** as Administrator or Workspace Manager to arrange it on your site. Site edits survive later app migrations. See [workspace editing and deployment](docs/WORKSPACE.md).

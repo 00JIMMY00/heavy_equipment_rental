@@ -137,5 +137,5 @@ def execute():
 	from heavy_equipment_rental.treasury_workbook import install_fields as install_workbook_fields
 
 	install_workbook_fields()
-	set_default_workspace()
 	sync_operations_workspace()
+	set_default_workspace()

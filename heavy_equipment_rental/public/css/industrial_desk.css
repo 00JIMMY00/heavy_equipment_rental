@@ -204,3 +204,72 @@ html .awesomplete > ul > li[aria-selected="true"] { background: var(--her-accent
   html body { background: #fff; color: #000; }
   html .frappe-card, html .layout-main-section.frappe-card { box-shadow: none; }
 }
+
+/* Slate-blue Desk: flat surfaces and a quiet, compact navigation rail. */
+html .navbar { border-bottom: 1px solid #30486a; box-shadow: none; }
+html .desk-sidebar {
+  border: 1px solid var(--her-line);
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: none;
+}
+html .desk-sidebar .standard-sidebar-item:hover { color: var(--her-heading); }
+html .desk-sidebar .standard-sidebar-item.selected {
+  background: var(--her-accent-soft);
+  color: var(--her-accent-text);
+  box-shadow: none;
+  font-weight: 650;
+}
+html[dir="rtl"] .desk-sidebar .standard-sidebar-item.selected { box-shadow: none; }
+html .desk-sidebar .standard-sidebar-item.selected svg { --icon-stroke: var(--her-accent-text); stroke: var(--her-accent-text); }
+html .desk-sidebar .dropdown-menu { border-color: var(--her-line); }
+html .frappe-card, html .layout-main-section.frappe-card { border-radius: 8px; box-shadow: none; }
+html .widget.shortcut-widget-box, html .widget.links-widget-box {
+  border-radius: 8px;
+  box-shadow: none;
+}
+html .btn { border-radius: 6px; }
+
+/* Native blocks remain draggable/resizable; no fixed grid overrides. */
+body[data-route="Workspaces/Crane Operations"] .shortcut-widget-box {
+  min-height: 48px;
+  padding: 10px 12px;
+  background: var(--her-accent-soft);
+  border-color: transparent;
+}
+body[data-route="Workspaces/Crane Operations"] .shortcut-widget-box .widget-title {
+  font-size: 12px;
+  white-space: normal;
+  line-height: 1.4;
+}
+body[data-route="Workspaces/Crane Operations"] .links-widget-box { padding: 12px 14px; }
+body[data-route="Workspaces/Crane Operations"] .links-widget-box .widget-head {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--her-line);
+  margin-bottom: 4px;
+}
+body[data-route="Workspaces/Crane Operations"] .links-widget-box .widget-title {
+  font-size: 13px;
+  color: var(--her-accent-text);
+}
+body[data-route="Workspaces/Crane Operations"] .links-widget-box .link-item {
+  padding: 6px 4px;
+  min-height: 30px;
+  margin: 0;
+}
+body[data-route="Workspaces/Crane Operations"] .shortcut-widget-box:hover {
+  border-color: var(--her-line-strong);
+  box-shadow: none;
+}
+body[data-route="Workspaces/Crane Operations"] .shortcut-widget-box .widget-head { gap: 4px; }
+body[data-route="Workspaces/Crane Operations"] .shortcut-widget-box .widget-label { min-width: 0; flex: 1; }
+body[data-route="Workspaces/Crane Operations"] .shortcut-widget-box .widget-title .ellipsis {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+/* Show the app name in Arabic on right-to-left Desk pages. */
+html[dir="rtl"] .navbar .navbar-home::after {
+  content: "تأجير المعدات";
+  letter-spacing: 0;
+  font-size: 14px;
+}

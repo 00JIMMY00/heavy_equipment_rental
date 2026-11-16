@@ -1,0 +1,231 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"cranes-banner\",\"type\":\"paragraph\",\"data\":{\"col\":12,\"text\":\"<span class=\\\"her-cranes-banner\\\">&nbsp;</span>\"}},{\"id\":\"section-0\",\"type\":\"card\",\"data\":{\"card_name\":\"Master Data\",\"col\":3}},{\"id\":\"section-1\",\"type\":\"card\",\"data\":{\"card_name\":\"Rental Operations\",\"col\":3}},{\"id\":\"section-2\",\"type\":\"card\",\"data\":{\"card_name\":\"Accounting\",\"col\":3}},{\"id\":\"section-3\",\"type\":\"card\",\"data\":{\"card_name\":\"Setup\",\"col\":3}},{\"id\":\"section-5\",\"type\":\"card\",\"data\":{\"card_name\":\"Profit Sharing\",\"col\":3}},{\"id\":\"section-6\",\"type\":\"card\",\"data\":{\"card_name\":\"Operational Reports\",\"col\":3}},{\"id\":\"section-7\",\"type\":\"card\",\"data\":{\"card_name\":\"Financial Reports\",\"col\":3}}]",
+ "creation": "2026-10-17 20:35:25.314473",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "hide_custom": 0,
+ "icon": "project",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Crane Operations",
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Master Data",
+   "link_count": 5
+  },
+  {
+   "type": "Link",
+   "label": "Cranes",
+   "link_type": "DocType",
+   "link_to": "Crane"
+  },
+  {
+   "type": "Link",
+   "label": "Customers",
+   "link_type": "DocType",
+   "link_to": "Customer"
+  },
+  {
+   "type": "Link",
+   "label": "Suppliers",
+   "link_type": "DocType",
+   "link_to": "Supplier"
+  },
+  {
+   "type": "Link",
+   "label": "Shareholders",
+   "link_type": "DocType",
+   "link_to": "Shareholder"
+  },
+  {
+   "type": "Link",
+   "label": "Assets",
+   "link_type": "DocType",
+   "link_to": "Asset"
+  },
+  {
+   "type": "Card Break",
+   "label": "Rental Operations",
+   "link_count": 3
+  },
+  {
+   "type": "Link",
+   "label": "Crane Work Log",
+   "link_type": "DocType",
+   "link_to": "Crane Timesheet"
+  },
+  {
+   "type": "Link",
+   "label": "Crane Servicing",
+   "link_type": "DocType",
+   "link_to": "Crane Maintenance"
+  },
+  {
+   "type": "Link",
+   "label": "Crane Job Assignment",
+   "link_type": "DocType",
+   "link_to": "Crane Assignment"
+  },
+  {
+   "type": "Card Break",
+   "label": "Accounting",
+   "link_count": 5
+  },
+  {
+   "type": "Link",
+   "label": "Sales Invoices",
+   "link_type": "DocType",
+   "link_to": "Sales Invoice"
+  },
+  {
+   "type": "Link",
+   "label": "Purchase Invoices",
+   "link_type": "DocType",
+   "link_to": "Purchase Invoice"
+  },
+  {
+   "type": "Link",
+   "label": "Expense Entries",
+   "link_type": "DocType",
+   "link_to": "Expense Entry"
+  },
+  {
+   "type": "Link",
+   "label": "Payment Entry",
+   "link_type": "DocType",
+   "link_to": "Payment Entry"
+  },
+  {
+   "type": "Link",
+   "label": "Treasury Transactions",
+   "link_type": "DocType",
+   "link_to": "Treasury Transaction"
+  },
+  {
+   "type": "Card Break",
+   "label": "Setup",
+   "link_count": 2
+  },
+  {
+   "type": "Link",
+   "label": "Rental Settings",
+   "link_type": "DocType",
+   "link_to": "Heavy Equipment Rental Settings"
+  },
+  {
+   "type": "Link",
+   "label": "Expense Entry Types",
+   "link_type": "DocType",
+   "link_to": "Expense Entry Type"
+  },
+  {
+   "type": "Card Break",
+   "label": "Profit Sharing",
+   "link_count": 2
+  },
+  {
+   "type": "Link",
+   "label": "Profit Settlements",
+   "link_type": "DocType",
+   "link_to": "Crane Profit Settlement"
+  },
+  {
+   "type": "Link",
+   "label": "Distribution Dashboard",
+   "link_type": "Page",
+   "link_to": "crane-distribution-dashboard"
+  },
+  {
+   "type": "Card Break",
+   "label": "Operational Reports",
+   "link_count": 3
+  },
+  {
+   "type": "Link",
+   "label": "Rental Profitability",
+   "link_type": "Report",
+   "link_to": "Crane Rental Profitability",
+   "is_query_report": 1,
+   "report_ref_doctype": "Crane Timesheet"
+  },
+  {
+   "type": "Link",
+   "label": "Crane Profit Distribution",
+   "link_type": "Report",
+   "link_to": "Crane Profit Distribution",
+   "is_query_report": 1,
+   "report_ref_doctype": "Crane Profit Settlement"
+  },
+  {
+   "type": "Link",
+   "label": "Treasury Workbook",
+   "link_type": "Report",
+   "link_to": "Treasury Workbook",
+   "is_query_report": 1,
+   "report_ref_doctype": "GL Entry"
+  },
+  {
+   "type": "Card Break",
+   "label": "Financial Reports",
+   "link_count": 4
+  },
+  {
+   "type": "Link",
+   "label": "Crane Partner Statement",
+   "link_type": "Report",
+   "link_to": "Crane Partner Statement",
+   "is_query_report": 1,
+   "report_ref_doctype": "Crane Profit Settlement"
+  },
+  {
+   "type": "Link",
+   "label": "Crane Partner Summary",
+   "link_type": "Report",
+   "link_to": "Crane Partner Summary",
+   "is_query_report": 1,
+   "report_ref_doctype": "Crane Profit Settlement"
+  },
+  {
+   "type": "Link",
+   "label": "Sales Register",
+   "link_type": "Report",
+   "link_to": "Sales Register",
+   "is_query_report": 1,
+   "report_ref_doctype": "Sales Invoice"
+  },
+  {
+   "type": "Link",
+   "label": "Accounts Receivable",
+   "link_type": "Report",
+   "link_to": "Accounts Receivable",
+   "is_query_report": 1,
+   "report_ref_doctype": "Sales Invoice"
+  }
+ ],
+ "modified": "2026-11-14 15:24:35.258442",
+ "modified_by": "Administrator",
+ "module": null,
+ "name": "Crane Operations",
+ "number_cards": [],
+ "owner": "Administrator",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Projects Manager"
+  },
+  {
+   "role": "Projects User"
+  }
+ ],
+ "sequence_id": 12.0,
+ "shortcuts": [],
+ "title": "Crane Operations",
+ "indicator_color": "blue"
+}

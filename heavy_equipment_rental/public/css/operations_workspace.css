@@ -1,0 +1,127 @@
+/* Reference-inspired skin over the native, editable Workspace grid. */
+body.her-operations-reference { --her-canvas: #fff; --her-shadow: 0 1px 2px rgb(25 51 94 / 5%); }
+html[data-theme="dark"] body.her-operations-reference { --her-canvas: #111827; }
+body.her-operations-reference .page-container > .container,
+body.her-operations-reference .page-head .container { width: 100%; max-width: none; padding-inline: 20px; }
+/* Sidebar visibility is controlled by Frappe’s native toggle and mobile overlay. */
+body.her-operations-reference .layout-main-section-wrapper { margin-inline: 0; }
+body.her-operations-reference .layout-main-section { border: 0; padding: 0; box-shadow: none; background: transparent; }
+body.her-operations-reference .page-title .title-text { font-size: 20px; color: var(--her-heading); }
+.her-workspace-actions { display: inline-flex; gap: 8px; align-items: center; }
+body.her-operations-reference .ce-paragraph:has(.her-overview-title) {
+  position: relative;
+  border: 1px solid var(--her-line);
+  border-radius: 16px;
+  padding: 16px 180px 16px 80px;
+  min-height: 80px;
+  background: var(--her-surface);
+  box-shadow: var(--her-shadow);
+  line-height: 1.5;
+}
+body.her-operations-reference .ce-paragraph:has(.her-overview-title)::before {
+  content: '▦';
+  position: absolute;
+  inset-inline-start: 20px;
+  top: 16px;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  font-size: 29px;
+  color: #2864ed;
+  background: #e7eeff;
+  border-radius: 13px;
+}
+.her-overview-title { font-size: 20px; font-weight: 700; color: var(--her-heading); }
+.her-overview-subtitle { font-size: 13px; color: var(--her-muted); }
+.her-all-workspaces { position: absolute; inset-inline-end: 20px; top: 20px; padding: 8px 12px; border-radius: 10px; background: var(--her-subtle); border: 1px solid var(--her-line); color: var(--her-ink); font-size: 13px; }
+body.her-operations-reference .ce-header { padding: 4px 2px; margin: 4px 0; }
+body.her-operations-reference .ce-header span { font-size: 15px; font-weight: 650; }
+body.her-operations-reference .shortcut-widget-box {
+  border: 1px solid var(--her-line);
+  border-radius: 22px;
+  background: var(--her-surface);
+  min-height: 34px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 7px 13px;
+  box-shadow: var(--her-shadow);
+}
+body.her-operations-reference .shortcut-widget-box .widget-title { font-weight: 500; font-size: 12px; }
+body.her-operations-reference .shortcut-widget-box .widget-title::before {
+  content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--section-accent, #2864ed); margin-inline-end: 8px;
+}
+body.her-operations-reference .shortcut-widget-box:not(.edit-mode) .widget-control { display: none; }
+body.her-operations-reference .links-widget-box {
+  border: 1px solid var(--her-line);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--her-shadow);
+  background: var(--her-surface);
+}
+body.her-operations-reference .links-widget-box .widget-head { margin: 0 0 10px; padding: 0 0 12px; border-bottom: 1px solid var(--her-line); }
+body.her-operations-reference .links-widget-box .widget-title { font-size: 13px; font-weight: 700; color: var(--her-heading); }
+body.her-operations-reference .links-widget-box .widget-title::before { content: ''; display: inline-block; width: 9px; height: 9px; margin-inline-end: 8px; border-radius: 3px; background: var(--section-accent, #2864ed); }
+body.her-operations-reference .links-widget-box .link-item { display: flex; align-items: center; gap: 9px; min-height: 38px; padding: 8px 5px; border-bottom: 1px solid var(--her-subtle); border-radius: 0 0 9px 9px; font-size: 12px; }
+body.her-operations-reference .link-content { display: flex; flex: 1; align-items: center; min-width: 0; }
+body.her-operations-reference .link-text { flex: 1; white-space: normal; }
+.her-link-icon { display: inline-flex; flex-shrink: 0; color: var(--her-muted); }
+.her-link-count { margin-inline-start: auto; border-radius: 14px; background: var(--her-field); color: var(--her-muted); padding: 1px 8px; font-size: 12px; line-height: 18px; }
+body.her-operations-reference .her-has-count .link-content > svg { display: none; }
+body.her-operations-reference .workspace-footer { padding-top: 12px; }
+html[dir="rtl"] body.her-operations-reference .ce-paragraph:has(.her-overview-title) { padding: 16px 80px 16px 180px; }
+@media (max-width: 767px) {
+  body.her-operations-reference .ce-paragraph:has(.her-overview-title) { padding-inline: 70px 12px; }
+  body.her-operations-reference .her-all-workspaces { position: static; display: inline-block; margin-top: 8px; }
+  body.her-operations-reference .her-overview-title { font-size: 17px; }
+  body.her-operations-reference .page-container > .container,
+  body.her-operations-reference .page-head .container { padding-inline: 12px; }
+}
+
+body.her-operations-reference .layout-main-section { border: 0 !important; box-shadow: none !important; background: transparent !important; }
+
+body.her-operations-reference .ce-paragraph:has(.her-cranes-banner) { padding: 0; margin: 0; }
+.her-cranes-banner {
+  display: block;
+  width: 100%;
+  aspect-ratio: 10 / 1;
+  max-height: 25vh;
+  max-height: 25svh;
+  border-radius: 12px;
+  background: #dbe5ed url('/assets/heavy_equipment_rental/branding/cranes-panorama-v2.png') center 62% / cover no-repeat;
+}
+
+/* Frequently used links: destination selectors work with Arabic and English labels. */
+body.her-operations-reference .links-widget-box .link-item:is(
+  [href="/app/crane"],
+  [href="/app/crane-timesheet"],
+  [href="/app/crane-maintenance"],
+  [href="/app/expense-entry"],
+  [href="/app/sales-invoice"],
+  [href="/app/purchase-invoice"]
+) {
+  --her-frequent-bg: #edf3ff;
+  --her-frequent-text: #254da6;
+  --her-frequent-line: #cddcff;
+  background: var(--her-frequent-bg);
+  color: var(--her-frequent-text);
+  border: 1px solid var(--her-frequent-line);
+  border-inline-start: 3px solid #4169d1;
+  border-radius: 8px;
+  margin-block: 4px;
+  padding-inline: 8px;
+  font-weight: 650;
+}
+html[data-theme="dark"] body.her-operations-reference .links-widget-box .link-item:is(
+  [href="/app/crane"], [href="/app/crane-timesheet"], [href="/app/crane-maintenance"],
+  [href="/app/expense-entry"], [href="/app/sales-invoice"], [href="/app/purchase-invoice"]
+) {
+  --her-frequent-bg: #243757;
+  --her-frequent-text: #c6d8ff;
+  --her-frequent-line: #39547c;
+}
+body.her-operations-reference .link-item:is(
+  [href="/app/crane"], [href="/app/crane-timesheet"], [href="/app/crane-maintenance"],
+  [href="/app/expense-entry"], [href="/app/sales-invoice"], [href="/app/purchase-invoice"]
+) :is(.her-link-icon, .link-text) { color: inherit; --icon-stroke: currentColor; }

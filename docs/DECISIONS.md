@@ -1,5 +1,42 @@
 # Current decisions
 
+## 2026-11-16 — Shallow regenerated panorama (latest)
+
+Regenerated the crane image with distant vehicles and low booms composed for a shallow panoramic strip. The workspace now uses `cranes-panorama-v2.png`, displayed at 10:1 with a hard maximum height of 25vh/25svh and a focal position of 62%. This supersedes the tall 3:1 banner. Sections/الأقسام remains removed.
+
+
+## 2026-11-16 — Full crane banner
+
+Increased the crane banner from 10:1 to the image’s native 3:1 ratio and used contain sizing so all three cranes remain visible without cropping. Removed the Sections/الأقسام heading from the template and dev3’s saved workspace. Existing site edits are preserved.
+
+
+## 2026-11-16 — Requested workspace wording and banner
+
+Renamed Rental Operations in Arabic to «عمليات على الونش», with links ordered «سرك الونش», «صيانة الونش», «تكليف الونش». Removed the separate Maintenance card, Quick Access, overview text, top Customize/Refresh actions and bottom Timesheet/Maintenance reports. Added a generated crane photo displayed at approximately 10:1. Native bottom Edit remains available. Applied to dev3 after a private workspace backup; migration persistence remains unchanged.
+
+
+## 2026-11-16 — Arabic interface audit
+
+Extended the app Arabic catalog with current workspace, rental, maintenance, asset, settlement, payment and validation text. The reference workspace overview and custom actions now translate in Arabic mode. Preserve internal document naming patterns and user-entered record names; translate interface text through the app Arabic catalog. Arabic browser checks showed no English UI words in the workspace; the new Crane form labels also translated. Global Frappe/ERPNext labels use their installed Arabic catalogs. Stored user-entered names, IDs and currency symbols are data and remain as entered. Clear site cache after updating translations.
+
+
+## 2026-11-16 — Reference-style workspace (latest)
+
+Matched the supplied reference using a compact overview, Quick Access pills, eight native section cards in four desktop columns, colored markers, row icons and permission-filtered counts. Customize invokes native Edit; All workspaces toggles the navigation sidebar. Native card labels, links, order and widths remain editable and persist through migrations. The previous compact layout is backed up on dev3 to `private/backups/her-workspace-before-reference.json`. See [on-site editing instructions](WORKSPACE.md). This supersedes the six-panel arrangement below.
+
+
+## 2026-11-16 — Compact workspace and slate-blue theme (latest)
+
+Replaced the large welcome banner and repeated section descriptions with six compact frequent-action tiles, six native link panels (Billing, Treasury, Partners, Reports, Directory, Settings), and two report-builder shortcuts. All 28 destinations remain accessible. The shared theme now uses slate blue, a light navigation rail in light mode, coordinated dark surfaces and flatter controls. This supersedes the yellow/graphite theme and the spacious workspace arrangement below. Native Edit/Save and migration persistence remain in place. Applied the requested revision explicitly to dev3, backing up its prior layout to `private/backups/her-workspace-before-compact.json`; other initialized sites retain their arrangements.
+
+
+## 2026-11-16 — Editable Crane Operations workspace
+
+Crane Operations now groups native editable shortcuts into Daily Operations, Billing & Treasury, Partners & Profit Sharing, Reports, and Setup & Directory. Consistent card sizes, section descriptions and an industrial welcome panel support light/dark themes and mobile layouts. Added direct access to purchases, settlements, the distribution dashboard, suppliers and assets.
+
+The layout is installed once from `heavy_equipment_rental/templates/crane_operations.json`. It is a site-owned Workspace (no Module), outside Frappe's standard workspace synchronization; later setup/migrations preserve site edits, including developer-mode edits. The first upgrade saves the complete previous Workspace to the site's private `backups/her-workspace-before-v2.json`. Existing workspace access roles remain unchanged. This supersedes the earlier instruction to retain the old workspace ordering. See [workspace editing](WORKSPACE.md).
+
+
 - 2026-11-16: Removed the Crane Change Agreement shortcut. Edit terms and Agreement Effective From directly, then Save; dated history and server validation still apply. JavaScript syntax and whitespace checks passed; dev3 cache cleared.
 
 ## 2026-11-16 — Simple repair entry

@@ -1,5 +1,9 @@
 # HER industrial theme
 
+2026-11-16 reference revision: `operations_workspace.css` and `operations_workspace.js` provide the supplied reference-style workspace presentation over native blocks. Eight cards use four desktop columns, with pills, section markers, row icons and permission-filtered counts. Customize opens the native editor; styling remains app-managed.
+
+2026-11-16: The latest user request replaces the yellow/graphite presentation with slate blue, a light sidebar in light mode, coordinated dark surfaces and flatter controls. Existing `--her-yellow` token names remain for compatibility but now resolve to blue. The compact Crane Operations workspace uses native action tiles and link panels. Earlier palette descriptions below are historical.
+
 HER's visual layer lives entirely in `heavy_equipment_rental`; the shared expense theme app is unchanged.
 
 - `public/css/industrial_tokens.css`: palette, native Frappe aliases, light/dark modes, reduced-motion loader source. Root selectors intentionally outrank base-theme tokens when that app loads later.

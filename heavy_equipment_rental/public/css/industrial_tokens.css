@@ -1,30 +1,30 @@
-/* HER design tokens. Loaded after the shared theme; semantic status colors stay native. */
+/* HER slate-blue design tokens (legacy yellow variable names retained for integrations). Loaded after the shared theme; semantic status colors stay native. */
 html:root,
 html[data-theme="light"] {
   color-scheme: light;
-  --her-yellow: #f5c518;
-  --her-yellow-hover: #e6b608;
-  --her-on-yellow: #20241f;
-  --her-accent-text: #806000;
-  --her-accent-soft: #fff5ce;
-  --her-canvas: #f3f4f4;
+  --her-yellow: #4169d1;
+  --her-yellow-hover: #3457b5;
+  --her-on-yellow: #ffffff;
+  --her-accent-text: #3457b5;
+  --her-accent-soft: #edf2ff;
+  --her-canvas: #f3f5f9;
   --her-surface: #ffffff;
   --her-surface-raised: #ffffff;
   --her-subtle: #f7f8f8;
   --her-hover: #eef0f1;
-  --her-ink: #252b30;
-  --her-heading: #171d22;
-  --her-muted: #66717a;
-  --her-line: #dfe3e6;
-  --her-line-strong: #bbc4ca;
-  --her-field: #f2f4f5;
+  --her-ink: #334155;
+  --her-heading: #172b4d;
+  --her-muted: #64748b;
+  --her-line: #e2e8f0;
+  --her-line-strong: #c3cfdf;
+  --her-field: #f1f5f9;
   --her-shadow: 0 4px 16px rgb(22 30 36 / 4%);
   --her-shadow-raised: 0 16px 48px rgb(22 30 36 / 12%);
-  --her-focus: 0 0 0 3px rgb(191 145 0 / 22%);
-  --her-sidebar: #20262b;
-  --her-sidebar-hover: #30383e;
-  --her-sidebar-text: #dce2e6;
-  --her-sidebar-muted: #a4b0b9;
+  --her-focus: 0 0 0 3px rgb(65 105 209 / 22%);
+  --her-sidebar: #ffffff;
+  --her-sidebar-hover: #eaf0fb;
+  --her-sidebar-text: #334155;
+  --her-sidebar-muted: #64748b;
   --her-loader-image: url("/assets/heavy_equipment_rental/branding/loader.gif");
 
   --primary: var(--her-accent-text);
@@ -42,7 +42,7 @@ html[data-theme="light"] {
   --disabled-control-bg: var(--her-subtle);
   --disabled-text-color: var(--her-muted);
   --input-disabled-bg: var(--her-hover);
-  --navbar-bg: #171d22;
+  --navbar-bg: #172b4d;
   --text-color: var(--her-ink);
   --heading-color: var(--her-heading);
   --text-muted: var(--her-muted);
@@ -81,25 +81,28 @@ html[data-theme="light"] {
 
 html[data-theme="dark"] {
   color-scheme: dark;
-  --her-accent-text: #f5ce4b;
-  --her-accent-soft: #39331f;
-  --her-canvas: #14191d;
-  --her-surface: #1d242a;
-  --her-surface-raised: #252d34;
-  --her-subtle: #20282e;
-  --her-hover: #2d373f;
+  --her-accent-text: #a6bdff;
+  --her-accent-soft: #243453;
+  --her-canvas: #111827;
+  --her-surface: #192335;
+  --her-surface-raised: #202d42;
+  --her-subtle: #1e2b40;
+  --her-hover: #2a3951;
   --her-ink: #e0e6ea;
   --her-heading: #f3f5f6;
   --her-muted: #a8b3bc;
-  --her-line: #35414a;
+  --her-line: #33445d;
   --her-line-strong: #53616b;
-  --her-field: #28323a;
+  --her-field: #24334a;
   --her-shadow: 0 4px 16px rgb(0 0 0 / 12%);
   --her-shadow-raised: 0 18px 56px rgb(0 0 0 / 35%);
-  --her-focus: 0 0 0 3px rgb(245 197 24 / 25%);
-  --her-sidebar: #191f24;
-  --her-sidebar-hover: #30383e;
-  --navbar-bg: #101518;
+  --her-focus: 0 0 0 3px rgb(125 162 255 / 25%);
+  --her-sidebar: #172235;
+  --her-sidebar-hover: #243453;
+  --her-sidebar-text: #dce5f4;
+  --her-sidebar-muted: #a5b5cd;
+  --her-sidebar-hover: #eaf0fb;
+  --navbar-bg: #131d2e;
   /* Repeat native aliases: Frappe and the shared theme declare dark overrides. */
   --primary: var(--her-accent-text);
   --primary-color: var(--her-accent-text);
