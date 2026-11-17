@@ -53,7 +53,9 @@ bench --site cranes-dev2.arab-erp.com execute heavy_equipment_rental.demo.create
 
 The command uses normal document validation and submission, rolls back its changes on failure,
 and returns the existing cycle for the same company and demo location on repeat calls. It does
-not overwrite or reset a previously created cycle. It creates its own customer, operator, crane,
-accounts, payment modes, and expense types. The company's accounting defaults, customer group,
+not overwrite or reset a previously created cycle. Each new cycle uses a unique
+`HER-DEMO-50-<suffix>` Crane ID, so separate cycles coexist with legacy demo cranes.
+It creates its own customer, operator, crane, accounts, payment modes, and expense types.
+The company's accounting defaults, customer group,
 territory, service item group, and fiscal year must already be configured. Nothing is created
 automatically on installation or migration.

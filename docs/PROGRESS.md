@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-11-17 — Independent demo Crane IDs
+
+New demo cycles generate `HER-DEMO-50-<suffix>` IDs instead of reusing the same primary key. Repeating a completed cycle still returns its existing records; legacy cranes are preserved. The new regression reproduced the CI duplicate-ID failure before the fix, then verified two independent cycles, repeat-call reuse and unchanged legacy Crane data. Added it to CI. All 37 application tests in the updated CI module list passed on dev3, along with 13 deployment/manifest tests and whitespace checks. Test records were rolled back; no schema migration was needed.
+
 ## 2026-11-17 — Optional Employee birth date installation fix
 
 Reordered Date of Birth Property Setters to clear mandatory before hiding the field. The new regression reproduced the CI installation error before the fix and passed afterward, including repeated setup and saving an Employee without a birth date. Added it to the production-image CI checks. Migrated `cranes-dev3.arab-erp.com`; all six rental workflow tests and whitespace checks passed. Test Employee records were rolled back.
