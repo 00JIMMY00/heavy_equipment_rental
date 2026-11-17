@@ -140,6 +140,13 @@ class TestConsolidatedExpenses(FrappeTestCase):
         frappe.db.rollback(save_point='closed_batch')
         self.assertEqual(batch.reload().docstatus, 1)
         self.assertTrue(all(frappe.db.get_value('Expense Entry', r.expense_entry, 'docstatus') == 1 for r in batch.items))
+        self.sheet.reload().cancel()
+        self.assertEqual(self.sheet.reload().docstatus, 2)
+        self.assertEqual(invoice.reload().docstatus, 2)
+        self.assertEqual(settlement.reload().docstatus, 2)
+        self.assertEqual(batch.reload().docstatus, 2)
+        self.assertTrue(all(frappe.db.get_value('Expense Entry', r.expense_entry, 'docstatus') == 2 for r in batch.items))
+
 
     def workbook(self, rows):
         book = Workbook()

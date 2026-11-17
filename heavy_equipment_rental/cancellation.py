@@ -5,7 +5,7 @@ from frappe.utils import getdate
 from frappe import _
 from frappe.desk.form.linked_with import SubmittableDocumentTree
 
-ROOTS = ("Sales Invoice", "Crane Timesheet", "Crane Profit Settlement", "Expense Entry")
+ROOTS = ("Sales Invoice", "Crane Timesheet", "Crane Profit Settlement", "Expense Entry", "Consolidated Expense")
 
 
 def cancellation_plan(doctype, name):
@@ -30,6 +30,8 @@ def cancellation_plan(doctype, name):
             children = SubmittableDocumentTree(dt, dn).get_next_level_children(dt, [dn])
             pending.extend(("Crane Profit Settlement", child)
                            for child in children.get("Crane Profit Settlement", []))
+        if dt == "Consolidated Expense":
+            pending.extend(("Expense Entry", row.expense_entry) for row in doc.items if row.expense_entry)
         if dt == "Expense Entry":
             from heavy_equipment_rental.rental_expenses import affected_settlements
             if (dt, dn) == (doctype, name):
@@ -59,6 +61,10 @@ def cancellation_plan(doctype, name):
                 ("sales_invoice", "Sales Invoice"), ("purchase_invoice", "Purchase Invoice"),
                 ("profit_settlement", "Crane Profit Settlement")) if doc.get(field))
             pending.extend(("Expense Entry", row.expense_entry) for row in doc.driver_payroll if row.expense_entry)
+            pending.extend(("Consolidated Expense", n) for n in frappe.get_all("Consolidated Expense",
+                filters={"crane_timesheet": dn, "docstatus": 1}, pluck="name"))
+            pending.extend(("Expense Entry", n) for n in frappe.get_all("Expense Entry",
+                filters={"crane_timesheet": dn, "docstatus": 1}, pluck="name"))
         elif dt == "Crane Profit Settlement":
             if doc.settlement_basis != "Timesheet":
                 pending.extend((dt, n) for n in frappe.get_all(dt, filters={"crane": doc.crane,
@@ -67,7 +73,7 @@ def cancellation_plan(doctype, name):
                 pending.append(("Journal Entry", doc.journal_entry))
     priority = {"Payment Entry": 0, "Crane Profit Settlement": 1,
                 "Sales Invoice": 2, "Purchase Invoice": 2,
-                "Crane Timesheet": 3, "Expense Entry": 4, "Journal Entry": 5}
+                "Consolidated Expense": 3, "Crane Timesheet": 4, "Expense Entry": 5, "Journal Entry": 6}
     def order(row):
         # Period settlements must reverse newest first.
         end = frappe.db.get_value(row["doctype"], row["name"], "to_date") if row["doctype"] == "Crane Profit Settlement" else None
@@ -111,3 +117,22 @@ def cancel_all(doctype, name, confirmed_plan):
         frappe.db.rollback(save_point="rental_cancel_all")
         raise
     return plan
+
+
+def cancel_timesheet_dependencies(sheet):
+    """Also support native/API cancellation which bypasses the Desk preview."""
+    plan = cancellation_plan("Crane Timesheet", sheet.name)
+    payroll = {row.expense_entry for row in sheet.driver_payroll if row.expense_entry}
+    payroll_journals = {frappe.db.get_value("Expense Entry", name, "journal_entry") for name in payroll}
+    for row in plan:
+        frappe.get_doc(row["doctype"], row["name"]).check_permission("cancel")
+    for row in plan:
+        if row["doctype"] == "Crane Timesheet":
+            continue
+        if row["doctype"] == "Expense Entry" and row["name"] in payroll:
+            continue  # Timesheet on_cancel reverses its own payroll after status changes.
+        if row["doctype"] == "Journal Entry" and row["name"] in payroll_journals:
+            continue
+        doc = frappe.get_doc(row["doctype"], row["name"])
+        if doc.docstatus == 1:
+            doc.cancel()

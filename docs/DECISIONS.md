@@ -425,3 +425,7 @@ Hide Enable Profit Sharing when Ownership Type is Owned (and retain the existing
 
 - Cancellation follows business dependencies: Timesheet → invoices → Profit Settlements. Cancelling an invoice preserves submitted Timesheets; cancelling a settlement preserves invoices and Timesheets. A settlement always reverses its own generated entitlement journal. Historical backlinks never expand the cancellation scope.
 - Preview each affected document once and require confirmation. Recompute the scope before execution, enforce normal cancellation permissions/payment/closed-period guards, and roll back the complete operation on any failure. Existing paid entitlements require normal payment cancellation or unreconciliation first.
+
+## 2026-11-17 — Timesheet cancellation includes linked costs
+
+Native/API Timesheet cancellation now resolves the existing directed cancellation plan on the server before checking invoice status. It reverses linked payments, settlements, sales/purchase invoices, consolidated expenses and directly attributed expenses; payroll remains controlled by Timesheet on_cancel. Cancellation retains native permissions and accounting locks. Consolidated Expense’s CPS link is a historical backlink, matching the Timesheet backlink exemption when reopening a settlement.

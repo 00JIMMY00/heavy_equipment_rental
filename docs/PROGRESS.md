@@ -632,3 +632,11 @@ For the next change: inspect `git status` first. Use the commands in [README.md]
 - Two development regression tests passed, covering all three starting documents, upstream document preservation, duplicate removal, stale confirmation rejection and rollback after an accounting failure. Syntax and whitespace checks passed. No schema migration required; restored disabled tests and cleared site cache. No business documents were cancelled by this implementation task.
 
 - Consolidated expense upload follow-up: recompute missing/untrusted XLSX dimensions; verified the user's actual workbook parses successfully. Template actions now use the table's bottom Download/Upload buttons. Import confirms append counts and skips identical rows without overwriting existing data; changed rows remain new records for review.
+
+## 2026-11-17 — Consolidated Expense Connections tab
+
+Added native Details and Connections tabs, placing the related-document dashboard inside Connections through Frappe's show_dashboard metadata. Migrated dev3; browser verified CEXP-00001 opens a separate Connections tab containing the dashboard. All 12 consolidated expense/rental workflow tests passed.
+
+## 2026-11-17 — Native Timesheet cascade cancellation
+
+Fixed the native cancellation path that demanded manually cancelling the Sales Invoice first. Server-side Timesheet cancellation now executes its directed dependency plan, including consolidated/direct expenses and payment/settlement reversals. Fixed the consolidated expense historical CPS backlink during reopening. Passed 12 tests, including a real submitted invoice/CPS/batch cycle cancelled through Timesheet.cancel(). Cleared dev3 cache. No user business documents were cancelled during this change.

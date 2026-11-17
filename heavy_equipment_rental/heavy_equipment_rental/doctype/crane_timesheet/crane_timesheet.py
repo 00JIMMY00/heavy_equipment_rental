@@ -307,8 +307,10 @@ class CraneTimesheet(Document):
         post_driver_payroll(self)
 
     def before_cancel(self):
+        from heavy_equipment_rental.cancellation import cancel_timesheet_dependencies
         lock_cranes([self.crane])
         assignment_doc(self.assignment, "read", lock=True)
+        cancel_timesheet_dependencies(self)
         if self.purchase_invoice and frappe.db.get_value("Purchase Invoice", self.purchase_invoice, "docstatus") != 2:
             frappe.throw(_("Cancel Purchase Invoice {0} before cancelling this Timesheet.").format(self.purchase_invoice))
         invoice = frappe.db.get_value("Crane Timesheet", self.name, "sales_invoice")

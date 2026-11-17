@@ -4,6 +4,7 @@
  "module": "Heavy Equipment Rental",
  "engine": "InnoDB",
  "field_order": [
+  "details_tab",
   "company",
   "crane",
   "crane_timesheet",
@@ -17,7 +18,8 @@
   "items_section",
   "items",
   "total",
-  "amended_from"
+  "amended_from",
+  "connections_tab"
  ],
  "fields": [
   {
@@ -116,6 +118,17 @@
    "label": "Currency",
    "read_only": 1,
    "fetch_from": "company.default_currency"
+  },
+  {
+   "fieldname": "details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Details"
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
   }
  ],
  "permissions": [
