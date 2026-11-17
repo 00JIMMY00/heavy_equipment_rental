@@ -1,4 +1,4 @@
-"""Dated crane agreements and accounting source attribution.
+"""Current crane shares and accounting source attribution.
 
 All money remains in ERPNext. Settlement documents only control period closure,
 operating priority and immutable evidence; they never create an extra ledger.
@@ -10,7 +10,7 @@ from decimal import Decimal, InvalidOperation, ROUND_FLOOR
 import frappe
 from frappe import _
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
-from frappe.utils import add_days, flt, get_last_day, getdate, today
+from frappe.utils import add_days, flt, get_last_day, getdate, today, now_datetime, get_first_day
 
 from heavy_equipment_rental.rental_validation import lock_cranes
 
@@ -131,8 +131,6 @@ def validate_agreement(doc):
         history[-1].get("settlement_revenue_basis", "Invoice Grand Total") if history else "Invoice Grand Total")
     if not doc.enable_profit_sharing and not history:
         return
-    if not doc.agreement_effective_from:
-        frappe.throw(_("Set Agreement Effective From."))
     if history and doc.sharing_company != history[0]["company"]:
         frappe.throw(_("The agreement Company cannot change after an agreement is recorded."))
     version = dict(enabled=bool(doc.enable_profit_sharing), company=doc.sharing_company,
@@ -198,7 +196,7 @@ def validate_agreement(doc):
     version['operating_fees'] = fee_rows
     if version['distribution_posting'] == 'Equity Distribution' and any(not r['is_company'] and r['percentage'] for r in fee_rows):
         frappe.throw(_("External operator fees cannot use Equity Distribution."))
-    previous = {k: v for k, v in history[-1].items() if k != "effective_from"} if history else None
+    previous = {k: v for k, v in history[-1].items() if k not in ("effective_from", "recorded_at")} if history else None
     if previous:
         previous.setdefault("calculation_method", LEGACY_NET)
         previous.setdefault("operating_percentage", 0)
@@ -218,10 +216,7 @@ def validate_agreement(doc):
         for row in old_rows:
             row['basis'] = 'Grand Total'
         previous['operating_fees'] = canonical_rows(old_rows)
-    effective = str(getdate(doc.agreement_effective_from))
     if version == previous:
-        if effective != history[-1]["effective_from"]:
-            frappe.throw(_("Change the agreement terms before setting a new effective date."))
         return
     frappe.only_for(("Accounts Manager", "System Manager"))
     if doc.enable_profit_sharing:
@@ -232,15 +227,8 @@ def validate_agreement(doc):
                     "only if this is intentional. Ownership % does not determine payment by itself.").format(
                         row.idx, row.ownership_percentage), title=_("Owner Has No Profit Share"))
     if version["calculation_method"] != OPERATING_FIRST:
-        frappe.throw(_("Changed agreements must use Operating First. Review the agreement terms and effective date before saving."))
-    if history and effective <= history[-1]["effective_from"]:
-        frappe.throw(_("Changed agreements require an effective date after the previous version."))
-    last = last_settlement(doc.name) if not doc.is_new() else None
-    if last and effective <= str(last.to_date):
-        frappe.throw(_("New terms must start after the latest submitted settlement."))
-    if last and last.loss_carried_forward:
-        frappe.throw(_("Resolve the historical carried loss before starting an Operating First agreement."))
-    history.append(dict(effective_from=effective, **version))
+        frappe.throw(_("Changed agreements must use Operating First. Review the profit-sharing terms before saving."))
+    history.append(dict(recorded_at=str(now_datetime()), **version))
     doc.agreement_history = dumps(history)
 
 
@@ -251,27 +239,17 @@ def last_settlement(crane):
 
 
 def next_period_start(crane, previous=None):
-    history = json.loads(crane.agreement_history or "[]")
-    if not history:
-        frappe.throw(_("Configure and save a profit-sharing agreement first."))
-    start = getdate(add_days(previous.to_date, 1) if previous else history[0]["effective_from"])
-    active = [v for v in history if getdate(v["effective_from"]) <= start]
-    if active and active[-1]["enabled"]:
-        return start
-    for version in history:
-        if getdate(version["effective_from"]) > start and version["enabled"]:
-            return getdate(version["effective_from"])
-    frappe.throw(_("No further active profit-sharing agreement is available."))
+    agreement_for(crane, None, None)
+    return getdate(add_days(previous.to_date, 1)) if previous else get_first_day(today())
 
 
-def agreement_for(crane, start, end):
+def agreement_for(crane, start=None, end=None):
+    # Dates identify work, never select ownership or profit-share versions.
     history = json.loads(crane.agreement_history or "[]")
-    matches = [v for v in history if getdate(v["effective_from"]) <= getdate(start)]
-    if not matches or not matches[-1]["enabled"]:
-        frappe.throw(_("No active profit-sharing agreement covers this period."))
-    if any(getdate(start) < getdate(v["effective_from"]) <= getdate(end) for v in history):
-        frappe.throw(_("Split the settlement at the agreement change date."))
-    return matches[-1]
+    if not crane.enable_profit_sharing or not history or not history[-1]["enabled"]:
+        frappe.throw(_("Configure and enable profit sharing on the Crane first."))
+    return {key: value for key, value in history[-1].items()
+            if key not in ("effective_from", "recorded_at")}
 
 
 @frappe.whitelist()
@@ -279,15 +257,8 @@ def settlement_defaults(crane):
     doc = frappe.get_doc("Crane", crane)
     doc.check_permission("read")
     frappe.has_permission("Crane Profit Settlement", "create", throw=True)
-    history = json.loads(doc.agreement_history or "[]")
-    if not history:
-        frappe.throw(_("Configure and save a profit-sharing agreement first."))
-    last = last_settlement(crane)
-    start = next_period_start(doc, last)
-    end = min(get_last_day(start), getdate(today()))
-    changes = [getdate(v["effective_from"]) for v in history if getdate(v["effective_from"]) > start]
-    if changes:
-        end = min(end, add_days(min(changes), -1))
+    start = next_period_start(doc, last_settlement(crane))
+    end = max(start, min(get_last_day(start), getdate(today())))
     return dict(crane=crane, company=doc.sharing_company, from_date=str(start), to_date=str(end))
 
 

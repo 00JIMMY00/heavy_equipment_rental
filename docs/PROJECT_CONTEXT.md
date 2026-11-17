@@ -1,5 +1,9 @@
 # Project context
 
+## 2026-11-17 — Static editable Crane shares
+
+Removed Agreement Effective From from the Crane form and its validation/selection logic. Saved ownership, remaining-profit shares and operating fees now apply to any new or recalculated draft settlement regardless of work dates. Edit percentages and Save, including repeated same-day changes. Submitted settlement snapshots and journals remain fixed. Asset ownership uses current owner rows; changing shares does not revalue posted Assets. Legacy dates/history are archived by a repeatable migration. First period settlements accept a chosen date range; subsequent periods retain consecutive closure checks.
+
 ## 2026-11-17 — Grouped Expense rename and workspace links
 
 Renamed Consolidated Expense and its child DocType in place to Grouped Expense / Grouped Expense Item. Existing CEXP IDs, accounting links and data are retained. The Operations workspace highlights Grouped Expense and places the normal Expense Entry immediately below it without highlighting. Arabic remains مصروف مجمع.

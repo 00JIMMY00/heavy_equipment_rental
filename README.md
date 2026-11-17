@@ -87,7 +87,7 @@ Owned cranes record the full Company Asset; shared cranes record only the Compan
 
 Link one quantity-1 native Asset in the correct Company, using a fixed-asset Item separate from the rental service Item. For a 1,000,000 crane with 40% Company ownership, the native Company Asset cost is 400,000. Its amounts already represent our interest and are never multiplied by ownership again. Enter recognized amounts through native acquisition/opening/improvement documents; changing a percentage does not automatically resize posted Assets.
 
-The financial panel shows only Company cost, capitalized improvements and book value using the Company default Finance Book. Other owners' Asset values are not displayed. Normal permissions, unique links and native Asset validation remain enforced. Linking posts no accounting entries. Migration archives obsolete whole/shared and zero-ownership/custody links for correction, preserving original Assets and ledgers. Native depreciation remains governed by Asset settings and the dated settlement policy.
+The financial panel shows only Company cost, capitalized improvements and book value using the Company default Finance Book. Other owners' Asset values are not displayed. Normal permissions, unique links and native Asset validation remain enforced. Linking posts no accounting entries. Migration archives obsolete whole/shared and zero-ownership/custody links for correction, preserving original Assets and ledgers. Native depreciation remains governed by Asset settings and the settlement policy.
 
 ## Crane ownership and profit sharing
 
@@ -97,7 +97,7 @@ The financial panel shows only Company cost, capitalized improvements and book v
 
 Crane supports **Shared Ownership**, **Operated for Owner**, and **Operated by
 Partner**, with separate ownership and remaining balance percentages. Enter the
-operator, operating percentage and dated agreement once. Submitting a sharing
+operator, operating fees and current owner/profit shares. Submitting a sharing
 Timesheet creates a draft settlement. Record all costs before submitting the Sales Invoice: its submission automatically posts partner entitlements against the source revenue accounts. The settlement takes its agreed invoice Grand Total, deducts
 the operating share first, then costs, and distributes the remainder. A deficit blocks submission with its numerical explanation; review-mode drafts can retain the shortfall. Exactly zero remainder
 is allowed. External partners use native **Shareholders** and a company-specific
@@ -105,8 +105,7 @@ is allowed. External partners use native **Shareholders** and a company-specific
 Partner Payment opens a Pay Payment Entry for the selected unpaid partner,
 including partial payments. Historical supplier postings remain unchanged.
 
-**Change Agreement** dates new operating, ownership and distribution terms;
-submitted snapshots retain their original values. Historical net-profit versions
+Edit **Owners & Profit Shares** and **Operating Fees**, then Save. No effective date is required; current terms apply when draft settlements are recalculated. Submitted snapshots retain their original values. Historical net-profit versions
 are preserved by migration. Optional Crane attribution on native invoice items
 and journal rows covers other revenue/costs. Rental Profitability retains its
 net-sales basis. See [configuration and accounting](docs/PROFIT_SHARING.md) and

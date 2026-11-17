@@ -1,15 +1,13 @@
 """Link physical cranes to native assets without posting or duplicating accounting."""
 
-import json
-
 import frappe
 from frappe import _
-from frappe.utils import flt, getdate, today
+from frappe.utils import flt, today
 
 
 
 def company_ownership_percentage(crane):
-	owners = ownership_as_of(crane, today()) if crane.agreement_history and crane.enable_profit_sharing else crane.ownership_partners
+	owners = crane.ownership_partners
 	return sum(flt(row.get("ownership_percentage")) for row in owners if row.get("is_company"))
 
 
@@ -82,18 +80,8 @@ def validate_linked_asset(asset, method=None):
 
 
 def ownership_as_of(crane, date):
-	versions = [v for v in json.loads(crane.agreement_history or "[]")
-		if getdate(v["effective_from"]) <= getdate(date)]
-	if versions:
-		version = versions[-1]
-		if version["enabled"]:
-			return version["partners"]
-		ownership_type = version["ownership_type"]
-	else:
-		ownership_type = crane.ownership_type if not crane.agreement_history else None
-	if ownership_type == "Owned":
-		return [dict(is_company=1, ownership_percentage=100)]
-	return []
+	"""Compatibility API: ownership is the Crane's current saved shares."""
+	return crane.ownership_partners
 
 
 @frappe.whitelist()

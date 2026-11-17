@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-11-17 — Static editable Crane shares
+
+Removed Agreement Effective From from the Crane form and its validation/selection logic. Saved ownership, remaining-profit shares and operating fees now apply to any new or recalculated draft settlement regardless of work dates. Edit percentages and Save, including repeated same-day changes. Submitted settlement snapshots and journals remain fixed. Asset ownership uses current owner rows; changing shares does not revalue posted Assets. Legacy dates/history are archived by a repeatable migration. First period settlements accept a chosen date range; subsequent periods retain consecutive closure checks.
+
 ## 2026-11-17 — Grouped Expense rename and workspace links
 
 Renamed Consolidated Expense and its child DocType in place to Grouped Expense / Grouped Expense Item. Existing CEXP IDs, accounting links and data are retained. The Operations workspace highlights Grouped Expense and places the normal Expense Entry immediately below it without highlighting. Arabic remains مصروف مجمع.
@@ -656,3 +660,5 @@ Added View → Accounting Ledger for submitted/cancelled batches. Native General
 Direct-journal verification: migrated dev3 and passed 13 integration tests covering balanced direct journals, Employee attribution, per-row overrides, source tracing, CPS inclusion exactly once, closed-work guards, atomic posting rollback, batch and Timesheet cancellation, amendment, historical Expense Entry batch reversal and rental workflows. Cleared site cache; test transactions were rolled back.
 
 Grouped Expense rename verification: migrated dev3; all 13 accounting/rental tests passed. Browser confirmed Grouped Expense and Expense Entry are adjacent in that order, with yellow highlighting only on Grouped Expense and a transparent background on Expense Entry. Explicitly resequenced saved Workspace child rows so this order survives reload. Existing CEXP records remain available under the new DocType route.
+
+Static-share verification: migrated dev3 and passed 19 integration tests covering repeated same-day changes, date-independent share selection, draft recalculation, unchanged submitted settlement/journal values, repeatable historical archiving, operating fees, grouped expenses and rental workflows. Browser confirmed the Crane has no Agreement Effective From field and retains the owners table. Native account, percentage-total, permission and posted-period protections remain in place.

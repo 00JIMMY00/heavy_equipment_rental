@@ -1175,3 +1175,6 @@ Set expense defaults only once per Company.,حدد افتراضيات المصر
 The template must be smaller than 2 MB.,يجب ألا يتجاوز حجم القالب 2 ميجابايت.
 The workbook is too large.,حجم ملف إكسل أكبر من المسموح.
 The batch total must be finite.,يجب أن يكون إجمالي المصروف المجمع مبلغاً صالحاً.
+
+Configure and enable profit sharing on the Crane first.,اضبط توزيع الأرباح وفعّله على المعدة أولاً.
+Changed agreements must use Operating First. Review the profit-sharing terms before saving.,يجب استخدام أولوية التشغيل عند تغيير الاتفاق. راجع شروط توزيع الأرباح قبل الحفظ.

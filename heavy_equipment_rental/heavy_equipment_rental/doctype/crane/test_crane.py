@@ -83,7 +83,7 @@ class TestCrane(FrappeTestCase):
 		with self.assertRaisesRegex(frappe.ValidationError, "Agreement Company"):
 			self.asset.save()
 
-	def test_company_share_is_not_applied_twice_and_future_terms_do_not_reprice_asset(self):
+	def test_company_share_changes_immediately_without_repricing_asset(self):
 		self.sharing()
 		self.link()
 		data = asset_summary(self.crane.name)
@@ -95,7 +95,7 @@ class TestCrane(FrappeTestCase):
 		for row, ownership, profit in zip(self.crane.ownership_partners, (10, 90), (90, 10)):
 			row.ownership_percentage, row.profit_percentage = ownership, profit
 		self.crane.save()
-		self.assertEqual(asset_summary(self.crane.name)["company_ownership_percentage"], 25)
+		self.assertEqual(asset_summary(self.crane.name)["company_ownership_percentage"], 10)
 		with patch("heavy_equipment_rental.crane_assets.today", return_value=add_days(today(), 11)):
 			data = asset_summary(self.crane.name)
 			self.assertEqual(data["company_ownership_percentage"], 10)

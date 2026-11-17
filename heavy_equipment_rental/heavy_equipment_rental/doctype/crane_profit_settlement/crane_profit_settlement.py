@@ -64,7 +64,7 @@ class CraneProfitSettlement(Document):
                 "to_date": [">=", self.from_date]}, "name")
             if closed:
                 frappe.throw(_("Timesheet is covered by period settlement {0}.").format(closed))
-        else:
+        elif previous:
             expected = next_period_start(crane, previous)
             if getdate(self.from_date) != getdate(expected):
                 frappe.throw(_("Settle consecutive periods without overlaps or gaps. Next From Date is {0}.").format(expected))

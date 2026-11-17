@@ -161,11 +161,7 @@ preserving its original records. No cash/bank posting occurs until Partner Payme
 is created. Create → Partner Payment opens a draft native Payment Entry; ERPNext
 handles partial/full payment and remaining balances.
 
-Enter a later **Agreement Effective From** date, edit operating/ownership/
-remaining-balance terms, then save. The date must follow the previous version and
-all submitted settlements. Split periods at agreement changes. Historical
-snapshots stay fixed. Explicit inactive intervals can be skipped; crane locking
-serializes agreement/source/settlement postings and prevents duplicate closure.
+Edit operating fees and owner/remaining-balance percentages directly on the Crane, then Save. No effective date is required and changes can be saved repeatedly on the same day. New and recalculated draft settlements use the current saved terms for any work dates. Submitted snapshots and journals stay fixed; reopen and amend a settlement explicitly to change posted entitlements. Old dated versions are retained only as audit history.
 
 Closed-period source submission/cancellation is blocked. Post corrections in an
 open period, or cancel settlements latest first after cancelling/unreconciling
@@ -178,7 +174,7 @@ Net Profit without rewriting their JSON history. Original submitted amounts,
 source snapshots, payments and links remain intact. Additional display fields
 show the previous total as residual with zero operating entitlement.
 
-Legacy dated versions still calculate on net sales for their original dates.
+The latest saved calculation settings apply to new calculations regardless of work dates. Legacy submitted snapshots retain their original calculation.
 New/changed versions must use Operating First. All newly calculated settlements,
 including legacy periods, reject deficits. Existing historical carried losses
 remain recorded and must be recovered before switching to Operating First;

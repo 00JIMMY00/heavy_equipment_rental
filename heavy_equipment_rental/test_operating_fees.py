@@ -34,11 +34,6 @@ class TestOperatingFees(FrappeTestCase):
         self.assertEqual(frappe.db.get_value('Journal Entry',settlement.journal_entry,'docstatus'),1)
         snapshot=settlement.agreement_snapshot
         crane.operating_fees[0].percentage=20
-        with self.assertRaisesRegex(frappe.ValidationError,'effective date'):
-            crane.save()
-        crane.reload()
-        crane.operating_fees[0].percentage=20
-        crane.agreement_effective_from=add_days(sheet.period_end,1)
         crane.save()
         self.assertEqual(settlement.reload().agreement_snapshot,snapshot)
 

@@ -33,7 +33,6 @@
   "enable_profit_sharing",
   "hired_from_supplier",
   "supplier",
-  "agreement_effective_from",
   "ownership_partners",
   "operating_fees",
   "sharing_section",
@@ -60,7 +59,8 @@
   "connections_tab",
   "connections_section",
   "item",
-  "legacy_asset_recognition"
+  "legacy_asset_recognition",
+  "legacy_agreement_data"
  ],
  "fields": [
   {
@@ -232,14 +232,6 @@
    "label": "Company",
    "mandatory_depends_on": "eval:doc.enable_profit_sharing",
    "options": "Company"
-  },
-  {
-   "depends_on": "eval:doc.enable_profit_sharing || doc.agreement_history",
-   "description": "For changed terms, enter a new date after the previous version. Settle each version separately.",
-   "fieldname": "agreement_effective_from",
-   "fieldtype": "Date",
-   "label": "Agreement Effective From",
-   "mandatory_depends_on": "eval:doc.enable_profit_sharing"
   },
   {
    "default": "Our Company",
@@ -460,6 +452,14 @@
    "fieldtype": "Select",
    "label": "Default Selling UOM",
    "options": "\nHour\nDay\nMonth"
+  },
+  {
+   "fieldname": "legacy_agreement_data",
+   "fieldtype": "Long Text",
+   "label": "Legacy Dated Agreement Data",
+   "hidden": 1,
+   "read_only": 1,
+   "no_copy": 1
   }
  ],
  "grid_page_length": 100,

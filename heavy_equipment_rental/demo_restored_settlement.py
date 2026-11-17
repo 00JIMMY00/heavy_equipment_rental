@@ -48,7 +48,7 @@ def create():
 	previous = frappe.get_doc("Crane Timesheet", "TS-00075")
 	old_settlement = frappe.get_doc("Crane Profit Settlement", previous.profit_settlement)
 	old_snapshot = old_settlement.agreement_snapshot
-	day = max(getdate(today()), getdate(crane.agreement_effective_from), getdate(add_days(old_settlement.to_date, 1)))
+	day = max(getdate(today()), getdate(add_days(old_settlement.to_date, 1)))
 	company = crane.sharing_company
 	cash = frappe.db.get_value("Account", {"company": company, "account_name": "HER1313 Cash"}, "name")
 	mode = "HER1313 Cash"

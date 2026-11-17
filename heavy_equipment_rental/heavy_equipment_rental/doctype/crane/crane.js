@@ -24,9 +24,7 @@ function crane_ownership_bar(doc, names = {}) {
 
 function crane_company_share(doc) {
     if (doc.hired_from_supplier) return 0;
-    const history = JSON.parse(doc.agreement_history || "[]");
-    const active = history.filter(v => v.effective_from <= frappe.datetime.get_today()).at(-1);
-    const owners = history.length ? (active?.enabled ? active.partners : []) : (doc.ownership_partners || []);
+    const owners = doc.ownership_partners || [];
     return owners.filter(r => r.is_company).reduce((sum, row) => sum + flt(row.ownership_percentage), 0);
 }
 
@@ -185,7 +183,7 @@ frappe.ui.form.on("Crane", {
                 }
             }), __("Create"));
         }
-        if (frm.doc.agreement_history && frappe.model.can_create("Crane Profit Settlement")) {
+        if (frm.doc.enable_profit_sharing && frappe.model.can_create("Crane Profit Settlement")) {
             frm.add_custom_button(__("Profit Settlement"), async () => {
                 if (frm.is_dirty()) frappe.throw(__("Save your agreement before creating a settlement."));
                 const { message } = await frappe.call({
