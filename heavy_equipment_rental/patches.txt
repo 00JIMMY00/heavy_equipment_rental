@@ -56,3 +56,5 @@ heavy_equipment_rental.patches.rented_crane_classification
 heavy_equipment_rental.patches.link_rental_locations
 
 heavy_equipment_rental.patches.rename_rental_contract_workspace
+
+heavy_equipment_rental.patches.backfill_driver_payroll_quantities

@@ -6,7 +6,7 @@ from datetime import timedelta
 import erpnext
 import frappe
 from frappe.tests.utils import FrappeTestCase
-from frappe.utils import getdate, today
+from frappe.utils import flt, getdate, today
 
 from heavy_equipment_rental.cancellation import cancel_all, cancellation_plan
 from heavy_equipment_rental.payment import payment_account
@@ -102,9 +102,11 @@ class TestCraneTimesheet(FrappeTestCase):
         })
         sheet.insert()
         self.assertEqual([row.employee for row in sheet.driver_payroll], [sheet.driver, second_driver, unpaid_driver])
-        sheet.driver_payroll[0].amount = 125
+        self.assertEqual([row.quantity for row in sheet.driver_payroll], [6, 4, 4])
+        sheet.driver_payroll[0].rate = 25
         sheet.driver_payroll[1].amount = 75
         sheet.save()
+        self.assertEqual([flt(row.amount) for row in sheet.driver_payroll], [150, 75, 0])
         self.assertFalse(frappe.db.exists("Expense Entry", {"crane_timesheet": sheet.name}))
 
         sheet.submit()
@@ -129,6 +131,20 @@ class TestCraneTimesheet(FrappeTestCase):
             self.assertEqual(debit.debit, row.amount)
         self.assertEqual(frappe.db.count("Expense Entry", {"crane_timesheet": sheet.name}), 2)
 
+        from heavy_equipment_rental.patches.backfill_driver_payroll_quantities import execute
+
+        first, second, unpaid = sheet.driver_payroll
+        frappe.db.set_value("Crane Driver Payroll", first.name, {"unit": None, "quantity": 0})
+        frappe.db.set_value("Crane Driver Payroll", second.name, {"unit": None, "quantity": 0})
+        frappe.db.delete("Crane Driver Payroll", {"name": unpaid.name})
+        execute()
+        execute()
+        sheet.reload()
+        self.assertEqual([flt(row.amount) for row in sheet.driver_payroll], [150, 75, 0])
+        self.assertEqual([row.quantity for row in sheet.driver_payroll], [6, 4, 4])
+        self.assertTrue(all(row.docstatus == 1 for row in sheet.driver_payroll))
+        self.assertEqual([row.expense_entry for row in sheet.driver_payroll[:2]], list(expenses))
+
         sheet.attachment = "/private/files/payroll-test.pdf"
         sheet.save()
         self.assertEqual(frappe.db.count("Expense Entry", {"crane_timesheet": sheet.name}), 2)
@@ -146,10 +162,46 @@ class TestCraneTimesheet(FrappeTestCase):
         amendment.docstatus = 0
         amendment.amended_from = sheet.name
         amendment.insert()
-        self.assertEqual([row.amount for row in amendment.driver_payroll], [125, 75, 0])
+        self.assertEqual([flt(row.amount) for row in amendment.driver_payroll], [150, 75, 0])
         self.assertFalse(any(row.expense_entry for row in amendment.driver_payroll))
         amendment.submit()
         self.assertTrue(all(row.expense_entry not in expenses for row in amendment.driver_payroll[:2]))
+
+    def test_driver_payroll_quantity_follows_selling_unit_and_manual_amount(self):
+        sheet = self.make_sheet(length=4)
+        sheet.rented = 0
+        sheet.driver = frappe.db.get_value("Employee", {"company": self.company}, "name")
+        for offset, start, end, next_day, hours in (
+            (0, "10:00", "12:00", 0, 2),
+            (1, "22:00", "02:00", 1, 4),
+            (2, "22:00", "00:00", 1, 2),
+            (3, "08:00", "12:00", 0, 0),
+        ):
+            sheet.append("timesheet_entries", {
+                "work_date": self.day + timedelta(days=offset), "start_time": start, "end_time": end,
+                "ends_next_day": next_day, "worked_hours": hours,
+            })
+        sheet.insert()
+        payroll = sheet.driver_payroll[0]
+        self.assertEqual((payroll.unit, payroll.quantity, payroll.worked_hours), ("Hour", 12, 12))
+        payroll.rate = 50
+        sheet.rental_rate_unit = "Day"
+        sheet.save()
+        self.assertEqual((payroll.unit, payroll.quantity, payroll.amount), ("Day", 3, 150))
+
+        sheet.rental_rate_unit = "Month"
+        sheet.save()
+        expected_months = sum(1 / monthrange(day.year, day.month)[1]
+                              for day in (self.day + timedelta(days=offset) for offset in range(3)))
+        self.assertEqual(payroll.unit, "Month")
+        self.assertAlmostEqual(payroll.quantity, expected_months, places=9)
+        self.assertEqual(payroll.amount, flt(expected_months * 50, payroll.precision("amount")))
+
+        payroll.rate, payroll.amount = 0, 123
+        sheet.rental_rate_unit = "Hour"
+        sheet.timesheet_entries[0].worked_hours = 5
+        sheet.save()
+        self.assertEqual((payroll.unit, payroll.quantity, payroll.amount), ("Hour", 13, 123))
 
     def test_optional_payroll_defaults_and_driver_validation(self):
         settings = frappe.get_single("Heavy Equipment Rental Settings")

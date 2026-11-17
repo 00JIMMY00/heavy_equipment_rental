@@ -2,7 +2,7 @@
 
 ## 2026-11-17 — Driver payroll from Crane Timesheets
 
-The optional Driver Payroll table follows the distinct Employees on Operator Shifts. Submission posts one linked Expense Entry per positive amount. HER Settings holds the expense type and funding Mode of Payment per company. Expenses are attributed to the Timesheet for rental profitability and settlements.
+The optional Driver Payroll table follows the distinct Employees on Operator Shifts and combines driver work and payroll above Totals. Its quantity uses the Timesheet billing unit. Enter a rate to calculate payroll or enter a fixed amount. Submission posts one linked Expense Entry per positive amount. HER Settings holds the expense type and funding Mode of Payment per company. Expenses are attributed to the Timesheet for rental profitability and settlements.
 
 ## 2026-11-17 — Crane Operations site entry
 
@@ -45,9 +45,9 @@ Removed the repair_column layout divider from Crane Maintenance. Items / Service
 
 Enabled Employee show_title_field_in_link using the existing employee_name title field. Native Employee Link controls and grid cells, including Timesheet Entries drivers, display employee names while saving the same Employee IDs. HER setup persists the Property Setter; existing payroll, shifts and employee references are untouched. Reload Desk after applying to refresh boot link-title settings.
 
-## 2026-11-16 — Minimal Employee creation
+## 2026-11-17 — Minimal Employee creation
 
-Enabled native Employee Quick Entry with Employee Name (stored in first_name), Date of Birth, Status and Date of Joining. Company uses native defaults and is requested only when missing. Gender defaults to Male and is hidden; Salutation is hidden. Existing employee values are preserved. Full-form advanced employment fields and native validation remain available. HER setup installs Property Setters, and a scoped Employee QuickEntry subclass controls only the creation popup.
+Employee Quick Entry shows Employee Name (stored in first_name), Status and Date of Joining. Company uses native defaults and is requested only when missing. Both the full form and Quick Entry hide Date of Birth and prefill the editable Date of Joining with today for new Employees. Gender defaults to Male and is hidden. Salutation is hidden. HER installs the metadata through Property Setters and preserves stored employee dates.
 
 ## 2026-11-16 — Restore standard Item Details visibility
 

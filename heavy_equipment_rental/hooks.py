@@ -104,7 +104,7 @@ override_whitelisted_methods = {
     "frappe.desk.query_report.get_script": "heavy_equipment_rental.general_ledger.get_script",
 }
 
-app_include_js.append("/assets/heavy_equipment_rental/js/employee_entry.js?v=20261116-1")
+app_include_js.append("/assets/heavy_equipment_rental/js/employee_entry.js?v=20261117-1")
 
 before_request = [
     "heavy_equipment_rental.entry_redirect.redirect_crane_operations_entry",

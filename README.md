@@ -16,7 +16,7 @@ See [the complete operational and accounting design](docs/NATIVE_CRANE_WORKFLOW.
 
 1. Create a Rental Contract with a customer and location.
 2. Add one or more cranes. Billing unit defaults from HER Settings and rate from the Crane reference price; both are visible in the table and editable. Give each crane its full agreed rental dates. Saving the Rental Contract books those dates.
-3. Use Create → New Timesheet; choose a crane when the Rental Contract has several active cranes. Create one or more Crane Timesheets for each crane. A Timesheet has one Rental Contract, one crane, and dated operator shifts. Select an optional default Driver (ERPNext Employee) to fill new shifts, then change individual rows as needed. The form shows each driver's name and total shift hours below Operator Shifts. Attach a hard copy if available; it remains accessible and can be updated after submission. Record overtime hours within each shift when applicable.
+3. Use Create → New Timesheet and choose a crane when the Rental Contract has several active cranes. Create one or more Crane Timesheets for each crane. A Timesheet has one Rental Contract, one crane, and dated operator shifts. Select an optional default Driver (ERPNext Employee) to fill new shifts, then change individual rows as needed. Driver Payroll summarizes the drivers' work below Operator Shifts. Attach a hard copy if available and update it after submission when needed. Record overtime hours within each shift when applicable.
 4. Submit Timesheets when work is approved. Use **Generate Sales Invoice** from a submitted Timesheet or its Rental Contract. Review and submit the resulting draft Sales Invoice in ERPNext.
 
 Customer payments use ERPNext's normal invoice/payment workflow. Sales Invoices do not allocate amounts to drivers or record customer-to-driver payments. Driver names and hours remain on Timesheets. Migration preserves previously saved direct-payment details in a hidden legacy archive and leaves posted invoices/journals unchanged.
@@ -35,10 +35,10 @@ Extend the Rental Contract explicitly if work continues beyond its booked dates.
 ### Driver payroll
 
 1. In **Heavy Equipment Rental Settings → Driver Payroll**, add a row for the rental company. Choose the **Payroll Expense Type** for the salary expense account and the **Payroll Mode of Payment** whose company default account funds the payment.
-2. Add or select drivers in **Operator Shifts**. Under **Entries → Driver Payroll**, enter an amount in the company currency for each driver you are paying. Leave amounts blank or zero for drivers you are skipping.
-3. Submit the Timesheet to post one **Expense Entry** and Journal Entry per paid driver using the submission date. Each expense links to the Employee, Crane, Rental Contract and Timesheet, and appears beside its amount.
+2. Add or select drivers in **Operator Shifts**. **Driver Payroll** sits above **Totals** and shows each driver, their worked quantity in the Timesheet billing unit, **Price / Unit**, and **Payroll Amount**. Enter a price to calculate the amount in the company currency. Typing the amount directly clears the price and keeps the amount fixed when shifts change. Leave the price and amount blank or zero for drivers you are skipping.
+3. Submit the Timesheet to post one **Expense Entry** and Journal Entry per paid driver using the submission date. Open the row with the pencil icon to see its payroll unit, worked hours, and Expense Entry link.
 
-Use the Timesheet's **Cancel** action to reverse its payroll expenses. Amend the Timesheet to correct amounts and post replacement entries. This records the amounts in ERPNext and uses the existing Expense Entry permissions.
+Hourly quantity sums actual hours per driver. Daily quantity counts distinct worked dates per driver. Monthly quantity prorates those dates by the length of their calendar months. Use the Timesheet's **Cancel** action to reverse its payroll expenses. Amend the Timesheet to correct amounts and post replacement entries.
 
 ## Billing defaults
 

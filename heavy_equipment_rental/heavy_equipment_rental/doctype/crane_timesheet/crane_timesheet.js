@@ -53,7 +53,7 @@ async function fill_default_days(frm, manual = false) {
         });
     }
     frm.refresh_field("timesheet_entries");
-    update_driver_hours(frm);
+    sync_payroll_drivers(frm);
     await load_driver_names(frm);
 }
 
@@ -71,39 +71,76 @@ async function load_driver_names(frm) {
         if (row.employee && !row.driver_name) row.driver_name = by_id[row.employee];
     }
     frm.refresh_field("timesheet_entries");
-    update_driver_hours(frm);
 }
 
-function update_driver_hours(frm) {
-    if (frm.doc.docstatus !== 0) return;
+function payroll_work_by_driver(shifts, unit) {
     const totals = new Map();
-    for (const row of frm.doc.timesheet_entries || []) {
+    for (const row of shifts) {
         if (!row.employee) continue;
-        const current = totals.get(row.employee) || { employee: row.employee, driver_name: row.driver_name, total_hours: 0 };
-        current.driver_name = row.driver_name || current.driver_name;
-        current.total_hours += flt(row.worked_hours);
-        totals.set(row.employee, current);
+        const work = totals.get(row.employee) || {worked_hours: 0, days: new Set()};
+        const hours = flt(row.worked_hours);
+        work.worked_hours += hours;
+        if (unit !== "Hour" && hours > 0 && row.work_date) {
+            work.days.add(row.work_date);
+            if (row.ends_next_day && moment.duration(row.end_time).asSeconds() > 0) {
+                work.days.add(moment(row.work_date).add(1, "day").format("YYYY-MM-DD"));
+            }
+        }
+        totals.set(row.employee, work);
     }
-    frm.clear_table("driver_hours");
-    for (const values of totals.values()) frm.add_child("driver_hours", values);
-    frm.refresh_field("driver_hours");
-    sync_payroll_drivers(frm);
+
+    const drivers = new Map();
+    for (const [employee, work] of totals) {
+        let quantity = work.worked_hours;
+        if (unit === "Day") quantity = work.days.size;
+        if (unit === "Month") {
+            quantity = [...work.days].sort().reduce((total, day) => total + 1 / moment(day).daysInMonth(), 0);
+        }
+        drivers.set(employee, {unit, quantity: flt(quantity, 9), worked_hours: flt(work.worked_hours, 6)});
+    }
+    return drivers;
 }
 
 function sync_payroll_drivers(frm) {
+    const shifts = frm.doc.timesheet_entries || [];
+    const payroll = frm.doc.driver_payroll || [];
+    const grid = frm.fields_dict.driver_payroll.grid;
+    const shiftUnits = [...new Set(shifts.map(row => row.rental_rate_unit).filter(Boolean))];
+    const unit = frm.doc.rental_rate_unit || (shiftUnits.length === 1 ? shiftUnits[0] : "Hour");
+    const label = {Hour: __("Hours"), Day: __("Days"), Month: __("Months")}[unit];
+    const quantityField = grid.docfields?.find(df => df.fieldname === "quantity");
+    if (quantityField && label && quantityField.label !== label) {
+        grid.update_docfield_property("quantity", "label", label);
+    }
     if (frm.doc.docstatus !== 0) return;
-    const drivers = new Set((frm.doc.timesheet_entries || []).map(row => row.employee).filter(Boolean));
-    let changed = false;
-    for (const row of [...(frm.doc.driver_payroll || [])]) {
-        if (drivers.delete(row.employee) || flt(row.amount)) continue;
+    const drivers = payroll_work_by_driver(shifts, unit);
+    const amountField = frappe.meta.get_docfield("Crane Driver Payroll", "amount", frm.docname);
+    let rowsChanged = false;
+    for (const row of [...payroll]) {
+        const work = drivers.get(row.employee);
+        if (work) {
+            drivers.delete(row.employee);
+            if (flt(row.rate) > 0) {
+                const precision = frappe.meta.get_field_precision(amountField, row);
+                work.amount = flt(flt(row.rate) * work.quantity, precision);
+            }
+            for (const [field, value] of Object.entries(work)) {
+                if (row[field] === value) continue;
+                row[field] = value;
+                frm.dirty();
+                grid.set_value(field, value, row);
+            }
+            continue;
+        }
+        if (flt(row.amount) || flt(row.rate)) continue;
         frappe.model.clear_doc(row.doctype, row.name);
-        changed = true;
+        rowsChanged = true;
     }
-    for (const employee of drivers) {
-        frm.add_child("driver_payroll", {employee});
-        changed = true;
+    for (const [employee, work] of drivers) {
+        frm.add_child("driver_payroll", {employee, ...work});
+        rowsChanged = true;
     }
-    if (changed) {
+    if (rowsChanged) {
         frm.dirty();
         frm.refresh_field("driver_payroll");
     }
@@ -201,7 +238,11 @@ function suggest_assignment(frm) {
 
 frappe.ui.form.on("Crane Timesheet", {
     onload: load_timesheet_defaults,
-    async rental_rate_unit(frm) { await load_timesheet_defaults(frm); await fill_entry_rental_terms(frm); },
+    async rental_rate_unit(frm) {
+        sync_payroll_drivers(frm);
+        await load_timesheet_defaults(frm);
+        await fill_entry_rental_terms(frm);
+    },
     rental_rate: fill_entry_rental_terms,
     purchase_uom: purchase_price_label,
     setup(frm) {
@@ -253,7 +294,7 @@ frappe.ui.form.on("Crane Timesheet", {
         if (changed) {
             frm.refresh_field("timesheet_entries");
             load_driver_names(frm);
-            update_driver_hours(frm);
+            sync_payroll_drivers(frm);
         }
     },
     refresh(frm) {
@@ -290,24 +331,37 @@ frappe.ui.form.on("Crane Timesheet", {
 });
 
 frappe.ui.form.on("Crane Driver Payroll", {
-    amount: sync_payroll_drivers,
+    rate(frm, cdt, cdn) {
+        const row = locals[cdt][cdn];
+        if (!flt(row.rate)) {
+            row.amount = null;
+            frm.fields_dict.driver_payroll.grid.set_value("amount", null, row);
+        }
+        sync_payroll_drivers(frm);
+    },
+    amount(frm, cdt, cdn) {
+        const row = locals[cdt][cdn];
+        if (row.rate) {
+            row.rate = 0;
+            frm.fields_dict.driver_payroll.grid.set_value("rate", 0, row);
+        }
+        sync_payroll_drivers(frm);
+    },
 });
 
 frappe.ui.form.on("Timesheet Entry", {
     async employee(frm, cdt, cdn) {
         const row = locals[cdt][cdn];
         row.driver_name = null;
+        sync_payroll_drivers(frm);
         if (row.employee) await load_driver_names(frm);
-        update_driver_hours(frm);
     },
-    driver_name: update_driver_hours,
-    worked_hours: update_driver_hours,
-    start_time: update_driver_hours,
-    end_time: update_driver_hours,
-    ends_next_day: update_driver_hours,
-    timesheet_entries_add(frm) { update_driver_hours(frm); fill_entry_rental_terms(frm); },
-    work_date: fill_entry_rental_terms,
-    timesheet_entries_remove: update_driver_hours,
+    worked_hours: sync_payroll_drivers,
+    end_time: sync_payroll_drivers,
+    ends_next_day: sync_payroll_drivers,
+    timesheet_entries_add(frm) { sync_payroll_drivers(frm); fill_entry_rental_terms(frm); },
+    work_date(frm) { sync_payroll_drivers(frm); fill_entry_rental_terms(frm); },
+    timesheet_entries_remove: sync_payroll_drivers,
 });
 
 
@@ -326,4 +380,5 @@ async function fill_entry_rental_terms(frm) {
             rental_rate_unit: frm.doc.rental_rate_unit || (bookings.length === 1 ? bookings[0].rental_rate_unit : ""),
         });
     }
+    sync_payroll_drivers(frm);
 }

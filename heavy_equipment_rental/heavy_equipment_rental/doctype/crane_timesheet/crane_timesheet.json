@@ -34,16 +34,15 @@
   "entries_tab",
   "entries_section",
   "timesheet_entries",
-  "driver_hours_section",
   "driver_hours",
+  "driver_payroll_section",
+  "payroll_company",
+  "driver_payroll",
   "totals_section",
   "total_operator_hours",
   "total_crane_billable_hours",
   "amount_col",
   "total_amount",
-  "driver_payroll_section",
-  "payroll_company",
-  "driver_payroll",
   "connections_tab",
   "references_section",
   "sales_invoice",
@@ -175,15 +174,11 @@
    "options": "Timesheet Entry"
   },
   {
-   "fieldname": "driver_hours_section",
-   "fieldtype": "Section Break",
-   "label": "Driver Hours"
-  },
-  {
    "fieldname": "driver_hours",
    "fieldtype": "Table",
    "label": "Hours by Driver",
    "options": "Driver Hours",
+   "hidden": 1,
    "read_only": 1
   },
   {
@@ -196,6 +191,7 @@
    "fieldtype": "Float",
    "label": "Total Driver Hours",
    "precision": "6",
+   "hidden": 1,
    "read_only": 1
   },
   {
@@ -235,7 +231,7 @@
    "fieldtype": "Table",
    "label": "Driver Payments",
    "options": "Crane Driver Payroll",
-   "description": "Enter optional amounts in the company currency. Submit to post one Expense Entry per driver with a positive amount.",
+   "description": "Enter a price per unit to calculate payroll, or type the amount directly. Submit to post one Expense Entry per driver with a positive amount.",
    "print_hide": 1
   },
   {

@@ -7,7 +7,12 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate
 
-from heavy_equipment_rental.driver_payroll import cancel_driver_payroll, post_driver_payroll, sync_payroll_rows
+from heavy_equipment_rental.driver_payroll import (
+    cancel_driver_payroll,
+    driver_work_summary,
+    post_driver_payroll,
+    sync_payroll_rows,
+)
 from heavy_equipment_rental.rental_validation import (
     assignment_doc,
     crane_company,
@@ -199,12 +204,10 @@ class CraneTimesheet(Document):
         intervals, operator_hours, flat_days, flat_rows = [], 0, {}, []
         entered_intervals = []
         submitted_update = bool(previous and previous.docstatus == 1 and self.docstatus == 1)
-        employees = dict.fromkeys(row.employee for row in self.timesheet_entries if row.employee)
-        sync_payroll_rows(self, assignment.company, employees)
+        employees = {row.employee for row in self.timesheet_entries if row.employee}
         driver_names = {row.name: row.employee_name for row in frappe.get_all(
             "Employee", filters={"name": ["in", list(employees)]},
             fields=["name", "employee_name"])} if employees else {}
-        hours_by_driver = {}
         start_period, end_period = getdate(self.period_start), getdate(self.period_end)
         for row in self.timesheet_entries:
             start, end = interval(row)
@@ -241,7 +244,6 @@ class CraneTimesheet(Document):
             row.price_per_hour = booking.rental_rate if booking.rental_rate_unit == "Hour" else 0
             if not submitted_update:
                 row.driver_name = driver_names.get(row.employee)
-            hours_by_driver[row.employee] = hours_by_driver.get(row.employee, 0) + hours
             row.line_amount = hours * flt(row.price_per_hour)
             if hours > 0 and booking.rental_rate_unit in ("Day", "Month"):
                 for day in days:
@@ -251,12 +253,14 @@ class CraneTimesheet(Document):
             intervals.append((start, end, flt(row.price_per_hour)))
             entered_intervals.append((start, end, flt(row.price_per_hour), hours))
         if not submitted_update:
+            driver_work = driver_work_summary(self)
+            sync_payroll_rows(self, assignment.company, driver_work)
             self.set("driver_hours", [])
-            for employee, hours in hours_by_driver.items():
+            for employee, work in driver_work.items():
                 self.append("driver_hours", {
                     "employee": employee,
                     "driver_name": driver_names.get(employee),
-                    "total_hours": hours,
+                    "total_hours": work["worked_hours"],
                 })
         self.total_operator_hours = operator_hours
         self.total_crane_billable_hours, hourly_amount = entered_hour_totals(entered_intervals)

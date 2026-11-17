@@ -4,16 +4,33 @@
  "module": "Heavy Equipment Rental",
  "istable": 1,
  "editable_grid": 1,
- "field_order": ["employee", "amount", "expense_entry"],
+ "field_order": ["employee", "quantity", "rate", "amount", "unit", "worked_hours", "expense_entry"],
  "fields": [
   {
    "fieldname": "employee",
    "fieldtype": "Link",
-   "label": "Driver (Employee)",
+   "label": "Driver",
    "options": "Employee",
-   "columns": 4,
+   "columns": 3,
    "in_list_view": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Float",
+   "label": "Worked Quantity",
+   "precision": "9",
+   "columns": 2,
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "label": "Price / Unit",
+   "options": "Company:payroll_company:default_currency",
+   "columns": 2,
+   "in_list_view": 1
   },
   {
    "fieldname": "amount",
@@ -25,12 +42,26 @@
    "print_hide": 1
   },
   {
+   "fieldname": "unit",
+   "fieldtype": "Select",
+   "label": "Payroll Unit",
+   "options": "\nHour\nDay\nMonth",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "worked_hours",
+   "fieldtype": "Float",
+   "label": "Worked Hours",
+   "precision": "6",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
    "fieldname": "expense_entry",
    "fieldtype": "Link",
    "label": "Expense Entry",
    "options": "Expense Entry",
-   "columns": 3,
-   "in_list_view": 1,
    "read_only": 1,
    "no_copy": 1
   }

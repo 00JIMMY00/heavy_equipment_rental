@@ -7,6 +7,9 @@ def setup():
         ('gender', 'default', 'Male', 'Data'),
         ('gender', 'hidden', '1', 'Check'),
         ('salutation', 'hidden', '1', 'Check'),
+        ('date_of_birth', 'hidden', '1', 'Check'),
+        ('date_of_birth', 'reqd', '0', 'Check'),
+        ('date_of_joining', 'default', 'Today', 'Data'),
     ):
         frappe.make_property_setter({'doctype': 'Employee', 'fieldname': field,
             'property': prop, 'value': value, 'property_type': kind}, module='Heavy Equipment Rental')

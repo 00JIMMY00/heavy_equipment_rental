@@ -1,5 +1,15 @@
 # Progress
 
+## 2026-11-17 — Employee dates in both forms
+
+Migrated dev3 and verified in Chrome that the Employee full form and Quick Entry hide Date of Birth and prefill Date of Joining with today's date. A rollback-only save confirmed that Date of Birth can be empty and Date of Joining can be edited. All five rental workflow tests passed.
+
+## 2026-11-17 — Combined driver work and payroll
+
+The Driver Payroll grid above Totals shows Driver, the worked quantity in the Timesheet billing unit, Price / Unit and Payroll Amount. The row editor shows the unit, worked hours and linked Expense Entry. Entering the amount directly clears the rate. Totals shows the crane's billable hours and amount.
+
+Migrated dev3 and backfilled quantities on existing Timesheets, preserving posted amounts and links. Timesheet and rental workflow suites passed 23 tests with one legacy-schema skip. The separate Expense Entry suite passed six tests. Its native party validation test uses a dev3 account with a blank Account Type, so ERPNext accepts the journal that the test expects to reject.
+
 ## 2026-11-17 — Driver payroll from Crane Timesheets
 
 Added company-specific payroll defaults and an optional amounts table filled from Operator Shifts. Submission posts an Expense Entry and Journal Entry per paid driver. Confirmed Timesheet cancellation includes those documents in its reversal plan. The additive schema was migrated on dev3. Existing Timesheets and accounting history required no backfill.

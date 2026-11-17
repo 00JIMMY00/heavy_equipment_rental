@@ -1120,15 +1120,24 @@ Payroll Company,شركة الرواتب
 Driver Payments,مدفوعات السائقين
 Payroll Amount,مبلغ الراتب
 The expense type sets the expense account. The Mode of Payment uses its default account for the Company to fund payroll.,يحدد نوع المصروف حساب الرواتب وتحدد طريقة الدفع الحساب الذي تُدفع منه الرواتب في الشركة.
-Enter optional amounts in the company currency. Submit to post one Expense Entry per driver with a positive amount.,أدخل المبالغ الاختيارية بعملة الشركة. عند الاعتماد يُرحّل قيد مصروف لكل سائق له مبلغ أكبر من صفر.
+"Enter a price per unit to calculate payroll, or type the amount directly. Submit to post one Expense Entry per driver with a positive amount.",أدخل سعر الوحدة لحساب الراتب أو أدخل المبلغ مباشرة. عند الاعتماد يُرحّل قيد مصروف لكل سائق له مبلغ أكبر من صفر.
 Set driver payroll defaults only once per Company.,حدد إعدادات رواتب السائقين مرة واحدة لكل شركة.
 Select an enabled driver payroll Expense Entry Type for {0}.,اختر نوع مصروف رواتب مفعّل للشركة {0}.
 Select a payroll Mode of Payment with an enabled account for {0}.,اختر طريقة دفع للرواتب مرتبطة بحساب مفعّل للشركة {0}.
 Driver payroll Expense Entry links are managed automatically.,تُربط قيود مصروفات رواتب السائقين تلقائيًا.
 "Driver payroll row {0}: Enter a finite, non-negative amount.",صف رواتب السائقين {0}: أدخل مبلغًا رقميًا غير سالب.
-Driver payroll row {0}: Clear the amount for the driver who is no longer on an operator shift.,صف رواتب السائقين {0}: امسح مبلغ السائق الذي لم يعد مسجلاً في أي وردية.
+Driver payroll row {0}: Clear the amount and price for the driver who is no longer on an operator shift.,صف رواتب السائقين {0}: امسح المبلغ والسعر للسائق الذي لم يعد مسجلاً في أي وردية.
 Enter only one payroll amount per driver.,أدخل مبلغ راتب واحدًا فقط لكل سائق.
 Driver {0} must belong to the Timesheet company to receive payroll.,يجب أن يكون السائق {0} تابعًا لشركة التايم شيت لصرف الراتب.
 Set driver payroll defaults for {0} in Heavy Equipment Rental Settings.,حدد إعدادات رواتب السائقين للشركة {0} في إعدادات تأجير المعدات الثقيلة.
 Driver payroll for Crane Timesheet {0},رواتب السائقين لتايم شيت الونش {0}
 Cancel Crane Timesheet {0} to reverse its driver payroll.,ألغِ تايم شيت الونش {0} لعكس قيود رواتب السائقين المرتبطة به.
+Driver,السائق
+Hours,الساعات
+Days,الأيام
+Months,الشهور
+Worked Quantity,كمية العمل
+Price / Unit,سعر الوحدة
+Payroll Unit,وحدة حساب الراتب
+"Driver payroll row {0}: Enter a finite, non-negative price per unit.",صف رواتب السائقين {0}: أدخل سعر وحدة رقميًا غير سالب.
+Driver payroll row {0}: The calculated amount must be finite.,صف رواتب السائقين {0}: يجب أن يكون المبلغ المحسوب رقمًا محدودًا.
