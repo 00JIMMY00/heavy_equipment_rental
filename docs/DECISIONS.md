@@ -1,5 +1,9 @@
 # Current decisions
 
+## 2026-11-17 — Timesheet driver payroll
+
+Use the shared Expense Entry and native Journal Entry workflow. The configured Expense Entry Type supplies the salary expense account and the Mode of Payment supplies the funding account. Each positive amount posts on Timesheet submission using the submission date. Blank and zero amounts skip posting and require no defaults. Cancel the Timesheet to reverse its generated expenses and retain their history. An amendment carries the amounts forward and creates fresh entries on submission.
+
 ## 2026-11-17 — Future Crane Timesheet dates
 
 Crane Timesheets accept future periods and operator shifts in drafts and on submission. Each shift still has to fit within the Timesheet period and the booked crane dates.

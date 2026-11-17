@@ -1,5 +1,11 @@
 # Progress
 
+## 2026-11-17 — Driver payroll from Crane Timesheets
+
+Added company-specific payroll defaults and an optional amounts table filled from Operator Shifts. Submission posts an Expense Entry and Journal Entry per paid driver. Confirmed Timesheet cancellation includes those documents in its reversal plan. The additive schema was migrated on dev3. Existing Timesheets and accounting history required no backfill.
+
+Timesheet, rental workflow and Expense Entry suites passed 29 tests on dev3, with one legacy-schema test skipped. A JavaScript check verified driver row deduplication, amount retention and row cleanup when shifts change.
+
 ## 2026-11-17 — Crane Operations site entry
 
 Moved the Crane Operations entry redirect from the temporary Caddy rules into HER. Every client site gets it when the app is installed. The next production release replaces the temporary proxy rule, which was backed up at `/opt/her/state/Caddyfile.before-crane-entry-20261116`.

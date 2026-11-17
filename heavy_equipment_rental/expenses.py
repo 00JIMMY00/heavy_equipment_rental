@@ -24,6 +24,10 @@ class RentalExpenseEntry(ExpenseEntry):
         from heavy_equipment_rental.rental_expenses import validate_expense
         validate_expense(self)
 
+    def before_cancel(self):
+        from heavy_equipment_rental.driver_payroll import guard_payroll_cancel
+        guard_payroll_cancel(self)
+
     def on_submit(self):
         # Keep the shared expense validation/cancellation behavior. Party belongs
         # on the expense lines; the cash/bank line has no employee balance.

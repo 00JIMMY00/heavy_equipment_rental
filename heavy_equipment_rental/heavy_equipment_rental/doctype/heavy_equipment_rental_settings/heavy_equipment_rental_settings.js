@@ -8,5 +8,9 @@ frappe.ui.form.on('Heavy Equipment Rental Settings', {
             company: company_for(cdt, cdn), is_group: 0, disabled: 0
         }}));
         frm.set_query('mode_of_payment', 'repair_defaults', () => ({filters: {enabled: 1}}));
+        frm.set_query('expense_type', 'driver_payroll_defaults', (doc, cdt, cdn) => ({filters: {
+            company: company_for(cdt, cdn), enabled: 1
+        }}));
+        frm.set_query('mode_of_payment', 'driver_payroll_defaults', () => ({filters: {enabled: 1}}));
     },
 });

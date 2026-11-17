@@ -7,6 +7,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate
 
+from heavy_equipment_rental.driver_payroll import cancel_driver_payroll, post_driver_payroll, sync_payroll_rows
 from heavy_equipment_rental.rental_validation import (
     assignment_doc,
     crane_company,
@@ -198,7 +199,8 @@ class CraneTimesheet(Document):
         intervals, operator_hours, flat_days, flat_rows = [], 0, {}, []
         entered_intervals = []
         submitted_update = bool(previous and previous.docstatus == 1 and self.docstatus == 1)
-        employees = {row.employee for row in self.timesheet_entries if row.employee}
+        employees = dict.fromkeys(row.employee for row in self.timesheet_entries if row.employee)
+        sync_payroll_rows(self, assignment.company, employees)
         driver_names = {row.name: row.employee_name for row in frappe.get_all(
             "Employee", filters={"name": ["in", list(employees)]},
             fields=["name", "employee_name"])} if employees else {}
@@ -289,6 +291,7 @@ class CraneTimesheet(Document):
             from heavy_equipment_rental.purchasing import create_purchase_invoice
 
             create_purchase_invoice(self)
+        post_driver_payroll(self)
 
     def before_cancel(self):
         lock_cranes([self.crane])
@@ -299,3 +302,6 @@ class CraneTimesheet(Document):
         if invoice and frappe.db.exists("Sales Invoice", invoice):
             if frappe.db.get_value("Sales Invoice", invoice, "docstatus") != 2:
                 frappe.throw(_("Cancel Sales Invoice {0} before cancelling this Timesheet.").format(invoice))
+
+    def on_cancel(self):
+        cancel_driver_payroll(self)

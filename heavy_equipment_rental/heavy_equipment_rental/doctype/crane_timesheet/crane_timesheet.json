@@ -41,6 +41,9 @@
   "total_crane_billable_hours",
   "amount_col",
   "total_amount",
+  "driver_payroll_section",
+  "payroll_company",
+  "driver_payroll",
   "connections_tab",
   "references_section",
   "sales_invoice",
@@ -211,6 +214,29 @@
    "fieldtype": "Currency",
    "label": "Total Amount",
    "read_only": 1
+  },
+  {
+   "fieldname": "driver_payroll_section",
+   "fieldtype": "Section Break",
+   "label": "Driver Payroll",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "payroll_company",
+   "fieldtype": "Link",
+   "options": "Company",
+   "label": "Payroll Company",
+   "fetch_from": "assignment.company",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "driver_payroll",
+   "fieldtype": "Table",
+   "label": "Driver Payments",
+   "options": "Crane Driver Payroll",
+   "description": "Enter optional amounts in the company currency. Submit to post one Expense Entry per driver with a positive amount.",
+   "print_hide": 1
   },
   {
    "fieldname": "connections_tab",

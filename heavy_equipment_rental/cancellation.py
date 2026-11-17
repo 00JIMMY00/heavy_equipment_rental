@@ -32,6 +32,9 @@ def cancellation_plan(doctype, name):
                            for child in children.get("Crane Profit Settlement", []))
         if dt == "Expense Entry":
             from heavy_equipment_rental.rental_expenses import affected_settlements
+            if (dt, dn) == (doctype, name):
+                from heavy_equipment_rental.driver_payroll import guard_payroll_cancel
+                guard_payroll_cancel(doc)
             pending.extend(("Crane Profit Settlement", n) for n in affected_settlements(doc))
             if doc.journal_entry:
                 pending.append(("Journal Entry", doc.journal_entry))
@@ -55,6 +58,7 @@ def cancellation_plan(doctype, name):
             pending.extend((target, doc.get(field)) for field, target in (
                 ("sales_invoice", "Sales Invoice"), ("purchase_invoice", "Purchase Invoice"),
                 ("profit_settlement", "Crane Profit Settlement")) if doc.get(field))
+            pending.extend(("Expense Entry", row.expense_entry) for row in doc.driver_payroll if row.expense_entry)
         elif dt == "Crane Profit Settlement":
             if doc.settlement_basis != "Timesheet":
                 pending.extend((dt, n) for n in frappe.get_all(dt, filters={"crane": doc.crane,
@@ -62,8 +66,8 @@ def cancellation_plan(doctype, name):
             if doc.journal_entry:
                 pending.append(("Journal Entry", doc.journal_entry))
     priority = {"Payment Entry": 0, "Crane Profit Settlement": 1,
-                "Sales Invoice": 2, "Purchase Invoice": 2, "Expense Entry": 2,
-                "Crane Timesheet": 3, "Journal Entry": 4}
+                "Sales Invoice": 2, "Purchase Invoice": 2,
+                "Crane Timesheet": 3, "Expense Entry": 4, "Journal Entry": 5}
     def order(row):
         # Period settlements must reverse newest first.
         end = frappe.db.get_value(row["doctype"], row["name"], "to_date") if row["doctype"] == "Crane Profit Settlement" else None

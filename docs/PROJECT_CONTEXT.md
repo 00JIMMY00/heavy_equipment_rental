@@ -1,5 +1,9 @@
 # Project context
 
+## 2026-11-17 — Driver payroll from Crane Timesheets
+
+The optional Driver Payroll table follows the distinct Employees on Operator Shifts. Submission posts one linked Expense Entry per positive amount. HER Settings holds the expense type and funding Mode of Payment per company. Expenses are attributed to the Timesheet for rental profitability and settlements.
+
 ## 2026-11-17 — Crane Operations site entry
 
 Installing HER makes Crane Operations the browser entry point on that Frappe site. The app sends a temporary redirect from `/`, `/app` and `/app/` to `/app/crane-operations` for any client hostname. Frappe handles sign-in and direct document and report links. Caddy serves the deployment maintenance response before proxying requests.

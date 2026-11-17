@@ -101,6 +101,18 @@
    "label": "Repair Defaults by Company",
    "options": "HER Repair Defaults",
    "description": "Set the repair expense account and supplier payment method once per Company. Purchased parts use the Maintenance warehouse automatically."
+  },
+  {
+   "fieldname": "driver_payroll_tab",
+   "fieldtype": "Tab Break",
+   "label": "Driver Payroll"
+  },
+  {
+   "fieldname": "driver_payroll_defaults",
+   "fieldtype": "Table",
+   "label": "Driver Payroll Defaults by Company",
+   "options": "HER Driver Payroll Defaults",
+   "description": "The expense type sets the expense account. The Mode of Payment uses its default account for the Company to fund payroll."
   }
  ],
  "field_order": [
@@ -118,7 +130,9 @@
   "day_shift_hours",
   "native_workflow_migrated",
   "repairs_tab",
-  "repair_defaults"
+  "repair_defaults",
+  "driver_payroll_tab",
+  "driver_payroll_defaults"
  ],
  "permissions": [
   {

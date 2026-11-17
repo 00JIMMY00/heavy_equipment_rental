@@ -8,6 +8,8 @@ import frappe
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import getdate, today
 
+from heavy_equipment_rental.cancellation import cancel_all, cancellation_plan
+from heavy_equipment_rental.payment import payment_account
 from heavy_equipment_rental.purchasing import (
     create_purchase_invoice,
     make_supplier_payment,
@@ -67,6 +69,119 @@ class TestCraneTimesheet(FrappeTestCase):
         self.addCleanup(frappe.db.set_single_value, settings.doctype, original)
         settings.default_selling_uom, settings.default_supplier_uom = selling, supplier
         settings.save()
+
+    def make_payroll_driver(self):
+        return frappe.get_doc({
+            "doctype": "Employee", "first_name": "Payroll driver " + self.key,
+            "company": self.company, "gender": "Male", "date_of_birth": "1980-01-01",
+            "date_of_joining": self.day, "status": "Active",
+        }).insert().name
+
+    def test_driver_payroll_posts_once_per_driver_and_cancels_with_timesheet(self):
+        settings = frappe.get_single("Heavy Equipment Rental Settings")
+        expense_type = frappe.db.get_value("Expense Entry Type", {
+            "company": self.company, "enabled": 1,
+        }, ["name", "account"], as_dict=True)
+        mode = frappe.db.get_value("Mode of Payment Account", {"company": self.company}, "parent")
+        settings.set("driver_payroll_defaults", [{
+            "company": self.company, "expense_type": expense_type.name, "mode_of_payment": mode,
+        }])
+        settings.save()
+
+        sheet = self.make_sheet()
+        sheet.rented = 0
+        sheet.driver = frappe.db.get_value("Employee", {"company": self.company}, "name")
+        second_driver, unpaid_driver = self.make_payroll_driver(), self.make_payroll_driver()
+        for employee in (second_driver, unpaid_driver):
+            sheet.append("timesheet_entries", {
+                "work_date": self.day, "start_time": "08:00", "end_time": "12:00", "employee": employee,
+            })
+        sheet.append("timesheet_entries", {
+            "work_date": self.day, "start_time": "12:00", "end_time": "14:00",
+            "employee": sheet.driver,
+        })
+        sheet.insert()
+        self.assertEqual([row.employee for row in sheet.driver_payroll], [sheet.driver, second_driver, unpaid_driver])
+        sheet.driver_payroll[0].amount = 125
+        sheet.driver_payroll[1].amount = 75
+        sheet.save()
+        self.assertFalse(frappe.db.exists("Expense Entry", {"crane_timesheet": sheet.name}))
+
+        sheet.submit()
+        sheet.reload()
+        self.assertFalse(sheet.driver_payroll[2].expense_entry)
+        expenses = {}
+        for row in sheet.driver_payroll[:2]:
+            expense = frappe.get_doc("Expense Entry", row.expense_entry)
+            expenses[expense.name] = expense.journal_entry
+            self.assertEqual(expense.docstatus, 1)
+            self.assertEqual(expense.employee, row.employee)
+            self.assertEqual(expense.company, self.company)
+            self.assertEqual(expense.crane_timesheet, sheet.name)
+            self.assertEqual(expense.crane_assignment, sheet.assignment)
+            self.assertEqual(expense.crane, sheet.crane)
+            self.assertEqual(getdate(expense.posting_date), getdate(today()))
+            journal = frappe.get_doc("Journal Entry", expense.journal_entry)
+            self.assertEqual(journal.docstatus, 1)
+            debit, credit = journal.accounts
+            self.assertEqual((debit.account, debit.party_type, debit.party), (expense_type.account, "Employee", row.employee))
+            self.assertEqual((credit.account, credit.credit), (payment_account(mode, self.company), row.amount))
+            self.assertEqual(debit.debit, row.amount)
+        self.assertEqual(frappe.db.count("Expense Entry", {"crane_timesheet": sheet.name}), 2)
+
+        sheet.attachment = "/private/files/payroll-test.pdf"
+        sheet.save()
+        self.assertEqual(frappe.db.count("Expense Entry", {"crane_timesheet": sheet.name}), 2)
+        with self.assertRaisesRegex(frappe.ValidationError, "Cancel Crane Timesheet"):
+            cancellation_plan("Expense Entry", next(iter(expenses)))
+        plan = cancellation_plan(sheet.doctype, sheet.name)
+        self.assertEqual({row["name"] for row in plan if row["doctype"] == "Expense Entry"}, set(expenses))
+        cancel_all(sheet.doctype, sheet.name, plan)
+        self.assertEqual(sheet.reload().docstatus, 2)
+        for expense, journal in expenses.items():
+            self.assertEqual(frappe.db.get_value("Expense Entry", expense, "docstatus"), 2)
+            self.assertEqual(frappe.db.get_value("Journal Entry", journal, "docstatus"), 2)
+
+        amendment = frappe.copy_doc(sheet, ignore_no_copy=False)
+        amendment.docstatus = 0
+        amendment.amended_from = sheet.name
+        amendment.insert()
+        self.assertEqual([row.amount for row in amendment.driver_payroll], [125, 75, 0])
+        self.assertFalse(any(row.expense_entry for row in amendment.driver_payroll))
+        amendment.submit()
+        self.assertTrue(all(row.expense_entry not in expenses for row in amendment.driver_payroll[:2]))
+
+    def test_optional_payroll_defaults_and_driver_validation(self):
+        settings = frappe.get_single("Heavy Equipment Rental Settings")
+        settings.set("driver_payroll_defaults", [])
+        settings.save()
+        sheet = self.make_sheet()
+        sheet.rented = 0
+        sheet.driver = frappe.db.get_value("Employee", {"company": self.company}, "name")
+        sheet.insert()
+        sheet.driver_payroll[0].amount = -1
+        with self.assertRaisesRegex(frappe.ValidationError, "non-negative amount"):
+            sheet.save()
+        sheet.reload()
+        sheet.driver_payroll[0].amount = 125
+        sheet.save()
+        frappe.db.savepoint("missing_payroll_defaults")
+        with self.assertRaisesRegex(frappe.ValidationError, "Set driver payroll defaults"):
+            sheet.submit()
+        frappe.db.rollback(save_point="missing_payroll_defaults")
+        self.assertEqual(sheet.reload().docstatus, 0)
+        self.assertFalse(frappe.db.exists("Expense Entry", {"crane_timesheet": sheet.name}))
+        sheet.timesheet_entries[0].employee = self.make_payroll_driver()
+        replacement_driver = sheet.timesheet_entries[0].employee
+        with self.assertRaisesRegex(frappe.ValidationError, "Clear the amount"):
+            sheet.save()
+        sheet.reload()
+        sheet.timesheet_entries[0].employee = replacement_driver
+        sheet.driver_payroll[0].amount = 0
+        sheet.save()
+        self.assertEqual([row.employee for row in sheet.driver_payroll], [sheet.timesheet_entries[0].employee])
+        sheet.submit()
+        self.assertFalse(frappe.db.exists("Expense Entry", {"crane_timesheet": sheet.name}))
 
     def test_delete_draft_sales_invoice_releases_timesheet(self):
         from heavy_equipment_rental.billing import generate_sales_invoice

@@ -1,0 +1,39 @@
+{
+ "doctype": "DocType",
+ "name": "Crane Driver Payroll",
+ "module": "Heavy Equipment Rental",
+ "istable": 1,
+ "editable_grid": 1,
+ "field_order": ["employee", "amount", "expense_entry"],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Driver (Employee)",
+   "options": "Employee",
+   "columns": 4,
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Payroll Amount",
+   "options": "Company:payroll_company:default_currency",
+   "columns": 3,
+   "in_list_view": 1,
+   "print_hide": 1
+  },
+  {
+   "fieldname": "expense_entry",
+   "fieldtype": "Link",
+   "label": "Expense Entry",
+   "options": "Expense Entry",
+   "columns": 3,
+   "in_list_view": 1,
+   "read_only": 1,
+   "no_copy": 1
+  }
+ ],
+ "permissions": []
+}

@@ -87,6 +87,26 @@ function update_driver_hours(frm) {
     frm.clear_table("driver_hours");
     for (const values of totals.values()) frm.add_child("driver_hours", values);
     frm.refresh_field("driver_hours");
+    sync_payroll_drivers(frm);
+}
+
+function sync_payroll_drivers(frm) {
+    if (frm.doc.docstatus !== 0) return;
+    const drivers = new Set((frm.doc.timesheet_entries || []).map(row => row.employee).filter(Boolean));
+    let changed = false;
+    for (const row of [...(frm.doc.driver_payroll || [])]) {
+        if (drivers.delete(row.employee) || flt(row.amount)) continue;
+        frappe.model.clear_doc(row.doctype, row.name);
+        changed = true;
+    }
+    for (const employee of drivers) {
+        frm.add_child("driver_payroll", {employee});
+        changed = true;
+    }
+    if (changed) {
+        frm.dirty();
+        frm.refresh_field("driver_payroll");
+    }
 }
 
 async function load_timesheet_defaults(frm) {
@@ -185,6 +205,9 @@ frappe.ui.form.on("Crane Timesheet", {
     rental_rate: fill_entry_rental_terms,
     purchase_uom: purchase_price_label,
     setup(frm) {
+        const payroll = frm.fields_dict.driver_payroll.grid;
+        payroll.df.cannot_add_rows = true;
+        payroll.df.cannot_delete_rows = true;
         frm.set_query("assignment", () => ({ filters: Object.fromEntries([
             ["customer", frm.doc.customer], ["location", frm.doc.location],
         ].filter(([, value]) => value)) }));
@@ -234,6 +257,7 @@ frappe.ui.form.on("Crane Timesheet", {
         }
     },
     refresh(frm) {
+        sync_payroll_drivers(frm);
         fill_entry_rental_terms(frm);
         purchase_price_label(frm);
         if (!frm.doc.rental_rate_unit) load_rental_terms(frm);
@@ -263,6 +287,10 @@ frappe.ui.form.on("Crane Timesheet", {
                 },
             }), __("Create"));
     },
+});
+
+frappe.ui.form.on("Crane Driver Payroll", {
+    amount: sync_payroll_drivers,
 });
 
 frappe.ui.form.on("Timesheet Entry", {

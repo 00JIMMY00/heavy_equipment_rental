@@ -32,6 +32,14 @@ On a draft Timesheet, use **Entries → Operator Shifts → Fill Table** to add 
 
 Extend the Rental Contract explicitly if work continues beyond its booked dates. The Timesheet Connections tab uses Frappe's standard related-document dashboard.
 
+### Driver payroll
+
+1. In **Heavy Equipment Rental Settings → Driver Payroll**, add a row for the rental company. Choose the **Payroll Expense Type** for the salary expense account and the **Payroll Mode of Payment** whose company default account funds the payment.
+2. Add or select drivers in **Operator Shifts**. Under **Entries → Driver Payroll**, enter an amount in the company currency for each driver you are paying. Leave amounts blank or zero for drivers you are skipping.
+3. Submit the Timesheet to post one **Expense Entry** and Journal Entry per paid driver using the submission date. Each expense links to the Employee, Crane, Rental Contract and Timesheet, and appears beside its amount.
+
+Use the Timesheet's **Cancel** action to reverse its payroll expenses. Amend the Timesheet to correct amounts and post replacement entries. This records the amounts in ERPNext and uses the existing Expense Entry permissions.
+
 ## Billing defaults
 
 Open **Heavy Equipment Rental Settings → Billing Defaults**. Set **Default Selling UOM** and **Default Supplier Billing UOM** to Hour, Day, or Month; both initially default to Hour.
@@ -166,7 +174,7 @@ npm run build
 With tests enabled on a development site:
 
 ```bash
-bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment_rental.doctype.crane_assignment.test_rental_workflow
+bench --site YOUR_SITE run-tests --module heavy_equipment_rental.heavy_equipment_rental.doctype.rental_contract.test_rental_workflow
 ```
 
 Purchasing integration tests:
