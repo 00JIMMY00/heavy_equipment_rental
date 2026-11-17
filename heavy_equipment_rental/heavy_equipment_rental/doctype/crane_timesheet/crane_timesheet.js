@@ -41,7 +41,7 @@ async function fill_default_days(frm, manual = false) {
     const existing = new Set((doc.timesheet_entries || []).map((row) => row.work_date));
     const missing = defaults.filter((row) => !existing.has(row.work_date));
     if (!missing.length && !outside.length) {
-        if (manual) frappe.show_alert(__("Operator Shifts already has a row for every date in this period."));
+        if (manual) frappe.show_alert(__("Timesheet Entries already has a row for every date in this period."));
         return;
     }
     for (const values of missing) {
@@ -78,7 +78,7 @@ function payroll_work_by_driver(shifts, unit) {
     for (const row of shifts) {
         if (!row.employee) continue;
         const work = totals.get(row.employee) || {worked_hours: 0, days: new Set()};
-        const hours = flt(row.worked_hours);
+        const hours = flt(row.worked_hours) + flt(row.overtime_hours);
         work.worked_hours += hours;
         if (unit !== "Hour" && hours > 0 && row.work_date) {
             work.days.add(row.work_date);
@@ -279,10 +279,10 @@ frappe.ui.form.on("Crane Timesheet", {
         if (frm.doc.docstatus === 0) {
             const name = frm.doc.crane;
             const crane = name ? (await frappe.db.get_value("Crane", name,
-                ["ownership_type", "supplier"])).message : null;
+                ["ownership_type", "hired_from_supplier", "supplier"])).message : null;
             if (frm.doc.crane !== name) return;
             await frm.set_value({
-                crane_ownership_type: crane?.ownership_type || "",
+                crane_ownership_type: crane?.hired_from_supplier ? "Rented" : (crane?.ownership_type || ""),
                 rented: crane?.hired_from_supplier ? 1 : 0,
                 purchase_supplier: crane?.hired_from_supplier ? crane.supplier : "",
             });
@@ -331,7 +331,8 @@ frappe.ui.form.on("Crane Timesheet", {
         } else {
             shifts.custom_buttons?.[fill_label]?.addClass("hidden");
         }
-        if (frm.doc.docstatus === 1 && frappe.model.can_create("Sales Invoice"))
+        if (frm.doc.docstatus === 1 && (frm.doc.total_crane_billable_hours > 0 || frm.doc.sales_invoice) &&
+            frappe.model.can_create("Sales Invoice"))
             frm.add_custom_button(__("Generate Sales Invoice"), () => frappe.call({
                 method: "heavy_equipment_rental.billing.generate_sales_invoice",
                 args: { timesheet: frm.doc.name },
@@ -382,10 +383,16 @@ frappe.ui.form.on("Timesheet Entry", {
         if (row.employee) await load_driver_names(frm);
     },
     worked_hours: sync_payroll_drivers,
+    overtime_hours: sync_payroll_drivers,
     end_time: sync_payroll_drivers,
     ends_next_day: sync_payroll_drivers,
     timesheet_entries_add(frm) { sync_payroll_drivers(frm); fill_entry_rental_terms(frm); },
-    work_date(frm) { sync_payroll_drivers(frm); fill_entry_rental_terms(frm); },
+    async work_date(frm, cdt, cdn) {
+        const date = moment(locals[cdt][cdn].work_date, "YYYY-MM-DD", true);
+        await frappe.model.set_value(cdt, cdn, "day_name", date.isValid() ? date.locale("en").format("ddd") : "");
+        sync_payroll_drivers(frm);
+        await fill_entry_rental_terms(frm);
+    },
     timesheet_entries_remove: sync_payroll_drivers,
 });
 

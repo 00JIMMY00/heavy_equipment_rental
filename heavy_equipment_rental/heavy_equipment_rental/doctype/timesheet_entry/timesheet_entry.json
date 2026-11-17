@@ -7,12 +7,15 @@
  "field_order": [
   "work_section",
   "work_date",
+  "day_name",
   "employee",
   "driver_name",
   "time_col",
   "start_time",
   "end_time",
   "overtime_hours",
+  "overtime_price",
+  "effective_overtime_price",
   "ends_next_day",
   "calculation_section",
   "rental_rate",
@@ -35,6 +38,14 @@
    "label": "Work Date",
    "reqd": 1,
    "columns": 2
+  },
+  {
+   "fieldname": "day_name",
+   "fieldtype": "Data",
+   "label": "Day",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1
   },
   {
    "fieldname": "employee",
@@ -78,7 +89,16 @@
    "fieldname": "overtime_hours",
    "fieldtype": "Float",
    "label": "Overtime hours",
-   "default": 0
+   "default": 0,
+   "description": "Additional hours beyond Worked Hours."
+  },
+  {
+   "fieldname": "overtime_price",
+   "fieldtype": "Currency",
+   "label": "Price for Overtime / Hour",
+   "in_list_view": 0,
+   "non_negative": 1,
+   "description": "Leave zero to use the agreed hourly rate, or the Crane Hour price for Day and Month rentals."
   },
   {
    "default": "0",
@@ -109,7 +129,7 @@
    "precision": "6",
    "read_only": 0,
    "columns": 1,
-   "description": "Actual operating hours entered by the user. Exclude downtime. Changing shift times does not overwrite this value."
+   "description": "Actual operating hours. Enter zero for downtime. Changing shift times does not overwrite this value."
   },
   {
    "fieldname": "amount_col",
@@ -127,7 +147,7 @@
    "label": "Rental Rate",
    "read_only": 1,
    "in_list_view": 1,
-   "columns": 2
+   "columns": 1
   },
   {
    "fieldname": "rental_rate_unit",
@@ -137,6 +157,13 @@
    "read_only": 1,
    "in_list_view": 1,
    "columns": 1
+  },
+  {
+   "fieldname": "effective_overtime_price",
+   "fieldtype": "Currency",
+   "label": "Effective Overtime Price / Hour",
+   "read_only": 1,
+   "hidden": 1
   }
  ],
  "grid_page_length": 100,

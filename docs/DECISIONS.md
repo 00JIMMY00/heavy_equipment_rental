@@ -1,5 +1,13 @@
 # Current decisions
 
+## 2026-11-17 — Mode of Payment Statement
+
+Use active native GL debits/credits in company currency for each payment mode's current company Default Account. Include opening balances and separate chronological running balances per account; compare period IN/OUT and closing balances in a bar chart. Count accounts once, combining mode aliases and selecting the same complete account statement through either alias. Retain disabled mappings for history and enforce accounting/source permissions. Never infer a historical mode split, repost transactions or total running balances. See [report guide](MODE_OF_PAYMENT_STATEMENT.md).
+
+## 2026-11-17 — Manual Crane IDs and Timesheet Entries
+
+Use the entered Crane ID as the document name and backfill it from existing names. Derive entry weekdays from Work Date. Overtime is additional to Worked Hours and always priced per Hour. Use a positive overtime price, otherwise use the agreed Hour rate or the Crane Hour reference price for Day/Month rentals. Deduplicate overlapping drivers within normal and overtime quantities separately. Store overtime totals and the effective row price as submission snapshots and generate Hour invoice lines. Include overtime in supplier quantities and driver work summaries. Allow zero worked hours with any of the supported billing units, and exclude idle rows from shift overlap and customer and supplier billing.
+
 ## 2026-11-17 — Crane Expense Report
 
 Added a native Script Report with posting-date/Crane/Timesheet filters, secondary type/payment/source/contract/driver filters, expandable group totals and individual expenses, spending charts, summary cards and accounting drill-down links. Includes posted normal, payroll and grouped expenses with legacy batch deduplication. Native invoice/stock/depreciation costs remain outside this paid-expense report. Highlighted under Financial Reports using an idempotent workspace patch. See [report guide](EXPENSE_REPORT.md).

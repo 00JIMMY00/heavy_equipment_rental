@@ -10,7 +10,7 @@ from heavy_equipment_rental.crane_connections import dashboard_data, get_connect
 
 class TestCraneConnections(FrappeTestCase):
 	def setUp(self):
-		self.crane = frappe.get_doc(dict(doctype="Crane", crane_name=frappe.generate_hash())).insert()
+		self.crane = frappe.get_doc(dict(doctype="Crane", crane_id=frappe.generate_hash(length=12), crane_name=frappe.generate_hash())).insert()
 
 	def stub(self, doctype, **values):
 		# Connections only read links; no accounting transactions need to be posted.
@@ -103,7 +103,7 @@ class TestCraneConnections(FrappeTestCase):
 		self.stub("Payment Entry Reference", parent=payment.name, parenttype="Payment Entry",
 			parentfield="references", reference_doctype="Purchase Invoice", reference_name=invoice.name)
 		self.assertEqual(self.counts("Payment Entry")["Payment Entry"]["names"], [payment.name])
-		other = frappe.get_doc(dict(doctype="Crane", crane_name=frappe.generate_hash())).insert()
+		other = frappe.get_doc(dict(doctype="Crane", crane_id=frappe.generate_hash(length=12), crane_name=frappe.generate_hash())).insert()
 		other.db_set("sharing_cost_center", center.name)
 		self.assertEqual(self.counts("Payment Entry")["Payment Entry"]["names"], [])
 		other.db_set("sharing_cost_center", None)

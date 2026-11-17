@@ -3,10 +3,208 @@ body.her-operations-reference { --her-canvas: #fff; --her-shadow: 0 1px 2px rgb(
 html[data-theme="dark"] body.her-operations-reference { --her-canvas: #111827; }
 body.her-operations-reference .page-container > .container,
 body.her-operations-reference .page-head .container { width: 100%; max-width: none; padding-inline: 20px; }
-/* Sidebar visibility is controlled by Frappe’s native toggle and mobile overlay. */
 body.her-operations-reference .layout-main-section-wrapper { margin-inline: 0; }
 body.her-operations-reference .layout-main-section { border: 0; padding: 0; box-shadow: none; background: transparent; }
-body.her-operations-reference .page-title .title-text { font-size: 20px; color: var(--her-heading); }
+body.her-operations-reference .page-title .title-text { font-size: 18px; color: var(--her-heading); }
+
+/* The open header and sidebar share a flush edge and the same width. */
+body.her-operations-reference #page-Workspaces {
+  --her-nav-surface: #172b4d;
+  --her-nav-hover: #223b61;
+  --her-nav-active: #29476f;
+  --her-nav-text: #edf3fc;
+  --her-nav-muted: #b5c6e0;
+  --her-nav-accent: #ffd36a;
+  --her-nav-width: clamp(248px, 17vw, 280px);
+}
+body.her-operations-reference #page-Workspaces .page-head {
+  margin-block-end: 0;
+  box-shadow: inset 0 -1px var(--her-line);
+}
+body.her-operations-reference #page-Workspaces .page-head:has(.sidebar-toggle-btn[aria-expanded="true"])::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--her-nav-width);
+  background: var(--her-nav-surface);
+  border-inline-end: 1px solid var(--her-nav-active);
+  pointer-events: none;
+}
+body.her-operations-reference #page-Workspaces .page-title:has(.sidebar-toggle-btn[aria-expanded="true"]) .title-text {
+  max-width: calc(var(--her-nav-width) - 76px);
+  overflow: hidden;
+  color: var(--her-nav-text);
+}
+body.her-operations-reference #page-Workspaces .sidebar-toggle-btn {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  block-size: 36px;
+  margin-inline: 0 12px;
+  border-radius: 9px;
+  background: var(--her-subtle);
+  color: var(--her-heading);
+  --icon-stroke: currentColor;
+}
+body.her-operations-reference #page-Workspaces .sidebar-toggle-btn:hover {
+  background: var(--her-hover);
+}
+body.her-operations-reference #page-Workspaces .sidebar-toggle-btn .sidebar-toggle-placeholder {
+  display: block;
+}
+body.her-operations-reference #page-Workspaces .sidebar-toggle-btn .sidebar-toggle-icon {
+  display: none;
+}
+body.her-operations-reference #page-Workspaces .sidebar-toggle-btn[aria-expanded="true"] {
+  background: var(--her-nav-hover);
+  color: var(--her-nav-text);
+}
+body.her-operations-reference #page-Workspaces .sidebar-toggle-btn[aria-expanded="true"]:hover {
+  background: var(--her-nav-active);
+}
+body.her-operations-reference #page-Workspaces .sidebar-toggle-btn[aria-expanded="true"] .sidebar-toggle-placeholder {
+  display: none;
+}
+body.her-operations-reference #page-Workspaces .sidebar-toggle-btn[aria-expanded="true"]::before {
+  content: "";
+  inline-size: 14px;
+  block-size: 14px;
+  background:
+    linear-gradient(45deg, transparent 46%, currentColor 47% 53%, transparent 54%),
+    linear-gradient(-45deg, transparent 46%, currentColor 47% 53%, transparent 54%);
+}
+body.her-operations-reference #page-Workspaces .layout-main-section-wrapper {
+  margin-block-start: 0;
+  padding-block-start: 0;
+}
+body.her-operations-reference #her-workspace-navigation {
+  background: var(--her-nav-surface);
+}
+body.her-operations-reference #her-workspace-navigation .desk-sidebar {
+  margin: 0;
+  padding: 16px 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--her-nav-text);
+  --her-sidebar-text: var(--her-nav-text);
+  --her-sidebar-muted: var(--her-nav-muted);
+  --her-sidebar-hover: var(--her-nav-hover);
+  --her-heading: var(--her-nav-text);
+  --her-accent-text: var(--her-nav-accent);
+  --her-line: var(--her-nav-hover);
+  --her-sidebar: var(--her-nav-surface);
+}
+body.her-operations-reference #her-workspace-navigation .standard-sidebar-item {
+  position: relative;
+  min-block-size: 34px;
+  margin-block: 2px;
+  margin-inline: 0;
+}
+body.her-operations-reference #her-workspace-navigation .standard-sidebar-label {
+  margin-block-end: 8px;
+}
+body.her-operations-reference #her-workspace-navigation .standard-sidebar-item.selected {
+  background: var(--her-nav-active);
+  color: var(--her-nav-text);
+}
+body.her-operations-reference #her-workspace-navigation .standard-sidebar-item.selected::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: 8px;
+  inline-size: 3px;
+  border-radius: 3px;
+  background: var(--her-nav-accent);
+  pointer-events: none;
+}
+body.her-operations-reference #her-workspace-navigation :focus-visible,
+body.her-operations-reference #page-Workspaces .sidebar-toggle-btn[aria-expanded="true"]:focus-visible {
+  outline: 2px solid var(--her-nav-accent);
+  outline-offset: -2px;
+}
+.her-workspace-scrim { display: none; }
+
+@media (min-width: 992px) {
+  body.her-operations-reference #page-Workspaces .layout-main {
+    height: calc(100dvh - var(--navbar-height) - var(--page-head-height));
+  }
+  body.her-operations-reference #page-Workspaces:has(.sidebar-toggle-btn[aria-expanded="true"]) .layout-main {
+    margin-inline-start: -20px;
+  }
+  body.her-operations-reference #page-Workspaces .layout-side-section {
+    flex: 0 0 var(--her-nav-width);
+    max-width: var(--her-nav-width);
+    padding: 0;
+    background: var(--her-nav-surface);
+    border-inline-end: 1px solid var(--her-nav-active);
+    scrollbar-color: var(--her-nav-active) transparent;
+  }
+}
+
+@media (max-width: 991px) {
+  body.her-operations-reference #page-Workspaces {
+    --her-nav-width: min(248px, 82vw);
+  }
+  html:has(body.her-operations-reference .her-workspace-nav-open) {
+    overflow: hidden;
+    scrollbar-gutter: stable;
+  }
+  body.her-operations-reference .sticky-top:has(> .navbar) {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 7;
+  }
+  body.her-operations-reference #page-Workspaces .page-head {
+    top: var(--navbar-height) !important;
+  }
+  body.her-operations-reference #page-Workspaces :is(.page-head-content, .layout-main) {
+    margin-inline: -12px;
+  }
+  body.her-operations-reference #page-Workspaces .page-title {
+    flex: 1 1 0;
+    max-width: none;
+    min-width: 0;
+  }
+  body.her-operations-reference #page-Workspaces .page-title .title-text {
+    max-width: none;
+  }
+  body.her-operations-reference #page-Workspaces .page-actions {
+    flex: 0 0 auto;
+    width: auto;
+  }
+  body.her-operations-reference #page-Workspaces .layout-side-section {
+    display: block !important;
+  }
+  body.her-operations-reference #her-workspace-navigation,
+  body.her-operations-reference .her-workspace-scrim {
+    position: fixed;
+    inset: calc(var(--navbar-height) + var(--page-head-height)) 0 0;
+    height: auto;
+  }
+  body.her-operations-reference #her-workspace-navigation {
+    inset-inline-end: auto;
+    width: var(--her-nav-width);
+    border-inline-end: 1px solid var(--her-nav-active);
+    padding: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    transform: none;
+    transition: none;
+    visibility: hidden;
+    z-index: 5;
+  }
+  body.her-operations-reference #her-workspace-navigation.her-workspace-nav-open {
+    visibility: visible;
+  }
+  body.her-operations-reference .her-workspace-nav-open ~ .her-workspace-scrim {
+    display: block;
+    background: rgb(10 23 42 / 46%);
+    z-index: 4;
+  }
+}
+
 .her-workspace-actions { display: inline-flex; gap: 8px; align-items: center; }
 body.her-operations-reference .ce-paragraph:has(.her-overview-title) {
   position: relative;
@@ -136,9 +334,26 @@ body.her-operations-reference .links-widget-box .link-item[href="/app/grouped-ex
 
 /* Expense analytics entry point. */
 body.her-operations-reference .links-widget-box .link-item:is([href="/app/query-report/Crane Expense Report"], [href="/app/query-report/Crane%20Expense%20Report"]) {
-  background: #e5f3ef; color: #145b4c; border: 1px solid #b5d9cb;
-  border-inline-start: 4px solid #21836b; border-radius: 8px; font-weight: 700;
+  background: #fff1f1; color: #b80000; border: 1px solid #ffc6c6;
+  border-inline-start: 4px solid #d00000; border-radius: 8px; font-weight: 700;
 }
 html[data-theme="dark"] body.her-operations-reference .links-widget-box .link-item:is([href="/app/query-report/Crane Expense Report"], [href="/app/query-report/Crane%20Expense%20Report"]) {
-  background: #193e37; color: #b4ead8; border-color: #316756;
+  background: #411919; color: #ff8585; border-color: #893838;
+}
+body.her-operations-reference .links-widget-box .link-item:is([href="/app/query-report/Crane Expense Report"], [href="/app/query-report/Crane%20Expense%20Report"]) :is(.her-link-icon, .link-text) {
+  color: inherit;
+  --icon-stroke: currentColor;
+}
+
+/* Payment statement entry point. */
+body.her-operations-reference .links-widget-box .link-item:is([href="/app/query-report/Mode of Payment Statement"], [href="/app/query-report/Mode%20of%20Payment%20Statement"]) {
+  background: #eaf8ef; color: #176b3a; border: 1px solid #b8e3c8;
+  border-inline-start: 4px solid #249c68; border-radius: 8px; font-weight: 700;
+}
+html[data-theme="dark"] body.her-operations-reference .links-widget-box .link-item:is([href="/app/query-report/Mode of Payment Statement"], [href="/app/query-report/Mode%20of%20Payment%20Statement"]) {
+  background: #173b29; color: #8be0ae; border-color: #367a53;
+}
+body.her-operations-reference .links-widget-box .link-item:is([href="/app/query-report/Mode of Payment Statement"], [href="/app/query-report/Mode%20of%20Payment%20Statement"]) :is(.her-link-icon, .link-text) {
+  color: inherit;
+  --icon-stroke: currentColor;
 }

@@ -21,7 +21,7 @@ class TestMaintenancePosting(FrappeTestCase):
         settings.set('repair_defaults', [dict(company=self.company.name,
             expense_account=self.company.default_expense_account, mode_of_payment=self.mode.name)])
         settings.save()
-        self.crane = frappe.get_doc(dict(doctype='Crane', crane_name=self.key,
+        self.crane = frappe.get_doc(dict(doctype='Crane', crane_id=frappe.generate_hash(length=12), crane_name=self.key,
             sharing_company=self.company.name)).insert()
         self.warehouse = frappe.get_doc(dict(doctype='Warehouse', warehouse_name=self.key,
             company=self.company.name)).insert().name

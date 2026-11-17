@@ -1,6 +1,8 @@
 # Crane Operations workspace
 
-Open **Crane Operations** (`/app/crane-operations`). The latest layout has a regenerated shallow crane panorama and seven section cards in four desktop columns. Quick Access, the separate Maintenance card, top Customize/Refresh buttons and bottom report shortcuts were removed at the user’s request. The cards contain compact icon/link rows, colored headings and permission-filtered record counts. Mobile layouts stack the native blocks. **All workspaces** toggles the navigation sidebar; **Refresh** reloads the page and counts.
+Open **Crane Operations** (`/app/crane-operations`). The latest layout has a shallow crane panorama and seven section cards in four desktop columns. The cards contain compact icon/link rows, colored headings and permission-filtered record counts. Mobile layouts stack the native blocks.
+
+The menu button beside the page title opens the workspace navigation. The title area and sidebar share a straight edge and a continuous navy background. On desktop the full-height sidebar scrolls independently. On mobile you can close the panel with the menu button, Escape, a navigation link, or a tap outside the panel.
 
 ## Edit on your site
 
@@ -30,3 +32,5 @@ bench --site YOUR_SITE clear-cache
 Then reload the browser. Standard installation/migration also runs the initializer. No rental DocType schema or accounting changes are involved.
 
 The regenerated panorama displays at 10:1 with a maximum height of one quarter of the viewport. The Sections/الأقسام heading has been removed.
+
+The Mode of Payment Statement is under Financial Reports. Its one-time upgrade patch adds only the report link and preserves the site's other links and layout.

@@ -179,7 +179,7 @@ frappe.ui.form.on("Crane", {
                 } else {
                     frappe.msgprint(message?.submitted_assignments
                         ? __("All submitted work for this Crane is already billed.")
-                        : __("No submitted Timesheets found for this Crane."));
+                        : __("No billable work has been recorded."));
                 }
             }), __("Create"));
         }

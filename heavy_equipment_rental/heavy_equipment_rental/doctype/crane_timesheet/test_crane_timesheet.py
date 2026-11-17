@@ -38,7 +38,7 @@ class TestCraneTimesheet(FrappeTestCase):
             "territory": frappe.db.get_value("Territory", {"is_group": 0}, "name"),
         }).insert()
         self.crane = frappe.get_doc({
-            "doctype": "Crane", "crane_name": "Rented crane " + self.key,
+            "doctype": "Crane", "crane_id": frappe.generate_hash(length=12), "crane_name": "Rented crane " + self.key,
             "hired_from_supplier": 1, "supplier": self.supplier.name,
             "operational_condition": "Operational",
         }).insert()
@@ -452,12 +452,9 @@ class TestCraneTimesheet(FrappeTestCase):
             self.assertEqual(payment.references[0].reference_name, invoice.name)
             self.assertAlmostEqual(payment.references[0].allocated_amount, invoice.outstanding_amount)
             self.assertIn(invoice.name, [row.name for row in supplier_payment_invoices("Crane", self.crane.name)])
-            with self.assertRaises(frappe.ValidationError):
-                sheet.cancel()
-            sheet.reload()
-            invoice.cancel()
-            self.assertFalse(supplier_payment_invoices("Crane Timesheet", sheet.name))
             sheet.cancel()
+            self.assertEqual(invoice.reload().docstatus, 2)
+            self.assertFalse(supplier_payment_invoices("Crane Timesheet", sheet.name))
             self.assertEqual(sheet.docstatus, 2)
             self.assertEqual(sheet.purchase_invoice, invoice.name)
             if offset == 0:
@@ -535,6 +532,96 @@ class TestCraneTimesheet(FrappeTestCase):
         overlap = self.make_sheet(length=4)
         with self.assertRaisesRegex(frappe.ValidationError, "shift overlaps submitted Timesheet"):
             overlap.insert()
+
+    def test_idle_rows_submit_for_each_billing_unit_and_do_not_block_billing(self):
+        from heavy_equipment_rental.billing import assignment_invoice_summary, generate_sales_invoice
+
+        for unit in ("Hour", "Day", "Month"):
+            with self.subTest(unit=unit):
+                sheet = self.make_sheet(rate=0)
+                sheet.update(dict(rented=1, rental_rate_unit=unit, rental_rate=100, purchase_uom=unit))
+                row = sheet.timesheet_entries[0]
+                row.update(dict(worked_hours=0, start_time=None, end_time=None, overtime_price=42))
+                sheet.insert()
+                sheet.submit()
+                sheet.reload()
+                row = sheet.timesheet_entries[0]
+                self.assertEqual((sheet.total_crane_billable_hours, sheet.total_amount), (0, 0))
+                self.assertEqual((row.day_name, row.rental_rate_unit, row.overtime_price),
+                                 (self.day.strftime("%a"), unit, 42))
+                self.assertFalse(sheet.purchase_invoice)
+                self.assertNotIn(sheet.name, assignment_invoice_summary(self.assignment.name)["submitted_without_invoice"])
+
+        self.assertTrue(generate_sales_invoice(assignment=self.assignment.name)["no_billable_work"])
+        worked = self.make_sheet().insert()
+        worked.submit()
+        result = generate_sales_invoice(assignment=self.assignment.name)
+        self.assertEqual(result["timesheets"], [worked.name])
+        self.assertEqual(frappe.get_doc("Sales Invoice", result["name"]).items[0].qty, 4)
+
+    def test_zero_clock_duration_with_omitted_worked_hours(self):
+        sheet = self.make_sheet(rate=0)
+        row = sheet.timesheet_entries[0]
+        row.start_time = row.end_time = "08:00"
+        row.worked_hours = None
+        sheet.insert()
+        sheet.submit()
+        self.assertEqual(sheet.total_crane_billable_hours, 0)
+        self.assertEqual(sheet.reload().timesheet_entries[0].worked_hours, 0)
+        self.assertFalse(sheet.purchase_invoice)
+
+    def test_overtime_hours_and_rates_reach_sales_and_purchase_invoices(self):
+        from heavy_equipment_rental.billing import generate_sales_invoice
+        for offset, price in enumerate((0, 150)):
+            sheet = self.make_sheet(offset=offset)
+            row = sheet.timesheet_entries[0]
+            row.worked_hours, row.overtime_hours, row.overtime_price = 4, 2, price
+            sheet.insert()
+            expected = 400 + 2 * (price or 100)
+            self.assertEqual((sheet.total_crane_billable_hours, sheet.total_overtime_hours), (6, 2))
+            self.assertEqual(sheet.total_amount, expected)
+            self.assertEqual(row.line_amount, expected)
+            sheet.submit()
+            purchase = frappe.get_doc("Purchase Invoice", sheet.purchase_invoice)
+            self.assertEqual(purchase.items[0].qty, 6)
+            sale = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=sheet.name)["name"])
+            self.assertEqual([(r.uom, r.qty, r.rate) for r in sale.items],
+                             [("Hour", 4, 100), ("Hour", 2, price or 100)])
+            self.assertEqual(sale.net_total, expected)
+
+    def test_day_month_overtime_uses_hourly_price_and_deduplicates_drivers(self):
+        from heavy_equipment_rental.billing import generate_sales_invoice
+        for price_row in self.crane.period_prices:
+            if price_row.period == "Hour":
+                price_row.price = 30
+        self.crane.save()
+        for offset, unit in enumerate(("Day", "Month")):
+            sheet = self.make_sheet(offset=offset)
+            sheet.rental_rate_unit, sheet.rental_rate = unit, 3100
+            row = sheet.timesheet_entries[0]
+            row.worked_hours, row.overtime_hours = 4, 2
+            sheet.append("timesheet_entries", {
+                "work_date": row.work_date, "employee": self.employee,
+                "start_time": "08:00", "end_time": "12:00", "worked_hours": 4, "overtime_hours": 2,
+            })
+            sheet.insert()
+            self.assertEqual((sheet.total_crane_billable_hours, sheet.total_overtime_amount), (6, 60))
+            sheet.submit()
+            sale = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=sheet.name)["name"])
+            self.assertEqual((sale.items[-1].uom, sale.items[-1].qty, sale.items[-1].rate), ("Hour", 2, 30))
+            self.assertAlmostEqual(sale.net_total, sheet.total_amount, places=2)
+
+    def test_overtime_only_day_rental_bills_hours(self):
+        from heavy_equipment_rental.billing import generate_sales_invoice
+        sheet = self.make_sheet()
+        sheet.rental_rate_unit, sheet.rental_rate = "Day", 900
+        row = sheet.timesheet_entries[0]
+        row.worked_hours, row.overtime_hours, row.overtime_price = 0, 3, 120
+        sheet.insert()
+        self.assertEqual((sheet.total_crane_billable_hours, sheet.total_amount), (3, 360))
+        sheet.submit()
+        sale = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=sheet.name)["name"])
+        self.assertEqual([(r.uom, r.qty, r.rate) for r in sale.items], [("Hour", 3, 120)])
 
     def test_distinct_worked_hours_include_overnight_and_ignore_idle_dates(self):
         sheet = self.make_sheet(length=4)

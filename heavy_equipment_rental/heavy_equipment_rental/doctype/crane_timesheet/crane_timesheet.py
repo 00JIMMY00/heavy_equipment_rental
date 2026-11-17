@@ -1,6 +1,7 @@
 from calendar import monthrange
 from datetime import timedelta
 from decimal import Decimal
+from math import isfinite
 
 import frappe
 from frappe import _
@@ -39,12 +40,17 @@ def default_timesheet_entries(period_start, period_end):
     settings = frappe.get_single("Heavy Equipment Rental Settings")
     settings.check_permission("read")
     return [{
-        "work_date": str(start + timedelta(days=offset)),
+        "work_date": str(day),
+        "day_name": day_name(day),
         "start_time": str(settings.day_shift_start_time or "08:00:00"),
         "end_time": str(settings.day_shift_end_time or "16:00:00"),
         "ends_next_day": 0,
         "worked_hours": flt(settings.day_shift_hours or 8),
-    } for offset in range((end - start).days + 1)]
+    } for day in (start + timedelta(days=offset) for offset in range((end - start).days + 1))]
+
+
+def day_name(day):
+    return ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")[day.weekday()]
 
 
 def matching_assignments(crane, customer, location, start, end):
@@ -168,17 +174,8 @@ class CraneTimesheet(Document):
             frappe.throw(_("The Purchase Invoice link is managed automatically."))
         # Submitted amounts are snapshots. Attachment edits must not recalculate them.
         # Frappe still rejects changes to fields that do not allow edits after submission.
-        if previous and previous.docstatus == self.docstatus == 1:
+        if previous and previous.docstatus == 1 and self.docstatus in (1, 2):
             return
-        if self.crane_ownership_type == "Rented" and self.rented and self.docstatus != 2 and not (
-            previous and previous.docstatus == 1
-        ):
-            if not self.purchase_supplier:
-                frappe.throw(_("Select a Supplier on the rented Crane first."))
-            if self.purchase_uom not in ("Hour", "Day", "Month"):
-                frappe.throw(_("Select an Hour, Day or Month Supplier Billing UOM."))
-            if flt(self.purchase_rate) <= 0:
-                frappe.throw(_("Enter a positive Purchase Price per {0}.").format(self.purchase_uom))
         check_date_order(self.period_start, self.period_end, _("Timesheet period"))
         if not self.assignment:
             frappe.throw(_("Select a Rental Contract or enter billing terms for a new rental."))
@@ -210,8 +207,11 @@ class CraneTimesheet(Document):
                 frappe.throw(_("Amend a cancelled Timesheet for the same Rental Contract and crane."))
         if not self.timesheet_entries and self.docstatus == 1:
             frappe.throw(_("Add at least one shift before submitting the Timesheet."))
-        intervals, operator_hours, flat_days, flat_rows = [], 0, {}, []
+        operator_hours, flat_days, flat_rows = 0, {}, []
         entered_intervals = []
+        overtime_intervals = []
+        crane_hour_price = next((flt(row.price) for row in frappe.get_doc("Crane", self.crane).period_prices
+                                 if row.period == "Hour"), 0)
         submitted_update = bool(previous and previous.docstatus == 1 and self.docstatus == 1)
         employees = {row.employee for row in self.timesheet_entries if row.employee}
         driver_names = {row.name: row.employee_name for row in frappe.get_all(
@@ -219,25 +219,31 @@ class CraneTimesheet(Document):
             fields=["name", "employee_name"])} if employees else {}
         start_period, end_period = getdate(self.period_start), getdate(self.period_end)
         for row in self.timesheet_entries:
-            start, end = interval(row)
-            days = list(work_days(start, end))
+            if not row.work_date:
+                frappe.throw(_("Row {0}: a work date is required.").format(row.idx))
+            day = getdate(row.work_date)
+            row.day_name = day_name(day)
+            if row.worked_hours is not None and flt(row.worked_hours) == 0 and not flt(row.overtime_hours):
+                days = [day]
+            else:
+                start, end = interval(row)
+                days = list(work_days(start, end))
+                # Initialize omitted legacy/API values once from clock times.
+                if row.worked_hours is None:
+                    row.worked_hours = (end - start).total_seconds() / 3600
             for day in days:
                 if not start_period <= day <= end_period:
                     frappe.throw(_("Row {0}: work is outside the Timesheet period.").format(row.idx))
                 if not any(getdate(booking.start_date) <= day <= getdate(booking.expected_end_date)
                            for booking in bookings):
                     frappe.throw(_("Row {0}: work falls outside the agreed rental dates. Extend the Rental Contract deliberately.").format(row.idx))
-            # Initialize omitted legacy/API values once; explicit values, including
-            # zero downtime rows, are never derived again from clock times.
-            if row.worked_hours is None:
-                row.worked_hours = (end - start).total_seconds() / 3600
             hours = flt(row.worked_hours)
-            from math import isfinite
             if not isfinite(hours) or hours < 0:
                 frappe.throw(_("Row {0}: Worked Hours must be a finite non-negative number.").format(row.idx))
             check_non_negative(row.overtime_hours, _("Row {0} overtime").format(row.idx))
-            if flt(row.overtime_hours) > hours:
-                frappe.throw(_("Row {0}: overtime cannot exceed worked hours.").format(row.idx))
+            check_non_negative(row.overtime_price, _("Price for Overtime"))
+            if not isfinite(flt(row.overtime_hours)) or not isfinite(flt(row.overtime_price)):
+                frappe.throw(_("Row {0}: overtime hours and price must be finite.").format(row.idx))
             # Agreed hourly pricing belongs to the rental, not individual operators.
             matching = [booking for booking in bookings if all(
                 getdate(booking.start_date) <= day <= getdate(booking.expected_end_date) for day in days)]
@@ -251,6 +257,10 @@ class CraneTimesheet(Document):
                 row.rental_rate = booking.rental_rate
                 row.rental_rate_unit = booking.rental_rate_unit
             row.price_per_hour = booking.rental_rate if booking.rental_rate_unit == "Hour" else 0
+            row.effective_overtime_price = flt(row.overtime_price) or (
+                flt(booking.rental_rate) if booking.rental_rate_unit == "Hour" else crane_hour_price)
+            if flt(row.overtime_hours) > 0 and row.effective_overtime_price <= 0:
+                frappe.throw(_("Row {0}: enter an overtime price or set the Crane Hour price.").format(row.idx))
             if not submitted_update:
                 row.driver_name = driver_names.get(row.employee)
             row.line_amount = hours * flt(row.price_per_hour)
@@ -258,9 +268,11 @@ class CraneTimesheet(Document):
                 for day in days:
                     flat_days[(booking.name, day)] = booking
                 flat_rows.append(row)
-            operator_hours += hours
-            intervals.append((start, end, flt(row.price_per_hour)))
-            entered_intervals.append((start, end, flt(row.price_per_hour), hours))
+            operator_hours += hours + flt(row.overtime_hours)
+            if hours > 0:
+                entered_intervals.append((start, end, flt(row.price_per_hour), hours))
+            if flt(row.overtime_hours) > 0:
+                overtime_intervals.append((start, end, row.effective_overtime_price, flt(row.overtime_hours)))
         if not submitted_update:
             driver_work = driver_work_summary(self)
             sync_payroll_rows(self, assignment.company, driver_work)
@@ -272,7 +284,9 @@ class CraneTimesheet(Document):
                     "total_hours": work["worked_hours"],
                 })
         self.total_operator_hours = operator_hours
-        self.total_crane_billable_hours, hourly_amount = entered_hour_totals(entered_intervals)
+        regular_hours, hourly_amount = entered_hour_totals(entered_intervals)
+        self.total_overtime_hours, self.total_overtime_amount = entered_hour_totals(overtime_intervals)
+        self.total_crane_billable_hours = regular_hours + self.total_overtime_hours
         flat_amount = sum(
             Decimal(str(booking.rental_rate)) * (
                 Decimal(1) if booking.rental_rate_unit == "Day" else
@@ -284,23 +298,36 @@ class CraneTimesheet(Document):
             for row in flat_rows:
                 row.line_amount = float(flat_amount) * row.worked_hours / flat_operator_hours
         for row in self.timesheet_entries:
+            row.line_amount += flt(row.overtime_hours) * row.effective_overtime_price
             row.line_amount = flt(row.line_amount, row.precision("line_amount"))
-        self.total_amount = flt(hourly_amount + float(flat_amount), self.precision("total_amount"))
-        if intervals:
+        self.total_amount = flt(hourly_amount + float(flat_amount) + self.total_overtime_amount, self.precision("total_amount"))
+        if (self.total_crane_billable_hours > 0 and self.crane_ownership_type == "Rented" and self.rented
+            and self.docstatus != 2 and not (previous and previous.docstatus == 1)):
+            if not self.purchase_supplier:
+                frappe.throw(_("Select a Supplier on the rented Crane first."))
+            if self.purchase_uom not in ("Hour", "Day", "Month"):
+                frappe.throw(_("Select an Hour, Day or Month Supplier Billing UOM."))
+            if flt(self.purchase_rate) <= 0:
+                frappe.throw(_("Enter a positive Purchase Price per {0}.").format(self.purchase_uom))
+        worked_intervals = entered_intervals + overtime_intervals
+        if worked_intervals:
             existing = frappe.db.sql("""SELECT e.*, s.name AS timesheet FROM `tabTimesheet Entry` e
                 JOIN `tabCrane Timesheet` s ON s.name=e.parent
                 WHERE e.parenttype='Crane Timesheet' AND s.crane=%s AND s.docstatus=1 AND s.name!=%s
+                AND (e.worked_hours > 0 OR e.overtime_hours > 0 OR e.worked_hours IS NULL)
                 AND e.work_date BETWEEN %s AND %s FOR UPDATE""",
-                (self.crane, self.name or "", min(s.date() for s, _, _ in intervals) - timedelta(days=1),
-                 max(e.date() for _, e, _ in intervals)), as_dict=True)
+                (self.crane, self.name or "", min(s.date() for s, _, _, _ in worked_intervals) - timedelta(days=1),
+                 max(e.date() for _, e, _, _ in worked_intervals)), as_dict=True)
             for other in existing:
                 other_start, other_end = interval(other)
-                if any(start < other_end and other_start < end for start, end, _ in intervals):
+                if other_start == other_end:
+                    continue
+                if any(start < other_end and other_start < end for start, end, _, _ in worked_intervals):
                     frappe.throw(_("Crane {0}: shift overlaps submitted Timesheet {1}.").format(
                         crane_display_name(self.crane), other.timesheet))
 
     def on_submit(self):
-        if self.crane_ownership_type == "Rented" and self.rented:
+        if self.crane_ownership_type == "Rented" and self.rented and self.total_crane_billable_hours > 0:
             from heavy_equipment_rental.purchasing import create_purchase_invoice
 
             create_purchase_invoice(self)

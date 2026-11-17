@@ -43,6 +43,7 @@ frappe.ui.form.on("Rental Contract", {
                 freeze: true,
                 callback: ({ message }) => {
                     if (message?.name) frappe.set_route("Form", "Sales Invoice", message.name);
+                    else if (message?.no_billable_work) frappe.msgprint(__("No billable work has been recorded."));
                     else if (message?.already_exists) frappe.msgprint(__("All submitted work is already billed."));
                 },
             }), __("Create"));

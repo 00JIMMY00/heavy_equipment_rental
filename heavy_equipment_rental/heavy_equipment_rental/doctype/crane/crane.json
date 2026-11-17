@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "naming_series:",
+ "autoname": "field:crane_id",
  "creation": "2026-10-13 00:00:00",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -8,7 +8,7 @@
  "field_order": [
   "details_tab",
   "identity_section",
-  "naming_series",
+  "crane_id",
   "crane_name",
   "ownership_classification",
   "ownership_type",
@@ -74,13 +74,13 @@
    "label": "Crane"
   },
   {
-   "default": "CR-.#####",
-   "fieldname": "naming_series",
-   "fieldtype": "Select",
-   "hidden": 1,
-   "label": "Series",
-   "options": "CR-.#####",
-   "reqd": 1
+   "fieldname": "crane_id",
+   "fieldtype": "Data",
+   "label": "Crane ID",
+   "no_copy": 1,
+   "read_only_depends_on": "eval:!doc.__islocal",
+   "reqd": 1,
+   "set_only_once": 1
   },
   {
    "fieldname": "crane_name",

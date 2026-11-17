@@ -33,20 +33,10 @@ def execute(filters=None):
     rows = expense_rows(f, currency)
     rows.sort(key=lambda r: (r['posting_date'], r['source_type'], r['source'], r['row_number']))
     total = sum(r['amount'] for r in rows)
-    for r in rows:
-        r['share'] = r['amount'] / total * 100 if total else 0
     grouping = f.get('group_by') or 'Crane'
     data = group_rows(rows, grouping, cint(f.get('show_details')), currency)
-    days = (getdate(f.to_date) - getdate(f.from_date)).days + 1
-    cranes = {r['crane'] for r in rows if r['crane']}
-    summary = [
-        dict(label=_('Total Expenses'), value=total, datatype='Currency', currency=currency, indicator='Blue'),
-        dict(label=_('Expense Lines'), value=len(rows), datatype='Int', indicator='Blue'),
-        dict(label=_('Cranes with Expenses'), value=len(cranes), datatype='Int', indicator='Green'),
-        dict(label=_('Average per Calendar Day'), value=total / days, datatype='Currency', currency=currency, indicator='Orange'),
-    ]
-    message = _('Posted Grouped Expenses and Expense Entries only, including driver payroll. Dates are accounting posting dates. Supplier invoices, stock consumption, depreciation and unrelated journals are outside this report. Group totals summarize the detail rows; do not add both together.')
-    return columns(grouping), data, message, expense_chart(rows, f.get('chart_by') or 'Crane', currency), summary, True
+    summary = [dict(label=_('Total Expenses'), value=total, datatype='Currency', currency=currency)]
+    return columns(), data, None, expense_chart(rows, f.get('chart_by') or 'Crane', currency), summary, True
 
 
 def expense_rows(f, currency):
@@ -143,7 +133,7 @@ def group_label(row, group):
     field = GROUPS[group]
     value = row.get(field)
     if group == 'Crane' and value:
-        return f"{row['crane_name']} · {value}"
+        return row["crane_name"]
     if group == 'Expense Type' and value:
         return f"{row['expense_type_title']} · {value}"
     return value or _('Unassigned')
@@ -154,17 +144,17 @@ def group_rows(rows, group, details, currency):
         return rows
     buckets = defaultdict(list)
     for row in rows:
-        buckets[group_label(row, group)].append(row)
+        buckets[row.get(GROUPS[group]) or ''].append(row)
+    totals = {key: sum(row['amount'] for row in members) for key, members in buckets.items()}
+    keys = sorted(buckets) if group == 'Month' else sorted(buckets, key=lambda key: (-totals[key], key))
     result = []
-    # Expense rankings; month groups remain chronological.
-    keys = sorted(buckets) if group == 'Month' else sorted(buckets, key=lambda key: (-sum(r['amount'] for r in buckets[key]), key))
-    total = sum(r['amount'] for r in rows)
     for key in keys:
         members = buckets[key]
-        amount = sum(r['amount'] for r in members)
-        result.append(dict(label=key, amount=amount, currency=currency, is_group=1, indent=0,
-            line_count=len(members), share=amount / total * 100 if total else 0,
-            **{GROUPS[group]: members[0].get(GROUPS[group])}))
+        label = group_label(members[0], group)
+        result.append(dict(crane=key if group == 'Crane' else None,
+            crane_name=label if group == 'Crane' else '',
+            description=label if group != 'Crane' else '', amount=totals[key],
+            currency=currency, is_group=1, indent=0))
         if details:
             result.extend(dict(row, indent=1) for row in members)
     return result
@@ -173,26 +163,26 @@ def group_rows(rows, group, details, currency):
 def expense_chart(rows, group, currency):
     values = defaultdict(float)
     for row in rows:
-        values[group_label(row, group)] += row['amount']
-    items = sorted(values.items()) if group == 'Month' else sorted(values.items(), key=lambda r: (-r[1], r[0]))
+        key = (row.get(GROUPS[group]) or '', group_label(row, group))
+        values[key] += row['amount']
+    order = sorted(values) if group == 'Month' else sorted(values, key=lambda key: (-values[key], key))
+    items = [(key[1], values[key]) for key in order]
     if group != 'Month' and len(items) > 12:
         items = items[:11] + [(_('Other'), sum(v for _, v in items[11:]))]
     return dict(data=dict(labels=[k for k, _ in items], datasets=[dict(name=f"{_('Expenses')} ({currency})", values=[v for _, v in items])]),
-        type='bar', height=280, colors=['#3979bc'], barOptions=dict(spaceRatio=0.35),
+        type='bar', height=280, colors=['#d00000'], barOptions=dict(spaceRatio=0.35),
         axisOptions=dict(xAxisMode='tick', yAxisMode='span', shortenYAxisNumbers=1))
 
 
-def columns(group):
+def columns():
     def col(field, label, typ='Data', width=125, options=None):
         return dict(fieldname=field, label=_(label), fieldtype=typ, width=width, **({'options': options} if options else {}))
-    return [col('label', 'Expense / Group', width=300),
-        col('amount', 'Amount', 'Currency', 150, 'currency'), col('share', 'Share of Total', 'Percent', 115),
-        col('line_count', 'Lines', 'Int', 65), col('posting_date', 'Posting Date', 'Date', 110),
-        col('crane', 'Crane', 'Link', 120, 'Crane'), col('crane_name', 'Crane Name', width=150),
-        col('timesheet', 'Crane Timesheet', 'Link', 140, 'Crane Timesheet'),
+    return [
+        col('posting_date', 'Posting Date', 'Date', 125),
+        col('crane_name', 'Crane', width=190),
+        col('amount', 'Amount', 'Currency', 150, 'currency'),
+        col('description', 'Description', width=300),
+        col('timesheet', 'Crane Timesheet', 'Link', 145, 'Crane Timesheet'),
         col('expense_type_title', 'Expense Type', width=150),
-        col('mode_of_payment', 'Mode of Payment', 'Link', 140, 'Mode of Payment'),
-        col('source_type', 'Source Type', width=135), col('source', 'Expense Document', 'Dynamic Link', 150, 'source_type'),
-        col('journal_entry', 'Journal Entry', 'Link', 165, 'Journal Entry'),
-        col('assignment', 'Rental Contract', 'Link', 140, 'Rental Contract'),
-        col('employee_name', 'Driver', width=150), col('account', 'Expense Account', 'Link', 180, 'Account')]
+        col('source', 'Expense Document', 'Dynamic Link', 150, 'source_type'),
+    ]

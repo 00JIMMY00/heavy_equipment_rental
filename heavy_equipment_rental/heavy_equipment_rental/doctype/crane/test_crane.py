@@ -36,7 +36,7 @@ class TestCrane(FrappeTestCase):
 			asset_owner="Company", asset_quantity=1, is_existing_asset=1, calculate_depreciation=0,
 			purchase_date=today(), available_for_use_date=today(), gross_purchase_amount=100000,
 			opening_accumulated_depreciation=20000)).insert()
-		self.crane = frappe.get_doc(dict(doctype="Crane", crane_name=self.key)).insert()
+		self.crane = frappe.get_doc(dict(doctype="Crane", crane_id=frappe.generate_hash(length=12), crane_name=self.key)).insert()
 
 	def link(self):
 		self.crane.asset = self.asset.name
@@ -69,7 +69,7 @@ class TestCrane(FrappeTestCase):
 	def test_duplicate_asset_and_grouped_assets_rejected(self):
 		self.link()
 		with self.assertRaisesRegex(frappe.ValidationError, "already linked"):
-			frappe.get_doc(dict(doctype="Crane", crane_name=self.key + " second", asset=self.asset.name)).insert()
+			frappe.get_doc(dict(doctype="Crane", crane_id=frappe.generate_hash(length=12), crane_name=self.key + " second", asset=self.asset.name)).insert()
 		self.asset.asset_quantity = 2
 		with self.assertRaisesRegex(frappe.ValidationError, "quantity 1"):
 			self.asset.save()

@@ -16,6 +16,13 @@ class TestRentalWorkflow(FrappeTestCase):
             if not frappe.db.exists("Location", name):
                 frappe.get_doc({"doctype": "Location", "location_name": name}).insert()
 
+    def test_crane_uses_entered_id(self):
+        crane_id = "Site-07-" + frappe.generate_hash(length=8)
+        crane = frappe.get_doc(dict(doctype="Crane", crane_id=crane_id, crane_name="Site Crane")).insert()
+        self.assertEqual((crane.name, crane.reload().crane_id), (crane_id, crane_id))
+        with self.assertRaisesRegex(frappe.ValidationError, "Crane ID is required"):
+            frappe.get_doc(dict(doctype="Crane", crane_name="Missing ID")).insert()
+
     def test_location_links_migrate_existing_text(self):
         from heavy_equipment_rental.patches.link_rental_locations import execute
         for doctype in ("Rental Contract", "Crane Timesheet"):
@@ -40,7 +47,7 @@ class TestRentalWorkflow(FrappeTestCase):
             settings = frappe.get_single("Heavy Equipment Rental Settings")
             settings.default_selling_uom = "Day"
             settings.save()
-            crane = frappe.get_doc(dict(doctype="Crane", crane_name="Rental Contract defaults " + frappe.generate_hash(length=8),
+            crane = frappe.get_doc(dict(doctype="Crane", crane_id=frappe.generate_hash(length=12), crane_name="Rental Contract defaults " + frappe.generate_hash(length=8),
                 operational_condition="Operational")).insert()
             for row in crane.period_prices:
                 row.price = {"Hour": 100, "Day": 700, "Month": 15000}[row.period]
@@ -69,7 +76,7 @@ class TestRentalWorkflow(FrappeTestCase):
             self.skipTest("An enabled Expense Entry Type and Mode of Payment are required")
         mode = frappe.db.get_value("Mode of Payment Account", {"company": expense_type.company}, "parent")
         crane = frappe.get_doc({
-            "doctype": "Crane", "crane_name": "Expense test " + frappe.generate_hash(length=8),
+            "doctype": "Crane", "crane_id": frappe.generate_hash(length=12), "crane_name": "Expense test " + frappe.generate_hash(length=8),
             "operational_condition": "Operational",
         }).insert()
         maintenance = frappe.get_doc({
@@ -93,6 +100,7 @@ class TestRentalWorkflow(FrappeTestCase):
         day = getdate(today()) + timedelta(days=7)
         crane = frappe.get_doc({
             "doctype": "Crane",
+            "crane_id": frappe.generate_hash(length=12),
             "crane_name": "Future Timesheet " + frappe.generate_hash(length=8),
             "operational_condition": "Operational",
         }).insert()
@@ -129,7 +137,7 @@ class TestRentalWorkflow(FrappeTestCase):
             "customer_type": "Company", "customer_group": group, "territory": territory,
         }).insert()
         crane = frappe.get_doc({
-            "doctype": "Crane", "crane_name": "Rental test crane " + key,
+            "doctype": "Crane", "crane_id": frappe.generate_hash(length=12), "crane_name": "Rental test crane " + key,
             "operational_condition": "Operational", "license_plate": "TEST-" + key,
             "crane_image": "/files/test-crane.jpg",
         }).insert()

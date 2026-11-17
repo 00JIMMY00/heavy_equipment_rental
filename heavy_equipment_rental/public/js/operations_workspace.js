@@ -2,8 +2,65 @@
 (() => {
   const route = 'Workspaces/Crane Operations';
   const colors = ['#2864ed', '#813df5', '#059669', '#f5660b', '#0891b2', '#db2777', '#5546ed', '#0d9488'];
+  const mobileNavigation = window.matchMedia('(max-width: 991px)');
+  let workspaceNavigation;
   let counts;
   let scheduled = false;
+
+  function prepareNavigation(page) {
+    const toggle = page.querySelector('.sidebar-toggle-btn');
+    const column = page.querySelector('.layout-side-section');
+    const panel = column?.querySelector('.overlay-sidebar');
+    const content = page.querySelector('.layout-main-section-wrapper');
+    if (!toggle || !panel || !content) return;
+
+    const scrim = document.createElement('div');
+    scrim.className = 'her-workspace-scrim';
+    column.append(scrim);
+    panel.id = 'her-workspace-navigation';
+    panel.setAttribute('role', 'navigation');
+    panel.setAttribute('aria-label', __('All workspaces'));
+    toggle.setAttribute('aria-controls', panel.id);
+
+    const active = () => frappe.get_route_str() === route;
+    const sync = () => {
+      if (!active()) {
+        toggle.removeAttribute('aria-expanded');
+        content.inert = false;
+        return;
+      }
+      const open = mobileNavigation.matches
+        ? panel.classList.contains('her-workspace-nav-open')
+        : getComputedStyle(column).display !== 'none';
+      toggle.setAttribute('aria-expanded', String(open));
+      content.inert = mobileNavigation.matches && open;
+    };
+    const close = (restoreFocus = false) => {
+      panel.classList.remove('her-workspace-nav-open');
+      if (restoreFocus) toggle.focus();
+      sync();
+    };
+    toggle.addEventListener('click', event => {
+      if (!active()) return;
+      event.stopImmediatePropagation();
+      if (mobileNavigation.matches) panel.classList.toggle('her-workspace-nav-open');
+      else $(column).toggle();
+      sync();
+    }, true);
+    scrim.addEventListener('click', () => close(true));
+    panel.addEventListener('click', event => {
+      if (active() && mobileNavigation.matches && event.target.closest('.item-anchor')) close();
+    });
+    document.addEventListener('keydown', event => {
+      if (active() && event.key === 'Escape' && panel.classList.contains('her-workspace-nav-open')) {
+        event.preventDefault();
+        event.stopPropagation();
+        close(true);
+      }
+    }, true);
+    mobileNavigation.addEventListener('change', () => close());
+    return {close, sync};
+  }
 
   function localizeLinkStatus() {
     if (frappe.boot.lang !== 'ar') return;
@@ -23,7 +80,13 @@
     localizeLinkStatus();
     const active = frappe.get_route_str() === route;
     document.body.classList.toggle('her-operations-reference', active);
-    if (!active) return;
+    if (!active) {
+      workspaceNavigation?.close();
+      return;
+    }
+    const workspace = document.getElementById('page-Workspaces');
+    if (!workspaceNavigation && workspace) workspaceNavigation = prepareNavigation(workspace);
+    workspaceNavigation?.sync();
     const page = $('.page-container:visible');
     if (frappe.boot.lang === 'ar') {
       const replacements = [['.her-overview-title', 'Crane Operations'], ['.her-overview-subtitle', 'Workspace overview'], ['.her-all-workspaces', 'All workspaces']];

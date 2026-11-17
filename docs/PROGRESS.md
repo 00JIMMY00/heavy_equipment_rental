@@ -1,5 +1,23 @@
 # Progress
 
+## 2026-11-17 — Mode of Payment Statement
+
+The Operations workspace payment-statement link is highlighted green, with matching light/dark theme colors and inherited icon/text color.
+
+Added the native Script Report and Financial Reports workspace link with Company, From/To Date and Mode of Payment filters. Includes opening and per-account running balances, IN/OUT, source descriptions/document links, summary cards and a bar chart of IN/OUT/closing balances. Shared-account modes are combined without duplicating money. Historical normal/grouped expenses and both transfer sides use posted GL evidence with source permissions.
+
+Migrated cranes-dev3 successfully. All 15 report/rental workflow tests passed, including native payment cancellation, shared modes, opening/future dates, disabled historical mappings, grouped and legacy expense descriptions, permission denials and repeatable workspace upgrades. Test records rolled back. Browser verified the live report/chart and payment-mode filter on desktop/mobile with no page errors or page overflow. Python/JavaScript syntax, JSON/CSV and whitespace checks passed. See [report guide](MODE_OF_PAYMENT_STATEMENT.md).
+
+## 2026-11-17 — Zero-hour shifts and hourly overtime billing
+
+Equal clock times with an omitted Worked Hours value now save as zero. Verified row 5 of existing draft TS-00015 with equal times and zero hours in a rolled-back transaction. Overtime adds to normal billable hours, supplier work quantities and driver summaries. Customer invoices carry separate Hour overtime lines using the entered price or the default hourly price. New totals and effective prices retain submitted snapshots.
+
+Migrated dev3. Passed 29 Timesheet/Rental Contract checks, including hourly override/fallback prices, Day/Month billing, overlapping drivers, overtime-only work and zero-duration rows. One legacy purchase-schema check was skipped. Browser verified zero-hour input and the hourly overtime price label.
+
+## 2026-11-17 — Manual Crane IDs and Timesheet Entries
+
+Migrated dev3 and verified 12 existing Crane IDs and 109 entry weekdays. The Timesheet and Rental Contract suites passed 25 tests, with one legacy purchase-schema test skipped. Browser checks verified editable Crane IDs on new records, immediate weekday updates, and the overtime price with its billing unit in the row editor. The separate Crane asset suite requires the `cranes company` fixture, which dev3 lacks.
+
 ## 2026-11-17 — Crane Expense Report
 
 Added a native Script Report with posting-date/Crane/Timesheet filters, secondary type/payment/source/contract/driver filters, expandable group totals and individual expenses, spending charts, summary cards and accounting drill-down links. Includes posted normal, payroll and grouped expenses with legacy batch deduplication. Native invoice/stock/depreciation costs remain outside this paid-expense report. Highlighted under Financial Reports using an idempotent workspace patch. See [report guide](EXPENSE_REPORT.md).
@@ -43,7 +61,7 @@ Migrated dev3 and backfilled quantities on existing Timesheets, preserving poste
 
 ## 2026-11-17 — Driver payroll from Crane Timesheets
 
-Added company-specific payroll defaults and an optional amounts table filled from Operator Shifts. Submission posts an Expense Entry and Journal Entry per paid driver. Confirmed Timesheet cancellation includes those documents in its reversal plan. The additive schema was migrated on dev3. Existing Timesheets and accounting history required no backfill.
+Added company-specific payroll defaults and an optional amounts table filled from Timesheet Entries. Submission posts an Expense Entry and Journal Entry per paid driver. Confirmed Timesheet cancellation includes those documents in its reversal plan. The additive schema was migrated on dev3. Existing Timesheets and accounting history required no backfill.
 
 Timesheet, rental workflow and Expense Entry suites passed 29 tests on dev3, with one legacy-schema test skipped. A JavaScript check verified driver row deduplication, amount retention and row cleanup when shifts change.
 
@@ -152,6 +170,7 @@ Replaced the Crane Ownership field’s plain classification and technical descri
 
 
 - 2026-11-16: Removed the workspace CSS rule that forced its sidebar hidden. Frappe’s native three-line sidebar toggle now controls navigation visibility and the mobile overlay. Browser verified desktop open/close and mobile overlay open/dismiss with no JavaScript errors.
+- 2026-11-17: Docked the Crane Operations sidebar to its menu button. The full-height navigation scrolls independently on desktop. On mobile it stays attached to the sticky header and supports dismissal with the button, Escape, a navigation link, or the backdrop. Browser verified desktop light and dark themes, mobile dismissal after scrolling, and right-to-left placement.
 
 - 2026-11-16: Highlighted the six frequent workspace destinations (Cranes, Work Log, Servicing, Expense Entries, Sales Invoices and Purchase Invoices) with blue backgrounds, stronger text and an accent border, supporting light/dark themes and both interface languages.
 

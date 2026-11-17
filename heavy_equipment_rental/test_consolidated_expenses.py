@@ -19,7 +19,7 @@ class TestGroupedExpenses(FrappeTestCase):
         seed_defaults()
         self.default = next(r for r in frappe.get_single('Heavy Equipment Rental Settings').expense_defaults if r.company == self.company)
         self.mode = frappe.db.get_value('Mode of Payment Account', {'company': self.company}, 'parent')
-        self.crane = frappe.get_doc(dict(doctype='Crane', crane_name='Batch test ' + frappe.generate_hash(length=8), operational_condition='Operational')).insert()
+        self.crane = frappe.get_doc(dict(doctype='Crane', crane_id=frappe.generate_hash(length=12), crane_name='Batch test ' + frappe.generate_hash(length=8), operational_condition='Operational')).insert()
         if not frappe.db.exists('Location', 'Batch test yard'):
             frappe.get_doc(dict(doctype='Location', location_name='Batch test yard')).insert()
         self.contract = frappe.get_doc(dict(doctype='Rental Contract', company=self.company,

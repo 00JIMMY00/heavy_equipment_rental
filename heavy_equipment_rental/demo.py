@@ -65,7 +65,7 @@ def _create_cycle(company, start_date, *, location=None, daily_rate=5000,
     employee = frappe.get_doc(dict(doctype="Employee", first_name="HER DEMO Operator", company=company,
         gender=frappe.db.get_value("Gender", {}, "name"), date_of_birth="1990-01-01",
         date_of_joining="2020-01-01", status="Active")).insert()
-    crane = frappe.get_doc(dict(doctype="Crane", crane_name="HER DEMO 50 Ton Crane",
+    crane = frappe.get_doc(dict(doctype="Crane", crane_id="HER-DEMO-50", crane_name="HER DEMO 50 Ton Crane",
         capacity_tons=50, ownership_type="Owned", operational_condition="Operational",
         license_plate="HER-DEMO-001", period_prices=[dict(period="Day", price=daily_rate)])).insert()
     assignment = frappe.get_doc(dict(doctype="Rental Contract", company=company,

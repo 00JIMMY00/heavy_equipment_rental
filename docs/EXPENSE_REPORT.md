@@ -4,13 +4,13 @@ Open the highlighted **Crane Expense Report** link under **Crane Operations → 
 
 Select Company and a posting-date range, then optionally filter by Crane or Crane Timesheet. **More Filters** adds Expense Entry Type, Mode of Payment, Expense Source, Rental Contract and Driver. The report starts with the current month.
 
-The summary cards show total expenses in company currency, individual expense-line count, distinct assigned cranes and the average per calendar day in the selected range. Unassigned expenses are included in the total and appear as a separate chart/group; they are not counted as a Crane.
+The **Total Expenses** line shows the amount for the selected filters in company currency. Unassigned expenses appear as a separate chart and group entry.
 
-**Group By** supports Crane, Timesheet, Expense Type, Mode of Payment and Month. Choose **None** for a flat list. **Show Individual Expenses** displays the rows beneath group totals; turn it off for totals only. Group totals already contain their detail rows, so do not sum both levels. The summary cards and chart always use individual expense rows once.
+**Group By** supports Crane, Timesheet, Expense Type, Mode of Payment and Month. Choose **None** for a flat list. **Show Individual Expenses** displays the rows beneath group totals; turn it off for totals only. Group totals already contain their detail rows, so do not sum both levels. The total and chart always use individual expense rows once.
 
 The chart defaults to spending by Crane. **Chart By** also supports Expense Type and Month. Rankings show the top 11 categories plus Other when more than 12 categories exist, preserving the full chart total. Month charts remain chronological.
 
-Open the source expense, Timesheet, Rental Contract or Journal Entry from the table links. Native report print and export remain available; select Group By → None for an export containing only individual expense rows.
+The table starts with Posting Date, Crane name, Amount and Description. Open the Timesheet or source expense from the table links. Native report print and export remain available; select Group By → None for an export containing only individual expense rows.
 
 ## Accounting scope
 

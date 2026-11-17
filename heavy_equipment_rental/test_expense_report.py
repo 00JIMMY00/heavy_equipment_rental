@@ -29,8 +29,10 @@ class TestExpenseReport(FrappeTestCase):
         self.assertEqual(len(rows), 4)
         self.assertEqual(sum(chart['data']['datasets'][0]['values']), 250)
         self.assertEqual(summary[0]['value'], 250)
-        self.assertEqual(summary[1]['value'], 4)
-        self.assertEqual(summary[2]['value'], 1)
+        self.assertEqual(len(summary), 1)
+        self.assertEqual([column['fieldname'] for column in columns], [
+            'posting_date', 'crane_name', 'amount', 'description', 'timesheet', 'expense_type_title', 'source',
+        ])
         self.assertTrue(skip_total)
         self.assertEqual(sum(frappe.db.get_value('Journal Entry', name, 'total_debit') for name in {r['journal_entry'] for r in rows}), 250)
         self.assertTrue(all(row['timesheet'] == self.fixture.sheet.name for row in rows))

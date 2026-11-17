@@ -627,12 +627,18 @@ Operating Expenses,مصروفات تشغيلية
 Operating Fee %,نسبة رسم التشغيل
 Operating Fee Recipient,مستفيد رسم التشغيل
 Operating Fees,رسوم التشغيل
-Operator Shifts,ورديات المشغل
+Crane ID,رقم المعدة
+Crane ID must match the document ID.,يجب أن يطابق رقم المعدة معرّف المستند.
+Price for Overtime,سعر العمل الإضافي
+Price for Overtime per {0},سعر العمل الإضافي لكل {0}
+"For reference, per the entry's rental rate unit.",للمرجع حسب وحدة تسعير الإيجار في الصف.
+Actual operating hours. Enter zero for downtime. Changing shift times does not overwrite this value.,ساعات التشغيل الفعلية. أدخل صفرًا لوقت التوقف. تغيير وقت الوردية لا يغيّر هذه القيمة.
+Row {0}: a work date is required.,الصف {0}: تاريخ العمل مطلوب.
 Fill Table,تعبئة الجدول
 Remove and Fill,حذف وتعبئة
 Remove {0} operator shift row(s) with work dates outside {1} through {2}? The rows will be deleted when you save the Timesheet.,هل تريد حذف صفوف ورديات المشغل البالغ عددها {0} التي تقع تواريخ عملها خارج الفترة من {1} إلى {2}؟ سيتم حذف الصفوف عند حفظ تايم شيت.
 Enter Period Start and Period End in Timesheet Details first.,أدخل بداية الفترة ونهايتها في تفاصيل تايم شيت أولاً.
-Operator Shifts already has a row for every date in this period.,يوجد صف لكل يوم من هذه الفترة في جدول ورديات المشغل.
+Timesheet Entries already has a row for every date in this period.,يوجد صف لكل يوم من هذه الفترة في بنود تايم شيت.
 Original Workbook Date,تاريخ الدفتر الأصلي
 Overtime hours,ساعات العمل الإضافي
 Owner Has No Profit Share,المالك بلا حصة من الربح
@@ -762,6 +768,7 @@ No further active profit-sharing agreement is available.,لا توجد اتفا�
 No posted revenue or costs in this period.,لا توجد إيرادات أو تكاليف مرحلة في هذه الفترة.
 "No postings yet. Enter the repair items, save, then use Submit.",لا توجد قيود مرحلة بعد. أدخل بنود الإصلاح واحفظ ثم اضغط اعتماد.
 No submitted Timesheets found for this Crane.,لا توجد تايم شيت معتمدة لهذه الرافعة.
+No billable work has been recorded.,لم يُسجّل عمل قابل للفوترة.
 No unpaid submitted Purchase Invoices are linked to this record.,لا توجد فواتير مشتريات معتمدة وغير مدفوعة مرتبطة بهذا السجل.
 Only submitted Maintenance can be cancelled.,يمكن إلغاء الصيانة المعتمدة فقط.
 Operating fee Partners must belong to the Crane Company.,يجب أن يتبع شركاء رسم التشغيل شركة الرافعة.
@@ -1205,3 +1212,20 @@ Expense {0} is not submitted.,المصروف {0} غير معتمد.
 Expenses by {0},المصروفات حسب {0}
 Fewer Filters,إخفاء المرشحات الإضافية
 More Filters,مرشحات إضافية
+Price for Overtime / Hour,سعر ساعة العمل الإضافي
+Effective Overtime Price / Hour,سعر ساعة العمل الإضافي المعتمد
+Total Overtime Hours,إجمالي ساعات العمل الإضافي
+Total Overtime Amount,إجمالي مبلغ العمل الإضافي
+Additional hours beyond Worked Hours.,ساعات إضافية إلى ساعات العمل الأساسية.
+"Leave zero to use the agreed hourly rate, or the Crane Hour price for Day and Month rentals.",اتركه صفرًا لاستخدام سعر الساعة المتفق عليه أو سعر الساعة في المعدة للإيجار اليومي والشهري.
+Row {0}: enter an overtime price or set the Crane Hour price.,الصف {0}: أدخل سعر العمل الإضافي أو حدد سعر الساعة في المعدة.
+Row {0}: overtime hours and price must be finite.,الصف {0}: يجب أن تكون ساعات العمل الإضافي وسعرها أرقامًا محدودة.
+Mode of Payment Statement,كشف حركة طرق الدفع
+IN,الوارد
+OUT,المنصرف
+Closing Balance,الرصيد الختامي
+Document {0} has no valid submitted accounting source.,المستند {0} ليس له مصدر محاسبي معتمد صالح.
+The selected Mode of Payment has no default account for this Company.,طريقة الدفع المحددة ليس لها حساب افتراضي لهذه الشركة.
+Payment account {0} must be a ledger account in the selected Company.,يجب أن يكون حساب الدفع {0} حسابًا غير تجميعي في الشركة المحددة.
+No payment accounts are configured for this Company.,لم يتم إعداد حسابات طرق الدفع لهذه الشركة.
+Posted account movements in company currency. Balances run separately for each payment account. Modes sharing an account are shown together; selecting either mode shows the shared account. Transfers appear as OUT from the source and IN to the destination when both accounts are configured.,حركات الحسابات المرحلة بعملة الشركة. يتم حساب الرصيد بشكل مستقل لكل حساب دفع. تظهر طرق الدفع التي تستخدم الحساب نفسه معًا؛ واختيار أي منها يعرض كشف الحساب المشترك. تظهر التحويلات كمنصرف من المصدر ووارد إلى الوجهة عند إعداد الحسابين.

@@ -15,6 +15,7 @@ from heavy_equipment_rental.rental_validation import (
 	interval,
 	assignment_doc,
 	work_days,
+	entered_hour_totals,
 )
 
 
@@ -51,6 +52,7 @@ def _work_days(sheet):
 
 
 def _rental_allocation(sheet, days):
+    days = days or {frappe.utils.getdate(sheet.period_start), frappe.utils.getdate(sheet.period_end)}
     matching = [row for row in allocations([sheet.crane], assignment=sheet.assignment)
                 if (window := allocation_window(row)) and
                 all(window[0] <= day <= window[1] for day in days)]
@@ -68,16 +70,23 @@ def _rental_allocation(sheet, days):
     return row
 
 
-def _invoice_line(sheets, allocation, charged_days):
-    unit = allocation.rental_rate_unit
+def _invoice_line(sheets, allocation, charged_days, overtime_rate=None, overtime_quantity=0):
+    unit = "Hour" if overtime_rate is not None else allocation.rental_rate_unit
+    regular_hours = sum(flt(sheet.total_crane_billable_hours) - flt(sheet.total_overtime_hours) for sheet in sheets)
     quantity = (
-        sum(Decimal(str(sheet.total_crane_billable_hours)) for sheet in sheets)
+        Decimal(str(regular_hours))
         if unit == "Hour" else Decimal(len(charged_days))
         if unit == "Day" else sum(
             (Decimal(1) / Decimal(monthrange(day.year, day.month)[1]) for day in charged_days),
             Decimal(0),
         )
     )
+    rate = flt(allocation.rental_rate)
+    conversion_factor = regular_hours / float(quantity) if quantity else 1
+    if overtime_rate is not None:
+        quantity, rate, conversion_factor = overtime_quantity, overtime_rate, 1
+    if not quantity:
+        return []
     crane = frappe.get_doc("Crane", sheets[0].crane, for_update=True)
     if not crane.item:
         crane.ensure_sales_item()
@@ -90,12 +99,13 @@ def _invoice_line(sheets, allocation, charged_days):
         "item_code": crane.item,
         "item_name": crane.crane_name,
         "uom": unit,
-        "conversion_factor": sum(flt(sheet.total_crane_billable_hours) for sheet in sheets) / float(quantity),
+        "conversion_factor": conversion_factor,
         "qty": float(quantity),
-        "rate": flt(allocation.rental_rate),
+        "rate": rate,
         "description": _("Crane {0}; Rental Contract {1}, row {2}; Timesheets {3}; {4} {5} at {6} per {5}").format(
             crane.crane_name, sheets[0].assignment, allocation.idx,
-            ", ".join(sheet.name for sheet in sheets), float(quantity), unit, allocation.rental_rate),
+            ", ".join(sheet.name for sheet in sheets), float(quantity), unit, rate) +
+            (" · " + _("Overtime hours") if overtime_rate is not None else ""),
     }]
 
 
@@ -144,6 +154,22 @@ def _billing_lines(selected, all_sheets, active_invoices):
                 covered[sheet.name] = next(
                     (charged[(row.name, day)] for day in sorted(days)
                      if (row.name, day) in charged), None)
+    for sheet in selected:
+        if not flt(sheet.total_overtime_hours):
+            continue
+        rates = defaultdict(list)
+        for entry in sheet.timesheet_entries:
+            if flt(entry.overtime_hours) > 0:
+                start, end = interval(entry)
+                rates[flt(entry.effective_overtime_price)].append(
+                    (start, end, flt(entry.effective_overtime_price), flt(entry.overtime_hours)))
+        allocation = _rental_allocation(sheet, _work_days(sheet))
+        for rate, intervals in rates.items():
+            quantity, amount = entered_hour_totals(intervals)
+            lines.extend(_invoice_line([sheet], allocation, set(), rate, quantity))
+        if sheet not in billed:
+            billed.append(sheet)
+        covered.pop(sheet.name, None)
     return lines, billed, covered
 
 
@@ -153,12 +179,16 @@ def assignment_invoice_summary(assignment):
     if not frappe.has_permission("Crane Timesheet", "read") or not frappe.has_permission("Sales Invoice", "read"):
         frappe.throw(_("You cannot view Timesheets or Sales Invoices."), frappe.PermissionError)
     sheets = frappe.get_list("Crane Timesheet", filters={"assignment": assignment},
-                             fields=["name", "crane", "docstatus", "sales_invoice"], limit_page_length=0)
+                             fields=["name", "crane", "docstatus", "sales_invoice", "total_crane_billable_hours"],
+                             limit_page_length=0)
     return {
         "invoices": _invoice_summaries(assignment, sheets),
-        "submitted_without_invoice": [sheet.name for sheet in sheets if sheet.docstatus == 1 and (
-            not sheet.sales_invoice or not frappe.db.exists("Sales Invoice", sheet.sales_invoice) or
-            frappe.db.get_value("Sales Invoice", sheet.sales_invoice, "docstatus") == 2)],
+        "submitted_without_invoice": [
+            sheet.name for sheet in sheets
+            if sheet.docstatus == 1 and flt(sheet.total_crane_billable_hours) > 0 and (
+                not sheet.sales_invoice or not frappe.db.exists("Sales Invoice", sheet.sales_invoice) or
+                frappe.db.get_value("Sales Invoice", sheet.sales_invoice, "docstatus") == 2)
+        ],
     }
 
 
@@ -189,8 +219,12 @@ def generate_sales_invoice(assignment=None, timesheet=None, crane=None):
               frappe.db.get_value("Sales Invoice", sheet.sales_invoice, "docstatus") != 2}
     if timesheet and timesheet in active:
         return {"name": active[timesheet], "already_exists": True}
-    unbilled = [sheet for sheet in selected if sheet.name not in active]
+    if timesheet and flt(selected[0].total_crane_billable_hours) <= 0:
+        frappe.throw(_("Timesheet {0} has no billable crane hours.").format(timesheet))
+    unbilled = [sheet for sheet in selected if sheet.name not in active and flt(sheet.total_crane_billable_hours) > 0]
     if not unbilled:
+        if not any(sheet.name in active for sheet in selected):
+            return {"no_billable_work": True}
         return {"already_exists": True, "existing_invoices": _invoice_summaries(assignment, selected)}
     frappe.db.savepoint("crane_sales_invoice")
     try:
@@ -236,7 +270,7 @@ def generate_crane_sales_invoices(crane):
         frappe.throw(_("You cannot create Sales Invoices."), frappe.PermissionError)
     assignments = frappe.db.sql(
         """SELECT DISTINCT assignment FROM `tabCrane Timesheet`
-        WHERE crane=%s AND docstatus=1 AND assignment IS NOT NULL
+        WHERE crane=%s AND docstatus=1 AND assignment IS NOT NULL AND total_crane_billable_hours > 0
         ORDER BY assignment""",
         crane, pluck=True,
     )

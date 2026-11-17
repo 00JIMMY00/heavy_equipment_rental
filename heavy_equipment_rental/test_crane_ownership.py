@@ -5,7 +5,7 @@ from frappe.tests.utils import FrappeTestCase
 
 class TestCraneOwnership(FrappeTestCase):
     def test_owned_and_hired_are_independent(self):
-        crane = frappe.get_doc(dict(doctype='Crane', crane_name='Ownership test')).insert()
+        crane = frappe.get_doc(dict(doctype='Crane', crane_id=frappe.generate_hash(length=12), crane_name='Ownership test')).insert()
         self.assertEqual(crane.ownership_classification, 'Company Owned')
         self.assertEqual(crane.ownership_partners[0].ownership_percentage,100)
         supplier=frappe.db.get_value('Supplier',{},'name')
@@ -49,7 +49,7 @@ class TestCraneOwnership(FrappeTestCase):
         self.assertEqual(next(r.shareholder for r in settlement.shares if not r.is_company),fixture.partners[0].name)
 
     def test_supplier_hire_and_profit_sharing_are_mutually_exclusive(self):
-        crane=frappe.get_doc(dict(doctype='Crane',crane_name='Exclusive crane options')).insert()
+        crane=frappe.get_doc(dict(doctype='Crane',crane_id=frappe.generate_hash(length=12),crane_name='Exclusive crane options')).insert()
         crane.enable_profit_sharing=1
         crane.hired_from_supplier=1
         with self.assertRaisesRegex(frappe.ValidationError, 'not both'):

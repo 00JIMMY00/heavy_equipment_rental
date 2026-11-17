@@ -41,6 +41,8 @@
   "totals_section",
   "total_operator_hours",
   "total_crane_billable_hours",
+  "total_overtime_hours",
+  "total_overtime_amount",
   "amount_col",
   "total_amount",
   "connections_tab",
@@ -164,13 +166,12 @@
   },
   {
    "fieldname": "entries_section",
-   "fieldtype": "Section Break",
-   "label": "Timesheet Entries"
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "timesheet_entries",
    "fieldtype": "Table",
-   "label": "Operator Shifts",
+   "label": "Timesheet Entries",
    "options": "Timesheet Entry"
   },
   {
@@ -322,7 +323,7 @@
    "fieldtype": "Currency",
    "label": "Purchase Price per Unit",
    "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
-   "mandatory_depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
+   "mandatory_depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented && (doc.timesheet_entries || []).some(row => row.worked_hours > 0 || row.overtime_hours > 0)",
    "description": "Supplier price per Supplier Billing UOM selected here."
   },
   {
@@ -352,6 +353,19 @@
    "allow_on_submit": 1,
    "no_copy": 1,
    "in_standard_filter": 1
+  },
+  {
+   "fieldname": "total_overtime_hours",
+   "fieldtype": "Float",
+   "label": "Total Overtime Hours",
+   "precision": "6",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_overtime_amount",
+   "fieldtype": "Currency",
+   "label": "Total Overtime Amount",
+   "read_only": 1
   }
  ],
  "grid_page_length": 100,

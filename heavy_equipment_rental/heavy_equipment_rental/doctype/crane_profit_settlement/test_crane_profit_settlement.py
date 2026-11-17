@@ -275,7 +275,7 @@ class TestCraneProfitSettlement(FrappeTestCase):
     def test_migration_is_repeatable_and_leaves_legacy_cranes_unconfigured(self):
         from heavy_equipment_rental.patches.add_crane_profit_sharing import execute
 
-        legacy = frappe.get_doc(dict(doctype="Crane", crane_name="HER legacy " + self.key, ownership_type="Other")).insert()
+        legacy = frappe.get_doc(dict(doctype="Crane", crane_id=frappe.generate_hash(length=12), crane_name="HER legacy " + self.key, ownership_type="Other")).insert()
         before = self.crane.agreement_history
         execute()
         execute()
@@ -526,7 +526,7 @@ class TestCraneProfitSettlement(FrappeTestCase):
     def test_grand_total_allocation_includes_tax_without_duplicating_other_cranes(self):
         from heavy_equipment_rental.profit_sharing import allocate_amount
         original = frappe.get_doc("Sales Invoice", self.cycle["timesheets"][0].sales_invoice)
-        other = frappe.get_doc(dict(doctype="Crane", crane_name="HER allocation " + self.key)).insert()
+        other = frappe.get_doc(dict(doctype="Crane", crane_id=frappe.generate_hash(length=12), crane_name="HER allocation " + self.key)).insert()
         invoice = frappe.copy_doc(original)
         invoice.docstatus = 0
         invoice.set("items", [dict(item_code=self.crane.item, crane=self.crane.name, qty=1,

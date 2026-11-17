@@ -125,7 +125,7 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 			self.job("Capitalize Improvement")
 
 	def test_shared_service_product_and_company_interest_values(self):
-		other = frappe.get_doc(dict(doctype="Crane", crane_name=self.key + " other")).insert()
+		other = frappe.get_doc(dict(doctype="Crane", crane_id=frappe.generate_hash(length=12), crane_name=self.key + " other")).insert()
 		self.assertEqual(other.item, self.crane.item)
 		self.assertNotEqual(self.asset.item_code, self.crane.item)
 		self.crane.asset_accounting_basis = "Company Interest Only"
@@ -164,7 +164,7 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 		from heavy_equipment_rental.billing import generate_sales_invoice
 		from heavy_equipment_rental.heavy_equipment_rental.report.crane_rental_profitability.crane_rental_profitability import execute
 
-		other = frappe.get_doc(dict(doctype="Crane", crane_name=self.key + " second crane")).insert()
+		other = frappe.get_doc(dict(doctype="Crane", crane_id=frappe.generate_hash(length=12), crane_name=self.key + " second crane")).insert()
 		assignment = frappe.get_doc(dict(doctype="Rental Contract", company=self.company.name,
 			customer=frappe.db.get_value("Customer", {}, "name"), location=self.key,
 			assigned_cranes=[dict(crane=crane, start_date=today(), expected_end_date=today(),
@@ -236,7 +236,7 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 			with self.assertRaises(frappe.PermissionError):
 				make_repair_document(job.name, "Stock Entry")
 		entry = frappe.get_doc(make_repair_document(job.name, "Stock Entry"))
-		entry.crane = frappe.get_doc(dict(doctype="Crane", crane_name=self.key + " wrong")).insert().name
+		entry.crane = frappe.get_doc(dict(doctype="Crane", crane_id=frappe.generate_hash(length=12), crane_name=self.key + " wrong")).insert().name
 		entry.append("items", dict(item_code=self.part.name, s_warehouse=self.warehouse, qty=1))
 		with self.assertRaisesRegex(frappe.ValidationError, "does not match"):
 			entry.insert()

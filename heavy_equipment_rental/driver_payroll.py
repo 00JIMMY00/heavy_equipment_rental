@@ -51,7 +51,7 @@ def driver_work_summary(sheet):
     hours_by_driver = defaultdict(float)
     days_by_driver = defaultdict(set)
     for row in sheet.timesheet_entries:
-        hours = flt(row.worked_hours)
+        hours = flt(row.worked_hours) + flt(row.overtime_hours)
         hours_by_driver[row.employee] += hours
         if unit in ("Day", "Month") and hours > 0 and row.work_date:
             day = getdate(row.work_date)

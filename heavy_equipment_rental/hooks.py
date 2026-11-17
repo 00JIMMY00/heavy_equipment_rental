@@ -9,7 +9,7 @@ app_include_css = [
 	"/assets/heavy_equipment_rental/css/crane_availability.css",
 	"/assets/heavy_equipment_rental/css/industrial_tokens.css?v=20261116-panorama-v2",
 	"/assets/heavy_equipment_rental/css/industrial_desk.css?v=20261116-ownership-bar-1",
-	"/assets/heavy_equipment_rental/css/operations_workspace.css?v=20261117-expense-report",
+	"/assets/heavy_equipment_rental/css/operations_workspace.css?v=20261117-payment-green",
 	"/assets/heavy_equipment_rental/css/industrial_loading.css",
 ]
 web_include_css = [
@@ -98,7 +98,7 @@ doctype_js = {
     "Payment Entry": "public/js/partner_payment.js",
 }
 
-app_include_js = ["/assets/heavy_equipment_rental/js/operations_workspace.js?v=20261116-panorama-v2", "/assets/heavy_equipment_rental/js/rental_cancellation.js?v=20261114-cancel-all"]
+app_include_js = ["/assets/heavy_equipment_rental/js/operations_workspace.js?v=20261117-workspace-rail", "/assets/heavy_equipment_rental/js/rental_cancellation.js?v=20261114-cancel-all"]
 
 
 override_whitelisted_methods = {

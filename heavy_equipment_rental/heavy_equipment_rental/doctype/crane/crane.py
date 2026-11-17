@@ -2,6 +2,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.model.naming import set_new_name
+from frappe.utils import cstr
 
 from heavy_equipment_rental.rental_validation import check_non_negative, lock_cranes
 from heavy_equipment_rental.item_prices import sync_crane_item_prices
@@ -34,6 +35,9 @@ class Crane(Document):
 			self.default_selling_uom = frappe.db.get_single_value("Heavy Equipment Rental Settings", "default_selling_uom") or "Hour"
 
 	def validate(self):
+		if self.crane_id is not None and cstr(self.crane_id).strip() != self.name:
+			frappe.throw(_("Crane ID must match the document ID."))
+		self.crane_id = self.name
 		from heavy_equipment_rental.crane_ownership import validate_ownership
 		validate_ownership(self)
 		from heavy_equipment_rental.operating_fees import validate_rows

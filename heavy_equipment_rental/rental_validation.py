@@ -87,6 +87,10 @@ def allocations(cranes=None, assignment=None, exclude=None, lock=True):
 
 
 def interval(row):
+	if (row.work_date and not flt(row.worked_hours) and not flt(row.get("overtime_hours"))
+		and row.start_time in (None, "") and row.end_time in (None, "")):
+		start = datetime.combine(getdate(row.work_date), datetime.min.time())
+		return start, start
 	if (
 		not row.work_date
 		or row.start_time is None
@@ -103,7 +107,8 @@ def interval(row):
 	except (ValueError, TypeError):
 		frappe.throw(_("Row {0}: invalid shift time.").format(row.idx))
 	hours = (end - start).total_seconds() / 3600
-	if not 0 < hours <= 24 or cint(row.ends_next_day) not in (0, 1):
+	idle = flt(row.worked_hours) == 0 and flt(row.get("overtime_hours")) == 0
+	if not (0 <= hours <= 24 if idle else 0 < hours <= 24) or cint(row.ends_next_day) not in (0, 1):
 		frappe.throw(
 			_(
 				"Row {0}: shift must be longer than zero and at most 24 hours. Mark Ends Next Day for overnight work."
@@ -114,6 +119,9 @@ def interval(row):
 
 def work_days(start, end):
 	"""Midnight end is exclusive: 20:00 to 00:00 works only the first day."""
+	if start == end:
+		yield start.date()
+		return
 	date, last = start.date(), (end - timedelta(microseconds=1)).date()
 	while date <= last:
 		yield date
@@ -197,6 +205,8 @@ def recorded_work(assignment, cranes):
 
 
 def entry_days(row):
+	if row.work_date and row.worked_hours is not None and flt(row.worked_hours) == 0 and not flt(row.get("overtime_hours")):
+		return [getdate(row.work_date)]
 	return list(work_days(*interval(row)))
 
 

@@ -176,7 +176,15 @@
   {
    "type": "Card Break",
    "label": "Financial Reports",
-   "link_count": 5
+   "link_count": 6
+  },
+  {
+   "type": "Link",
+   "label": "Mode of Payment Statement",
+   "link_type": "Report",
+   "link_to": "Mode of Payment Statement",
+   "is_query_report": 1,
+   "report_ref_doctype": "GL Entry"
   },
   {
    "type": "Link",

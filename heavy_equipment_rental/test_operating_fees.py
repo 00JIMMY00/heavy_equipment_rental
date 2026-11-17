@@ -38,7 +38,7 @@ class TestOperatingFees(FrappeTestCase):
         self.assertEqual(settlement.reload().agreement_snapshot,snapshot)
 
     def test_defaults_and_validation(self):
-        crane=frappe.get_doc(dict(doctype='Crane',crane_name='Default operating fees')).insert()
+        crane=frappe.get_doc(dict(doctype='Crane',crane_id=frappe.generate_hash(length=12),crane_name='Default operating fees')).insert()
         row=crane.operating_fees[0]
         self.assertEqual((row.is_company,row.basis,row.percentage),(1,'Grand Total',0))
         row.percentage=1

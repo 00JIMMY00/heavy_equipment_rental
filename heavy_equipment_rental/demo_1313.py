@@ -123,7 +123,7 @@ def create():
     asset.save().submit()
     asset_payment = invoice_payment("Purchase Invoice", purchase.name, cash, BUY_DATE)
     partners = [frappe.get_doc(dict(doctype="Shareholder", title=f"HER1313 شريك تجريبي {i}", company=COMPANY)).insert().name for i in (1,2,3)]
-    crane = frappe.get_doc(dict(doctype="Crane", crane_name=TITLE, capacity_tons=50, license_plate="DEMO-1313",
+    crane = frappe.get_doc(dict(doctype="Crane", crane_id="DEMO-1313", crane_name=TITLE, capacity_tons=50, license_plate="DEMO-1313",
         ownership_type="Shared Ownership", sharing_company=COMPANY, agreement_effective_from=BUY_DATE,
         operator_type="Our Company", operating_percentage=10, settlement_approval="Review Before Posting",
         settlement_revenue_basis="Net Revenue", distribution_posting="Partner Expense",
