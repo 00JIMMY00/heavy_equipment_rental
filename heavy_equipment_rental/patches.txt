@@ -58,3 +58,4 @@ heavy_equipment_rental.patches.link_rental_locations
 heavy_equipment_rental.patches.rename_rental_contract_workspace
 
 heavy_equipment_rental.patches.backfill_driver_payroll_quantities
+heavy_equipment_rental.patches.backfill_fixed_payroll_rates

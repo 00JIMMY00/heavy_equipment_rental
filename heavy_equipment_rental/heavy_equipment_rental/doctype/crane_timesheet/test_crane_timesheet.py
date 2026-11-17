@@ -144,6 +144,7 @@ class TestCraneTimesheet(FrappeTestCase):
         self.assertEqual([row.quantity for row in sheet.driver_payroll], [6, 4, 4])
         self.assertTrue(all(row.docstatus == 1 for row in sheet.driver_payroll))
         self.assertEqual([row.expense_entry for row in sheet.driver_payroll[:2]], list(expenses))
+        self.assertEqual(sheet.driver_payroll[1].rate, flt(75 / 4, sheet.driver_payroll[1].precision("rate")))
 
         sheet.attachment = "/private/files/payroll-test.pdf"
         sheet.save()
@@ -202,6 +203,13 @@ class TestCraneTimesheet(FrappeTestCase):
         sheet.timesheet_entries[0].worked_hours = 5
         sheet.save()
         self.assertEqual((payroll.unit, payroll.quantity, payroll.amount), ("Hour", 13, 123))
+        self.assertEqual(payroll.rate, flt(123 / 13, payroll.precision("rate")))
+        sheet.reload()
+        sheet.timesheet_entries[0].worked_hours = 7
+        sheet.save()
+        payroll = sheet.driver_payroll[0]
+        self.assertEqual((payroll.quantity, payroll.fixed_amount, payroll.amount), (15, 1, 123))
+        self.assertEqual(payroll.rate, flt(123 / 15, payroll.precision("rate")))
 
     def test_optional_payroll_defaults_and_driver_validation(self):
         settings = frappe.get_single("Heavy Equipment Rental Settings")

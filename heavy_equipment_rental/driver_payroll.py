@@ -72,7 +72,7 @@ def sync_payroll_rows(sheet, company, summary):
         if not isfinite(amount) or amount < 0:
             frappe.throw(_("Driver payroll row {0}: Enter a finite, non-negative amount.").format(row.idx))
         if row.employee not in work:
-            if amount or rate:
+            if amount or (rate and not row.fixed_amount):
                 frappe.throw(_("Driver payroll row {0}: Clear the amount and price for the driver who is no longer on an operator shift.").format(row.idx))
             sheet.remove(row)
             continue
@@ -80,7 +80,10 @@ def sync_payroll_rows(sheet, company, summary):
             frappe.throw(_("Enter only one payroll amount per driver."))
         seen.add(row.employee)
         row.update(work[row.employee])
-        if rate:
+        if row.fixed_amount or (amount and not rate):
+            row.fixed_amount = 1
+            row.rate = implied_payroll_rate(row)
+        elif rate:
             calculated = rate * row.quantity
             if not isfinite(calculated):
                 frappe.throw(_("Driver payroll row {0}: The calculated amount must be finite.").format(row.idx))
@@ -91,6 +94,15 @@ def sync_payroll_rows(sheet, company, summary):
     for employee, values in work.items():
         if employee not in seen:
             sheet.append("driver_payroll", {"employee": employee, **values})
+
+
+def implied_payroll_rate(row):
+    if not row.quantity or not row.amount:
+        return None
+    rate = row.amount / row.quantity
+    if not isfinite(rate):
+        frappe.throw(_("Driver payroll row {0}: The calculated price per unit must be finite.").format(row.idx))
+    return flt(rate, row.precision("rate"))
 
 
 def post_driver_payroll(sheet):

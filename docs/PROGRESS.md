@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-11-17 — Payroll rate from a fixed amount
+
+The payroll grid calculates in either direction and labels its price column by the Timesheet billing unit. Fixed amounts retain their value when work changes and show an implied price when quantity is positive. The dev3 migration filled rates for saved fixed amounts. Timesheet and rental workflow suites passed 23 tests with one legacy test skipped. JavaScript checks covered both inputs, all three unit labels and zero quantity.
+
 ## 2026-11-17 — Employee dates in both forms
 
 Migrated dev3 and verified in Chrome that the Employee full form and Quick Entry hide Date of Birth and prefill Date of Joining with today's date. A rollback-only save confirmed that Date of Birth can be empty and Date of Joining can be edited. All five rental workflow tests passed.

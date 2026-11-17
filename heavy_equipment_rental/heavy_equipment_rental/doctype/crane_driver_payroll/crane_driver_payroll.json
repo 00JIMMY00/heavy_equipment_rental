@@ -4,7 +4,7 @@
  "module": "Heavy Equipment Rental",
  "istable": 1,
  "editable_grid": 1,
- "field_order": ["employee", "quantity", "rate", "amount", "unit", "worked_hours", "expense_entry"],
+ "field_order": ["employee", "quantity", "rate", "amount", "fixed_amount", "unit", "worked_hours", "expense_entry"],
  "fields": [
   {
    "fieldname": "employee",
@@ -40,6 +40,13 @@
    "columns": 3,
    "in_list_view": 1,
    "print_hide": 1
+  },
+  {
+   "fieldname": "fixed_amount",
+   "fieldtype": "Check",
+   "label": "Fixed Payroll Amount",
+   "hidden": 1,
+   "default": "0"
   },
   {
    "fieldname": "unit",

@@ -107,22 +107,34 @@ function sync_payroll_drivers(frm) {
     const grid = frm.fields_dict.driver_payroll.grid;
     const shiftUnits = [...new Set(shifts.map(row => row.rental_rate_unit).filter(Boolean))];
     const unit = frm.doc.rental_rate_unit || (shiftUnits.length === 1 ? shiftUnits[0] : "Hour");
-    const label = {Hour: __("Hours"), Day: __("Days"), Month: __("Months")}[unit];
-    const quantityField = grid.docfields?.find(df => df.fieldname === "quantity");
-    if (quantityField && label && quantityField.label !== label) {
-        grid.update_docfield_property("quantity", "label", label);
+    const labels = {
+        Hour: [__("Hours"), __("Price / Hour")],
+        Day: [__("Days"), __("Price / Day")],
+        Month: [__("Months"), __("Price / Month")],
+    };
+    const [quantityLabel, rateLabel] = labels[unit] || labels.Hour;
+    for (const [field, label] of [["quantity", quantityLabel], ["rate", rateLabel]]) {
+        const df = grid.docfields?.find(df => df.fieldname === field);
+        if (df && df.label !== label) grid.update_docfield_property(field, "label", label);
     }
     if (frm.doc.docstatus !== 0) return;
     const drivers = payroll_work_by_driver(shifts, unit);
     const amountField = frappe.meta.get_docfield("Crane Driver Payroll", "amount", frm.docname);
+    const rateField = frappe.meta.get_docfield("Crane Driver Payroll", "rate", frm.docname);
     let rowsChanged = false;
     for (const row of [...payroll]) {
         const work = drivers.get(row.employee);
         if (work) {
             drivers.delete(row.employee);
-            if (flt(row.rate) > 0) {
+            const rate = flt(row.rate);
+            const amount = flt(row.amount);
+            if (cint(row.fixed_amount) || (amount > 0 && !rate)) {
+                work.fixed_amount = 1;
+                const precision = frappe.meta.get_field_precision(rateField, row);
+                work.rate = work.quantity > 0 && amount ? flt(amount / work.quantity, precision) : null;
+            } else if (rate > 0) {
                 const precision = frappe.meta.get_field_precision(amountField, row);
-                work.amount = flt(flt(row.rate) * work.quantity, precision);
+                work.amount = flt(rate * work.quantity, precision);
             }
             for (const [field, value] of Object.entries(work)) {
                 if (row[field] === value) continue;
@@ -132,7 +144,7 @@ function sync_payroll_drivers(frm) {
             }
             continue;
         }
-        if (flt(row.amount) || flt(row.rate)) continue;
+        if (flt(row.amount) || (flt(row.rate) && !cint(row.fixed_amount))) continue;
         frappe.model.clear_doc(row.doctype, row.name);
         rowsChanged = true;
     }
@@ -333,6 +345,7 @@ frappe.ui.form.on("Crane Timesheet", {
 frappe.ui.form.on("Crane Driver Payroll", {
     rate(frm, cdt, cdn) {
         const row = locals[cdt][cdn];
+        row.fixed_amount = 0;
         if (!flt(row.rate)) {
             row.amount = null;
             frm.fields_dict.driver_payroll.grid.set_value("amount", null, row);
@@ -341,10 +354,7 @@ frappe.ui.form.on("Crane Driver Payroll", {
     },
     amount(frm, cdt, cdn) {
         const row = locals[cdt][cdn];
-        if (row.rate) {
-            row.rate = 0;
-            frm.fields_dict.driver_payroll.grid.set_value("rate", 0, row);
-        }
+        row.fixed_amount = 1;
         sync_payroll_drivers(frm);
     },
 });

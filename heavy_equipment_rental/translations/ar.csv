@@ -1141,3 +1141,7 @@ Price / Unit,سعر الوحدة
 Payroll Unit,وحدة حساب الراتب
 "Driver payroll row {0}: Enter a finite, non-negative price per unit.",صف رواتب السائقين {0}: أدخل سعر وحدة رقميًا غير سالب.
 Driver payroll row {0}: The calculated amount must be finite.,صف رواتب السائقين {0}: يجب أن يكون المبلغ المحسوب رقمًا محدودًا.
+Price / Day,السعر / يوم
+Price / Month,السعر / شهر
+Fixed Payroll Amount,مبلغ الراتب الثابت
+Driver payroll row {0}: The calculated price per unit must be finite.,صف رواتب السائقين {0}: يجب أن يكون سعر الوحدة المحسوب رقمًا محدودًا.
