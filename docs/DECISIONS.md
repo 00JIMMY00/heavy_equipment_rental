@@ -1,5 +1,9 @@
 # Current decisions
 
+## 2026-11-17 — Future Crane Timesheet dates
+
+Crane Timesheets accept future periods and operator shifts in drafts and on submission. Each shift still has to fit within the Timesheet period and the booked crane dates.
+
 ## 2026-11-17 — Crane Operations site entry
 
 HER owns the Crane Operations entry redirect through a Frappe request hook that runs on every site where the app is installed. Browser GET and HEAD requests for `/`, `/app` and `/app/` receive a 302 to `/app/crane-operations`. Frappe handles authentication, API calls, and direct Desk links. Caddy retains the deployment maintenance response.

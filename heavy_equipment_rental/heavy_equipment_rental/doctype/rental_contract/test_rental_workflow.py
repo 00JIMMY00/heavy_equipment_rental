@@ -89,6 +89,33 @@ class TestRentalWorkflow(FrappeTestCase):
         self.assertEqual(expense.expenses[0].amount, 125)
         self.assertTrue(expense.journal_entry)
 
+    def test_future_timesheet_can_be_saved_and_submitted(self):
+        day = getdate(today()) + timedelta(days=7)
+        crane = frappe.get_doc({
+            "doctype": "Crane",
+            "crane_name": "Future Timesheet " + frappe.generate_hash(length=8),
+            "operational_condition": "Operational",
+        }).insert()
+        timesheet = frappe.get_doc({
+            "doctype": "Crane Timesheet",
+            "crane": crane.name,
+            "customer": frappe.db.get_value("Customer", {}, "name"),
+            "location": "Test yard",
+            "driver": frappe.db.get_value("Employee", {}, "name"),
+            "period_start": day,
+            "period_end": day,
+            "rental_rate_unit": "Hour",
+            "rental_rate": 100,
+            "timesheet_entries": [{
+                "work_date": day, "start_time": "08:00", "end_time": "12:00",
+            }],
+        }).insert()
+
+        self.assertEqual(timesheet.docstatus, 0)
+        timesheet.submit()
+        self.assertEqual(timesheet.reload().docstatus, 1)
+        self.assertEqual(getdate(timesheet.timesheet_entries[0].work_date), day)
+
     def test_assignment_first_and_timesheet_first(self):
         employee = frappe.db.get_value("Employee", {}, "name")
         other_employee = frappe.db.get_value("Employee", {"name": ["!=", employee]}, "name") if employee else None

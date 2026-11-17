@@ -5,7 +5,7 @@ from decimal import Decimal
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt, getdate, today
+from frappe.utils import flt, getdate
 
 from heavy_equipment_rental.rental_validation import (
     assignment_doc,
@@ -208,8 +208,6 @@ class CraneTimesheet(Document):
             start, end = interval(row)
             days = list(work_days(start, end))
             for day in days:
-                if day > getdate(today()):
-                    frappe.throw(_("Row {0}: future work cannot be recorded.").format(row.idx))
                 if not start_period <= day <= end_period:
                     frappe.throw(_("Row {0}: work is outside the Timesheet period.").format(row.idx))
                 if not any(getdate(booking.start_date) <= day <= getdate(booking.expected_end_date)
