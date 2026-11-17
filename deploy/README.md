@@ -4,6 +4,8 @@ Push to `main` to validate, build a cached Docker image, install and migrate a d
 
 Production: `https://cranes.arab-erp.com`, host `49.12.190.89` (`ssh hetzner3`), ARM64 host, stack `/opt/her`. Images and integration tests use native ARM64 GitHub runners. This is a clean site; no development company or demo transactions are copied. Apps: Frappe, ERPNext, `arab_erp_theme`, `heavy_equipment_rental`.
 
+The domain root, `/app` and `/app/` redirect to `/app/crane-operations`, the main starting point. Frappe handles authentication and returns guests to that workspace after sign-in. Specific document/report links stay available. The maintenance response takes priority over entry redirects.
+
 ## Speed and versions
 
 `apps.yaml` selects the Frappe branch (and optional `frappe_ref` commit pin) and the ordered applications, repositories and refs. CI resolves branch/tag refs to exact commits before building; full commit refs are also supported for apps. Those resolved inputs are baked into the tested image. HER's `ref: main` uses the exact checkout that triggered CI. This version-15 production stack requires ERPNext, arab_erp_theme and HER in that order; additional apps can follow their dependencies.

@@ -5,7 +5,7 @@ WORKDIR /home/frappe
 COPY --chown=frappe:frappe deploy/runtime-manifest/dependencies.json /tmp/dependencies.json
 COPY --chown=frappe:frappe deploy/build_apps.py /tmp/build_apps.py
 RUN python3 /tmp/build_apps.py
-
+121
 # Build framework/theme assets once, independently of HER revisions.
 RUN cd /home/frappe/frappe-bench && \
     bench build --production && \

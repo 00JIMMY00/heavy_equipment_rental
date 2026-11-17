@@ -9,6 +9,8 @@ cranes.arab-erp.com {
         respond "Deployment in progress. Please try again shortly." 503
     }
     handle {
+        @entry path / /app /app/
+        redir @entry /app/crane-operations 302
         reverse_proxy frontend:8080
     }
 }

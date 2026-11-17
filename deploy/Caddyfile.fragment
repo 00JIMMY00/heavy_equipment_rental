@@ -1,4 +1,9 @@
 elsakr.arab-erp.com, cranes.arab-erp.com {
+	@crane_entry {
+		host cranes.arab-erp.com
+		path / /app /app/
+	}
+	redir @crane_entry /app/crane-operations 302
 	reverse_proxy rental-frontend:8080 {
 		header_up Host {host}
 	}

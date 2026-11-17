@@ -1,5 +1,11 @@
 # Progress
 
+## 2026-11-16 — Crane Operations domain entry
+
+`https://cranes.arab-erp.com/`, `/app` and `/app/` redirect to `/app/crane-operations`, the main starting point. Production Caddy enforces this before proxying; maintenance retains priority. The legacy shared-host fragment scopes the redirect to the cranes domain. Frappe retains native authentication and specific document/report routes.
+
+Applied to the live production proxy after Caddy validation, with the previous configuration backed up in `/opt/her/state/Caddyfile.before-crane-entry-20261116`. Verified public entry redirects and the guest login return path. All 13 deployment/manifest unit tests passed using the Bench environment. No schema or rental data changes.
+
 ## 2026-11-16 — App manifest for image and site installation
 
 The repository-root apps.yaml now selects the Frappe branch and ordered app name/repo/ref entries. CI resolves refs to immutable build inputs; HER uses the exact tested checkout. Image builds, new-site installation, existing-site app additions and health checks share that manifest. Installed apps are never silently removed; removing one from the manifest fails safely under the existing snapshot/rollback transaction. Branch refs track upstream on runtime builds; use full app commit refs to pin versions. This replaces deploy/dependencies.json. The version-15 stack retains ERPNext, arab_erp_theme and HER as required dependencies. Verified 13 deployment/manifest tests, 33 workflow tests, and successful automatic production deployment. The running image manifest and production health were checked. Frappe (optional frappe_ref) and ERPNext are explicitly held at the previously validated commits: tracking the latest branch heads exposed a repair double-capitalization regression and CI blocked that upgrade. [Successful workflow](https://github.com/00JIMMY00/heavy_equipment_rental/actions/runs/43940164215).
