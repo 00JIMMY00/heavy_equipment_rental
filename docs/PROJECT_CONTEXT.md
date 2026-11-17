@@ -1,5 +1,10 @@
 # Project context
 
+## 2026-11-17 — Consolidated expenses (مصروف مجمع)
+
+Added a submittable Consolidated Expense with one Crane/Timesheet/Rental Contract, optional Driver, company Cost Center and default payment method. Dated rows show description/total inline; type and payment overrides stay in the pencil editor. A fixed bilingual XLSX template supports download and validated draft-row upload. HER Settings holds company expense defaults; portable setup seeds the عام account/type only into missing defaults. Submit/cancel delegates each row to the existing Expense Entry and native journal lifecycle, preserving CPS attribution, period closures and atomic rollback without counting costs twice. The highlighted workspace link replaces Expense Entries; historical sources remain accessible. See [usage and accounting](CONSOLIDATED_EXPENSES.md).
+
+
 ## 2026-11-17 — Driver payroll from Crane Timesheets
 
 The optional Driver Payroll table follows the distinct Employees on Operator Shifts and combines driver work and payroll above Totals. Its quantity and price follow the Timesheet billing unit. Enter a rate to calculate payroll or enter a fixed amount to calculate its implied rate. Submission posts one linked Expense Entry per positive amount. The payroll row editor shows the Mode of Payment, defaulted from HER Settings and editable per driver. Expenses are attributed to the Timesheet for rental profitability and settlements.

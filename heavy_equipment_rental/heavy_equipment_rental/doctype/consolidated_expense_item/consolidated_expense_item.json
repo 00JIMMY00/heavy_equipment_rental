@@ -1,0 +1,67 @@
+{
+ "doctype": "DocType",
+ "name": "Consolidated Expense Item",
+ "module": "Heavy Equipment Rental",
+ "engine": "InnoDB",
+ "field_order": [
+  "posting_date",
+  "description",
+  "amount",
+  "expense_entry_type",
+  "mode_of_payment",
+  "expense_entry"
+ ],
+ "fields": [
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Date",
+   "default": "Today",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 5
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Total",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 3,
+   "options": "currency"
+  },
+  {
+   "fieldname": "expense_entry_type",
+   "fieldtype": "Link",
+   "label": "Expense Entry Type",
+   "options": "Expense Entry Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "mode_of_payment",
+   "fieldtype": "Link",
+   "label": "Mode Of Payment",
+   "options": "Mode of Payment",
+   "reqd": 1
+  },
+  {
+   "fieldname": "expense_entry",
+   "fieldtype": "Link",
+   "label": "Expense Entry",
+   "options": "Expense Entry",
+   "read_only": 1,
+   "no_copy": 1
+  }
+ ],
+ "permissions": [],
+ "istable": 1,
+ "editable_grid": 1
+}

@@ -113,6 +113,17 @@
    "label": "Driver Payroll Defaults by Company",
    "options": "HER Driver Payroll Defaults",
    "description": "The expense type sets the expense account. The Mode of Payment uses its default account for the Company to fund payroll."
+  },
+  {
+   "fieldname": "expense_defaults_tab",
+   "fieldtype": "Tab Break",
+   "label": "Consolidated Expenses"
+  },
+  {
+   "fieldname": "expense_defaults",
+   "fieldtype": "Table",
+   "label": "Expense Defaults by Company",
+   "options": "HER Expense Defaults"
   }
  ],
  "field_order": [
@@ -132,7 +143,9 @@
   "repairs_tab",
   "repair_defaults",
   "driver_payroll_tab",
-  "driver_payroll_defaults"
+  "driver_payroll_defaults",
+  "expense_defaults_tab",
+  "expense_defaults"
  ],
  "permissions": [
   {

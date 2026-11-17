@@ -1,5 +1,10 @@
 # Current decisions
 
+## 2026-11-17 — Consolidated expenses (مصروف مجمع)
+
+Added a submittable Consolidated Expense with one Crane/Timesheet/Rental Contract, optional Driver, company Cost Center and default payment method. Dated rows show description/total inline; type and payment overrides stay in the pencil editor. A fixed bilingual XLSX template supports download and validated draft-row upload. HER Settings holds company expense defaults; portable setup seeds the عام account/type only into missing defaults. Submit/cancel delegates each row to the existing Expense Entry and native journal lifecycle, preserving CPS attribution, period closures and atomic rollback without counting costs twice. The highlighted workspace link replaces Expense Entries; historical sources remain accessible. See [usage and accounting](CONSOLIDATED_EXPENSES.md).
+
+
 ## 2026-11-17 — Employee dates
 
 Hide Date of Birth and make it optional in Employee metadata so both forms can save without it. Use Frappe's Today default for the editable Date of Joining on new Employee records. Preserve stored dates.

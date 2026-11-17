@@ -35,6 +35,7 @@ override_doctype_class = {
 }
 
 doc_events = {
+    "Company": {"on_update": "heavy_equipment_rental.consolidated_expenses_setup.company_updated"},
     "Stock Entry": {
         "validate": "heavy_equipment_rental.crane_repairs.validate_native_document",
         "before_submit": "heavy_equipment_rental.profit_sharing.guard_closed_period",

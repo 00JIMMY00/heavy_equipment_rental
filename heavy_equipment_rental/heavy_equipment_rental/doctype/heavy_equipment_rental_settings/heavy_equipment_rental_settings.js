@@ -1,5 +1,7 @@
 frappe.ui.form.on('Heavy Equipment Rental Settings', {
     setup(frm) {
+        frm.set_query('expense_type', 'expense_defaults', (doc, cdt, cdn) => ({filters: {company: locals[cdt][cdn].company, enabled: 1}}));
+        frm.set_query('mode_of_payment', 'expense_defaults', () => ({filters: {enabled: 1}}));
         const company_for = (cdt, cdn) => locals[cdt][cdn].company;
         frm.set_query('expense_account', 'repair_defaults', (doc, cdt, cdn) => ({filters: {
             company: company_for(cdt, cdn), root_type: 'Expense', is_group: 0, disabled: 0

@@ -1145,3 +1145,33 @@ Price / Day,السعر / يوم
 Price / Month,السعر / شهر
 Fixed Payroll Amount,مبلغ الراتب الثابت
 Driver payroll row {0}: The calculated price per unit must be finite.,صف رواتب السائقين {0}: يجب أن يكون سعر الوحدة المحسوب رقمًا محدودًا.
+
+Consolidated Expense,مصروف مجمع
+Consolidated Expenses,المصروفات المجمعة
+Consolidated Expense Item,بند مصروف مجمع
+Expense Defaults by Company,افتراضيات المصروفات حسب الشركة
+Default Expense Entry Type,نوع المصروف الافتراضي
+Default Mode of Payment,طريقة الدفع الافتراضية
+Download Excel Template,تنزيل قالب إكسل
+Upload Excel Template,رفع قالب إكسل
+Select a Company first.,اختر الشركة أولاً.
+Added {0} rows. Review and save before submitting.,تمت إضافة {0} صفوف. راجع البيانات واحفظها قبل الاعتماد.
+Expense Entry links are managed automatically.,يتم ربط قيود المصروفات تلقائياً.
+Cancel Consolidated Expense {0} to reverse this expense.,ألغِ المصروف المجمع {0} لعكس هذا المصروف.
+The Driver must belong to the selected Company.,يجب أن يتبع السائق الشركة المحددة.
+Row {0}: Date and Description are required.,الصف {0}: التاريخ والبيان مطلوبان.
+Row {0}: Total must be a finite positive amount.,الصف {0}: يجب أن يكون الإجمالي مبلغاً موجباً صالحاً.
+Use the downloaded expense template.,استخدم قالب المصروفات الذي تم تنزيله.
+Use the downloaded expense template without changing its headers.,استخدم قالب المصروفات دون تغيير عناوين الأعمدة.
+Use the five-column template with at most 1000 rows.,استخدم القالب المكون من خمسة أعمدة وبحد أقصى 1000 صف.
+Excel row {0}: Formulas and errors are not allowed.,صف إكسل {0}: لا يُسمح بالمعادلات أو الأخطاء.
+Excel row {0}: Date and Description are required.,صف إكسل {0}: التاريخ والبيان مطلوبان.
+Excel row {0}: Enter a valid date and positive total.,صف إكسل {0}: أدخل تاريخاً صحيحاً وإجمالياً موجباً.
+Excel row {0}: Select a unique enabled expense type for this Company.,صف إكسل {0}: اختر نوع مصروف مفعلاً وغير ملتبس لهذه الشركة.
+Excel row {0}: Invalid Mode of Payment.,صف إكسل {0}: طريقة الدفع غير صالحة.
+Upload the .xlsx expense template.,ارفع قالب المصروفات بصيغة .xlsx.
+Upload a valid .xlsx workbook.,ارفع ملف إكسل صالحاً بصيغة .xlsx.
+Set expense defaults only once per Company.,حدد افتراضيات المصروفات مرة واحدة فقط لكل شركة.
+The template must be smaller than 2 MB.,يجب ألا يتجاوز حجم القالب 2 ميجابايت.
+The workbook is too large.,حجم ملف إكسل أكبر من المسموح.
+The batch total must be finite.,يجب أن يكون إجمالي المصروف المجمع مبلغاً صالحاً.

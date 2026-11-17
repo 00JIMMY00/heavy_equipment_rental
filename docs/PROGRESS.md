@@ -1,5 +1,12 @@
 # Progress
 
+## 2026-11-17 — Consolidated expenses (مصروف مجمع)
+
+Migrated dev3 and passed 12 integration tests, including real invoice/CPS inclusion exactly once, closed-settlement cancellation protection, balanced row journals, overrides, amendment, rollback and template rejection. Browser verified automatic defaults, three visible grid columns, actual XLSX download/upload, and desktop/mobile without horizontal overflow. The pre-existing global null/join startup errors remain visible; the new form and upload completed successfully. Temporary browser session and uploaded test file were removed; integration transactions were rolled back.
+
+Added a submittable Consolidated Expense with one Crane/Timesheet/Rental Contract, optional Driver, company Cost Center and default payment method. Dated rows show description/total inline; type and payment overrides stay in the pencil editor. A fixed bilingual XLSX template supports download and validated draft-row upload. HER Settings holds company expense defaults; portable setup seeds the عام account/type only into missing defaults. Submit/cancel delegates each row to the existing Expense Entry and native journal lifecycle, preserving CPS attribution, period closures and atomic rollback without counting costs twice. The highlighted workspace link replaces Expense Entries; historical sources remain accessible. See [usage and accounting](CONSOLIDATED_EXPENSES.md).
+
+
 ## 2026-11-17 — Mode of Payment per driver
 
 Added Mode of Payment to the payroll row editor. The company default fills empty rows and per-driver selections carry through to the Expense Entry and Journal Entry. Migrated dev3 and filled historical rows from their linked expenses. Timesheet and rental workflow suites passed 23 tests with one legacy test skipped.
@@ -623,3 +630,5 @@ For the next change: inspect `git status` first. Use the commands in [README.md]
 - Corrected cancellation scope to follow Timesheet → invoices → settlements. Invoice cancellation keeps its Timesheets submitted; settlement cancellation keeps invoice/work submitted and reverses only its own entitlement journal. Timesheet cancellation includes its invoices and settlements. Historical backlinks do not expand the scope.
 - Confirmation previews deduplicated documents, rejects changed scope and executes atomically with normal permissions/accounting guards. Paid entitlements retain the existing cancel/unreconcile-payment requirement.
 - Two development regression tests passed, covering all three starting documents, upstream document preservation, duplicate removal, stale confirmation rejection and rollback after an accounting failure. Syntax and whitespace checks passed. No schema migration required; restored disabled tests and cleared site cache. No business documents were cancelled by this implementation task.
+
+- Consolidated expense upload follow-up: recompute missing/untrusted XLSX dimensions; verified the user's actual workbook parses successfully. Template actions now use the table's bottom Download/Upload buttons. Import confirms append counts and skips identical rows without overwriting existing data; changed rows remain new records for review.

@@ -40,6 +40,10 @@ Extend the Rental Contract explicitly if work continues beyond its booked dates.
 
 Hourly quantity sums actual hours per driver. Daily quantity counts distinct worked dates per driver. Monthly quantity prorates those dates by the length of their calendar months. Use the Timesheet's **Cancel** action to reverse its payroll expenses. Amend the Timesheet to correct amounts and post replacement entries.
 
+## Consolidated expenses
+
+Use **Crane Operations → مصروف مجمع (Consolidated Expense)** to enter dated expenses for one rental Timesheet. Download/upload the Excel template, edit type/payment overrides with the row pencil, and Submit to post the batch. Configure company defaults under **HER Settings → Consolidated Expenses**. [Usage and accounting](docs/CONSOLIDATED_EXPENSES.md).
+
 ## Billing defaults
 
 Open **Heavy Equipment Rental Settings → Billing Defaults**. Set **Default Selling UOM** and **Default Supplier Billing UOM** to Hour, Day, or Month; both initially default to Hour.

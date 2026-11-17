@@ -27,6 +27,8 @@ class RentalExpenseEntry(ExpenseEntry):
     def before_cancel(self):
         from heavy_equipment_rental.driver_payroll import guard_payroll_cancel
         guard_payroll_cancel(self)
+        from heavy_equipment_rental.heavy_equipment_rental.doctype.consolidated_expense.consolidated_expense import guard_expense_cancel
+        guard_expense_cancel(self)
 
     def on_submit(self):
         # Keep the shared expense validation/cancellation behavior. Party belongs

@@ -88,9 +88,9 @@
   },
   {
    "type": "Link",
-   "label": "Expense Entries",
+   "label": "Consolidated Expense",
    "link_type": "DocType",
-   "link_to": "Expense Entry"
+   "link_to": "Consolidated Expense"
   },
   {
    "type": "Link",

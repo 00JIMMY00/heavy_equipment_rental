@@ -10,6 +10,7 @@ from heavy_equipment_rental.item_prices import install_item_price_field
 
 
 def execute():
+	from heavy_equipment_rental.consolidated_expenses_setup import seed_defaults, update_workspace
 	from heavy_equipment_rental.employee_entry import setup as setup_employee_entry
 	setup_employee_entry()
 	for unit in ("Hour", "Day", "Month"):
@@ -141,4 +142,6 @@ def execute():
 
 	install_workbook_fields()
 	sync_operations_workspace()
+	seed_defaults()
+	update_workspace()
 	set_default_workspace()

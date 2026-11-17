@@ -13,6 +13,8 @@ class HeavyEquipmentRentalSettings(Document):
 		from heavy_equipment_rental.maintenance_posting import validate_repair_defaults
 		validate_repair_defaults(self)
 		validate_payroll_defaults(self)
+		from heavy_equipment_rental.consolidated_expenses import validate_defaults
+		validate_defaults(self)
 		if self.get("rental_service_item"):
 			from heavy_equipment_rental.rental_items import validate_service_item
 			validate_service_item(self.rental_service_item)
