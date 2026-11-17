@@ -2,6 +2,8 @@
 
 Crane rentals for Frappe/ERPNext. Install `arab_erp_theme` first for the shared expense models. HER supplies its own industrial theme and branding. Start from **Crane Operations → Cranes → Operations**. The Crane is the main hub for bookings, work, repairs, Assets and owner settlements. Rental Contract-first and Timesheet-first entry remain available. ERPNext's native Project is independent of this workflow.
 
+On every site with HER installed, opening `/`, `/app`, or `/app/` takes users to Crane Operations. Frappe sends guests through sign-in and retains direct document and report links.
+
 ## Native workflow redesign
 
 Read the [illustrated user guide](docs/USER_GUIDE.md) for setup, daily operation, repair choices and complete accounting examples.

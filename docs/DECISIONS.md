@@ -1,8 +1,8 @@
 # Current decisions
 
-## 2026-11-16 — Crane Operations domain entry
+## 2026-11-17 — Crane Operations site entry
 
-`https://cranes.arab-erp.com/`, `/app` and `/app/` redirect to `/app/crane-operations`, the main starting point. Production Caddy enforces this before proxying; maintenance retains priority. The legacy shared-host fragment scopes the redirect to the cranes domain. Frappe retains native authentication and specific document/report routes.
+HER owns the Crane Operations entry redirect through a Frappe request hook that runs on every site where the app is installed. Browser GET and HEAD requests for `/`, `/app` and `/app/` receive a 302 to `/app/crane-operations`. Frappe handles authentication, API calls, and direct Desk links. Caddy retains the deployment maintenance response.
 
 ## 2026-11-16 — App manifest for image and site installation
 

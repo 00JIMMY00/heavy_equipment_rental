@@ -1,10 +1,10 @@
 # Progress
 
-## 2026-11-16 — Crane Operations domain entry
+## 2026-11-17 — Crane Operations site entry
 
-`https://cranes.arab-erp.com/`, `/app` and `/app/` redirect to `/app/crane-operations`, the main starting point. Production Caddy enforces this before proxying; maintenance retains priority. The legacy shared-host fragment scopes the redirect to the cranes domain. Frappe retains native authentication and specific document/report routes.
+Moved the Crane Operations entry redirect from the temporary Caddy rules into HER. Every client site gets it when the app is installed. The next production release replaces the temporary proxy rule, which was backed up at `/opt/her/state/Caddyfile.before-crane-entry-20261116`.
 
-Applied to the live production proxy after Caddy validation, with the previous configuration backed up in `/opt/her/state/Caddyfile.before-crane-entry-20261116`. Verified public entry redirects and the guest login return path. All 13 deployment/manifest unit tests passed using the Bench environment. No schema or rental data changes.
+Verified the entry redirects, guest login return paths, deep links, and API calls on two development sites. A third site without HER followed its normal login route. All 13 deployment tests passed.
 
 ## 2026-11-16 — App manifest for image and site installation
 

@@ -106,5 +106,7 @@ override_whitelisted_methods = {
 
 app_include_js.append("/assets/heavy_equipment_rental/js/employee_entry.js?v=20261116-1")
 
-# Arabic is the default on the public login only.
-before_request = ["heavy_equipment_rental.login_presentation.set_login_language"]
+before_request = [
+    "heavy_equipment_rental.entry_redirect.redirect_crane_operations_entry",
+    "heavy_equipment_rental.login_presentation.set_login_language",
+]

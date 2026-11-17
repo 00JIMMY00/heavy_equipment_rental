@@ -4,7 +4,7 @@ Push to `main` to validate, build a cached Docker image, install and migrate a d
 
 Production: `https://cranes.arab-erp.com`, host `49.12.190.89` (`ssh hetzner3`), ARM64 host, stack `/opt/her`. Images and integration tests use native ARM64 GitHub runners. This is a clean site; no development company or demo transactions are copied. Apps: Frappe, ERPNext, `arab_erp_theme`, `heavy_equipment_rental`.
 
-The domain root, `/app` and `/app/` redirect to `/app/crane-operations`, the main starting point. Frappe handles authentication and returns guests to that workspace after sign-in. Specific document/report links stay available. The maintenance response takes priority over entry redirects.
+HER redirects browser requests for `/`, `/app` and `/app/` to `/app/crane-operations` on every site where the app is installed. Frappe handles authentication and returns guests to the workspace after sign-in. Caddy handles maintenance and proxying.
 
 ## Speed and versions
 
