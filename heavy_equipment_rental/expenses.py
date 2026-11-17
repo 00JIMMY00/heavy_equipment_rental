@@ -27,7 +27,7 @@ class RentalExpenseEntry(ExpenseEntry):
     def before_cancel(self):
         from heavy_equipment_rental.driver_payroll import guard_payroll_cancel
         guard_payroll_cancel(self)
-        from heavy_equipment_rental.heavy_equipment_rental.doctype.consolidated_expense.consolidated_expense import guard_expense_cancel
+        from heavy_equipment_rental.heavy_equipment_rental.doctype.grouped_expense.grouped_expense import guard_expense_cancel
         guard_expense_cancel(self)
 
     def on_submit(self):
@@ -82,6 +82,10 @@ class RentalJournalEntry(JournalEntry):
         employee = frappe.db.get_value("Expense Entry", {
             "journal_entry": self.name, "docstatus": 1, "company": self.company,
         }, "employee")
+        if not employee:
+            from heavy_equipment_rental.consolidated_accounting import source_for_journal
+            batch, source_row = source_for_journal(self.name)
+            employee = batch.employee if batch else None
         if employee:
             for row in gl_map:
                 # Employee is attribution on an expense, not a receivable or

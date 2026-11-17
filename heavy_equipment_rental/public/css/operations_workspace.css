@@ -97,7 +97,7 @@ body.her-operations-reference .links-widget-box .link-item:is(
   [href="/app/crane"],
   [href="/app/crane-timesheet"],
   [href="/app/crane-maintenance"],
-  [href="/app/expense-entry"],
+  [href="/app/grouped-expense"],
   [href="/app/sales-invoice"],
   [href="/app/purchase-invoice"]
 ) {
@@ -115,7 +115,7 @@ body.her-operations-reference .links-widget-box .link-item:is(
 }
 html[data-theme="dark"] body.her-operations-reference .links-widget-box .link-item:is(
   [href="/app/crane"], [href="/app/crane-timesheet"], [href="/app/crane-maintenance"],
-  [href="/app/expense-entry"], [href="/app/sales-invoice"], [href="/app/purchase-invoice"]
+  [href="/app/grouped-expense"], [href="/app/sales-invoice"], [href="/app/purchase-invoice"]
 ) {
   --her-frequent-bg: #243757;
   --her-frequent-text: #c6d8ff;
@@ -123,11 +123,11 @@ html[data-theme="dark"] body.her-operations-reference .links-widget-box .link-it
 }
 body.her-operations-reference .link-item:is(
   [href="/app/crane"], [href="/app/crane-timesheet"], [href="/app/crane-maintenance"],
-  [href="/app/expense-entry"], [href="/app/sales-invoice"], [href="/app/purchase-invoice"]
+  [href="/app/grouped-expense"], [href="/app/sales-invoice"], [href="/app/purchase-invoice"]
 ) :is(.her-link-icon, .link-text) { color: inherit; --icon-stroke: currentColor; }
 
 /* Primary expense entry point. */
-.her-operations-reference .link-item[href="/app/consolidated-expense"] {
+body.her-operations-reference .links-widget-box .link-item[href="/app/grouped-expense"] {
   background: var(--yellow-100, #fff0b3);
   color: #4b3500;
   border-inline-start: 3px solid #d39b12;

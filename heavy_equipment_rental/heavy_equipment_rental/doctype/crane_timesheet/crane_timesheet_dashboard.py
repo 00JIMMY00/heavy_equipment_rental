@@ -4,7 +4,7 @@ from frappe import _
 def get_data():
     return {
         "fieldname": "amended_from",
-        "non_standard_fieldnames": {"Consolidated Expense": "crane_timesheet", "Expense Entry": "crane_timesheet", "Crane Maintenance": "crane_timesheet"},
+        "non_standard_fieldnames": {"Grouped Expense": "crane_timesheet", "Expense Entry": "crane_timesheet", "Crane Maintenance": "crane_timesheet"},
         "internal_links": {
             "Rental Contract": "assignment",
             "Crane": "crane",
@@ -15,7 +15,7 @@ def get_data():
             "Crane Profit Settlement": "profit_settlement",
         },
         "transactions": [
-            {"label": _("Operations"), "items": ["Consolidated Expense", "Expense Entry", "Crane Maintenance"]},
+            {"label": _("Operations"), "items": ["Grouped Expense", "Expense Entry", "Crane Maintenance"]},
             {"label": _("Rental"), "items": ["Rental Contract", "Crane", "Customer"]},
             {"label": _("Documents"), "items": ["Sales Invoice", "Purchase Invoice", "Crane Timesheet", "Crane Profit Settlement"]},
         ],

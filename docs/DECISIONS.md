@@ -1,5 +1,13 @@
 # Current decisions
 
+## 2026-11-17 — Grouped Expense rename and workspace links
+
+Renamed Consolidated Expense and its child DocType in place to Grouped Expense / Grouped Expense Item. Existing CEXP IDs, accounting links and data are retained. The Operations workspace highlights Grouped Expense and places the normal Expense Entry immediately below it without highlighting. Arabic remains مصروف مجمع.
+
+## 2026-11-17 — Direct consolidated expense journals
+
+New consolidated expense rows post native Journal Entries directly, without creating Expense Entries. Each row retains its own posting date/payment and Employee journal attribution. CPS, profitability, treasury, ledger tracing and cancellation use the batch's explicit rental links; generic journal sources exclude these journals to prevent duplicate allocation. Historical submitted batches retain their Expense Entries; cancellation supports both paths and amendments post direct journals. No historical amounts or vouchers are rewritten.
+
 ## 2026-11-17 — Consolidated expenses (مصروف مجمع)
 
 Added a submittable Consolidated Expense with one Crane/Timesheet/Rental Contract, optional Driver, company Cost Center and default payment method. Dated rows show description/total inline; type and payment overrides stay in the pencil editor. A fixed bilingual XLSX template supports download and validated draft-row upload. HER Settings holds company expense defaults; portable setup seeds the عام account/type only into missing defaults. Submit/cancel delegates each row to the existing Expense Entry and native journal lifecycle, preserving CPS attribution, period closures and atomic rollback without counting costs twice. The highlighted workspace link replaces Expense Entries; historical sources remain accessible. See [usage and accounting](CONSOLIDATED_EXPENSES.md).

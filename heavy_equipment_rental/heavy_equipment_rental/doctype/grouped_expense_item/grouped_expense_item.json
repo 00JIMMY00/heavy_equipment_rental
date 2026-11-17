@@ -1,6 +1,6 @@
 {
  "doctype": "DocType",
- "name": "Consolidated Expense Item",
+ "name": "Grouped Expense Item",
  "module": "Heavy Equipment Rental",
  "engine": "InnoDB",
  "field_order": [
@@ -9,7 +9,8 @@
   "amount",
   "expense_entry_type",
   "mode_of_payment",
-  "expense_entry"
+  "expense_entry",
+  "journal_entry"
  ],
  "fields": [
   {
@@ -57,6 +58,14 @@
    "fieldtype": "Link",
    "label": "Expense Entry",
    "options": "Expense Entry",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "journal_entry",
+   "fieldtype": "Link",
+   "label": "Journal Entry",
+   "options": "Journal Entry",
    "read_only": 1,
    "no_copy": 1
   }

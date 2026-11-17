@@ -195,7 +195,7 @@ class CraneProfitSettlement(Document):
 
     def on_cancel(self):
         # Timesheets retain the historical settlement reference.
-        self.ignore_linked_doctypes = ("Crane Timesheet", "Consolidated Expense")
+        self.ignore_linked_doctypes = ("Crane Timesheet", "Grouped Expense")
         if not self.journal_entry:
             return
         journal = frappe.get_doc("Journal Entry", self.journal_entry, for_update=True)

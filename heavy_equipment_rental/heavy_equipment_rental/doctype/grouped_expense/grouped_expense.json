@@ -1,6 +1,6 @@
 {
  "doctype": "DocType",
- "name": "Consolidated Expense",
+ "name": "Grouped Expense",
  "module": "Heavy Equipment Rental",
  "engine": "InnoDB",
  "field_order": [
@@ -92,7 +92,7 @@
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Expenses",
-   "options": "Consolidated Expense Item",
+   "options": "Grouped Expense Item",
    "reqd": 1
   },
   {
@@ -107,7 +107,7 @@
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
-   "options": "Consolidated Expense",
+   "options": "Grouped Expense",
    "read_only": 1,
    "no_copy": 1
   },

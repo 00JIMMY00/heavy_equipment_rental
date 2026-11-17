@@ -355,6 +355,9 @@ def guard_closed_period(doc, method=None):
         guard_expense(doc)
         return
     if doc.doctype == "Journal Entry":
+        from heavy_equipment_rental.consolidated_accounting import guard_journal
+        if guard_journal(doc):
+            return
         expense_name = frappe.db.get_value("Expense Entry", {"journal_entry": doc.name, "docstatus": ["in", [1, 2]]}, "name")
         if expense_name:
             from heavy_equipment_rental.rental_expenses import guard_expense
@@ -443,6 +446,8 @@ def collect_sources(crane, company, start, end, *, grand_total=False, include_ex
     from heavy_equipment_rental.rental_expenses import expense_sources, check_posted
     expense_journals = set(filter(None, frappe.get_all("Expense Entry", filters={
         "company": company, "crane": crane, "docstatus": 1}, pluck="journal_entry")))
+    from heavy_equipment_rental.consolidated_accounting import sources as batch_sources
+    expense_journals.update(journal.name for journal, source in batch_sources(crane, company))
     if include_expenses:
         for expense, source in expense_sources(crane, company):
             first, last = getdate(source["service_from_date"]), getdate(source["service_to_date"])

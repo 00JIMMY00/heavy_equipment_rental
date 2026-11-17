@@ -1,5 +1,5 @@
 const her_expense_api = 'heavy_equipment_rental.consolidated_expenses.';
-frappe.ui.form.on('Consolidated Expense', {
+frappe.ui.form.on('Grouped Expense', {
     setup(frm) {
         frm.set_query('expense_entry_type', 'items', () => ({filters: {company: frm.doc.company, enabled: 1}}));
         frm.set_query('mode_of_payment', () => ({filters: {enabled: 1}}));
@@ -95,7 +95,7 @@ frappe.ui.form.on('Consolidated Expense', {
     },
     calculate_total(frm) { frm.set_value('total', (frm.doc.items || []).reduce((sum, row) => sum + flt(row.amount), 0)); }
 });
-frappe.ui.form.on('Consolidated Expense Item', {
+frappe.ui.form.on('Grouped Expense Item', {
     items_add(frm, cdt, cdn) {
         frappe.model.set_value(cdt, cdn, {
             posting_date: frappe.datetime.get_today(),

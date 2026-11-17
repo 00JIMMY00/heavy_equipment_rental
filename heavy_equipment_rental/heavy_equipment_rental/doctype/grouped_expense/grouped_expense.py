@@ -1,4 +1,4 @@
-"""A dated expense batch; existing Expense Entries remain the accounting sources."""
+"""Post dated rows directly; preserve legacy Expense Entry sources."""
 from math import isfinite
 
 import frappe
@@ -7,11 +7,15 @@ from frappe.model.document import Document
 from frappe.utils import flt, getdate
 
 
-class ConsolidatedExpense(Document):
+class GroupedExpense(Document):
     def _validate_links(self):
         if self.is_new() and self.amended_from:
             original = frappe.get_doc(self.doctype, self.amended_from)
             if original.docstatus == 2:
+                old_journals = {row.journal_entry for row in original.items}
+                for row in self.items:
+                    if row.journal_entry in old_journals:
+                        row.journal_entry = None
                 old_links = {row.expense_entry for row in original.items}
                 for row in self.items:
                     if row.expense_entry in old_links:
@@ -35,7 +39,7 @@ class ConsolidatedExpense(Document):
             frappe.throw(_('Add at least one expense row.'))
         self.total = 0
         for row in self.items:
-            if row.expense_entry:
+            if row.expense_entry or row.journal_entry:
                 frappe.throw(_('Expense Entry links are managed automatically.'))
             row.expense_entry_type = row.expense_entry_type or defaults.get('expense_type')
             row.mode_of_payment = row.mode_of_payment or self.mode_of_payment
@@ -74,22 +78,35 @@ class ConsolidatedExpense(Document):
         # Native request transaction rolls back the whole batch on any failure.
         for row in self.items:
             expense = self.make_expense(row)
-            expense.insert()
-            expense.submit()
-            row.db_set('expense_entry', expense.name, update_modified=False)
+            expense.validate()
+            from heavy_equipment_rental.rental_expenses import guard_expense
+            guard_expense(expense)
+            debit = dict(account=expense.expenses[0].expense_entry_account,
+                debit_in_account_currency=row.amount, cost_center=self.cost_center, crane=self.crane)
+            if self.employee:
+                debit.update(party_type='Employee', party=self.employee)
+            journal = frappe.get_doc(dict(doctype='Journal Entry', company=self.company,
+                posting_date=row.posting_date, mode_of_payment=row.mode_of_payment,
+                user_remark=f'{self.name} / {row.idx}: {row.description}',
+                accounts=[debit, dict(account=expense.get_accounting_details(),
+                    credit_in_account_currency=row.amount, crane=self.crane)]))
+            journal.insert()
+            row.db_set('journal_entry', journal.name, update_modified=False)
+            journal.submit()
 
     def on_cancel(self):
+        from heavy_equipment_rental.rental_expenses import guard_expense
         for row in self.items:
-            expense = frappe.get_doc('Expense Entry', row.expense_entry, for_update=True)
-            if expense.docstatus != 1:
-                frappe.throw(_('The linked Expense Entry must be submitted.'))
-            expense.cancel()
+            guard_expense(self.make_expense(row))
+            target = ('Journal Entry', row.journal_entry) if row.journal_entry else ('Expense Entry', row.expense_entry)
+            document = frappe.get_doc(*target, for_update=True)
+            document.cancel()
 
 
 def guard_expense_cancel(expense):
-    parent = frappe.db.get_value('Consolidated Expense Item', {
+    parent = frappe.db.get_value('Grouped Expense Item', {
         'expense_entry': expense.name, 'docstatus': 1,
-        'parenttype': 'Consolidated Expense',
+        'parenttype': 'Grouped Expense',
     }, 'parent')
-    if parent and frappe.db.get_value('Consolidated Expense', parent, 'docstatus') == 1:
-        frappe.throw(_('Cancel Consolidated Expense {0} to reverse this expense.').format(parent))
+    if parent and frappe.db.get_value('Grouped Expense', parent, 'docstatus') == 1:
+        frappe.throw(_('Cancel Grouped Expense {0} to reverse this expense.').format(parent))

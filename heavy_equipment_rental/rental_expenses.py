@@ -48,6 +48,8 @@ def matches(source, sheet):
 
 
 def expense_sources(crane, company):
+    from heavy_equipment_rental.consolidated_accounting import sources
+    yield from sources(crane, company)
     for name in frappe.get_all("Expense Entry", filters={"crane": crane, "company": company,
             "docstatus": 1}, pluck="name"):
         expense = frappe.get_doc("Expense Entry", name)
@@ -64,7 +66,7 @@ def expense_sources(crane, company):
 
 def check_posted(expense):
     expense.check_permission("read")
-    journal = frappe.get_doc("Journal Entry", expense.journal_entry) if expense.journal_entry else None
+    journal = expense if expense.doctype == "Journal Entry" else (frappe.get_doc("Journal Entry", expense.journal_entry) if expense.journal_entry else None)
     if not journal or journal.docstatus != 1 or journal.company != expense.company:
         frappe.throw(_("Expense {0} has no valid posted Journal Entry; resolve it before settlement.").format(expense.name))
     journal.check_permission("read")

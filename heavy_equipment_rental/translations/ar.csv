@@ -1146,9 +1146,9 @@ Price / Month,السعر / شهر
 Fixed Payroll Amount,مبلغ الراتب الثابت
 Driver payroll row {0}: The calculated price per unit must be finite.,صف رواتب السائقين {0}: يجب أن يكون سعر الوحدة المحسوب رقمًا محدودًا.
 
-Consolidated Expense,مصروف مجمع
-Consolidated Expenses,المصروفات المجمعة
-Consolidated Expense Item,بند مصروف مجمع
+Grouped Expense,مصروف مجمع
+Grouped Expenses,المصروفات المجمعة
+Grouped Expense Item,بند مصروف مجمع
 Expense Defaults by Company,افتراضيات المصروفات حسب الشركة
 Default Expense Entry Type,نوع المصروف الافتراضي
 Default Mode of Payment,طريقة الدفع الافتراضية
@@ -1157,7 +1157,7 @@ Upload Excel Template,رفع قالب إكسل
 Select a Company first.,اختر الشركة أولاً.
 Added {0} rows. Review and save before submitting.,تمت إضافة {0} صفوف. راجع البيانات واحفظها قبل الاعتماد.
 Expense Entry links are managed automatically.,يتم ربط قيود المصروفات تلقائياً.
-Cancel Consolidated Expense {0} to reverse this expense.,ألغِ المصروف المجمع {0} لعكس هذا المصروف.
+Cancel Grouped Expense {0} to reverse this expense.,ألغِ المصروف المجمع {0} لعكس هذا المصروف.
 The Driver must belong to the selected Company.,يجب أن يتبع السائق الشركة المحددة.
 Row {0}: Date and Description are required.,الصف {0}: التاريخ والبيان مطلوبان.
 Row {0}: Total must be a finite positive amount.,الصف {0}: يجب أن يكون الإجمالي مبلغاً موجباً صالحاً.

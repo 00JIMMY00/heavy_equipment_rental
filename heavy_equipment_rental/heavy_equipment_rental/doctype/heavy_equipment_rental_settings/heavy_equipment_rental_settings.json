@@ -117,7 +117,7 @@
   {
    "fieldname": "expense_defaults_tab",
    "fieldtype": "Tab Break",
-   "label": "Consolidated Expenses"
+   "label": "Grouped Expenses"
   },
   {
    "fieldname": "expense_defaults",

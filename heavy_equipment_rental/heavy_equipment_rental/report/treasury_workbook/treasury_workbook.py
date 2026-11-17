@@ -61,6 +61,11 @@ def execute(filters=None):
             for header in frappe.get_all(doctype, filters={"company": filters.company, "journal_entry": ["in", journals]},
                                          fields=["name", "journal_entry"]):
                 sources[header.journal_entry].append((doctype, header.name))
+    if journals:
+        for row in frappe.get_all('Grouped Expense Item',
+                filters={'journal_entry': ['in', journals], 'parenttype': 'Grouped Expense'},
+                fields=['parent', 'journal_entry']):
+            sources[row.journal_entry].append(('Grouped Expense', row.parent))
     opening, data = 0, []
     for (kind, number), amounts in grouped.items():
         document = frappe.get_doc(kind, number)

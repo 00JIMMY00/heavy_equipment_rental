@@ -42,12 +42,15 @@ def settlement_vouchers(doc):
 
 def voucher_scope(filters):
     if filters.get("consolidated_expense"):
-        doc = frappe.get_doc("Consolidated Expense", filters.consolidated_expense)
+        doc = frappe.get_doc("Grouped Expense", filters.consolidated_expense)
         doc.check_permission("read")
         if doc.company != filters.company or (filters.crane and doc.crane != filters.crane):
             frappe.throw(_("The expense must match the selected Company and Crane."))
         result = set()
         for row in doc.items:
+            if row.journal_entry:
+                frappe.get_doc("Journal Entry", row.journal_entry).check_permission("read")
+                result.add(("Journal Entry", row.journal_entry))
             if row.expense_entry:
                 expense = frappe.get_doc("Expense Entry", row.expense_entry)
                 expense.check_permission("read")

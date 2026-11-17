@@ -72,7 +72,7 @@
   {
    "type": "Card Break",
    "label": "Accounting",
-   "link_count": 5
+   "link_count": 6
   },
   {
    "type": "Link",
@@ -88,9 +88,15 @@
   },
   {
    "type": "Link",
-   "label": "Consolidated Expense",
+   "label": "Grouped Expense",
    "link_type": "DocType",
-   "link_to": "Consolidated Expense"
+   "link_to": "Grouped Expense"
+  },
+  {
+   "type": "Link",
+   "label": "Expense Entry",
+   "link_type": "DocType",
+   "link_to": "Expense Entry"
   },
   {
    "type": "Link",

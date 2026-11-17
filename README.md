@@ -42,7 +42,7 @@ Hourly quantity sums actual hours per driver. Daily quantity counts distinct wor
 
 ## Consolidated expenses
 
-Use **Crane Operations → مصروف مجمع (Consolidated Expense)** to enter dated expenses for one rental Timesheet. Download/upload the Excel template, edit type/payment overrides with the row pencil, and Submit to post the batch. Configure company defaults under **HER Settings → Consolidated Expenses**. [Usage and accounting](docs/CONSOLIDATED_EXPENSES.md).
+Use **Crane Operations → مصروف مجمع (Grouped Expense)** to enter dated expenses for one rental Timesheet. Download/upload the Excel template, edit type/payment overrides with the row pencil, and Submit to post the batch. Configure company defaults under **HER Settings → Grouped Expenses**. [Usage and accounting](docs/CONSOLIDATED_EXPENSES.md).
 
 ## Billing defaults
 

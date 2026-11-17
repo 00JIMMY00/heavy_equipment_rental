@@ -98,6 +98,16 @@ def execute(filters=None):
     from heavy_equipment_rental.crane_repairs import repair_expense_sources
     from heavy_equipment_rental.profit_sharing import collect_sources
     for crane in items:
+        from heavy_equipment_rental.consolidated_accounting import sources as batch_sources
+        for journal, source in batch_sources(crane, filters.company):
+            if not getdate(filters.from_date) <= getdate(source['posting_date']) <= getdate(filters.to_date):
+                continue
+            if filters.assignment and source['rental_assignment'] != filters.assignment:
+                continue
+            data.append(dict(posting_date=source['posting_date'], voucher_type='Journal Entry',
+                voucher=journal.name, assignment=source['rental_assignment'], crane=crane,
+                description=source['description'], mode_of_payment=source['mode_of_payment'],
+                expenses=source['expenses'], currency=currency))
         for source in repair_expense_sources(crane, filters.company):
             if not getdate(filters.from_date) <= getdate(source["posting_date"]) <= getdate(filters.to_date):
                 continue

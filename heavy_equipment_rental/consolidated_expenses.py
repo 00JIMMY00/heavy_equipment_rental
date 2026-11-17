@@ -14,7 +14,7 @@ HEADERS = ('Date / التاريخ', 'Description / البيان', 'Total / ال�
 
 @frappe.whitelist()
 def get_defaults(company):
-    if not frappe.has_permission('Consolidated Expense', 'create'):
+    if not frappe.has_permission('Grouped Expense', 'create'):
         frappe.throw(_('Not permitted'), frappe.PermissionError)
     frappe.get_doc('Company', company).check_permission('read')
     settings = frappe.get_cached_doc('Heavy Equipment Rental Settings')
@@ -39,7 +39,7 @@ def validate_defaults(settings):
 
 @frappe.whitelist()
 def download_template():
-    frappe.has_permission('Consolidated Expense', 'create', throw=True)
+    frappe.has_permission('Grouped Expense', 'create', throw=True)
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill
     book = Workbook()
@@ -65,7 +65,7 @@ def download_template():
     instructions.column_dimensions['A'].width = 120
     output = BytesIO()
     book.save(output)
-    frappe.response.update(type='binary', filename='consolidated-expenses.xlsx',
+    frappe.response.update(type='binary', filename='grouped-expenses.xlsx',
         filecontent=output.getvalue(), display_content_as='attachment')
 
 
@@ -130,7 +130,7 @@ def parse_template(content, company):
 
 @frappe.whitelist()
 def upload_template(file_url, company):
-    frappe.has_permission('Consolidated Expense', 'create', throw=True)
+    frappe.has_permission('Grouped Expense', 'create', throw=True)
     frappe.get_doc('Company', company).check_permission('read')
     file = frappe.get_doc('File', {'file_url': file_url})
     file.check_permission('read')

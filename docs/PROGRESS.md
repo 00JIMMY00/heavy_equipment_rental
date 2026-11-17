@@ -1,5 +1,13 @@
 # Progress
 
+## 2026-11-17 — Grouped Expense rename and workspace links
+
+Renamed Consolidated Expense and its child DocType in place to Grouped Expense / Grouped Expense Item. Existing CEXP IDs, accounting links and data are retained. The Operations workspace highlights Grouped Expense and places the normal Expense Entry immediately below it without highlighting. Arabic remains مصروف مجمع.
+
+## 2026-11-17 — Direct consolidated expense journals
+
+New consolidated expense rows post native Journal Entries directly, without creating Expense Entries. Each row retains its own posting date/payment and Employee journal attribution. CPS, profitability, treasury, ledger tracing and cancellation use the batch's explicit rental links; generic journal sources exclude these journals to prevent duplicate allocation. Historical submitted batches retain their Expense Entries; cancellation supports both paths and amendments post direct journals. No historical amounts or vouchers are rewritten.
+
 ## 2026-11-17 — Consolidated expenses (مصروف مجمع)
 
 Migrated dev3 and passed 12 integration tests, including real invoice/CPS inclusion exactly once, closed-settlement cancellation protection, balanced row journals, overrides, amendment, rollback and template rejection. Browser verified automatic defaults, three visible grid columns, actual XLSX download/upload, and desktop/mobile without horizontal overflow. The pre-existing global null/join startup errors remain visible; the new form and upload completed successfully. Temporary browser session and uploaded test file were removed; integration transactions were rolled back.
@@ -644,3 +652,7 @@ Fixed the native cancellation path that demanded manually cancelling the Sales I
 ## 2026-11-17 — Consolidated expense accounting ledger
 
 Added View → Accounting Ledger for submitted/cancelled batches. Native General Ledger accepts a permission-checked Consolidated Expense filter tracing its generated journals, with row-date limits and cancelled-entry display for cancelled batches. Posting architecture remains unchanged pending discussion.
+
+Direct-journal verification: migrated dev3 and passed 13 integration tests covering balanced direct journals, Employee attribution, per-row overrides, source tracing, CPS inclusion exactly once, closed-work guards, atomic posting rollback, batch and Timesheet cancellation, amendment, historical Expense Entry batch reversal and rental workflows. Cleared site cache; test transactions were rolled back.
+
+Grouped Expense rename verification: migrated dev3; all 13 accounting/rental tests passed. Browser confirmed Grouped Expense and Expense Entry are adjacent in that order, with yellow highlighting only on Grouped Expense and a transparent background on Expense Entry. Explicitly resequenced saved Workspace child rows so this order survives reload. Existing CEXP records remain available under the new DocType route.
