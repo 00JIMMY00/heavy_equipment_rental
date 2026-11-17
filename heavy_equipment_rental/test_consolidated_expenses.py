@@ -44,6 +44,9 @@ class TestConsolidatedExpenses(FrappeTestCase):
         self.assertEqual(batch.items[0].expense_entry_type, self.default.expense_type)
         batch.submit()
         links = [r.expense_entry for r in batch.items]
+        from heavy_equipment_rental.general_ledger import voucher_scope
+        scope = voucher_scope(frappe._dict(company=batch.company, consolidated_expense=batch.name))
+        self.assertEqual(scope, {('Journal Entry', frappe.db.get_value('Expense Entry', name, 'journal_entry')) for name in links})
         from heavy_equipment_rental.rental_expenses import expense_sources
         sources = list(expense_sources(batch.crane, batch.company))
         self.assertEqual(sum(s['expenses'] for _, s in sources), 200)

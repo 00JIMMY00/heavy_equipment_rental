@@ -2,6 +2,9 @@
     const report = frappe.query_reports["General Ledger"];
     if (report.filters.some(f => f.fieldname === "cps")) return;
     const filters = [
+        {fieldname: "consolidated_expense", label: __("Consolidated Expense"),
+            fieldtype: "Link", options: "Consolidated Expense",
+            get_query: () => ({filters: {company: frappe.query_report.get_filter_value("company")}})},
         {
             fieldname: "crane", label: __("Crane"), fieldtype: "Link", options: "Crane",
         },

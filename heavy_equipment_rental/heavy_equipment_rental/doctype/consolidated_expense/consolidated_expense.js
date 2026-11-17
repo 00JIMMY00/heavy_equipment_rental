@@ -9,6 +9,16 @@ frappe.ui.form.on('Consolidated Expense', {
         frm.set_query('crane_timesheet', () => ({filters: {crane: frm.doc.crane, docstatus: ['<', 2]}}));
     },
     async refresh(frm) {
+        if (frm.doc.docstatus > 0) {
+            frm.add_custom_button(__("Accounting Ledger"), () => {
+                const dates = (frm.doc.items || []).map(row => row.posting_date).filter(Boolean).sort();
+                frappe.set_route("query-report", "General Ledger", {
+                    company: frm.doc.company, consolidated_expense: frm.doc.name,
+                    from_date: dates[0], to_date: dates[dates.length - 1],
+                    show_cancelled_entries: frm.doc.docstatus === 2 ? 1 : 0,
+                });
+            }, __("View"));
+        }
         if (frm.doc.docstatus !== 0) return;
         await frm.trigger('load_defaults');
         const grid = frm.fields_dict.items.grid;

@@ -11,7 +11,7 @@ from erpnext.accounts.report.general_ledger import general_ledger as native_gl
 
 class RentalReport(Report):
     def execute_module(self, filters):
-        if self.name == "General Ledger" and (filters.get("crane") or filters.get("cps")):
+        if self.name == "General Ledger" and (filters.get("crane") or filters.get("cps") or filters.get("consolidated_expense")):
             return execute(frappe._dict(filters))
         return super().execute_module(filters)
 
@@ -41,6 +41,24 @@ def settlement_vouchers(doc):
 
 
 def voucher_scope(filters):
+    if filters.get("consolidated_expense"):
+        doc = frappe.get_doc("Consolidated Expense", filters.consolidated_expense)
+        doc.check_permission("read")
+        if doc.company != filters.company or (filters.crane and doc.crane != filters.crane):
+            frappe.throw(_("The expense must match the selected Company and Crane."))
+        result = set()
+        for row in doc.items:
+            if row.expense_entry:
+                expense = frappe.get_doc("Expense Entry", row.expense_entry)
+                expense.check_permission("read")
+                if expense.journal_entry:
+                    frappe.get_doc("Journal Entry", expense.journal_entry).check_permission("read")
+                    result.add(("Journal Entry", expense.journal_entry))
+        if filters.cps:
+            settlement = frappe.get_doc("Crane Profit Settlement", filters.cps)
+            settlement.check_permission("read")
+            result &= settlement_vouchers(settlement)
+        return result
     if filters.cps:
         doc = frappe.get_doc("Crane Profit Settlement", filters.cps)
         doc.check_permission("read")

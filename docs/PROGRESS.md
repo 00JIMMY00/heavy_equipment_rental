@@ -640,3 +640,7 @@ Added native Details and Connections tabs, placing the related-document dashboar
 ## 2026-11-17 — Native Timesheet cascade cancellation
 
 Fixed the native cancellation path that demanded manually cancelling the Sales Invoice first. Server-side Timesheet cancellation now executes its directed dependency plan, including consolidated/direct expenses and payment/settlement reversals. Fixed the consolidated expense historical CPS backlink during reopening. Passed 12 tests, including a real submitted invoice/CPS/batch cycle cancelled through Timesheet.cancel(). Cleared dev3 cache. No user business documents were cancelled during this change.
+
+## 2026-11-17 — Consolidated expense accounting ledger
+
+Added View → Accounting Ledger for submitted/cancelled batches. Native General Ledger accepts a permission-checked Consolidated Expense filter tracing its generated journals, with row-date limits and cancelled-entry display for cancelled batches. Posting architecture remains unchanged pending discussion.

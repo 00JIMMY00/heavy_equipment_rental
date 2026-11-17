@@ -15,3 +15,5 @@ Cancel the batch to reverse all generated expenses/journals together. Direct can
 Installation/migration supplies a company-specific `عام` Expense account and enabled Expense Entry Type, then fills only missing HER default selections. This is a portable, idempotent fixture implemented in setup rather than exporting site-specific Company/Account IDs. New companies receive the same defaults once their chart exists. Existing selected types and all historical transactions are preserved. No payment account is guessed: configure the default payment method and its company account explicitly.
 
 Verified on `cranes-dev3.arab-erp.com`; production deployment is separate.
+
+Use **View → Accounting Ledger** on submitted/cancelled batches to open native General Ledger scoped to their generated journals and row posting dates. Cancelled batches enable Show Cancelled Entries.
