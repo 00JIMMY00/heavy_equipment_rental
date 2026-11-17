@@ -628,6 +628,11 @@ Operating Fee %,نسبة رسم التشغيل
 Operating Fee Recipient,مستفيد رسم التشغيل
 Operating Fees,رسوم التشغيل
 Operator Shifts,ورديات المشغل
+Fill Table,تعبئة الجدول
+Remove and Fill,حذف وتعبئة
+Remove {0} operator shift row(s) with work dates outside {1} through {2}? The rows will be deleted when you save the Timesheet.,هل تريد حذف صفوف ورديات المشغل البالغ عددها {0} التي تقع تواريخ عملها خارج الفترة من {1} إلى {2}؟ سيتم حذف الصفوف عند حفظ تايم شيت.
+Enter Period Start and Period End in Timesheet Details first.,أدخل بداية الفترة ونهايتها في تفاصيل تايم شيت أولاً.
+Operator Shifts already has a row for every date in this period.,يوجد صف لكل يوم من هذه الفترة في جدول ورديات المشغل.
 Original Workbook Date,تاريخ الدفتر الأصلي
 Overtime hours,ساعات العمل الإضافي
 Owner Has No Profit Share,المالك بلا حصة من الربح

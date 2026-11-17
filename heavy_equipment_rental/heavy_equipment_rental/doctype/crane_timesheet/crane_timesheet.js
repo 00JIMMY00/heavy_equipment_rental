@@ -1,28 +1,60 @@
-function fill_default_days(frm) {
-    if (frm.doc.docstatus !== 0 || !frm.doc.period_start || !frm.doc.period_end) return;
-    const start = frm.doc.period_start;
-    const end = frm.doc.period_end;
+async function fill_default_days(frm, manual = false) {
+    const doc = frm.doc;
+    if (doc.docstatus !== 0) return;
+    const { period_start: start, period_end: end } = doc;
+    if (!start || !end) {
+        if (manual) frappe.msgprint(__("Enter Period Start and Period End in Timesheet Details first."));
+        return;
+    }
     const request = (frm._default_days_request || 0) + 1;
     frm._default_days_request = request;
-    frappe.call({
+    const is_current = () => request === frm._default_days_request && frm.doc === doc &&
+        doc.docstatus === 0 && doc.period_start === start && doc.period_end === end;
+    const { message: defaults } = await frappe.call({
         method: "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.crane_timesheet.default_timesheet_entries",
         args: { period_start: start, period_end: end },
-    }).then(({ message: defaults }) => {
-        if (request !== frm._default_days_request || frm.doc.period_start !== start || frm.doc.period_end !== end) return;
-        const existing = new Set((frm.doc.timesheet_entries || []).map((row) => row.work_date));
-        let added = false;
-        for (const values of defaults || []) {
-            if (existing.has(values.work_date)) continue;
-            frm.add_child("timesheet_entries", { ...values, employee: frm.doc.driver || undefined });
-            existing.add(values.work_date);
-            added = true;
-        }
-        if (added) {
-            frm.refresh_field("timesheet_entries");
-            load_driver_names(frm);
-            update_driver_hours(frm);
-        }
     });
+    if (!defaults?.length || !is_current()) return;
+
+    const outside_period = (row) => row.work_date && (row.work_date < start || row.work_date > end);
+    const outside = manual ? (doc.timesheet_entries || []).filter(outside_period) : [];
+    if (outside.length) {
+        const confirmed = await new Promise(resolve => {
+            frappe.confirm(
+                __("Remove {0} operator shift row(s) with work dates outside {1} through {2}? The rows will be deleted when you save the Timesheet.", [
+                    outside.length, frappe.datetime.str_to_user(start), frappe.datetime.str_to_user(end),
+                ]),
+                () => resolve(true),
+                () => resolve(false),
+                __("Remove and Fill"),
+                __("Cancel"),
+            );
+        });
+        if (!confirmed || !is_current()) return;
+
+        for (const row of outside.filter(outside_period)) {
+            frappe.model.clear_doc(row.doctype, row.name);
+        }
+        frm.dirty();
+    }
+
+    const existing = new Set((doc.timesheet_entries || []).map((row) => row.work_date));
+    const missing = defaults.filter((row) => !existing.has(row.work_date));
+    if (!missing.length && !outside.length) {
+        if (manual) frappe.show_alert(__("Operator Shifts already has a row for every date in this period."));
+        return;
+    }
+    for (const values of missing) {
+        frm.add_child("timesheet_entries", {
+            ...values,
+            employee: doc.driver || undefined,
+            rental_rate_unit: doc.rental_rate_unit,
+            rental_rate: doc.rental_rate,
+        });
+    }
+    frm.refresh_field("timesheet_entries");
+    update_driver_hours(frm);
+    await load_driver_names(frm);
 }
 
 async function load_driver_names(frm) {
@@ -213,7 +245,14 @@ frappe.ui.form.on("Crane Timesheet", {
                 return heavy_equipment_rental.create_supplier_payment(frm);
             }, __("Create"));
         }
-        if (frm.doc.docstatus === 0 && !(frm.doc.timesheet_entries || []).length) fill_default_days(frm);
+        const shifts = frm.fields_dict.timesheet_entries.grid;
+        const fill_label = __("Fill Table");
+        if (frm.doc.docstatus === 0 && shifts.is_editable()) {
+            shifts.add_custom_button(fill_label, () => fill_default_days(frm, true), "top");
+            if (!(frm.doc.timesheet_entries || []).length) fill_default_days(frm);
+        } else {
+            shifts.custom_buttons?.[fill_label]?.addClass("hidden");
+        }
         if (frm.doc.docstatus === 1 && frappe.model.can_create("Sales Invoice"))
             frm.add_custom_button(__("Generate Sales Invoice"), () => frappe.call({
                 method: "heavy_equipment_rental.billing.generate_sales_invoice",

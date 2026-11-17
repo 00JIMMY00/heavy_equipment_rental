@@ -28,6 +28,8 @@ Customer payments use ERPNext's normal invoice/payment workflow. Sales Invoices 
 3. If none matches, Rental Terms defaults the billing unit from Settings and the agreed rate from the selected Crane's reference price for that unit. Review or override these defaults as needed. Saving creates a single-crane Rental Contract for the Timesheet period and links it in the same transaction.
 4. Later Timesheets with the same customer, location, crane, and covered dates reuse that Rental Contract.
 
+On a draft Timesheet, use **Entries → Operator Shifts → Fill Table** to add a shift for each missing date between **Period Start** and **Period End**. New rows use the configured Day Shift defaults and the optional **Default Driver** from **Timesheet Details**. If any shift's Work Date is outside the period, the button shows how many rows it will remove and asks for confirmation before filling. Shifts within the period keep their entered values, and saving the draft applies the changes.
+
 Extend the Rental Contract explicitly if work continues beyond its booked dates. The Timesheet Connections tab uses Frappe's standard related-document dashboard.
 
 ## Billing defaults
