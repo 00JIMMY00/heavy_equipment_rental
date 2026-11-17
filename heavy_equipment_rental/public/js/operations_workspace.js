@@ -14,6 +14,9 @@
     const content = page.querySelector('.layout-main-section-wrapper');
     if (!toggle || !panel || !content) return;
 
+    // Start collapsed once; subsequent updates preserve the user's toggle choice.
+    $(column).hide();
+
     const scrim = document.createElement('div');
     scrim.className = 'her-workspace-scrim';
     column.append(scrim);

@@ -98,7 +98,7 @@ doctype_js = {
     "Payment Entry": "public/js/partner_payment.js",
 }
 
-app_include_js = ["/assets/heavy_equipment_rental/js/operations_workspace.js?v=20261117-workspace-rail", "/assets/heavy_equipment_rental/js/rental_cancellation.js?v=20261114-cancel-all"]
+app_include_js = ["/assets/heavy_equipment_rental/js/operations_workspace.js?v=20261117-sidebar-closed", "/assets/heavy_equipment_rental/js/rental_cancellation.js?v=20261114-cancel-all"]
 
 
 override_whitelisted_methods = {

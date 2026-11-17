@@ -2,7 +2,7 @@
 
 Open **Crane Operations** (`/app/crane-operations`). The latest layout has a shallow crane panorama and seven section cards in four desktop columns. The cards contain compact icon/link rows, colored headings and permission-filtered record counts. Mobile layouts stack the native blocks.
 
-The menu button beside the page title opens the workspace navigation. The title area and sidebar share a straight edge and a continuous navy background. On desktop the full-height sidebar scrolls independently. On mobile you can close the panel with the menu button, Escape, a navigation link, or a tap outside the panel.
+The workspace navigation starts closed on a fresh page load. The menu button beside the page title opens it; your toggle choice is preserved during subsequent workspace updates. The title area and sidebar share a straight edge and a continuous navy background. On desktop the full-height sidebar scrolls independently. On mobile you can close the panel with the menu button, Escape, a navigation link, or a tap outside the panel.
 
 ## Edit on your site
 
