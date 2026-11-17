@@ -8,6 +8,8 @@ Hide Date of Birth and make it optional in Employee metadata so both forms can s
 
 Use the shared Expense Entry and native Journal Entry workflow. The configured Expense Entry Type supplies the salary expense account and the Mode of Payment supplies the funding account. Each positive amount posts on Timesheet submission using the submission date. Blank and zero amounts skip posting and require no defaults. Cancel the Timesheet to reverse its generated expenses and retain their history. An amendment carries the amounts forward and creates fresh entries on submission.
 
+Store Mode of Payment on each payroll row and show it in the pencil editor. Use the company payroll default for empty rows and allow a per-driver override. Posted rows take their historical mode from the linked Expense Entry during migration.
+
 Show one Driver Payroll grid above Totals. The quantity and price columns follow the Timesheet billing unit, using actual hours, distinct worked dates, or calendar-month fractions. Legacy Timesheets with mixed shift units and no sheet unit use hours. Editing the rate calculates the amount. Editing the amount fixes the amount and derives a rate when quantity is positive. Keep the earlier hours fields for stored history and integrations. Totals displays Total Crane Billable Hours and Total Amount.
 
 ## 2026-11-17 — Future Crane Timesheet dates

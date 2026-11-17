@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-11-17 — Mode of Payment per driver
+
+Added Mode of Payment to the payroll row editor. The company default fills empty rows and per-driver selections carry through to the Expense Entry and Journal Entry. Migrated dev3 and filled historical rows from their linked expenses. Timesheet and rental workflow suites passed 23 tests with one legacy test skipped.
+
 ## 2026-11-17 — Payroll rate from a fixed amount
 
 The payroll grid calculates in either direction and labels its price column by the Timesheet billing unit. Fixed amounts retain their value when work changes and show an implied price when quantity is positive. The dev3 migration filled rates for saved fixed amounts. Timesheet and rental workflow suites passed 23 tests with one legacy test skipped. JavaScript checks covered both inputs, all three unit labels and zero quantity.

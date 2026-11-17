@@ -22,14 +22,27 @@ def validate_payroll_defaults(settings):
 
 
 def validate_payroll_default(row):
+    validate_payroll_expense_type(row)
+    validate_payroll_mode(row.mode_of_payment, row.company)
+
+
+def validate_payroll_expense_type(row):
     expense_type = frappe.db.get_value(
         "Expense Entry Type", row.expense_type, ["company", "enabled"], as_dict=True
     ) if row.expense_type else None
     if not expense_type or not expense_type.enabled or expense_type.company != row.company:
         frappe.throw(_("Select an enabled driver payroll Expense Entry Type for {0}.").format(row.company))
-    account = payment_account(row.mode_of_payment, row.company)
+
+
+def validate_payroll_mode(mode, company):
+    account = payment_account(mode, company)
     if frappe.db.get_value("Account", account, "disabled"):
-        frappe.throw(_("Select a payroll Mode of Payment with an enabled account for {0}.").format(row.company))
+        frappe.throw(_("Select a payroll Mode of Payment with an enabled account for {0}.").format(company))
+
+
+def payroll_defaults(company):
+    settings = frappe.get_cached_doc("Heavy Equipment Rental Settings")
+    return next((row for row in settings.driver_payroll_defaults if row.company == company), None)
 
 
 def driver_work_summary(sheet):
@@ -61,6 +74,8 @@ def driver_work_summary(sheet):
 def sync_payroll_rows(sheet, company, summary):
     sheet.payroll_company = company
     work = {employee: values for employee, values in summary.items() if employee}
+    default = payroll_defaults(company) if work else None
+    default_mode = default.mode_of_payment if default else None
     seen = set()
     for row in list(sheet.driver_payroll):
         if row.expense_entry:
@@ -80,6 +95,7 @@ def sync_payroll_rows(sheet, company, summary):
             frappe.throw(_("Enter only one payroll amount per driver."))
         seen.add(row.employee)
         row.update(work[row.employee])
+        row.mode_of_payment = row.mode_of_payment or default_mode
         if row.fixed_amount or (amount and not rate):
             row.fixed_amount = 1
             row.rate = implied_payroll_rate(row)
@@ -93,7 +109,7 @@ def sync_payroll_rows(sheet, company, summary):
 
     for employee, values in work.items():
         if employee not in seen:
-            sheet.append("driver_payroll", {"employee": employee, **values})
+            sheet.append("driver_payroll", {"employee": employee, "mode_of_payment": default_mode, **values})
 
 
 def implied_payroll_rate(row):
@@ -109,19 +125,19 @@ def post_driver_payroll(sheet):
     rows = [row for row in sheet.driver_payroll if row.amount and not row.expense_entry]
     if not rows:
         return
-    settings = frappe.get_single("Heavy Equipment Rental Settings")
-    default = next((row for row in settings.driver_payroll_defaults if row.company == sheet.payroll_company), None)
+    default = payroll_defaults(sheet.payroll_company)
     if not default:
         frappe.throw(_("Set driver payroll defaults for {0} in Heavy Equipment Rental Settings.").format(sheet.payroll_company))
-    validate_payroll_default(default)
+    validate_payroll_expense_type(default)
 
     posting_date = today()
     for row in rows:
+        validate_payroll_mode(row.mode_of_payment, sheet.payroll_company)
         expense = frappe.get_doc({
             "doctype": "Expense Entry",
             "company": sheet.payroll_company,
             "posting_date": posting_date,
-            "mode_of_payment": default.mode_of_payment,
+            "mode_of_payment": row.mode_of_payment,
             "description": _("Driver payroll for Crane Timesheet {0}").format(sheet.name),
             "employee": row.employee,
             "crane": sheet.crane,

@@ -2,7 +2,7 @@
 
 ## 2026-11-17 — Driver payroll from Crane Timesheets
 
-The optional Driver Payroll table follows the distinct Employees on Operator Shifts and combines driver work and payroll above Totals. Its quantity and price follow the Timesheet billing unit. Enter a rate to calculate payroll or enter a fixed amount to calculate its implied rate. Submission posts one linked Expense Entry per positive amount. HER Settings holds the expense type and funding Mode of Payment per company. Expenses are attributed to the Timesheet for rental profitability and settlements.
+The optional Driver Payroll table follows the distinct Employees on Operator Shifts and combines driver work and payroll above Totals. Its quantity and price follow the Timesheet billing unit. Enter a rate to calculate payroll or enter a fixed amount to calculate its implied rate. Submission posts one linked Expense Entry per positive amount. The payroll row editor shows the Mode of Payment, defaulted from HER Settings and editable per driver. Expenses are attributed to the Timesheet for rental profitability and settlements.
 
 ## 2026-11-17 — Crane Operations site entry
 

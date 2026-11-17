@@ -36,7 +36,7 @@ Extend the Rental Contract explicitly if work continues beyond its booked dates.
 
 1. In **Heavy Equipment Rental Settings → Driver Payroll**, add a row for the rental company. Choose the **Payroll Expense Type** for the salary expense account and the **Payroll Mode of Payment** whose company default account funds the payment.
 2. Add or select drivers in **Operator Shifts**. **Driver Payroll** shows the worked quantity, **Price / Hour**, **Price / Day**, or **Price / Month** according to the billing unit, and **Payroll Amount**. Enter a price to calculate the amount, or enter an amount to calculate the price. The last field you edit stays fixed when shifts change. A fixed amount can be entered before there is any worked quantity. Its price appears once work is recorded. Leave the price and amount blank or zero to skip a driver.
-3. Submit the Timesheet to post one **Expense Entry** and Journal Entry per paid driver using the submission date. Open the row with the pencil icon to see its payroll unit, worked hours, and Expense Entry link.
+3. Open a row with the pencil icon to see its payroll unit, worked hours, **Mode of Payment**, and Expense Entry link. The payment mode defaults from the company’s payroll settings and can be changed per driver. Submit the Timesheet to post one **Expense Entry** and Journal Entry per paid driver using the row’s payment mode and the submission date.
 
 Hourly quantity sums actual hours per driver. Daily quantity counts distinct worked dates per driver. Monthly quantity prorates those dates by the length of their calendar months. Use the Timesheet's **Cancel** action to reverse its payroll expenses. Amend the Timesheet to correct amounts and post replacement entries.
 

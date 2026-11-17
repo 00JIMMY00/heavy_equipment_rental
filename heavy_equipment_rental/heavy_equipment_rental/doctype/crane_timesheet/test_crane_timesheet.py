@@ -87,6 +87,10 @@ class TestCraneTimesheet(FrappeTestCase):
             "company": self.company, "expense_type": expense_type.name, "mode_of_payment": mode,
         }])
         settings.save()
+        alternate_mode = frappe.get_doc({
+            "doctype": "Mode of Payment", "mode_of_payment": "Payroll test " + self.key, "enabled": 1,
+            "accounts": [{"company": self.company, "default_account": payment_account(mode, self.company)}],
+        }).insert().name
 
         sheet = self.make_sheet()
         sheet.rented = 0
@@ -103,8 +107,10 @@ class TestCraneTimesheet(FrappeTestCase):
         sheet.insert()
         self.assertEqual([row.employee for row in sheet.driver_payroll], [sheet.driver, second_driver, unpaid_driver])
         self.assertEqual([row.quantity for row in sheet.driver_payroll], [6, 4, 4])
+        self.assertEqual([row.mode_of_payment for row in sheet.driver_payroll], [mode, mode, mode])
         sheet.driver_payroll[0].rate = 25
         sheet.driver_payroll[1].amount = 75
+        sheet.driver_payroll[1].mode_of_payment = alternate_mode
         sheet.save()
         self.assertEqual([flt(row.amount) for row in sheet.driver_payroll], [150, 75, 0])
         self.assertFalse(frappe.db.exists("Expense Entry", {"crane_timesheet": sheet.name}))
@@ -112,12 +118,14 @@ class TestCraneTimesheet(FrappeTestCase):
         sheet.submit()
         sheet.reload()
         self.assertFalse(sheet.driver_payroll[2].expense_entry)
+        self.assertEqual([row.mode_of_payment for row in sheet.driver_payroll], [mode, alternate_mode, mode])
         expenses = {}
         for row in sheet.driver_payroll[:2]:
             expense = frappe.get_doc("Expense Entry", row.expense_entry)
             expenses[expense.name] = expense.journal_entry
             self.assertEqual(expense.docstatus, 1)
             self.assertEqual(expense.employee, row.employee)
+            self.assertEqual(expense.mode_of_payment, row.mode_of_payment)
             self.assertEqual(expense.company, self.company)
             self.assertEqual(expense.crane_timesheet, sheet.name)
             self.assertEqual(expense.crane_assignment, sheet.assignment)
@@ -127,23 +135,26 @@ class TestCraneTimesheet(FrappeTestCase):
             self.assertEqual(journal.docstatus, 1)
             debit, credit = journal.accounts
             self.assertEqual((debit.account, debit.party_type, debit.party), (expense_type.account, "Employee", row.employee))
-            self.assertEqual((credit.account, credit.credit), (payment_account(mode, self.company), row.amount))
+            self.assertEqual((credit.account, credit.credit), (payment_account(row.mode_of_payment, self.company), row.amount))
             self.assertEqual(debit.debit, row.amount)
         self.assertEqual(frappe.db.count("Expense Entry", {"crane_timesheet": sheet.name}), 2)
 
         from heavy_equipment_rental.patches.backfill_driver_payroll_quantities import execute
+        from heavy_equipment_rental.patches.backfill_payroll_payment_modes import execute as backfill_payment_modes
 
         first, second, unpaid = sheet.driver_payroll
         frappe.db.set_value("Crane Driver Payroll", first.name, {"unit": None, "quantity": 0})
-        frappe.db.set_value("Crane Driver Payroll", second.name, {"unit": None, "quantity": 0})
+        frappe.db.set_value("Crane Driver Payroll", second.name, {"unit": None, "quantity": 0, "mode_of_payment": None})
         frappe.db.delete("Crane Driver Payroll", {"name": unpaid.name})
         execute()
         execute()
+        backfill_payment_modes()
         sheet.reload()
         self.assertEqual([flt(row.amount) for row in sheet.driver_payroll], [150, 75, 0])
         self.assertEqual([row.quantity for row in sheet.driver_payroll], [6, 4, 4])
         self.assertTrue(all(row.docstatus == 1 for row in sheet.driver_payroll))
         self.assertEqual([row.expense_entry for row in sheet.driver_payroll[:2]], list(expenses))
+        self.assertEqual(sheet.driver_payroll[1].mode_of_payment, alternate_mode)
         self.assertEqual(sheet.driver_payroll[1].rate, flt(75 / 4, sheet.driver_payroll[1].precision("rate")))
 
         sheet.attachment = "/private/files/payroll-test.pdf"

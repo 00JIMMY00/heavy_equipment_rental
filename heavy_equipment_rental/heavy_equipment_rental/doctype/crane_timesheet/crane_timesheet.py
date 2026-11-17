@@ -10,6 +10,7 @@ from frappe.utils import flt, getdate
 from heavy_equipment_rental.driver_payroll import (
     cancel_driver_payroll,
     driver_work_summary,
+    payroll_defaults,
     post_driver_payroll,
     sync_payroll_rows,
 )
@@ -85,6 +86,14 @@ def get_timesheet_defaults(crane=None, selling_uom=None):
         defaults["rental_rate"] = next((row.price for row in equipment.period_prices
                                         if row.period == unit), 0)
     return defaults
+
+
+@frappe.whitelist()
+def get_default_payroll_mode(assignment):
+    frappe.get_cached_doc("Heavy Equipment Rental Settings").check_permission("read")
+    company = assignment_doc(assignment, "read").company
+    default = payroll_defaults(company)
+    return default.mode_of_payment if default else None
 
 
 class CraneTimesheet(Document):

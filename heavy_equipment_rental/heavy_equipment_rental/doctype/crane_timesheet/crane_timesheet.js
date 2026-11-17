@@ -261,6 +261,7 @@ frappe.ui.form.on("Crane Timesheet", {
         const payroll = frm.fields_dict.driver_payroll.grid;
         payroll.df.cannot_add_rows = true;
         payroll.df.cannot_delete_rows = true;
+        frm.set_query("mode_of_payment", "driver_payroll", () => ({filters: {enabled: 1}}));
         frm.set_query("assignment", () => ({ filters: Object.fromEntries([
             ["customer", frm.doc.customer], ["location", frm.doc.location],
         ].filter(([, value]) => value)) }));
@@ -343,6 +344,20 @@ frappe.ui.form.on("Crane Timesheet", {
 });
 
 frappe.ui.form.on("Crane Driver Payroll", {
+    async form_render(frm, cdt, cdn) {
+        const doc = frm.doc;
+        const row = locals[cdt][cdn];
+        const assignment = doc.assignment;
+        if (doc.docstatus !== 0 || row.mode_of_payment || !assignment) return;
+        const mode = await frappe.xcall(
+            "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.crane_timesheet.get_default_payroll_mode",
+            {assignment},
+        );
+        if (mode && frm.doc === doc && doc.docstatus === 0 && doc.assignment === assignment &&
+            locals[cdt][cdn] === row && !row.mode_of_payment) {
+            await frappe.model.set_value(cdt, cdn, "mode_of_payment", mode);
+        }
+    },
     rate(frm, cdt, cdn) {
         const row = locals[cdt][cdn];
         row.fixed_amount = 0;
