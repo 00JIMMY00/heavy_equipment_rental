@@ -142,6 +142,8 @@ def execute():
 
 	install_workbook_fields()
 	sync_operations_workspace()
+	from heavy_equipment_rental.patches.add_expense_report_workspace import execute as add_expense_report
+	add_expense_report()
 	seed_defaults()
 	update_workspace()
 	set_default_workspace()

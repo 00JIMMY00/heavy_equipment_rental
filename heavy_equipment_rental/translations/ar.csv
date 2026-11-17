@@ -1178,3 +1178,30 @@ The batch total must be finite.,يجب أن يكون إجمالي المصروف
 
 Configure and enable profit sharing on the Crane first.,اضبط توزيع الأرباح وفعّله على المعدة أولاً.
 Changed agreements must use Operating First. Review the profit-sharing terms before saving.,يجب استخدام أولوية التشغيل عند تغيير الاتفاق. راجع شروط توزيع الأرباح قبل الحفظ.
+Crane Expense Report,تقرير مصروفات المعدات
+EXPENSE OVERVIEW,نظرة على المصروفات
+Every expense. A clearer picture.,كل مصروف.. وصورة أوضح.
+"Compare cranes, explore totals, and open the original accounting documents.",قارن مصروفات المعدات، واستعرض الإجماليات، وافتح المستندات المحاسبية الأصلية.
+Posted expenses only,المصروفات المرحلة فقط
+Expense Lines,بنود المصروفات
+Cranes with Expenses,المعدات ذات المصروفات
+Average per Calendar Day,المتوسط لكل يوم خلال الفترة
+Show Individual Expenses,عرض المصروفات التفصيلية
+Chart By,الرسم البياني حسب
+Expense Source,مصدر المصروف
+Expense / Group,المصروف / المجموعة
+Share of Total,النسبة من الإجمالي
+Lines,البنود
+Expense Document,مستند المصروف
+Unassigned,غير محدد
+Invalid grouping.,طريقة التجميع غير صالحة.
+Invalid expense source.,مصدر المصروف غير صالح.
+Invalid chart grouping.,تجميع الرسم البياني غير صالح.
+Expense {0} has no posted journal.,المصروف {0} ليس له قيد محاسبي مرحل.
+Expense {0} has no valid posted journal.,المصروف {0} ليس له قيد محاسبي مرحل صالح.
+Expense {0} is not submitted.,المصروف {0} غير معتمد.
+"Posted Grouped Expenses and Expense Entries only, including driver payroll. Dates are accounting posting dates. Supplier invoices, stock consumption, depreciation and unrelated journals are outside this report. Group totals summarize the detail rows; do not add both together.",يشمل المصروفات المجمعة وقيود المصروفات المرحلة، بما فيها أجور السائقين. التواريخ هي تواريخ الترحيل المحاسبي. لا يشمل فواتير الموردين أو استهلاك المخزون أو الإهلاك أو القيود الأخرى. إجمالي المجموعة يلخص تفاصيلها؛ لا تجمع الإجمالي والتفاصيل معاً.
+
+Expenses by {0},المصروفات حسب {0}
+Fewer Filters,إخفاء المرشحات الإضافية
+More Filters,مرشحات إضافية

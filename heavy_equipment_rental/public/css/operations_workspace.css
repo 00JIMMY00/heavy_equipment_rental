@@ -133,3 +133,12 @@ body.her-operations-reference .links-widget-box .link-item[href="/app/grouped-ex
   border-inline-start: 3px solid #d39b12;
   font-weight: 700;
 }
+
+/* Expense analytics entry point. */
+body.her-operations-reference .links-widget-box .link-item:is([href="/app/query-report/Crane Expense Report"], [href="/app/query-report/Crane%20Expense%20Report"]) {
+  background: #e5f3ef; color: #145b4c; border: 1px solid #b5d9cb;
+  border-inline-start: 4px solid #21836b; border-radius: 8px; font-weight: 700;
+}
+html[data-theme="dark"] body.her-operations-reference .links-widget-box .link-item:is([href="/app/query-report/Crane Expense Report"], [href="/app/query-report/Crane%20Expense%20Report"]) {
+  background: #193e37; color: #b4ead8; border-color: #316756;
+}

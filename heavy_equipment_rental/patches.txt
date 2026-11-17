@@ -64,3 +64,5 @@ heavy_equipment_rental.patches.backfill_payroll_payment_modes
 
 heavy_equipment_rental.patches.setup_consolidated_expenses
 heavy_equipment_rental.patches.archive_dated_crane_agreements
+
+heavy_equipment_rental.patches.add_expense_report_workspace

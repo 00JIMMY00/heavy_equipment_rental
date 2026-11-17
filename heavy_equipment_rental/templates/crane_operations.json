@@ -176,7 +176,15 @@
   {
    "type": "Card Break",
    "label": "Financial Reports",
-   "link_count": 4
+   "link_count": 5
+  },
+  {
+   "type": "Link",
+   "label": "Crane Expense Report",
+   "link_type": "Report",
+   "link_to": "Crane Expense Report",
+   "is_query_report": 1,
+   "report_ref_doctype": "Expense Entry"
   },
   {
    "type": "Link",

@@ -44,6 +44,10 @@ Hourly quantity sums actual hours per driver. Daily quantity counts distinct wor
 
 Use **Crane Operations → مصروف مجمع (Grouped Expense)** to enter dated expenses for one rental Timesheet. Download/upload the Excel template, edit type/payment overrides with the row pencil, and Submit to post the batch. Configure company defaults under **HER Settings → Grouped Expenses**. [Usage and accounting](docs/CONSOLIDATED_EXPENSES.md).
 
+## Expense reporting
+
+Open **Crane Operations → Financial Reports → Crane Expense Report** for posted expense details, grouped totals and spending charts. Filter by Crane, posting dates and Timesheet, with additional type/payment/source/driver filters. [Report guide](docs/EXPENSE_REPORT.md).
+
 ## Billing defaults
 
 Open **Heavy Equipment Rental Settings → Billing Defaults**. Set **Default Selling UOM** and **Default Supplier Billing UOM** to Hour, Day, or Month; both initially default to Hour.

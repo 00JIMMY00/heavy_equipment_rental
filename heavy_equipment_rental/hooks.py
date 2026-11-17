@@ -9,7 +9,7 @@ app_include_css = [
 	"/assets/heavy_equipment_rental/css/crane_availability.css",
 	"/assets/heavy_equipment_rental/css/industrial_tokens.css?v=20261116-panorama-v2",
 	"/assets/heavy_equipment_rental/css/industrial_desk.css?v=20261116-ownership-bar-1",
-	"/assets/heavy_equipment_rental/css/operations_workspace.css?v=20261117-grouped-expense",
+	"/assets/heavy_equipment_rental/css/operations_workspace.css?v=20261117-expense-report",
 	"/assets/heavy_equipment_rental/css/industrial_loading.css",
 ]
 web_include_css = [
