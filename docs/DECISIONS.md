@@ -1,5 +1,9 @@
 # Current decisions
 
+## 2026-11-17 — Optional Employee birth date
+
+Employee creation must accept a blank Date of Birth. Use native Property Setters to make it optional before hiding it; keep validation enabled and preserve saved dates. This supersedes the earlier Quick Entry requirement for Date of Birth.
+
 ## 2026-11-17 — Mode of Payment Statement
 
 Use active native GL debits/credits in company currency for each payment mode's current company Default Account. Include opening balances and separate chronological running balances per account; compare period IN/OUT and closing balances in a bar chart. Count accounts once, combining mode aliases and selecting the same complete account statement through either alias. Retain disabled mappings for history and enforce accounting/source permissions. Never infer a historical mode split, repost transactions or total running balances. See [report guide](MODE_OF_PAYMENT_STATEMENT.md).

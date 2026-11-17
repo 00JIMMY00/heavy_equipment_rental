@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-11-17 — Optional Employee birth date installation fix
+
+Reordered Date of Birth Property Setters to clear mandatory before hiding the field. The new regression reproduced the CI installation error before the fix and passed afterward, including repeated setup and saving an Employee without a birth date. Added it to the production-image CI checks. Migrated `cranes-dev3.arab-erp.com`; all six rental workflow tests and whitespace checks passed. Test Employee records were rolled back.
+
 ## 2026-11-17 — Mode of Payment Statement
 
 The Operations workspace payment-statement link is highlighted green, with matching light/dark theme colors and inherited icon/text color.

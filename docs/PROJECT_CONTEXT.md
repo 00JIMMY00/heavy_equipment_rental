@@ -1,5 +1,9 @@
 # Project context
 
+## 2026-11-17 — Optional Employee birth date
+
+Date of Birth is optional and hidden. Setup clears its mandatory flag before hiding it so fresh installation passes Frappe's per-setter validation. Existing birth dates are retained.
+
 ## 2026-11-17 — Mode of Payment Statement
 
 Added a native payment-account statement with Company/date-range/payment-mode filters, Date/IN/OUT/running Balance/Remarks and source links. Posted GL movements supply opening balances, expenses, receipts and both transfer sides. A bar chart compares IN, OUT and closing balance per payment account. Modes sharing one account are combined to prevent duplicate balances. See [report guide](MODE_OF_PAYMENT_STATEMENT.md).
