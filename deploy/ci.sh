@@ -10,6 +10,7 @@ bench --site her_ci set-config allow_tests true
 for module in \
   heavy_equipment_rental.test_employee_entry \
   heavy_equipment_rental.test_demo \
+  heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.test_crane_timesheet \
   heavy_equipment_rental.heavy_equipment_rental.doctype.rental_contract.test_rental_workflow \
   heavy_equipment_rental.test_maintenance_lifecycle \
   heavy_equipment_rental.test_maintenance_posting \

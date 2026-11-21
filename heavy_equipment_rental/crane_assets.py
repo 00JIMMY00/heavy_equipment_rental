@@ -7,6 +7,8 @@ from frappe.utils import flt, today
 
 
 def company_ownership_percentage(crane):
+	if crane.hired_from_supplier:
+		return 0
 	owners = crane.ownership_partners
 	return sum(flt(row.get("ownership_percentage")) for row in owners if row.get("is_company"))
 

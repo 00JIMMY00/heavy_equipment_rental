@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 import frappe
+from erpnext import get_default_company
 from frappe.tests.utils import FrappeTestCase
 
 from heavy_equipment_rental import demo
@@ -13,7 +14,7 @@ class TestCraneRentalProfitability(FrappeTestCase):
     def setUp(self):
         self.location = "HER report test " + frappe.generate_hash(length=8)
         with patch.object(demo, "DEMO_LOCATION", self.location):
-            self.cycle = demo.create_rental_cycle("cranes company")
+            self.cycle = demo.create_rental_cycle(get_default_company())
         self.filters = {key: self.cycle[key] for key in ("company", "from_date", "to_date", "assignment")}
 
     def totals(self):
@@ -31,7 +32,7 @@ class TestCraneRentalProfitability(FrappeTestCase):
         invoice = self.cycle["timesheets"][0].sales_invoice
         self.assertEqual(frappe.db.get_value("Sales Invoice", invoice, "outstanding_amount"), 0)
         with patch.object(demo, "DEMO_LOCATION", self.location):
-            self.assertEqual(demo.create_rental_cycle("cranes company")["assignment"], self.cycle["assignment"])
+            self.assertEqual(demo.create_rental_cycle(get_default_company())["assignment"], self.cycle["assignment"])
         self.filters["crane"] = self.cycle["crane"]
         self.assertEqual(self.totals(), [15000, 3500, 11500])
         self.filters["from_date"] = self.filters["to_date"] = "2026-10-24"
@@ -69,11 +70,11 @@ class TestCraneRentalProfitability(FrappeTestCase):
         supplier = frappe.get_doc(dict(doctype="Supplier", supplier_name=self.location,
             supplier_type="Company", supplier_group=frappe.db.get_value("Supplier Group", {"is_group": 0}, "name"))).insert()
         crane = frappe.get_doc("Crane", sheet.crane)
-        crane.ownership_type, crane.supplier = "Rented", supplier.name
+        crane.hired_from_supplier, crane.supplier = 1, supplier.name
         crane.save()
         purchased = frappe.get_doc(dict(doctype="Crane Timesheet", assignment=sheet.assignment,
             crane=sheet.crane, driver=sheet.driver, period_start=sheet.period_end, period_end=sheet.period_end,
-            purchase_rate=700, timesheet_entries=[dict(work_date=sheet.period_end,
+            rented=1, purchase_rate=700, timesheet_entries=[dict(work_date=sheet.period_end,
                 start_time="17:00", end_time="18:00")])).insert()
         purchased.submit()
         purchase = frappe.get_doc("Purchase Invoice", purchased.purchase_invoice)
@@ -89,6 +90,17 @@ class TestCraneRentalProfitability(FrappeTestCase):
         with patch("frappe.has_permission", side_effect=lambda doctype, *args, **kwargs: doctype != "Purchase Invoice"):
             with self.assertRaises(frappe.PermissionError):
                 execute(self.filters)
+
+    def test_empty_report_batches_the_visible_fleet(self):
+        filters = dict(company=self.filters["company"], from_date="2199-01-01", to_date="2199-01-01")
+        for _ in range(4):
+            name = "HER report " + frappe.generate_hash(length=8)
+            frappe.get_doc(dict(doctype="Crane", crane_id=name, crane_name=name)).insert()
+        execute(filters)
+        with self.assertQueryCount(20):
+            result = execute(filters)
+        self.assertEqual(result[1], [])
+        self.assertEqual([total["value"] for total in result[4]], [0, 0, 0])
 
     def test_historical_expenses_with_missing_or_unsubmitted_journals(self):
         missing, deleted, unsubmitted = self.cycle["expenses"][:3]

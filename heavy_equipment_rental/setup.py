@@ -61,6 +61,8 @@ def execute():
 					0 if permission == "cancel" and role == "Projects User" else 1,
 				)
 	create_custom_fields({
+		"Sales Invoice Item": [dict(fieldname="her_rental_dates", fieldtype="Long Text",
+			label="Billed Rental Dates", read_only=1, hidden=1, no_copy=1)],
 		"Expense Entry Type": [{
 			"fieldname": "rental_legacy_description",
 			"fieldtype": "Small Text",

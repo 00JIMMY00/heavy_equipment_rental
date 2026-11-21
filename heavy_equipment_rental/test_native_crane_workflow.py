@@ -117,7 +117,7 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 		supplier = frappe.get_doc(dict(doctype="Supplier", supplier_name=self.key,
 			supplier_type="Company", supplier_group=frappe.db.get_value("Supplier Group", {"is_group": 0}, "name"))).insert()
 		self.crane.asset = None
-		self.crane.ownership_type, self.crane.supplier = "Rented", supplier.name
+		self.crane.hired_from_supplier, self.crane.supplier = 1, supplier.name
 		self.crane.asset_accounting_basis = "Third-party Custody"
 		self.crane.save()
 		self.assertEqual(self.gl("Stock Entry", self.issue(self.job()).name, "Expense"), 50)
@@ -136,8 +136,9 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 	def test_external_service_costs_and_capitalization_are_not_duplicated(self):
 		operating_job = self.job()
 		service = self.service_invoice(operating_job)
-		sources = collect_sources(self.crane.name, self.company.name, today(), today())
+		sources = list(repair_expense_sources(self.crane.name, self.company.name))
 		self.assertEqual([(s["name"], s["expenses"]) for s in sources], [(service.name, 100)])
+		self.assertEqual(collect_sources(self.crane.name, self.company.name, today(), today()), [])
 		capital_job = self.job("Capitalize Improvement")
 		capital_invoice = self.service_invoice(capital_job, 200)
 		repair = frappe.get_doc(make_repair_document(capital_job.name, "Asset Repair"))
@@ -146,7 +147,7 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 		self.assertEqual((repair.repair_cost, repair.total_repair_cost), (200, 200))
 		self.assertEqual(asset_summary(self.crane.name)["book_value"], 80200)
 		self.assertEqual(self.gl("Asset Repair", repair.name, "Asset"), 200)
-		self.assertEqual(sum(s["expenses"] for s in collect_sources(self.crane.name, self.company.name, today(), today())), 100)
+		self.assertEqual(sum(s["expenses"] for s in repair_expense_sources(self.crane.name, self.company.name)), 100)
 		with self.assertRaises(frappe.ValidationError):
 			capital_invoice.cancel()
 		repair.cancel()
@@ -243,9 +244,9 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 
 	def test_review_settlement_includes_repair_and_posts_selected_expense(self):
 		self.crane.update(dict(ownership_type="Shared Ownership", sharing_company=self.company.name,
-			agreement_effective_from=today(), operating_percentage=10,
+			enable_profit_sharing=1, operating_fees=[dict(is_company=1, basis="Grand Total", percentage=10)],
 			settlement_approval="Review Before Posting", distribution_posting="Partner Expense",
-			settlement_revenue_basis="Net Revenue", include_depreciation=1,
+			settlement_revenue_basis="Invoice Grand Total", include_depreciation=1,
 			profit_allocation_account=self.company.default_expense_account))
 		owner = frappe.get_doc(dict(doctype="Shareholder", title=self.key + " partner", company=self.company.name)).insert()
 		self.crane.set("ownership_partners", [dict(is_company=1, ownership_percentage=50, profit_percentage=50),
@@ -279,7 +280,8 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 			])).insert()
 		depreciation.submit()
 		settlement.save()
-		self.assertEqual((settlement.revenue, settlement.operating_expenses, settlement.external_distribution), (2000, 150, 825))
+		self.assertEqual((settlement.revenue, settlement.operating_fee, settlement.operating_expenses,
+			settlement.external_distribution), (2200, 220, 150, 915))
 		with self.assertRaisesRegex(frappe.ValidationError, "Costs Reviewed"):
 			settlement.submit()
 		settlement.reload()
@@ -292,7 +294,7 @@ class TestNativeCraneWorkflow(FrappeTestCase):
 		settlement.submit()
 		journal = frappe.get_doc("Journal Entry", settlement.journal_entry)
 		self.assertEqual(journal.accounts[0].account, self.company.default_expense_account)
-		self.assertEqual(journal.total_debit, 825)
+		self.assertEqual(journal.total_debit, 915)
 		# Funding changes cash/equity, not the closed rental result.
 		equity = frappe.get_doc(dict(doctype="Account", account_name=self.key + " funding",
 			company=self.company.name, parent_account=frappe.db.get_value("Account",

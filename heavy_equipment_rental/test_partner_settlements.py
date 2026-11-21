@@ -4,6 +4,8 @@ import json
 from unittest.mock import patch
 
 import frappe
+from erpnext import get_default_company
+from heavy_equipment_rental.testing import other_company
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import add_days, today
 
@@ -19,13 +21,13 @@ class TestPartnerSettlements(FrappeTestCase):
     def setUp(self):
         self.key = frappe.generate_hash(length=8)
         with patch.object(demo, "DEMO_LOCATION", "HER auto settlement " + self.key):
-            self.cycle = demo.create_rental_cycle("cranes company")
+            self.cycle = demo.create_rental_cycle(get_default_company())
         self.company = frappe.get_doc("Company", self.cycle["company"])
         self.crane = frappe.get_doc("Crane", self.cycle["crane"])
         self.partners = [frappe.get_doc(dict(doctype="Shareholder", title="HER owner " + self.key + str(i),
             company=self.company.name)).insert() for i in range(2)]
-        self.crane.update(dict(ownership_type="Shared Ownership", sharing_company=self.company.name,
-            agreement_effective_from=self.cycle["from_date"], operating_percentage=10))
+        self.crane.update(dict(enable_profit_sharing=1, ownership_type="Shared Ownership", sharing_company=self.company.name,
+            operating_fees=[dict(is_company=1, basis="Grand Total", percentage=10)]))
         self.crane.set("ownership_partners", [dict(is_company=1, ownership_percentage=50, profit_percentage=50)] + [
             dict(shareholder=p.name, ownership_percentage=25, profit_percentage=25) for p in self.partners])
         self.crane.save()
@@ -244,9 +246,11 @@ class TestPartnerSettlements(FrappeTestCase):
         with self.assertRaises(frappe.ValidationError):
             frappe.get_doc(dict(doctype="Crane Profit Settlement", timesheet=sheet.name, posting_date=today())).insert()
         with self.assertRaises(frappe.ValidationError):
-            sheet.cancel()
-        with self.assertRaises(frappe.ValidationError):
             make_partner_payment(sheet.profit_settlement, shareholder="unknown")
+        self.assertEqual(frappe.db.get_value("Crane Profit Settlement", sheet.profit_settlement, "docstatus"), 1)
+        settlement_name = sheet.profit_settlement
+        sheet.reload().cancel()
+        self.assertEqual(frappe.db.get_value("Crane Profit Settlement", settlement_name, "docstatus"), 2)
 
     def test_payment_link_validation_and_historical_report_date(self):
         sheet = self.sheet()
@@ -343,9 +347,10 @@ class TestPartnerSettlements(FrappeTestCase):
         self.crane.update(dict(ownership_type="Operated by Partner", operator_type="External Operator",
             operating_partner=supplier.name, operating_shareholder=self.partners[1].name,
             agreement_effective_from=self.start))
+        self.crane.set("operating_fees", [dict(shareholder=self.partners[1].name, percentage=10, basis="Grand Total")])
         self.crane.save()
         self.assertFalse(self.crane.ownership_partners[1].supplier)
-        self.assertFalse(self.crane.operating_partner)
+        self.assertEqual(self.crane.operating_fees[0].shareholder, self.partners[1].name)
         sheet = self.sheet()
         self.invoice(sheet).submit()
         settlement = frappe.get_doc("Crane Profit Settlement", sheet.profit_settlement)
@@ -434,7 +439,8 @@ class TestPartnerSettlements(FrappeTestCase):
 
     def test_late_assignment_expense_is_allocated_only_once_by_worked_hours(self):
         expense = self.rental_expense().insert()
-        self.assertEqual(str(expense.service_from_date), str(self.start))
+        self.assertEqual(expense.crane_assignment, self.assignment.name)
+        self.assertFalse(expense.crane_timesheet)
         expense.submit()
         first, second = self.sheet(hours=8), self.sheet(offset=1, hours=4)
         self.invoice().submit()
@@ -463,36 +469,37 @@ class TestPartnerSettlements(FrappeTestCase):
         self.assertEqual(frappe.get_doc("Crane Profit Settlement", second.profit_settlement).operating_expenses, 0)
 
     def test_expense_work_terms_validate_and_company_matches(self):
-        for values in [dict(service_from_date=self.start),
-                       dict(service_from_date=add_days(self.start, 1), service_to_date=self.start),
-                       dict(service_from_date=add_days(self.start, -1), service_to_date=self.start),
-                       dict(crane=self.crane.name + "-missing")]:
-            with self.assertRaises(frappe.ValidationError):
-                self.rental_expense(**values).insert()
+        sheet = self.sheet()
+        with self.assertRaisesRegex(frappe.ValidationError, "same rental job"):
+            self.rental_expense(crane_assignment=self.cycle["assignment"], crane_timesheet=sheet.name).insert()
+        crane = frappe.get_doc(dict(doctype="Crane", crane_id="foreign-" + self.key, crane_name=self.key)).insert()
+        foreign = frappe.copy_doc(self.assignment)
+        foreign.company = other_company(self.company.name)
+        foreign.assigned_cranes[0].crane = crane.name
+        foreign.insert()
+        with self.assertRaisesRegex(frappe.ValidationError, "same Company"):
+            self.rental_expense(crane_assignment=foreign.name).insert()
 
-    def test_period_expense_service_proration(self):
+    def test_period_expense_uses_posting_date(self):
         from heavy_equipment_rental.profit_sharing import collect_sources
-        expense = self.rental_expense(100,
-            service_from_date=self.start, service_to_date=add_days(self.start, 3)).insert()
-        expense.submit()
+        expense = self.rental_expense(100, posting_date=self.start).insert().submit()
         totals = []
         for offset in (0, 2):
             sources = collect_sources(self.crane.name, self.company.name,
                 add_days(self.start, offset), add_days(self.start, offset + 1))
             totals.append(sum(r.get("expenses", 0) for r in sources if r["name"] == expense.name))
-        self.assertEqual(totals, [50, 50])
+        self.assertEqual(totals, [100, 0])
 
     def test_period_expense_rounding_and_consecutive_closure(self):
-        from heavy_equipment_rental.profit_sharing import collect_sources
         from heavy_equipment_rental.timesheet_settlement import validate_source_allocations
-        expense = self.rental_expense(0.01,
-            service_from_date=self.start, service_to_date=add_days(self.start, 2)).insert()
-        expense.submit()
+        # Repair sources retain multi-day service periods and must conserve cents across closures.
+        from heavy_equipment_rental.crane_repairs import allocate_repair_period
+        source = dict(doctype="Stock Entry", name="repair material issue", rental_assignment=self.assignment.name,
+            service_from_date=self.start, service_to_date=add_days(self.start, 2), expenses=0.01)
         parts = []
         for offset in range(3):
             day = add_days(self.start, offset)
-            parts.extend(r for r in collect_sources(self.crane.name, self.company.name, day, day)
-                if r["name"] == expense.name)
+            parts.append(allocate_repair_period(source, self.company.name, day, day))
         self.assertEqual([r["expenses"] for r in parts], [0.01, 0, 0])
         # Model a previously closed period without changing its posted ledgers.
         doc = frappe.get_doc(dict(doctype="Crane Profit Settlement", crane=self.crane.name,
@@ -565,6 +572,11 @@ class TestPartnerSettlements(FrappeTestCase):
             settlement_revenue_basis="Net Revenue", include_depreciation=1))
         self.crane.save()
         previous = json.loads(self.crane.agreement_history)
+        execute()
+        self.assertEqual(json.loads(self.crane.reload().agreement_history), previous)
+        # Reconstruct a pre-static agreement that actually needed the historical patch.
+        previous[-1]["effective_from"] = str(add_days(self.start, 1))
+        frappe.db.set_value("Crane", self.crane.name, "agreement_history", json.dumps(previous))
         counts = {dt: frappe.db.count(dt) for dt in ("GL Entry", "Payment Entry", "Journal Entry", "Crane Profit Settlement")}
         execute()
         self.crane.reload()

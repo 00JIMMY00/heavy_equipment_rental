@@ -45,13 +45,19 @@ def execute(filters=None):
         # Native credit/debit notes follow their original invoice, with signed amounts.
         invoices = frappe.get_list(doctype, filters={
             "docstatus": 1, "company": filters.company, "posting_date": dates,
-        }, fields=["name", "return_against", "posting_date"], limit_page_length=0)
+        }, or_filters=[["name", "in", list(links)], ["return_against", "in", list(links)]],
+            fields=["name", "return_against", "posting_date"], limit_page_length=0)
+        invoice_items = defaultdict(list)
+        if invoices:
+            for row in frappe.get_all(doctype + " Item", filters={"parent": ["in", [h.name for h in invoices]],
+                        "parenttype": doctype}, fields=["parent", "item_code", "crane", "base_net_amount", "description"],
+                        order_by="parent, idx"):
+                invoice_items[row.parent].append(row)
         for header in invoices:
             mapping = links.get(header.name) or links.get(header.return_against)
             if not mapping:
                 continue
-            invoice = frappe.get_doc(doctype, header.name)
-            for line in invoice.items:
+            for line in invoice_items[header.name]:
                 sources = mapping.get(line.item_code)
                 if sources and line.get("crane"):
                     sources = {source for source in sources if source[1] == line.crane}
@@ -95,35 +101,31 @@ def execute(filters=None):
                          expenses=sum(flt(row.amount) for row in expense.expenses), currency=currency))
     # Native repair ledger costs and attributed depreciation/other journals.
     # These sources are independent of customer billing and cash disbursement.
-    from heavy_equipment_rental.crane_repairs import repair_expense_sources
-    from heavy_equipment_rental.profit_sharing import collect_sources
-    for crane in items:
-        from heavy_equipment_rental.consolidated_accounting import sources as batch_sources
-        for journal, source in batch_sources(crane, filters.company):
-            if not getdate(filters.from_date) <= getdate(source['posting_date']) <= getdate(filters.to_date):
-                continue
-            if filters.assignment and source['rental_assignment'] != filters.assignment:
-                continue
-            data.append(dict(posting_date=source['posting_date'], voucher_type='Journal Entry',
-                voucher=journal.name, assignment=source['rental_assignment'], crane=crane,
-                description=source['description'], mode_of_payment=source['mode_of_payment'],
-                expenses=source['expenses'], currency=currency))
-        for source in repair_expense_sources(crane, filters.company):
-            if not getdate(filters.from_date) <= getdate(source["posting_date"]) <= getdate(filters.to_date):
-                continue
-            if filters.assignment and source.get("rental_assignment") != filters.assignment:
-                continue
+    from heavy_equipment_rental.consolidated_accounting import fleet_sources
+    from heavy_equipment_rental.crane_repairs import fleet_repair_expenses
+    from heavy_equipment_rental.profit_sharing import attributed_journals
+
+    period = [getdate(filters.from_date), getdate(filters.to_date)]
+    for crane, journal, source in fleet_sources(items, filters.company, period, filters.assignment):
+        if source["rental_assignment"] and source["rental_assignment"] not in assignments:
+            continue
+        data.append(dict(posting_date=source["posting_date"], voucher_type="Journal Entry",
+            voucher=journal.name, assignment=source["rental_assignment"], crane=crane,
+            description=source["description"], mode_of_payment=source["mode_of_payment"],
+            expenses=source["expenses"], currency=currency))
+    for crane, source in fleet_repair_expenses(items, filters.company, period):
+        assignment = source.get("rental_assignment")
+        if (assignment and assignment not in assignments) or (filters.assignment and assignment != filters.assignment):
+            continue
+        data.append(dict(posting_date=source["posting_date"], voucher_type=source["doctype"],
+            voucher=source["name"], assignment=assignment, crane=crane,
+            description=_("Repair parts / external services"), expenses=source["expenses"], currency=currency))
+    if not filters.assignment:
+        for crane, source in attributed_journals(items, filters.company, *period):
             data.append(dict(posting_date=source["posting_date"], voucher_type=source["doctype"],
-                voucher=source["name"], assignment=source.get("rental_assignment"), crane=crane,
-                description=_("Repair parts / external services"), expenses=source["expenses"], currency=currency))
-        if not filters.assignment:
-            for source in collect_sources(crane, filters.company, filters.from_date, filters.to_date, include_expenses=False):
-                if source["doctype"] != "Journal Entry":
-                    continue
-                data.append(dict(posting_date=source["posting_date"], voucher_type=source["doctype"],
-                    voucher=source["name"], crane=crane, currency=currency,
-                    description=_("Depreciation") if source.get("is_depreciation") else _("Attributed journal"),
-                    income=source.get("revenue", 0), expenses=source.get("expenses", 0)))
+                voucher=source["name"], crane=crane, currency=currency,
+                description=_("Depreciation") if source.get("is_depreciation") else _("Attributed journal"),
+                income=source.get("revenue", 0), expenses=source.get("expenses", 0)))
     data.sort(key=lambda row: (getdate(row["posting_date"]), row["voucher_type"], row["voucher"]))
     for row in data:
         row["income"] = flt(row.get("income"))

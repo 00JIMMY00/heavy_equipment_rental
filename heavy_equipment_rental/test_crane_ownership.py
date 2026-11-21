@@ -14,7 +14,7 @@ class TestCraneOwnership(FrappeTestCase):
         crane.supplier=supplier
         crane.set('ownership_partners',[])
         crane.save()
-        self.assertEqual(crane.ownership_classification,'Ownership Not Recorded')
+        self.assertEqual(crane.ownership_classification,'Hired from Supplier')
         crane.hired_from_supplier=0
         with self.assertRaises(frappe.ValidationError): crane.save()
 

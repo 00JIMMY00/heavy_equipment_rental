@@ -1,5 +1,13 @@
 # Progress
 
+## 2026-11-19 — Audit fixes verified on dev3
+
+Fixed cancelled flat-rate rebilling, submitted shift pricing across bookings, same-driver payroll overlaps, hired-crane Asset eligibility, timeline filter reset and dialog focus. Batched Rental Profitability queries reduced the November warm statement count from 1,408 to 67 with the same EGP 22,529 net. Corrected the site-specific accounting fixtures and added the Timesheet suite to CI. All 233 app cases and 13 deployment tests passed. The [updated audit](APP_AUDIT_2026-11-19.md) records the checks and the comparison against the pre-migration backup.
+
+## 2026-11-19 — Functional and nonfunctional audit on dev3
+
+Tested 226 HER cases, reran 106 with a temporary second company, and checked billing, payroll, partial partner payment, concurrent bookings, browser behavior, ledger integrity and report performance. Reproduced missed daily rebilling, repricing after Timesheet submission and duplicate-driver payroll. The [audit report](APP_AUDIT_2026-11-19.md) gives reproductions, amounts, coverage limits and [individual test results](APP_AUDIT_CASES_2026-11-19.csv).
+
 ## 2026-11-17 — Independent demo Crane IDs
 
 New demo cycles generate `HER-DEMO-50-<suffix>` IDs instead of reusing the same primary key. Repeating a completed cycle still returns its existing records; legacy cranes are preserved. The new regression reproduced the CI duplicate-ID failure before the fix, then verified two independent cycles, repeat-call reuse and unchanged legacy Crane data. Added it to CI. All 37 application tests in the updated CI module list passed on dev3, along with 13 deployment/manifest tests and whitespace checks. Test records were rolled back; no schema migration was needed.

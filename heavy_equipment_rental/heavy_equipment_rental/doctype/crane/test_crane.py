@@ -3,6 +3,9 @@
 from unittest.mock import patch
 
 import frappe
+from heavy_equipment_rental.partner_accounts import shareholder_for_supplier
+from erpnext import get_default_company
+from heavy_equipment_rental.testing import other_company
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import add_days, flt, today
 
@@ -12,7 +15,7 @@ from heavy_equipment_rental.crane_assets import asset_summary
 class TestCrane(FrappeTestCase):
 	def setUp(self):
 		self.key = "HER asset " + frappe.generate_hash(length=8)
-		self.company = frappe.get_doc("Company", "cranes company")
+		self.company = frappe.get_doc("Company", get_default_company())
 		accounts = {}
 		for field, account_type, root in (("fixed_asset_account", "Fixed Asset", "Asset"),
 			("accumulated_depreciation_account", "Accumulated Depreciation", "Asset"),
@@ -48,7 +51,7 @@ class TestCrane(FrappeTestCase):
 		self.crane.update(dict(settlement_revenue_basis="Invoice Grand Total", distribution_posting="Source Revenue Accounts", settlement_approval="On Invoice Submission", include_depreciation=0, ownership_type="Shared Ownership", sharing_company=self.company.name,
 			agreement_effective_from=add_days(today(), -10)))
 		self.crane.set("ownership_partners", [dict(is_company=1, ownership_percentage=25, profit_percentage=60),
-			dict(supplier=supplier.name, ownership_percentage=75, profit_percentage=40)])
+			dict(shareholder=shareholder_for_supplier(supplier.name, self.company.name), supplier=supplier.name, ownership_percentage=75, profit_percentage=40)])
 		self.crane.save()
 
 	def test_link_uses_full_value_without_posting_or_changing_service_item(self):
@@ -77,7 +80,7 @@ class TestCrane(FrappeTestCase):
 	def test_company_mismatch_rejected_from_crane_and_native_asset(self):
 		self.sharing()
 		self.link()
-		other = frappe.db.get_value("Company", {"name": ["!=", self.company.name]}, "name")
+		other = other_company(self.company.name)
 		self.asset.company = other
 		self.asset.cost_center = frappe.get_cached_value("Company", other, "cost_center")
 		with self.assertRaisesRegex(frappe.ValidationError, "Agreement Company"):
@@ -123,16 +126,32 @@ class TestCrane(FrappeTestCase):
 	def test_no_company_ownership_disallows_even_third_party_asset_links(self):
 		supplier = frappe.get_doc(dict(doctype="Supplier", supplier_name=self.key,
 			supplier_type="Company", supplier_group=frappe.db.get_value("Supplier Group", {"is_group": 0}, "name"))).insert()
-		self.crane.ownership_type, self.crane.supplier = "Rented", supplier.name
+		self.crane.hired_from_supplier, self.crane.supplier = 1, supplier.name
 		with self.assertRaisesRegex(frappe.ValidationError, "positive Company ownership"):
 			self.link()
 		self.crane.reload()
-		self.crane.ownership_type, self.crane.supplier = "Rented", supplier.name
+		self.crane.hired_from_supplier, self.crane.supplier = 1, supplier.name
 		self.crane.save()
 		self.assertFalse(self.crane.asset_accounting_basis)
 		from heavy_equipment_rental.crane_assets import make_company_asset
 		with self.assertRaisesRegex(frappe.ValidationError, "owns no percentage"):
 			make_company_asset(self.crane.name)
+
+	def test_hired_migration_preserves_owners_and_archives_existing_link_once(self):
+		from heavy_equipment_rental.patches.hired_crane_asset_basis import execute
+		self.link()
+		owners = [row.as_dict() for row in self.crane.reload().ownership_partners]
+		counts = {dt: frappe.db.count(dt) for dt in ("Asset", "Journal Entry", "GL Entry")}
+		frappe.db.set_value("Crane", self.crane.name, "hired_from_supplier", 1)
+		execute()
+		self.crane.reload()
+		self.assertFalse(self.crane.asset or self.crane.asset_accounting_basis)
+		self.assertEqual([r.as_dict() for r in self.crane.ownership_partners], owners)
+		history = frappe.parse_json(self.crane.legacy_asset_recognition)
+		self.assertEqual([r["asset"] for r in history], [self.asset.name])
+		execute()
+		self.assertEqual(frappe.parse_json(self.crane.reload().legacy_asset_recognition), history)
+		self.assertEqual(counts, {dt: frappe.db.count(dt) for dt in counts})
 
 	def test_zero_company_shared_interest_keeps_partners_but_no_asset(self):
 		self.sharing()

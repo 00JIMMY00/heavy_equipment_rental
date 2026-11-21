@@ -210,6 +210,7 @@ class CraneTimesheet(Document):
         operator_hours, flat_days, flat_rows = 0, {}, []
         entered_intervals = []
         overtime_intervals = []
+        driver_intervals = {}
         crane_hour_price = next((flt(row.price) for row in frappe.get_doc("Crane", self.crane).period_prices
                                  if row.period == "Hour"), 0)
         submitted_update = bool(previous and previous.docstatus == 1 and self.docstatus == 1)
@@ -268,11 +269,19 @@ class CraneTimesheet(Document):
                 for day in days:
                     flat_days[(booking.name, day)] = booking
                 flat_rows.append(row)
+            if hours or flt(row.overtime_hours):
+                driver_intervals.setdefault(row.employee, []).append((start, end, row.idx))
             operator_hours += hours + flt(row.overtime_hours)
             if hours > 0:
                 entered_intervals.append((start, end, flt(row.price_per_hour), hours))
             if flt(row.overtime_hours) > 0:
                 overtime_intervals.append((start, end, row.effective_overtime_price, flt(row.overtime_hours)))
+        for shifts in driver_intervals.values():
+            shifts.sort()
+            for previous_shift, shift in zip(shifts, shifts[1:]):
+                if shift[0] < previous_shift[1]:
+                    frappe.throw(_("Rows {0} and {1}: the same driver cannot work overlapping shifts.").format(
+                        previous_shift[2], shift[2]))
         if not submitted_update:
             driver_work = driver_work_summary(self)
             sync_payroll_rows(self, assignment.company, driver_work)

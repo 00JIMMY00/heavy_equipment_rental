@@ -1,5 +1,9 @@
 # Current decisions
 
+## 2026-11-19 — Billing across booking periods
+
+Allow one Timesheet to contain work on multiple booking rows for the same crane and contract. Use the submitted shift terms for each row. Invoice generation records the worked dates charged by each Day or Month line. Overtime is billed separately by the hour. Historical flat charges can be inferred from linked work only when their quantity reconciles to those dates.
+
 ## 2026-11-17 — Optional Employee birth date
 
 Employee creation must accept a blank Date of Birth. Use native Property Setters to make it optional before hiding it; keep validation enabled and preserve saved dates. This supersedes the earlier Quick Entry requirement for Date of Birth.

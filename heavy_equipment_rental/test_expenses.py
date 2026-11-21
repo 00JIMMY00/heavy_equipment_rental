@@ -99,6 +99,12 @@ class TestExpenseParties(FrappeTestCase):
         expense = self.make_expense()
         journal = frappe.copy_doc(frappe.get_doc("Journal Entry", expense.journal_entry))
         journal.docstatus = 0
+        expense_row = next(row for row in journal.accounts if row.debit)
+        account = frappe.get_doc("Account", expense_row.account)
+        expense_row.account = frappe.get_doc(dict(
+            doctype="Account", company=journal.company, parent_account=account.parent_account,
+            account_name="Typed test expense " + frappe.generate_hash(length=8), account_type="Expense Account",
+        )).insert().name
         journal.insert()
         self.assertTrue(any(row.party for row in journal.build_gl_map()))
         with self.assertRaises(frappe.ValidationError):

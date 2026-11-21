@@ -1,5 +1,11 @@
 # Project context
 
+## 2026-11-19 — Submitted work and invoice coverage
+
+A Timesheet may span consecutive bookings for the same crane on a contract. Each working shift fits one booking and keeps its submitted rate. The generated Sales Invoice groups work at those rates and records the exact dates on each Day or Month item. Only a live flat rental line can cover a rental date. Cancelling that charge allows rebilling while an independent overtime invoice stays posted.
+
+One employee can enter adjacent shifts on a Timesheet. Overlapping entries for the same employee fail validation before payroll. Different employees may work together, and crane hours remain deduplicated. Supplier hire makes the crane ineligible for a Company Asset even when old ownership rows are present.
+
 ## 2026-11-17 — Optional Employee birth date
 
 Date of Birth is optional and hidden. Setup clears its mandatory flag before hiding it so fresh installation passes Frappe's per-setter validation. Existing birth dates are retained.

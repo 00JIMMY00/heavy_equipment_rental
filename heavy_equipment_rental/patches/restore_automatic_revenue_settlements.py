@@ -20,7 +20,7 @@ def execute():
 			frappe.db.set_value("Crane", name, RESTORED_TERMS, update_modified=False)
 			continue
 		# Legacy Net Profit remains immutable until an explicit contractual change.
-		if crane.sharing_calculation == "Legacy Net Profit":
+		if crane.sharing_calculation == "Legacy Net Profit" or not history[-1].get("effective_from"):
 			continue
 		last_date = frappe.db.get_value("Crane Profit Settlement",
 			{"crane": name, "docstatus": 1}, "max(to_date)")
@@ -29,5 +29,11 @@ def execute():
 			effective = max(effective, getdate(add_days(last_date, 1)))
 		crane.update(dict(RESTORED_TERMS, agreement_effective_from=effective))
 		crane.save()
+		# New controllers record when terms were entered, independently of work dates.
+		# Retain the effective date of this one-time historical conversion as well.
+		versions = json.loads(crane.agreement_history)
+		if len(versions) > len(history) and not versions[-1].get("effective_from"):
+			versions[-1]["effective_from"] = str(effective)
+			frappe.db.set_value("Crane", name, "agreement_history", json.dumps(versions), update_modified=False)
 		crane.add_comment("Info", "Restored automatic source-revenue settlements prospectively from "
 			+ str(effective) + ". Previous agreements, settlements, journals and payments are preserved.")

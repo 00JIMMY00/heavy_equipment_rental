@@ -1,14 +1,21 @@
 """Draft demo invoices must not teach shared rental Items a demo account."""
 
 import frappe
+from erpnext import get_default_company
 from frappe.tests.utils import FrappeTestCase
 
 from heavy_equipment_rental.rental_items import default_service_item, preserve_rental_income_defaults
 
 
 class TestRentalItemDefaults(FrappeTestCase):
+	def setUp(self):
+		item = frappe.get_doc("Item", default_service_item())
+		if not any(row.company == get_default_company() for row in item.item_defaults):
+			item.append("item_defaults", {"company": get_default_company()})
+			item.save()
+
 	def test_draft_invoice_account_stays_local_to_demo(self):
-		company = frappe.get_doc("Company", "cranes company")
+		company = frappe.get_doc("Company", get_default_company())
 		item = default_service_item()
 		row = frappe.db.get_value("Item Default", {"parent": item, "company": company.name}, "name")
 		frappe.db.set_value("Item Default", row, "income_account", None)
@@ -30,7 +37,7 @@ class TestRentalItemDefaults(FrappeTestCase):
 
 	def test_existing_default_is_preserved_on_failure(self):
 		item = default_service_item()
-		row = frappe.db.get_value("Item Default", {"parent": item, "company": "cranes company"}, "name")
+		row = frappe.db.get_value("Item Default", {"parent": item, "company": get_default_company()}, "name")
 		before = frappe.db.get_value("Item Default", row, "income_account")
 		with self.assertRaisesRegex(ValueError, "demo failed"):
 			with preserve_rental_income_defaults():

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { nextTick, computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import SearchSelect from './SearchSelect.vue'
 
 const pageParams = new URLSearchParams(window.location.search)
@@ -10,6 +10,32 @@ const initialRange = /^\d{4}-\d{2}-\d{2}$/.test(requestedFrom || '') && /^\d{4}-
   ? { start: requestedFrom, end: requestedTo } : null
 const sourceEvents = ref([])
 const selected = ref(null)
+const detailDialog = ref(null)
+
+async function openDetails(event) {
+  selected.value = event
+  await nextTick()
+  detailDialog.value.showModal()
+}
+function cycleDialogFocus(event) {
+  const controls = detailDialog.value.querySelectorAll('button, a[href]')
+  const first = controls[0]
+  const last = controls[controls.length - 1]
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault()
+    last.focus()
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault()
+    first.focus()
+  }
+}
+function closeOnBackdrop(event) {
+  if (event.target !== detailDialog.value) return
+  const bounds = detailDialog.value.getBoundingClientRect()
+  if (event.clientX < bounds.left || event.clientX > bounds.right ||
+      event.clientY < bounds.top || event.clientY > bounds.bottom) detailDialog.value.close()
+}
+
 const loading = ref(false)
 const error = ref('')
 const view = ref(initialRange ? 'Custom' : 'Month')
@@ -238,19 +264,18 @@ async function fitContract() {
   } catch (reason) { error.value = reason.message }
 }
 function resetFilters() {
+  assignmentFilter.value = pageParams.get('assignment') || ''
   craneFilter.value = ''
   search.value = ''
   enabled.value = { reservation: true, timesheet: true, maintenance: true }
 }
 let resizeObserver
-const closeDetails = event => { if (event.key === 'Escape') selected.value = null }
 onMounted(() => {
   resizeObserver = new ResizeObserver(([entry]) => { trackSpace.value = Math.max(36, entry.contentRect.width - (window.innerWidth <= 650 ? 140 : 210)) })
   if (scrollElement.value) resizeObserver.observe(scrollElement.value)
-  window.addEventListener('keydown', closeDetails)
   if (assignmentFilter.value && !initialRange) fitContract()
 })
-onUnmounted(() => { resizeObserver?.disconnect(); window.removeEventListener('keydown', closeDetails) })
+onUnmounted(() => resizeObserver?.disconnect())
 </script>
 
 <template>
@@ -281,12 +306,12 @@ onUnmounted(() => { resizeObserver?.disconnect(); window.removeEventListener('ke
       <div ref="scrollElement" class="timeline-scroll" :aria-busy="loading">
         <div class="timeline-grid" :style="{ '--day-width': `${dayWidth}px`, '--track-width': `${totalWidth}px` }">
           <div class="timeline-row timeline-header"><div class="timeline-resource-head">{{ t('Crane') }}</div><div class="timeline-track timeline-dates"><div v-for="day in days" :key="day.key" class="timeline-day" :class="{ today: day.isToday, weekend: day.isWeekend }"><strong>{{ day.day }}</strong><small>{{ day.weekday }}</small></div></div></div>
-          <div v-for="row in lanes" :key="row.id" class="timeline-row timeline-data-row" :style="{ height: `${row.height}px` }"><div class="timeline-resource"><strong :title="row.title">{{ row.title }}</strong><small :title="row.detail">{{ row.detail }}</small></div><div class="timeline-track timeline-lane"><span v-for="day in days" :key="day.key" class="timeline-cell" :class="{ today: day.isToday, weekend: day.isWeekend }"></span><button v-for="segment in row.segments" :key="segment.event.id" type="button" class="timeline-bar" :class="[segment.event.type, { draft: segment.event.isDraft, cancelled: segment.event.isDeclined }]" :style="{ left: `${segment.first * dayWidth + 3}px`, width: `${(segment.last - segment.first + 1) * dayWidth - 6}px`, top: `${10 + segment.lane * 27}px` }" :title="`${segment.event.title} · ${t(segment.event.status)}`" @click="selected = segment.event">{{ segment.event.title }}</button></div></div>
+          <div v-for="row in lanes" :key="row.id" class="timeline-row timeline-data-row" :style="{ height: `${row.height}px` }"><div class="timeline-resource"><strong :title="row.title">{{ row.title }}</strong><small :title="row.detail">{{ row.detail }}</small></div><div class="timeline-track timeline-lane"><span v-for="day in days" :key="day.key" class="timeline-cell" :class="{ today: day.isToday, weekend: day.isWeekend }"></span><button v-for="segment in row.segments" :key="segment.event.id" type="button" class="timeline-bar" :class="[segment.event.type, { draft: segment.event.isDraft, cancelled: segment.event.isDeclined }]" :style="{ left: `${segment.first * dayWidth + 3}px`, width: `${(segment.last - segment.first + 1) * dayWidth - 6}px`, top: `${10 + segment.lane * 27}px` }" :title="`${segment.event.title} · ${t(segment.event.status)}`" @click="openDetails(segment.event)">{{ segment.event.title }}</button></div></div>
           <div v-if="!lanes.length && !loading" class="timeline-empty"><strong>{{ t('No activity in this period') }}</strong><p>{{ t('Try another date range or clear the filters.') }}</p></div>
         </div>
       </div>
       <div class="timeline-footer" :dir="arabic ? 'rtl' : 'ltr'">{{ t('Select an activity for details') }}</div>
     </main>
-    <div v-if="selected" class="timeline-overlay" @click.self="selected = null"><section class="timeline-detail" role="dialog" aria-modal="true" :aria-label="selected.title" :dir="arabic ? 'rtl' : 'ltr'"><button class="timeline-close" type="button" :aria-label="t('Close')" @click="selected = null">×</button><span class="timeline-detail-kind" :class="selected.type">{{ t(categories.find(item=>item.key===selected.type)?.label || selected.type) }}</span><h3>{{ selected.title }}</h3><span class="timeline-detail-status">{{ t(selected.status) }}</span><dl><div><dt>{{ t('When') }}</dt><dd>{{ dateLabel(selected) }}</dd></div><div v-if="selected.participant"><dt>{{ t(selected.type === 'maintenance' ? 'Technician' : selected.type === 'timesheet' && !selected.isFullDay ? 'Operator' : 'Crane') }}</dt><dd>{{ selected.participant }}</dd></div><div v-if="selected.venue"><dt>{{ t('Location') }}</dt><dd>{{ selected.venue }}</dd></div></dl><a :href="documentUrl(selected)">{{ t('Open record') }} ↗</a></section></div>
+    <dialog ref="detailDialog" class="timeline-detail" @close="selected = null" @keydown.tab="cycleDialogFocus" @click="closeOnBackdrop" :aria-label="selected?.title" :dir="arabic ? 'rtl' : 'ltr'"><template v-if="selected"><button class="timeline-close" type="button" autofocus :aria-label="t('Close')" @click="detailDialog.close()">×</button><span class="timeline-detail-kind" :class="selected.type">{{ t(categories.find(item=>item.key===selected.type)?.label || selected.type) }}</span><h3>{{ selected.title }}</h3><span class="timeline-detail-status">{{ t(selected.status) }}</span><dl><div><dt>{{ t('When') }}</dt><dd>{{ dateLabel(selected) }}</dd></div><div v-if="selected.participant"><dt>{{ t(selected.type === 'maintenance' ? 'Technician' : selected.type === 'timesheet' && !selected.isFullDay ? 'Operator' : 'Crane') }}</dt><dd>{{ selected.participant }}</dd></div><div v-if="selected.venue"><dt>{{ t('Location') }}</dt><dd>{{ selected.venue }}</dd></div></dl><a :href="documentUrl(selected)">{{ t('Open record') }} ↗</a></template></dialog>
   </div>
 </template>

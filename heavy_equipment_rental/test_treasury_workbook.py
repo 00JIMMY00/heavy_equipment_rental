@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import frappe
+from erpnext import get_default_company
 import openpyxl
 from frappe.tests.utils import FrappeTestCase
 
@@ -88,7 +89,7 @@ class TestTreasuryWorkbook(FrappeTestCase):
         self.assertEqual(rows[0]["balance"], 350)
         self.assertEqual(rows[-1]["balance"], 340)
         with self.assertRaises(frappe.ValidationError):
-            execute(dict(filters, company="cranes company"))
+            execute(dict(filters, company=get_default_company()))
         native = frappe.has_permission
         with patch("frappe.has_permission", side_effect=lambda dt, *a, **kw: False if dt == "Journal Entry" else native(dt, *a, **kw)):
             with self.assertRaises(frappe.PermissionError):
@@ -130,7 +131,7 @@ class TestTreasuryWorkbook(FrappeTestCase):
         self.assertEqual(exported.active["D7"].value, -50)
         self.assertEqual(exported.active.max_row, 7)
         with self.assertRaises(frappe.ValidationError):
-            execute(dict(result["filters"], cost_center=frappe.db.get_value("Company", "cranes company", "cost_center")))
+            execute(dict(result["filters"], cost_center=frappe.db.get_value("Company", get_default_company(), "cost_center")))
 
         transfer = frappe.get_doc("Treasury Transaction", {
             "company": self.company, "her_workbook_category": "سلفة",

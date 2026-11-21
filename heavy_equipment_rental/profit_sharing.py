@@ -355,6 +355,46 @@ def guard_closed_period(doc, method=None):
                 frappe.throw(_("Work costs are closed by settlement {0}. Cancel the settlement first.").format(closed_work))
 
 
+def attributed_journals(cranes, company, start, end):
+    """Read eligible postings once for the requested fleet and posting period."""
+    if not cranes:
+        return
+    rows = frappe.db.sql("""
+        SELECT j.name, a.name AS detail
+        FROM `tabJournal Entry` j JOIN `tabJournal Entry Account` a ON a.parent=j.name
+        JOIN `tabAccount` account ON account.name=a.account AND account.root_type IN ('Income','Expense')
+        WHERE j.company=%s AND j.docstatus=1 AND j.posting_date BETWEEN %s AND %s
+          AND a.crane IN %s
+          AND NOT EXISTS (SELECT 1 FROM `tabExpense Entry` e WHERE e.journal_entry=j.name
+                          AND e.docstatus=1 AND e.company=j.company AND e.crane=a.crane)
+          AND NOT EXISTS (SELECT 1 FROM `tabGrouped Expense Item` i JOIN `tabGrouped Expense` b
+                          ON b.name=i.parent WHERE i.journal_entry=j.name AND b.docstatus=1
+                          AND b.company=j.company AND b.crane=a.crane)
+          AND NOT EXISTS (SELECT 1 FROM `tabCrane Profit Settlement` s
+                          WHERE s.docstatus=1 AND s.journal_entry=j.name)
+        """, (company, start, end, tuple(cranes)))
+    by_journal = {}
+    for name, detail in rows:
+        by_journal.setdefault(name, set()).add(detail)
+    for name, details in by_journal.items():
+        journal = frappe.get_doc("Journal Entry", name)
+        if journal.voucher_type == "Depreciation Entry" and journal.finance_book and journal.finance_book != frappe.get_cached_value("Company", company, "default_finance_book"):
+            continue
+        for row in journal.accounts:
+            if row.name not in details:
+                continue
+            root = frappe.get_cached_value("Account", row.account, "root_type")
+            if root not in ("Income", "Expense"):
+                continue
+            journal.check_permission("read")
+            value = flt(row.credit) - flt(row.debit) if root == "Income" else flt(row.debit) - flt(row.credit)
+            yield row.crane, dict(doctype="Journal Entry", name=name, detail=row.name,
+                posting_date=str(journal.posting_date),
+                is_depreciation=journal.voucher_type == "Depreciation Entry",
+                **(dict(income_account=row.account, dimensions=revenue_dimensions(row)) if root == "Income" else {}),
+                **{"revenue" if root == "Income" else "expenses": value})
+
+
 def collect_sources(crane, company, start, end, *, grand_total=False, include_expenses=True):
     """Accrual margin in company currency; explicit crane allocation only.
 
@@ -415,10 +455,6 @@ def collect_sources(crane, company, start, end, *, grand_total=False, include_ex
                                        if doctype == "Sales Invoice" else {}),
                                     **{side: amount}))
     from heavy_equipment_rental.rental_expenses import expense_sources, check_posted
-    expense_journals = set(filter(None, frappe.get_all("Expense Entry", filters={
-        "company": company, "crane": crane, "docstatus": 1}, pluck="journal_entry")))
-    from heavy_equipment_rental.consolidated_accounting import sources as batch_sources
-    expense_journals.update(journal.name for journal, source in batch_sources(crane, company))
     if include_expenses:
         for expense, source in expense_sources(crane, company):
             first, last = getdate(source["service_from_date"]), getdate(source["service_to_date"])
@@ -439,30 +475,7 @@ def collect_sources(crane, company, start, end, *, grand_total=False, include_ex
             source["expenses"] = flt(sum(daily[offset:offset + overlap]),
                 frappe.get_precision("Crane Profit Settlement", "revenue", currency=frappe.get_cached_value("Company", company, "default_currency")))
             sources.append(source)
-    settlement_journals = set(frappe.get_all("Crane Profit Settlement", filters={"docstatus": 1}, pluck="journal_entry"))
-    for name in frappe.get_all("Journal Entry", filters=[
-            ["Journal Entry", "company", "=", company], ["Journal Entry", "docstatus", "=", 1],
-            ["Journal Entry", "posting_date", "between", [start, end]],
-            ["Journal Entry Account", "crane", "=", crane],
-            ], pluck="name", distinct=True):
-        if name in expense_journals or name in settlement_journals:
-            continue
-        journal = frappe.get_doc("Journal Entry", name)
-        if journal.voucher_type == "Depreciation Entry" and journal.finance_book and journal.finance_book != frappe.get_cached_value("Company", company, "default_finance_book"):
-            continue
-        for row in journal.accounts:
-            if row.get("crane") != crane:
-                continue
-            root = frappe.get_cached_value("Account", row.account, "root_type")
-            if root not in ("Income", "Expense"):
-                continue
-            journal.check_permission("read")
-            value = flt(row.credit) - flt(row.debit) if root == "Income" else flt(row.debit) - flt(row.credit)
-            sources.append(dict(doctype="Journal Entry", name=name, detail=row.name,
-                posting_date=str(journal.posting_date),
-                is_depreciation=journal.voucher_type == "Depreciation Entry",
-                **(dict(income_account=row.account, dimensions=revenue_dimensions(row)) if root == "Income" else {}),
-                **{"revenue" if root == "Income" else "expenses": value}))
+    sources.extend(source for _, source in attributed_journals([crane], company, start, end))
     if include_expenses:
         from heavy_equipment_rental.crane_repairs import repair_expense_sources, allocate_repair_period
         for source in repair_expense_sources(crane, company):

@@ -4,6 +4,8 @@ import json
 from unittest.mock import patch
 
 import frappe
+from heavy_equipment_rental.partner_accounts import shareholder_for_supplier
+from erpnext import get_default_company
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import add_days, flt
 
@@ -16,19 +18,18 @@ class TestCraneProfitSettlement(FrappeTestCase):
     def setUp(self):
         self.key = frappe.generate_hash(length=8)
         with patch.object(demo, "DEMO_LOCATION", "HER settlement " + self.key):
-            self.cycle = demo.create_rental_cycle("cranes company")
+            self.cycle = demo.create_rental_cycle(get_default_company())
         self.company = frappe.get_doc("Company", self.cycle["company"])
         self.crane = frappe.get_doc("Crane", self.cycle["crane"])
         self.supplier = frappe.get_doc(dict(doctype="Supplier", supplier_name="HER Partner " + self.key,
             supplier_type="Company", supplier_group=frappe.db.get_value("Supplier Group", {"is_group": 0}, "name"))).insert()
-        self.crane.update(dict(settlement_revenue_basis="Invoice Grand Total", distribution_posting="Source Revenue Accounts", settlement_approval="On Invoice Submission", include_depreciation=0, ownership_type="Shared Ownership", sharing_company=self.company.name,
-            agreement_effective_from=self.cycle["from_date"],
+        self.crane.update(dict(enable_profit_sharing=1, settlement_revenue_basis="Invoice Grand Total", distribution_posting="Source Revenue Accounts", settlement_approval="On Invoice Submission", include_depreciation=0, ownership_type="Shared Ownership", sharing_company=self.company.name,
             profit_allocation_account=self.company.default_expense_account,
             partner_payable_account=self.company.default_payable_account,
             sharing_cost_center=self.company.cost_center))
         self.crane.set("ownership_partners", [
             dict(is_company=1, ownership_percentage=25, profit_percentage=60),
-            dict(supplier=self.supplier.name, ownership_percentage=75, profit_percentage=40),
+            dict(shareholder=shareholder_for_supplier(self.supplier.name, self.company.name), supplier=self.supplier.name, ownership_percentage=75, profit_percentage=40),
         ])
         self.crane.save()
 
@@ -142,11 +143,10 @@ class TestCraneProfitSettlement(FrappeTestCase):
                                     self.company.cost_center, 2)
 
     def test_operating_first_does_not_require_legacy_allocation_account(self):
-        self.crane.agreement_effective_from = add_days(self.cycle["to_date"], 1)
         self.crane.profit_allocation_account = None
         self.crane.save()
         self.settlement().submit()
-        day = self.crane.agreement_effective_from
+        day = add_days(self.cycle["to_date"], 1)
         self.journal(1000, day, income=True).submit()
         doc = self.settlement(day, day)
         doc.submit()
@@ -178,12 +178,11 @@ class TestCraneProfitSettlement(FrappeTestCase):
         self.assertEqual(frappe.db.count("Journal Entry"), journals)
         self.assertFalse(frappe.db.count("Crane Profit Settlement", {"crane": self.crane.name, "docstatus": 1}))
 
-    def test_changed_percentages_are_dated_and_historical_snapshots_survive(self):
+    def test_replacements_use_current_percentages_and_preserve_submitted_snapshots(self):
         first = self.settlement()
         first.submit()
         snapshot = first.agreement_snapshot
         day = add_days(self.cycle["to_date"], 1)
-        self.crane.agreement_effective_from = day
         self.crane.ownership_partners[0].profit_percentage = 30
         self.crane.ownership_partners[1].profit_percentage = 70
         self.crane.save()
@@ -192,9 +191,9 @@ class TestCraneProfitSettlement(FrappeTestCase):
         self.assertEqual(first.agreement_snapshot, snapshot)
         first.cancel()
         replacement = self.settlement()
-        self.assertEqual([r.amount for r in replacement.shares], [6900, 4600])
-        with self.assertRaises(frappe.ValidationError):
-            self.settlement(end=day)
+        self.assertEqual([r.amount for r in replacement.shares], [3450, 8050])
+        self.assertEqual(first.reload().agreement_snapshot, snapshot)
+        self.assertEqual([r.amount for r in self.settlement(end=day).shares], [3450, 8050])
         replacement.submit()
         revenue = self.journal(1000, day, income=True)
         revenue.submit()
@@ -223,16 +222,15 @@ class TestCraneProfitSettlement(FrappeTestCase):
         with self.assertRaises(frappe.ValidationError):
             self.crane.save()
         self.crane.reload()
-        self.crane.agreement_effective_from = add_days(self.cycle["to_date"], 1)
         self.crane.ownership_type = "Operated for Owner"
-        self.crane.set("ownership_partners", [dict(supplier=self.supplier.name,
+        self.crane.set("ownership_partners", [dict(shareholder=shareholder_for_supplier(self.supplier.name, self.company.name),
             ownership_percentage=100, profit_percentage=100)])
         self.crane.save()
-        self.crane.agreement_effective_from = add_days(self.cycle["to_date"], 2)
-        self.crane.ownership_type = "Operated by Partner"
-        self.crane.operating_partner = self.supplier.name
+        self.crane.set("operating_fees", [dict(shareholder=self.crane.ownership_partners[0].shareholder,
+            basis="Grand Total", percentage=10)])
         self.crane.save()
-        self.assertEqual(self.crane.operator_type, "External Operator")
+        self.assertEqual(self.crane.ownership_classification, "Externally Owned")
+        self.assertEqual(self.crane.operating_fees[0].shareholder, self.crane.ownership_partners[0].shareholder)
 
     def test_zero_profit_and_rounding_conserve_the_distributed_amount(self):
         extra = self.journal(11500, self.cycle["to_date"])
@@ -275,7 +273,8 @@ class TestCraneProfitSettlement(FrappeTestCase):
     def test_migration_is_repeatable_and_leaves_legacy_cranes_unconfigured(self):
         from heavy_equipment_rental.patches.add_crane_profit_sharing import execute
 
-        legacy = frappe.get_doc(dict(doctype="Crane", crane_id=frappe.generate_hash(length=12), crane_name="HER legacy " + self.key, ownership_type="Other")).insert()
+        legacy = frappe.get_doc(dict(doctype="Crane", crane_id=frappe.generate_hash(length=12), crane_name="HER legacy " + self.key)).insert()
+        frappe.db.set_value("Crane", legacy.name, "ownership_type", "Other")
         before = self.crane.agreement_history
         execute()
         execute()
@@ -314,14 +313,13 @@ class TestCraneProfitSettlement(FrappeTestCase):
         with self.assertRaises(frappe.ValidationError):
             self.settlement()
 
-    def test_many_partners_and_dated_pause(self):
+    def test_many_partners_and_disabled_agreement(self):
         other = frappe.copy_doc(self.supplier)
         other.supplier_name += " second"
         other.insert()
         day = add_days(self.cycle["to_date"], 1)
-        self.crane.agreement_effective_from = day
         self.crane.ownership_partners[1].profit_percentage = 30
-        self.crane.append("ownership_partners", dict(supplier=other.name,
+        self.crane.append("ownership_partners", dict(shareholder=shareholder_for_supplier(other.name, self.company.name),
             ownership_percentage=0, profit_percentage=10))
         self.crane.save()
         first = self.settlement()
@@ -331,15 +329,15 @@ class TestCraneProfitSettlement(FrappeTestCase):
         self.assertEqual([r.amount for r in second.shares], [600, 300, 100])
         second.submit()
         self.assertEqual(len(frappe.get_doc("Journal Entry", second.journal_entry).accounts), 3)
-        self.crane.agreement_effective_from = add_days(day, 1)
         self.crane.enable_profit_sharing = 0
         self.crane.ownership_type = "Owned"
         self.crane.save()
-        self.crane.agreement_effective_from = add_days(day, 3)
+        with self.assertRaisesRegex(frappe.ValidationError, "enable profit sharing"):
+            self.settlement(add_days(day, 1), add_days(day, 1))
         self.crane.enable_profit_sharing = 1
         self.crane.save()
         defaults = settlement_defaults(self.crane.name)
-        self.assertEqual(defaults["from_date"], add_days(day, 3))
+        self.assertEqual(defaults["from_date"], add_days(day, 1))
         resumed = self.settlement(defaults["from_date"], defaults["from_date"])
         resumed.submit()
 
@@ -365,14 +363,12 @@ class TestCraneProfitSettlement(FrappeTestCase):
 
     def test_owner_zero_profit_requires_explicit_confirmation(self):
         history = self.crane.agreement_history
-        self.crane.agreement_effective_from = add_days(self.cycle["from_date"], 1)
         self.crane.ownership_partners[0].profit_percentage = 100
         self.crane.ownership_partners[1].profit_percentage = 0
         with self.assertRaisesRegex(frappe.ValidationError, "0% Remaining Balance"):
             self.crane.save()
         self.assertEqual(frappe.db.get_value("Crane", self.crane.name, "agreement_history"), history)
         self.crane.reload()
-        self.crane.agreement_effective_from = add_days(self.cycle["from_date"], 1)
         self.crane.ownership_partners[0].profit_percentage = 100
         self.crane.ownership_partners[1].profit_percentage = 0
         self.crane.ownership_partners[1].allow_zero_profit_share = 1
@@ -382,10 +378,9 @@ class TestCraneProfitSettlement(FrappeTestCase):
     def test_corrected_profit_split_creates_partner_payable(self):
         self.settlement().submit()
         day = add_days(self.cycle["to_date"], 1)
-        self.crane.agreement_effective_from = day
         for row, percentage in zip(self.crane.ownership_partners, (60, 40)):
             row.ownership_percentage = row.profit_percentage = percentage
-        self.crane.operating_percentage = 10
+        self.crane.set("operating_fees", [dict(is_company=1, basis="Grand Total", percentage=10)])
         self.crane.save()
         self.journal(3000, day, income=True).submit()
         doc = self.settlement(day, day)
@@ -398,14 +393,13 @@ class TestCraneProfitSettlement(FrappeTestCase):
         first = self.settlement()
         first.submit()
         day = add_days(self.cycle["to_date"], 1)
-        self.crane.agreement_effective_from = day
         self.crane.set("ownership_partners", [dict(is_company=1, ownership_percentage=100,
             profit_percentage=0, allow_zero_profit_share=1)])
         for index in range(100):
             partner = frappe.copy_doc(self.supplier)
             partner.supplier_name += " large " + str(index)
             partner.insert()
-            self.crane.append("ownership_partners", dict(supplier=partner.name,
+            self.crane.append("ownership_partners", dict(shareholder=shareholder_for_supplier(partner.name, self.company.name),
                 ownership_percentage=0, profit_percentage=1))
         self.crane.save()
         self.journal(1000, day, income=True).submit()
@@ -418,22 +412,19 @@ class TestCraneProfitSettlement(FrappeTestCase):
         self.assertEqual(frappe.db.get_value("Journal Entry", journal.name, "docstatus"), 2)
 
     def configure_operating(self, *, external=False, company_residual=0):
-        self.crane.agreement_effective_from = add_days(self.cycle["from_date"], 1)
-        self.crane.operating_percentage = 10
-        self.crane.operator_type = "External Operator" if external else "Our Company"
-        self.crane.operating_partner = self.supplier.name if external else None
+        self.crane.set("operating_fees", [dict(is_company=int(not external), basis="Grand Total", percentage=10,
+            shareholder=self.crane.ownership_partners[1].shareholder if external else None)])
         self.crane.ownership_partners[0].profit_percentage = company_residual
         self.crane.ownership_partners[0].allow_zero_profit_share = int(company_residual == 0)
         self.crane.ownership_partners[1].profit_percentage = 100 - company_residual
         self.crane.save()
         self.settlement(end=self.cycle["from_date"]).submit()
-        return self.crane.agreement_effective_from
+        return add_days(self.cycle["from_date"], 1)
 
     def test_operating_first_single_owner_without_company_in_partner_table(self):
         day = self.configure_operating()
         # A zero-ownership operator does not need a row in the owners table.
-        self.crane.agreement_effective_from = add_days(day, 1)
-        self.crane.set("ownership_partners", [dict(supplier=self.supplier.name,
+        self.crane.set("ownership_partners", [dict(shareholder=shareholder_for_supplier(self.supplier.name, self.company.name),
             ownership_percentage=100, profit_percentage=100)])
         self.crane.save()
         self.settlement(day, day).submit()
@@ -456,7 +447,7 @@ class TestCraneProfitSettlement(FrappeTestCase):
         history = json.loads(self.crane.agreement_history)
         self.assertEqual(history[:-1], original_history)
         self.assertEqual(history[-1]["ownership_type"], "Shared Ownership")
-        self.assertEqual(history[-1]["operating_percentage"], 10)
+        self.assertEqual(history[-1]["operating_fees"], [dict(is_company=1, shareholder=None, basis="Grand Total", percentage=10)])
         self.assertEqual(history[-1]["partners"][0]["ownership_percentage"], 25)
         self.assertEqual(history[-1]["partners"][0]["profit_percentage"], 20)
         doc = self.settlement(day)
@@ -468,37 +459,27 @@ class TestCraneProfitSettlement(FrappeTestCase):
         doc.submit()
         self.assertEqual(frappe.get_doc("Journal Entry", doc.journal_entry).total_debit, 8000)
 
-    def test_operated_for_owner_rejects_company_rows_even_without_ownership(self):
-        original_history = self.crane.agreement_history
-        for owned in (0, 25):
-            self.crane.reload()
-            self.crane.agreement_effective_from = add_days(self.cycle["from_date"], 1)
-            self.crane.ownership_type = "Operated for Owner"
+    def test_company_residual_is_independent_of_company_ownership(self):
+        for owned, classification in ((0, "Externally Owned"), (25, "Shared Ownership")):
             self.crane.ownership_partners[0].ownership_percentage = owned
             self.crane.ownership_partners[1].ownership_percentage = 100 - owned
-            with self.assertRaisesRegex(frappe.ValidationError, "Our Company cannot be a partner"):
-                self.crane.save()
-            self.assertEqual(self.crane.ownership_type, "Operated for Owner")
-            self.assertEqual(frappe.db.get_value("Crane", self.crane.name, "agreement_history"), original_history)
+            self.crane.save()
+            self.assertEqual(self.crane.ownership_classification, classification)
+            self.assertEqual(self.settlement().company_retained, 6900)
 
-    def test_switching_owner_operation_to_shared_still_requires_new_effective_date(self):
-        self.crane.agreement_effective_from = add_days(self.cycle["from_date"], 1)
-        self.crane.ownership_type = "Operated for Owner"
-        self.crane.set("ownership_partners", [dict(supplier=self.supplier.name,
+    def test_switching_from_external_to_shared_preserves_prior_agreement(self):
+        self.crane.set("ownership_partners", [dict(shareholder=shareholder_for_supplier(self.supplier.name, self.company.name),
             ownership_percentage=100, profit_percentage=100)])
-        self.crane.operating_percentage = 10
         self.crane.save()
-        external_history = self.crane.agreement_history
-        self.crane.ownership_type = "Shared Ownership"
+        self.assertEqual(self.crane.ownership_classification, "Externally Owned")
+        previous = json.loads(self.crane.agreement_history)
         self.crane.ownership_partners[0].ownership_percentage = 75
         self.crane.ownership_partners[0].profit_percentage = 80
-        self.crane.append("ownership_partners", dict(is_company=1,
-            ownership_percentage=25, profit_percentage=20))
-        with self.assertRaisesRegex(frappe.ValidationError, "effective date"):
-            self.crane.save()
-        self.crane.reload()
-        self.assertEqual(self.crane.ownership_type, "Operated for Owner")
-        self.assertEqual(self.crane.agreement_history, external_history)
+        self.crane.append("ownership_partners", dict(is_company=1, ownership_percentage=25, profit_percentage=20))
+        self.crane.save()
+        self.assertEqual(self.crane.ownership_classification, "Shared Ownership")
+        self.assertEqual(json.loads(self.crane.agreement_history)[:-1], previous)
+        self.assertEqual(self.settlement().company_retained, 2300)
 
     def test_external_operator_receives_operating_and_residual_in_one_payable(self):
         day = self.configure_operating(external=True, company_residual=60)
@@ -594,23 +575,22 @@ class TestCraneProfitSettlement(FrappeTestCase):
         self.assertEqual([r.amount for r in old.shares], old_amounts)
         self.assertEqual(old.source_snapshot, old_sources)
         self.assertEqual(old.docstatus, 1)
-        self.crane.agreement_effective_from = add_days(self.cycle["to_date"], 1)
         self.crane.sharing_calculation = "Operating First"
-        self.crane.operating_percentage = 12.5
+        self.crane.set("operating_fees", [dict(is_company=1, basis="Grand Total", percentage=12.5)])
         self.crane.save()
         execute()
         self.crane.reload()
-        self.assertEqual(self.crane.operating_percentage, 12.5)
+        self.assertEqual(self.crane.operating_fees[0].percentage, 12.5)
         old.reload()
         self.assertEqual(old.agreement_snapshot, old_agreement_snapshot)
-        day = self.crane.agreement_effective_from
+        day = add_days(self.cycle["to_date"], 1)
         self.journal(1000, day, income=True).submit()
         new = self.settlement(day, day)
         self.assertEqual((new.operating_fee, new.distributable_profit), (125, 875))
 
     def test_operating_percentage_rejects_invalid_and_nonfinite_values(self):
         for value in (-1, 100.01, float("nan"), float("inf")):
-            self.crane.operating_percentage = value
+            self.crane.operating_fees[0].percentage = value
             with self.assertRaisesRegex(frappe.ValidationError, "finite numbers"):
                 self.crane.save()
             self.crane.reload()

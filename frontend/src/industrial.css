@@ -80,7 +80,8 @@ body { background: var(--her-canvas); color: var(--her-ink); -webkit-font-smooth
 .detail-row strong, .timeline-detail dd { color: var(--her-ink); }
 .detail-row span, .detail-status, .detail-close,
 .timeline-detail dt, .timeline-detail-status, .timeline-close { color: var(--her-muted); }
-.timeline-detail { background: var(--her-surface-raised); border: 1px solid var(--her-line); box-shadow: var(--her-shadow-raised); }
+.timeline-detail::backdrop { background: rgba(13, 37, 57, .42); }
+.timeline-detail { position: fixed; margin: auto; width: min(440px, calc(100% - 36px)); background: var(--her-surface-raised); border: 1px solid var(--her-line); box-shadow: var(--her-shadow-raised); }
 .timeline-detail dl div { border-color: var(--her-line); }
 .open-record, .timeline-detail > a { background: var(--her-accent-soft); color: var(--her-accent-text); }
 .open-record:hover, .timeline-detail > a:hover { background: var(--her-hover); }

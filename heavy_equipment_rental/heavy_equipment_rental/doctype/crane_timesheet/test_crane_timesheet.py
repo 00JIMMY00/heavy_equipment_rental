@@ -1,7 +1,9 @@
 """Rented crane purchasing uses native ERPNext invoices and payments."""
 
 from calendar import monthrange
+from contextlib import ExitStack
 from datetime import timedelta
+from unittest.mock import patch
 
 import erpnext
 import frappe
@@ -184,7 +186,7 @@ class TestCraneTimesheet(FrappeTestCase):
         sheet.rented = 0
         sheet.driver = frappe.db.get_value("Employee", {"company": self.company}, "name")
         for offset, start, end, next_day, hours in (
-            (0, "10:00", "12:00", 0, 2),
+            (0, "12:00", "14:00", 0, 2),
             (1, "22:00", "02:00", 1, 4),
             (2, "22:00", "00:00", 1, 2),
             (3, "08:00", "12:00", 0, 0),
@@ -354,11 +356,12 @@ class TestCraneTimesheet(FrappeTestCase):
 
     def test_supplier_day_and_month_use_worked_dates_not_period_span(self):
         self.set_billing_defaults(supplier="Day")
+        second_driver = self.make_payroll_driver()
         for offset, unit in ((0, "Day"), (5, "Month")):
             frappe.db.set_single_value("Heavy Equipment Rental Settings", "default_supplier_uom", unit)
             sheet = self.make_sheet(offset=offset, length=4, rate=900)
             day = self.day + timedelta(days=offset)
-            sheet.append("timesheet_entries", {"work_date": day, "employee": self.employee,
+            sheet.append("timesheet_entries", {"work_date": day, "employee": second_driver,
                 "start_time": "10:00", "end_time": "14:00"})
             sheet.append("timesheet_entries", {"work_date": day + timedelta(days=2), "employee": self.employee,
                 "start_time": "08:00", "end_time": "10:00"})
@@ -595,13 +598,14 @@ class TestCraneTimesheet(FrappeTestCase):
             if price_row.period == "Hour":
                 price_row.price = 30
         self.crane.save()
+        second_driver = self.make_payroll_driver()
         for offset, unit in enumerate(("Day", "Month")):
             sheet = self.make_sheet(offset=offset)
             sheet.rental_rate_unit, sheet.rental_rate = unit, 3100
             row = sheet.timesheet_entries[0]
             row.worked_hours, row.overtime_hours = 4, 2
             sheet.append("timesheet_entries", {
-                "work_date": row.work_date, "employee": self.employee,
+                "work_date": row.work_date, "employee": second_driver,
                 "start_time": "08:00", "end_time": "12:00", "worked_hours": 4, "overtime_hours": 2,
             })
             sheet.insert()
@@ -626,7 +630,7 @@ class TestCraneTimesheet(FrappeTestCase):
     def test_distinct_worked_hours_include_overnight_and_ignore_idle_dates(self):
         sheet = self.make_sheet(length=4)
         sheet.append("timesheet_entries", {
-            "work_date": self.day, "employee": self.employee,
+            "work_date": self.day, "employee": self.make_payroll_driver(),
             "start_time": "10:00", "end_time": "14:00",
         })
         sheet.append("timesheet_entries", {
@@ -715,24 +719,132 @@ class TestCraneTimesheet(FrappeTestCase):
     def test_removed_manual_terms_are_archived_without_repricing(self):
         from heavy_equipment_rental.patches.use_timesheet_purchase_interval import execute
 
-        if not frappe.db.has_column("Crane Timesheet", "purchase_qty"):
-            self.skipTest("Legacy purchase columns exist only on upgraded sites")
-        sheet = self.make_sheet().insert()
-        sheet.submit()
+        sheet = self.make_sheet().insert().submit()
         invoice = frappe.get_doc("Purchase Invoice", sheet.purchase_invoice)
-        frappe.db.set_value("Crane Timesheet", sheet.name, {"purchase_qty": 7, "purchase_rate_unit": "Day"},
-                            update_modified=False)
-        execute()
+        with ExitStack() as cleanup:
+            if not frappe.db.has_column("Crane Timesheet", "purchase_qty"):
+                # MariaDB temporary tables are connection-local. Model only the
+                # historical columns the patch reads without changing the site schema.
+                with frappe.db._conn.cursor() as cursor:
+                    cursor.execute("""CREATE TEMPORARY TABLE `tabCrane Timesheet`
+                        (name varchar(140) PRIMARY KEY, purchase_qty decimal(18,6), purchase_rate_unit varchar(10),
+                         purchase_rate decimal(18,6), legacy_purchase_terms text, modified datetime)""")
+                def drop_fixture():
+                    with frappe.db._conn.cursor() as cursor:
+                        cursor.execute("DROP TEMPORARY TABLE `tabCrane Timesheet`")
+                cleanup.callback(drop_fixture)
+                frappe.db.sql("INSERT INTO `tabCrane Timesheet` (name, purchase_rate) VALUES (%s, %s)",
+                              (sheet.name, sheet.purchase_rate))
+                # The shared information_schema cache deliberately omits temporary tables.
+                columns = frappe.db.sql("SHOW COLUMNS FROM `tabCrane Timesheet`", pluck=True)
+                cleanup.enter_context(patch.object(frappe.db, "has_column", side_effect=lambda dt, field: field in columns))
+            frappe.db.set_value("Crane Timesheet", sheet.name, {"purchase_qty": 7, "purchase_rate_unit": "Day"},
+                                update_modified=False)
+            execute()
+            archive = frappe.db.get_value("Crane Timesheet", sheet.name, "legacy_purchase_terms")
+            self.assertEqual(frappe.parse_json(archive), {
+                "purchase_qty": 7, "purchase_rate_unit": "Day", "purchase_rate": sheet.purchase_rate,
+            })
+            execute()
+            self.assertEqual(frappe.db.get_value("Crane Timesheet", sheet.name, "legacy_purchase_terms"), archive)
         sheet.reload()
-        self.assertEqual(frappe.parse_json(sheet.legacy_purchase_terms), {
-            "purchase_qty": 7, "purchase_rate_unit": "Day", "purchase_rate": sheet.purchase_rate,
-        })
-        original_archive = sheet.legacy_purchase_terms
-        execute()
-        sheet.reload()
-        self.assertEqual(sheet.legacy_purchase_terms, original_archive)
         invoice.reload()
         self.assertEqual(invoice.docstatus, 1)
         self.assertEqual(invoice.items[0].uom, "Hour")
         self.assertEqual(invoice.items[0].qty, 4)
         self.assertEqual(sheet.purchase_invoice, invoice.name)
+
+    def test_one_driver_cannot_post_overlapping_payroll(self):
+        before = frappe.db.count("Expense Entry")
+        for start in ("08:00", "10:00"):
+            sheet = self.make_sheet()
+            sheet.append("timesheet_entries", dict(work_date=self.day, start_time=start, end_time="12:00"))
+            sheet.append("driver_payroll", dict(employee=self.employee, rate=50))
+            with self.assertRaisesRegex(frappe.ValidationError, "same driver"):
+                sheet.insert()
+        self.assertEqual(frappe.db.count("Expense Entry"), before)
+        sheet = self.make_sheet()
+        sheet.append("timesheet_entries", dict(work_date=self.day, start_time="12:00", end_time="13:00"))
+        sheet.insert().submit()
+        self.assertEqual((sheet.total_operator_hours, sheet.total_crane_billable_hours), (5, 5))
+
+    def test_work_on_two_bookings_uses_each_submitted_rate(self):
+        from heavy_equipment_rental.billing import generate_sales_invoice
+        self.assignment.assigned_cranes[0].expected_end_date = self.day
+        tomorrow = self.day + timedelta(days=1)
+        self.assignment.append("assigned_cranes", dict(crane=self.crane.name, start_date=tomorrow,
+            expected_end_date=tomorrow, rental_rate_unit="Hour", rental_rate=120))
+        self.assignment.save()
+        sheet = self.make_sheet(length=2)
+        sheet.timesheet_entries[0].end_time = "10:00"
+        sheet.append("timesheet_entries", dict(work_date=tomorrow, start_time="08:00", end_time="10:00"))
+        sheet.insert().submit()
+        self.assertFalse(sheet.rental_rate_unit)
+        self.assertEqual(sheet.total_amount, 440)
+        self.assignment.assigned_cranes[0].rental_rate = 200
+        self.assignment.save()
+        invoice = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=sheet.name)["name"]).submit()
+        self.assertEqual([(r.qty, r.rate) for r in invoice.items], [(2, 100), (2, 120)])
+        self.assertEqual(invoice.net_total, 440)
+
+    def test_editing_booking_preserves_submitted_day_rate_with_blank_header(self):
+        from heavy_equipment_rental.billing import generate_sales_invoice
+        self.assignment.assigned_cranes[0].update(dict(expected_end_date=self.day, rental_rate_unit="Day", rental_rate=1000))
+        tomorrow = self.day + timedelta(days=1)
+        self.assignment.append("assigned_cranes", dict(crane=self.crane.name, start_date=tomorrow,
+            expected_end_date=tomorrow, rental_rate_unit="Day", rental_rate=1200))
+        self.assignment.save()
+        sheet = self.make_sheet(length=2).insert().submit()
+        self.assertFalse(sheet.rental_rate_unit)
+        self.assertEqual(sheet.timesheet_entries[0].rental_rate, 1000)
+        self.assignment.assigned_cranes[0].rental_rate = 2000
+        self.assignment.save()
+        invoice = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=sheet.name)["name"]).submit()
+        self.assertEqual([(r.uom, r.qty, r.rate) for r in invoice.items], [("Day", 1, 1000)])
+        self.assertEqual(invoice.net_total, sheet.total_amount)
+
+    def test_flat_rebill_after_cancellation_preserves_overtime(self):
+        from heavy_equipment_rental.billing import generate_sales_invoice
+        first, later = self.make_sheet(), self.make_sheet()
+        for sheet in (first, later):
+            sheet.rental_rate_unit, sheet.rental_rate = "Day", 1000
+        later.timesheet_entries[0].update(dict(start_time="13:00", end_time="17:00",
+            overtime_hours=1, overtime_price=150))
+        first.insert().submit()
+        later.insert().submit()
+        def bill(sheet):
+            return frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=sheet.name)["name"])
+        original = bill(first).submit()
+        self.assertEqual(frappe.parse_json(original.items[0].her_rental_dates), [str(self.day)])
+        # A pre-migration flat line still covers the date for a later shift.
+        frappe.db.set_value("Sales Invoice Item", original.items[0].name, "her_rental_dates", None)
+        overtime = bill(later).submit()
+        self.assertEqual([(r.uom, r.amount) for r in overtime.items], [("Hour", 150)])
+        cancel_all(original.doctype, original.name, cancellation_plan(original.doctype, original.name))
+        from heavy_equipment_rental.billing import assignment_invoice_summary
+        self.assertIn(first.name, assignment_invoice_summary(self.assignment.name)["submitted_without_invoice"])
+        # Recover the incorrect link left behind by an earlier retry on older versions.
+        frappe.db.set_value("Crane Timesheet", first.name, "sales_invoice", overtime.name)
+        self.assertIn(first.name, assignment_invoice_summary(self.assignment.name)["submitted_without_invoice"])
+        replacement = bill(first).submit()
+        self.assertEqual(assignment_invoice_summary(self.assignment.name)["submitted_without_invoice"], [])
+        self.assertEqual([(r.uom, r.amount) for r in replacement.items], [("Day", 1000)])
+        self.assertEqual(bill(first).name, replacement.name)
+        self.assertEqual(later.reload().sales_invoice, overtime.name)
+        self.assertEqual(overtime.reload().net_total + replacement.net_total, 1150)
+
+    def test_historical_hourly_work_uses_the_saved_legacy_price(self):
+        from heavy_equipment_rental.billing import generate_sales_invoice
+        sheet = self.make_sheet().insert().submit()
+        row = sheet.timesheet_entries[0]
+        for dt, name in ((sheet.doctype, sheet.name), (row.doctype, row.name)):
+            frappe.db.set_value(dt, name, dict(rental_rate_unit=None, rental_rate=0), update_modified=False)
+        self.assignment.assigned_cranes[0].rental_rate = 250
+        self.assignment.save()
+        frappe.db.set_value(row.doctype, row.name, "price_per_hour", 0, update_modified=False)
+        with self.assertRaisesRegex(frappe.ValidationError, "submitted rental rate"):
+            generate_sales_invoice(timesheet=sheet.name)
+        frappe.db.set_value(row.doctype, row.name, "price_per_hour", 100, update_modified=False)
+        invoice = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=sheet.name)["name"]).submit()
+        self.assertEqual([(r.uom, r.qty, r.rate) for r in invoice.items], [("Hour", 4, 100)])
+        self.assertEqual(invoice.net_total, sheet.total_amount)

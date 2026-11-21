@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import erpnext
 import frappe
+from heavy_equipment_rental.testing import other_company
 import frappe.permissions
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import getdate, today
@@ -99,7 +100,7 @@ class TestTreasuryTransaction(FrappeTestCase):
         journal = frappe.get_doc("Journal Entry", transfer.journal_entry)
         self.assertTrue(all(row.cost_center == center for row in journal.accounts))
         group = frappe.db.get_value("Cost Center", center, "parent_cost_center")
-        foreign = frappe.db.get_value("Cost Center", {"company": ["!=", self.company], "is_group": 0}, "name")
+        foreign = frappe.db.get_value("Company", other_company(self.company), "cost_center")
         self.assertTrue(foreign)
         for invalid in (group, foreign):
             with self.subTest(center=invalid), self.assertRaises(frappe.ValidationError):

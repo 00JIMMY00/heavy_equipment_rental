@@ -256,9 +256,18 @@ def guard_repair_posting(doc, method=None):
 
 def repair_expense_sources(crane, company):
 	"""Read actual posted costs with explicit work links for settlement allocation."""
+	for _, source in fleet_repair_expenses([crane], company):
+		yield source
+
+
+def fleet_repair_expenses(cranes, company, dates=None):
+	if not cranes:
+		return
+	filters = {"crane": ["in", list(cranes)], "company": company, "docstatus": 1, "crane_maintenance": ["is", "set"]}
+	if dates:
+		filters["posting_date"] = ["between", dates]
 	for doctype in ("Stock Entry", "Purchase Invoice"):
-		for name in frappe.get_all(doctype, filters={"crane": crane, "company": company,
-			"docstatus": 1, "crane_maintenance": ["is", "set"]}, pluck="name"):
+		for name in frappe.get_all(doctype, filters=filters, pluck="name"):
 			doc = frappe.get_doc(doctype, name)
 			job = frappe.get_doc("Crane Maintenance", doc.crane_maintenance)
 			if job.cost_treatment != "Operating Expense":
@@ -273,7 +282,7 @@ def repair_expense_sources(crane, company):
 			if job.crane_timesheet:
 				start, end = frappe.db.get_value("Crane Timesheet", job.crane_timesheet, ["period_start", "period_end"])
 			if amount:
-				yield dict(doctype=doctype, name=name, posting_date=str(doc.posting_date),
+				yield doc.crane, dict(doctype=doctype, name=name, posting_date=str(doc.posting_date),
 					basis="Selected Timesheet" if job.crane_timesheet else "Selected Rental Contract / worked hours" if job.crane_assignment else "Unallocated crane repair", expenses=amount,
 					rental_assignment=job.crane_assignment, rental_timesheet=job.crane_timesheet,
 					service_from_date=str(start), service_to_date=str(end))
