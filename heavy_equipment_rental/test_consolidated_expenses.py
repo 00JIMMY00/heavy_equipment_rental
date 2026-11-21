@@ -68,6 +68,30 @@ class TestGroupedExpenses(FrappeTestCase):
         amended.submit()
         self.assertTrue(set(links).isdisjoint(r.journal_entry for r in amended.items))
 
+    def test_posting_without_rental_links(self):
+        batch = self.batch().insert()
+        self.assertEqual(batch.crane_assignment, self.contract.name)
+        batch.crane_timesheet = None
+        batch.save()
+        self.assertFalse(batch.crane_assignment)
+        self.assertFalse(batch.profit_settlement)
+        batch.submit()
+        for row in batch.items:
+            journal = frappe.get_doc('Journal Entry', row.journal_entry)
+            self.assertEqual(journal.docstatus, 1)
+            self.assertEqual(journal.accounts[0].crane, self.crane.name)
+        batch.cancel()
+
+        batch = self.batch()
+        batch.crane = None
+        batch.crane_timesheet = None
+        batch.insert().submit()
+        for row in batch.items:
+            journal = frappe.get_doc('Journal Entry', row.journal_entry)
+            self.assertEqual(journal.docstatus, 1)
+            self.assertFalse(journal.accounts[0].crane)
+        batch.cancel()
+
     def test_row_overrides_and_invalid_input(self):
         batch = self.batch()
         alternate = frappe.get_doc(dict(doctype='Expense Entry Type', title='Batch override', company=self.company,

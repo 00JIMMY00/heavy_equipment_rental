@@ -2,7 +2,7 @@
 
 Open the highlighted **Grouped Expense / مصروف مجمع** link in the Accounting card of Crane Operations. The normal Expense Entry link is directly below it without highlighting.
 
-Choose Company, Crane, one Crane Timesheet and an optional Driver. The Timesheet supplies the Rental Contract and its CPS link. Choose a default Mode of Payment and optionally a Cost Center. All rows charge this same rental work; dates are their actual accounting posting dates and may differ from the rental dates, following existing expense attribution rules.
+Choose a Company and a default Mode of Payment. Crane, Driver and Cost Center are optional. If you select a Crane, you can also select one of its Timesheets to supply the Rental Contract and Crane Profit Settlement links. The selected links apply to all rows. Row dates are the actual accounting posting dates and may differ from the rental dates.
 
 Add Date, Description and Total in the table. Open the pencil editor to change Expense Entry Type or Mode of Payment for an individual row. New rows inherit the company's expense type from **HER Settings → Grouped Expenses → Expense Defaults by Company**, and the form's payment method. Existing row overrides are preserved.
 

@@ -27,12 +27,16 @@ class GroupedExpense(Document):
         defaults = get_defaults(self.company)
         self.currency = frappe.get_cached_value("Company", self.company, "default_currency")
         self.mode_of_payment = self.mode_of_payment or defaults.get('mode_of_payment')
-        sheet = frappe.get_doc('Crane Timesheet', self.crane_timesheet)
-        sheet.check_permission('read')
-        if sheet.docstatus == 2 or sheet.crane != self.crane:
-            frappe.throw(_('Select a non-cancelled Timesheet for this Crane.'))
-        self.crane_assignment = sheet.assignment
-        self.profit_settlement = sheet.profit_settlement
+        if self.crane_timesheet:
+            sheet = frappe.get_doc('Crane Timesheet', self.crane_timesheet)
+            sheet.check_permission('read')
+            if sheet.docstatus == 2 or sheet.crane != self.crane:
+                frappe.throw(_('Select a non-cancelled Timesheet for this Crane.'))
+            self.crane_assignment = sheet.assignment
+            self.profit_settlement = sheet.profit_settlement
+        else:
+            self.crane_assignment = None
+            self.profit_settlement = None
         if self.employee and frappe.db.get_value('Employee', self.employee, 'company') != self.company:
             frappe.throw(_('The Driver must belong to the selected Company.'))
         if not self.items:

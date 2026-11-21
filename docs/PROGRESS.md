@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-11-21 — Optional Grouped Expense rental links
+
+Migrated `cranes-dev3.arab-erp.com`. Verified that Grouped Expense can post and cancel with only a Crane or with both rental links blank. Clearing a Timesheet also clears the derived Rental Contract and Crane Profit Settlement links.
+
 ## 2026-11-19 — Audit fixes verified on dev3
 
 Fixed cancelled flat-rate rebilling, submitted shift pricing across bookings, same-driver payroll overlaps, hired-crane Asset eligibility, timeline filter reset and dialog focus. Batched Rental Profitability queries reduced the November warm statement count from 1,408 to 67 with the same EGP 22,529 net. Corrected the site-specific accounting fixtures and added the Timesheet suite to CI. All 233 app cases and 13 deployment tests passed. The [updated audit](APP_AUDIT_2026-11-19.md) records the checks and the comparison against the pre-migration backup.

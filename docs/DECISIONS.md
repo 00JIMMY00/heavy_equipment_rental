@@ -1,5 +1,9 @@
 # Current decisions
 
+## 2026-11-21 — Optional Grouped Expense rental links
+
+Allow Grouped Expense to post with neither rental link or with only a Crane. When a Timesheet is selected, it must belong to the selected Crane and supplies the Rental Contract and Crane Profit Settlement links.
+
 ## 2026-11-19 — Billing across booking periods
 
 Allow one Timesheet to contain work on multiple booking rows for the same crane and contract. Use the submitted shift terms for each row. Invoice generation records the worked dates charged by each Day or Month line. Overtime is billed separately by the hour. Historical flat charges can be inferred from linked work only when their quantity reconciles to those dates.
