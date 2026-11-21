@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-11-21 — Crane Expense Report filter layout
+
+Aligned More Filters with Chart By and placed the expanded filters beneath both controls. Verified the layout and toggle behavior on dev3 in English and Arabic across desktop, tablet and phone widths.
+
 ## 2026-11-21 — Optional Grouped Expense rental links
 
 Migrated `cranes-dev3.arab-erp.com`. Verified that Grouped Expense can post and cancel with only a Crane or with both rental links blank. Clearing a Timesheet also clears the derived Rental Contract and Crane Profit Settlement links.

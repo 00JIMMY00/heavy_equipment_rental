@@ -44,13 +44,22 @@ frappe.query_reports['Crane Expense Report'] = {
                 $('<label class="her-expense-filter-label">').attr('for', id).text(__(field.df.label)).prependTo(wrapper);
             }
         }
-        report.page.page_form.find('.her-expense-filter-toggle').remove();
-        let expanded = advanced.some(f => f.get_value() && !(f.df.fieldname === 'source' && f.get_value() === 'All'));
-        const toggle = $('<button type="button" class="btn btn-default btn-sm her-expense-filter-toggle">').appendTo(report.page.page_form);
+        const form = report.page.page_form;
+        const chart = report.get_filter('chart_by');
         const details = report.get_filter('show_details');
-        toggle.insertBefore(details.wrapper);
+        const primary = report.filters.filter(f => f !== chart && f !== details && !advanced.includes(f));
+        $('<div class="her-expense-filter-grid">').appendTo(form).append(primary.map(f => f.wrapper));
+        const options = $('<div class="her-expense-filter-grid her-expense-view-options">').appendTo(form);
+        options.append(chart.wrapper);
+        const actions = $('<div class="her-expense-filter-actions">').appendTo(options);
+        const panel = $('<div id="her-expense-advanced-filters" class="her-expense-filter-grid her-expense-advanced">')
+            .appendTo(form).append(advanced.map(f => f.wrapper));
+        const toggle = $('<button type="button" class="btn btn-default btn-sm her-expense-filter-toggle">')
+            .attr('aria-controls', panel.attr('id')).appendTo(actions);
+        actions.append(details.wrapper);
+        let expanded = advanced.some(f => f.get_value() && !(f.df.fieldname === 'source' && f.get_value() === 'All'));
         const apply = () => {
-            advanced.forEach(f => $(f.wrapper).toggle(expanded));
+            panel.prop('hidden', !expanded);
             toggle.text(expanded ? __('Fewer Filters') : __('More Filters')).attr('aria-expanded', String(expanded));
         };
         toggle.on('click', () => { expanded = !expanded; apply(); });
@@ -62,7 +71,53 @@ frappe.query_reports['Crane Expense Report'] = {
                 [data-her-expenses="1"] .summary-item {flex-direction:row;align-items:baseline;justify-content:flex-start;gap:12px;max-width:none;min-width:0;height:auto;margin:0;}
                 [data-her-expenses="1"] .summary-label, [data-her-expenses="1"] .summary-value {padding:0;line-height:1.5;white-space:normal;overflow:visible!important;text-align:start;}
                 [data-her-expenses="1"] .her-expense-filter-label {display:block;font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:5px;}
-                [data-her-expenses="1"] .her-expense-filter-toggle {align-self:center;margin:10px;}
+                [data-her-expenses="1"] .page-form {
+                    --her-expense-columns: 6;
+                    --her-expense-control-height: 28px;
+                    flex-direction: column;
+                    flex-wrap: nowrap;
+                    gap: 12px;
+                    padding: 14px 12px;
+                }
+                [data-her-expenses="1"] .her-expense-filter-grid {
+                    display: grid;
+                    grid-template-columns: repeat(var(--her-expense-columns), minmax(0, 1fr));
+                    align-items: end;
+                    gap: 12px;
+                }
+                #page-query-report [data-her-expenses="1"] .her-expense-filter-grid .form-group {
+                    max-width: none;
+                    min-width: 0;
+                    padding: 0;
+                    margin: 0;
+                }
+                [data-her-expenses="1"] .her-expense-filter-grid select,
+                [data-her-expenses="1"] .her-expense-filter-toggle {height: var(--her-expense-control-height);}
+                #page-query-report [data-her-expenses="1"] .her-expense-filter-grid .select-icon.xs {
+                    top: auto;
+                    bottom: 0;
+                    height: var(--her-expense-control-height);
+                    display: grid;
+                    place-items: center;
+                }
+                [data-her-expenses="1"] .her-expense-filter-actions {
+                    grid-column: 2 / -1;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                }
+                [data-her-expenses="1"] .her-expense-filter-toggle {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-inline-size: 8em;
+                    white-space: nowrap;
+                }
+                [data-her-expenses="1"] .her-expense-filter-actions .form-group {flex: 0 1 auto;}
+                [data-her-expenses="1"] .her-expense-filter-actions .checkbox {margin: 0;}
+                [data-her-expenses="1"] .her-expense-filter-actions .checkbox label {display: flex;}
+                [data-her-expenses="1"] .her-expense-advanced {border-top: 1px solid var(--border-color); padding-top: 12px;}
+                [data-her-expenses="1"] .her-expense-advanced[hidden] {display: none;}
                 [data-her-expenses="1"] .chart-wrapper::before {content:attr(data-her-chart-title);display:block;font-size:14px;font-weight:650;padding:16px 20px 0;color:var(--text-color);}
                 [data-her-expenses="1"] .chart-wrapper {border:1px solid var(--border-color);border-radius:14px;background:var(--card-bg);margin-bottom:20px;}
                 [data-her-expenses="1"] .report-wrapper {border-radius:12px;overflow:hidden;border:1px solid var(--border-color);}
@@ -72,7 +127,15 @@ frappe.query_reports['Crane Expense Report'] = {
                 [data-her-expenses="1"] .her-expense-amount {font-weight:650;font-variant-numeric:tabular-nums;color:var(--her-expense-red);}
                 [data-her-expenses="1"] .summary-value {color:var(--text-color);font-variant-numeric:tabular-nums;}
                 [data-her-expenses="1"] .her-expense-crane {text-decoration:underline;text-underline-offset:2px;}
-                @media(max-width:600px) {[data-her-expenses="1"] .page-form .frappe-control {width:50%;}}
+                @media (max-width: 1100px) {
+                    [data-her-expenses="1"] .page-form {--her-expense-columns: 3;}
+                }
+                @media (max-width: 600px) {
+                    [data-her-expenses="1"] .page-form {--her-expense-columns: 2;}
+                    [data-her-expenses="1"] .her-expense-filter-actions {display: contents;}
+                    [data-her-expenses="1"] .her-expense-filter-toggle {justify-self: start;}
+                    [data-her-expenses="1"] .her-expense-filter-actions .form-group {grid-column: 1 / -1;}
+                }
             `).appendTo(document.head);
         }
         if (!report.her_expense_cleanup) {
