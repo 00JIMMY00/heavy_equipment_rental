@@ -1229,3 +1229,20 @@ The selected Mode of Payment has no default account for this Company.,طريقة
 Payment account {0} must be a ledger account in the selected Company.,يجب أن يكون حساب الدفع {0} حسابًا غير تجميعي في الشركة المحددة.
 No payment accounts are configured for this Company.,لم يتم إعداد حسابات طرق الدفع لهذه الشركة.
 Posted account movements in company currency. Balances run separately for each payment account. Modes sharing an account are shown together; selecting either mode shows the shared account. Transfers appear as OUT from the source and IN to the destination when both accounts are configured.,حركات الحسابات المرحلة بعملة الشركة. يتم حساب الرصيد بشكل مستقل لكل حساب دفع. تظهر طرق الدفع التي تستخدم الحساب نفسه معًا؛ واختيار أي منها يعرض كشف الحساب المشترك. تظهر التحويلات كمنصرف من المصدر ووارد إلى الوجهة عند إعداد الحسابين.
+Basic Salary,الراتب الأساسي
+KPI Incentive,حافز الأداء (KPI)
+Salary Expense Account,حساب مصروف الرواتب
+Monthly Salary Report,تقرير الرواتب الشهري
+Salary Month,شهر الراتب
+Basic Paid,المدفوع من الأساسي
+KPI Paid,المدفوع من الحافز
+Total Paid,إجمالي المدفوع
+Basic Remaining,المتبقي من الأساسي
+KPI Remaining,المتبقي من الحافز
+Total Due,إجمالي المستحق المتبقي
+Select a Company and a Salary Month.,اختر الشركة وشهر الراتب.
+Select an Employee for a salary expense.,اختر الموظف لصرف الراتب.
+The Employee must belong to the salary expense Company.,يجب أن يكون الموظف تابعًا لنفس شركة مصروف الرواتب.
+Salary Entitlement Exceeded,المبلغ يتجاوز مستحقات الراتب
+The employee is only entitled to {0} for {1}.,الموظف غير مستحق له سوى {0} عن شهر {1}.
+"The report uses current employee salary amounts and submitted salary expenses in company currency. Payments are applied to basic salary first, then to the KPI incentive.",يعرض التقرير قيم الرواتب الحالية للموظفين ومصروفات الرواتب المعتمدة بعملة الشركة. يُخصم المدفوع من الراتب الأساسي أولًا ثم من حافز الأداء.

@@ -5,6 +5,7 @@ frappe.ui.form.on("Expense Entry", {
             filters: { assignment: frm.doc.crane_assignment },
         } : {});
         frm.set_query("crane_assignment", () => ({ filters: { company: frm.doc.company } }));
+        frm.set_query("employee", () => frm.doc.company ? { filters: { company: frm.doc.company } } : {});
     },
     async crane_assignment(frm) {
         await rental_expense_defaults(frm);

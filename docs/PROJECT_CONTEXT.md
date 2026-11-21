@@ -1,5 +1,9 @@
 # Project context
 
+## 2026-11-21 — Monthly employee salaries
+
+The Employee Salary tab stores Basic Salary and KPI Incentive. The Monthly Salary Report under Financial Reports shows both amounts, payments and balances for the selected calendar month. It uses current Employee amounts and company currency.
+
 ## 2026-11-19 — Submitted work and invoice coverage
 
 A Timesheet may span consecutive bookings for the same crane on a contract. Each working shift fits one booking and keeps its submitted rate. The generated Sales Invoice groups work at those rates and records the exact dates on each Day or Month item. Only a live flat rental line can cover a rental date. Cancelling that charge allows rebilling while an independent overtime invoice stays posted.

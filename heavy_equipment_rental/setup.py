@@ -5,7 +5,7 @@ from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.permissions import add_permission, update_permission_property
 
 from heavy_equipment_rental.patches.default_rental_workspace import execute as set_default_workspace
-from heavy_equipment_rental.workspace import sync_operations_workspace
+from heavy_equipment_rental.workspace import add_salary_report, sync_operations_workspace
 from heavy_equipment_rental.item_prices import install_item_price_field
 
 
@@ -61,6 +61,8 @@ def execute():
 					0 if permission == "cancel" and role == "Projects User" else 1,
 				)
 	create_custom_fields({
+		"Account": [dict(fieldname="her_is_salary_account", fieldtype="Check", label="Salary Expense Account",
+			insert_after="account_type", depends_on="eval:doc.root_type === 'Expense' && !doc.is_group")],
 		"Sales Invoice Item": [dict(fieldname="her_rental_dates", fieldtype="Long Text",
 			label="Billed Rental Dates", read_only=1, hidden=1, no_copy=1)],
 		"Expense Entry Type": [{
@@ -121,7 +123,7 @@ def execute():
 		}, {
 			"fieldname": "employee",
 			"fieldtype": "Link",
-			"label": "Crane Driver (Employee)",
+			"label": "Employee",
 			"options": "Employee",
 			"insert_after": "crane_maintenance",
 			"in_standard_filter": 1,
@@ -132,6 +134,8 @@ def execute():
 			"insert_after": "description",
 		}],
 	})
+	for doctype in ("Expense Entry", "Grouped Expense"):
+		frappe.db.add_index(doctype, ["company", "employee", "docstatus"])
 	from heavy_equipment_rental.crane_repairs import install_fields as install_repair_fields
 	install_repair_fields()
 	install_item_price_field()
@@ -144,6 +148,7 @@ def execute():
 
 	install_workbook_fields()
 	sync_operations_workspace()
+	add_salary_report()
 	from heavy_equipment_rental.patches.add_expense_report_workspace import execute as add_expense_report
 	add_expense_report()
 	seed_defaults()

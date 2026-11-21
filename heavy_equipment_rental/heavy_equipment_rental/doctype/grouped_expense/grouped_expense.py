@@ -42,6 +42,7 @@ class GroupedExpense(Document):
         if not self.items:
             frappe.throw(_('Add at least one expense row.'))
         self.total = 0
+        self.flags.salary_payment_lines = []
         for row in self.items:
             if row.expense_entry or row.journal_entry:
                 frappe.throw(_('Expense Entry links are managed automatically.'))
@@ -58,6 +59,7 @@ class GroupedExpense(Document):
             self.cost_center = expense.cost_center
             # The shared controller validates currency, company and account class.
             account = expense.expenses[0].expense_entry_account
+            self.flags.salary_payment_lines.append((row.posting_date, account, row.amount))
             if frappe.db.get_value('Account', account, 'disabled'):
                 frappe.throw(_('The Expense Account is disabled.'))
             payment = expense.get_accounting_details()
@@ -67,6 +69,11 @@ class GroupedExpense(Document):
         if not isfinite(self.total):
             frappe.throw(_("The batch total must be finite."))
         self.total = flt(self.total, self.precision('total'))
+
+    def before_submit(self):
+        from heavy_equipment_rental.employee_salary import validate_salary_payment
+
+        validate_salary_payment(self.company, self.employee, self.flags.salary_payment_lines)
 
     def make_expense(self, row):
         return frappe.get_doc(dict(

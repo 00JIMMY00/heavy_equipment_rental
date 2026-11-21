@@ -1,5 +1,13 @@
 # Current decisions
 
+## 2026-11-21 — Grouped Expense table columns
+
+Use equal default widths for Date, Description, Total, Expense Entry Type and Mode of Payment. Keep the native row editor and column settings.
+
+## 2026-11-21 — Salary expense limits
+
+The sum of Basic Salary and KPI Incentive is the monthly cap. Use the posting date and the actual expense account. Standard salary accounts are recognized by name, and custom accounts can be marked Salary Expense Account. Expense Entry and Grouped Expense share the cap. Submitted payments consume it, cancellation restores it, and historical grouped payments that posted through Expense Entry count once. The report applies payments to basic salary first and then to KPI.
+
 ## 2026-11-21 — Optional Grouped Expense rental links
 
 Allow Grouped Expense to post with neither rental link or with only a Crane. When a Timesheet is selected, it must belong to the selected Crane and supplies the Rental Contract and Crane Profit Settlement links.

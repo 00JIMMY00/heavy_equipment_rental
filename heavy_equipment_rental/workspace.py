@@ -48,6 +48,40 @@ def sync_operations_workspace():
     frappe.clear_cache()
 
 
+def add_salary_report():
+    key = "her_salary_report_workspace_v1"
+    if frappe.db.get_default(key) or not frappe.db.exists("Workspace", "Crane Operations"):
+        return
+
+    workspace = frappe.get_doc("Workspace", "Crane Operations")
+    if not any(row.link_to == "Monthly Salary Report" for row in workspace.links):
+        links = list(workspace.links)
+        section = next((row for row in links if row.type == "Card Break" and row.label == "Financial Reports"), None)
+        if not section:
+            section = workspace.append("links", dict(type="Card Break", label="Financial Reports"))
+            links.append(section)
+        link = workspace.append("links", dict(type="Link", label="Monthly Salary Report", link_type="Report",
+            link_to="Monthly Salary Report", is_query_report=1, report_ref_doctype="Expense Entry"))
+        links.insert(links.index(section) + 1, link)
+        workspace.set("links", links)
+        card = None
+        for index, row in enumerate(workspace.links, 1):
+            row.idx = index
+            if row.type == "Card Break":
+                card = row
+                card.link_count = 0
+            elif card:
+                card.link_count += 1
+
+        was_in_patch = frappe.flags.in_patch
+        frappe.flags.in_patch = True
+        try:
+            workspace.save(ignore_permissions=True)
+        finally:
+            frappe.flags.in_patch = was_in_patch
+    frappe.db.set_default(key, "1")
+
+
 @frappe.whitelist()
 def get_operations_counts():
     """Counts for this workspace's visible DocType links, using user permissions."""

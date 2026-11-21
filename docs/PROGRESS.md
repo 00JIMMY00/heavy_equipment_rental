@@ -1,5 +1,13 @@
 # Progress
 
+## 2026-11-21 — Grouped Expense table columns
+
+Migrated dev3 and verified all five default columns across reloads in Chrome without saved column preferences. The pencil opens the row editor. All nine Grouped Expense workflow tests passed.
+
+## 2026-11-21 — Monthly employee salaries
+
+Migrated dev3 and verified the Employee fields and Financial Reports link in Chrome. The November report combined the existing normal and grouped salary payments. All 49 employee, expense, grouped expense and Timesheet tests passed, including salary limit and cancellation cases.
+
 ## 2026-11-21 — Crane Expense Report filter layout
 
 Aligned More Filters with Chart By and placed the expanded filters beneath both controls. Verified the layout and toggle behavior on dev3 in English and Arabic across desktop, tablet and phone widths.

@@ -24,6 +24,13 @@ class RentalExpenseEntry(ExpenseEntry):
         from heavy_equipment_rental.rental_expenses import validate_expense
         validate_expense(self)
 
+    def before_submit(self):
+        from heavy_equipment_rental.employee_salary import validate_salary_payment
+
+        validate_salary_payment(self.company, self.employee, (
+            (self.posting_date, row.expense_entry_account, row.amount) for row in self.expenses
+        ))
+
     def before_cancel(self):
         from heavy_equipment_rental.driver_payroll import guard_payroll_cancel
         guard_payroll_cancel(self)
