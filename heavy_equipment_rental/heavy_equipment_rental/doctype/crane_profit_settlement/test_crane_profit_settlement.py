@@ -206,7 +206,7 @@ class TestCraneProfitSettlement(FrappeTestCase):
     def test_closed_sources_and_backdated_postings_are_protected(self):
         doc = self.settlement()
         doc.submit()
-        for source in (frappe.get_doc("Expense Entry", self.cycle["expenses"][0]),
+        for source in (frappe.get_doc("Grouped Expense", self.cycle["expenses"][0]),
                        frappe.get_doc("Sales Invoice", self.cycle["timesheets"][0].sales_invoice)):
             with self.assertRaises(frappe.ValidationError):
                 source.cancel()
@@ -309,7 +309,7 @@ class TestCraneProfitSettlement(FrappeTestCase):
         self.assertEqual(self.settlement(next_day, next_day).net_profit, 0)
 
     def test_invalid_historical_expense_blocks_settlement(self):
-        frappe.db.set_value("Expense Entry", self.cycle["expenses"][0], "journal_entry", None)
+        frappe.db.set_value("Grouped Expense Item", {"parent": self.cycle["expenses"][0]}, "journal_entry", None)
         with self.assertRaises(frappe.ValidationError):
             self.settlement()
 

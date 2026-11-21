@@ -1,3 +1,4 @@
+from heavy_equipment_rental.test_expenses import legacy_expense
 from io import BytesIO
 from unittest.mock import patch
 
@@ -91,6 +92,16 @@ class TestGroupedExpenses(FrappeTestCase):
             self.assertEqual(journal.docstatus, 1)
             self.assertFalse(journal.accounts[0].crane)
         batch.cancel()
+
+    def test_only_grouped_expenses_can_be_created(self):
+        batch = self.batch().insert()
+        with self.assertRaisesRegex(frappe.ValidationError, 'Use Grouped Expense'):
+            legacy_expense(batch, batch.items[0]).insert()
+        batch.crane_timesheet = None
+        batch.save()
+        batch.crane_assignment = self.contract.name
+        batch.save().submit()
+        self.assertEqual(batch.reload().crane_assignment, self.contract.name)
 
     def test_row_overrides_and_invalid_input(self):
         batch = self.batch()
@@ -193,10 +204,34 @@ class TestGroupedExpenses(FrappeTestCase):
         with self.assertRaises(frappe.ValidationError):
             parse_template(self.workbook([[None, 'Invalid', 10, None, None]]), self.company)
 
+    def test_migrated_draft_posts_only_from_the_grouped_form(self):
+        from heavy_equipment_rental.expenses import RentalExpenseEntry
+        from heavy_equipment_rental.patches.unify_grouped_expenses import execute as migrate
+
+        template = self.batch().insert()
+        with patch.object(RentalExpenseEntry, "before_validate"):
+            original = legacy_expense(template, template.items[0]).insert()
+        journal_count = frappe.db.count("Journal Entry")
+        migrate()
+        migrate()
+        self.assertEqual(frappe.db.count("Grouped Expense", {"legacy_expense": original.name}), 1)
+        batch = frappe.get_doc("Grouped Expense", {"legacy_expense": original.name})
+        self.assertEqual(batch.docstatus, 0)
+        self.assertEqual(frappe.db.count("Journal Entry"), journal_count)
+        with self.assertRaisesRegex(frappe.ValidationError, "Use Grouped Expense"):
+            original.submit()
+        batch.submit()
+        self.assertEqual(frappe.db.count("Journal Entry"), journal_count + 1)
+        self.assertFalse(original.reload().journal_entry)
+        batch.cancel()
+        self.assertEqual(frappe.db.get_value("Journal Entry", batch.items[0].journal_entry, "docstatus"), 2)
+
     def test_historical_expense_batch_cancels_and_amends_to_direct_journals(self):
+        from heavy_equipment_rental.test_expenses import enable_historical_fixtures
+        enable_historical_fixtures(self)
         batch = self.batch().insert()
         for row in batch.items:
-            expense = batch.make_expense(row).insert()
+            expense = legacy_expense(batch, row).insert()
             expense.submit()
             row.db_set('expense_entry', expense.name)
             row.db_set('docstatus', 1)

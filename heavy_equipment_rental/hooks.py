@@ -23,7 +23,9 @@ website_context = {
 	"splash_image": "/assets/heavy_equipment_rental/branding/loader.gif",
 }
 required_apps = ["erpnext", "arab_erp_theme"]
-after_install = ["heavy_equipment_rental.setup.execute", "heavy_equipment_rental.branding.apply_branding"]
+after_install = ["heavy_equipment_rental.setup.execute",
+                 "heavy_equipment_rental.patches.unify_grouped_expenses.execute",
+                 "heavy_equipment_rental.branding.apply_branding"]
 after_migrate = ["heavy_equipment_rental.setup.execute", "heavy_equipment_rental.branding.apply_branding"]
 
 override_doctype_class = {
@@ -98,7 +100,7 @@ doctype_js = {
     "Payment Entry": "public/js/partner_payment.js",
 }
 
-app_include_js = ["/assets/heavy_equipment_rental/js/operations_workspace.js?v=20261117-sidebar-closed", "/assets/heavy_equipment_rental/js/rental_cancellation.js?v=20261114-cancel-all"]
+app_include_js = ["/assets/heavy_equipment_rental/js/operations_workspace.js?v=20261117-sidebar-closed", "/assets/heavy_equipment_rental/js/rental_cancellation.js?v=20261121-grouped"]
 
 
 override_whitelisted_methods = {

@@ -5,7 +5,9 @@ frappe.query_reports['Crane Expense Report'] = {
         {fieldname: 'company', label: __('Company'), fieldtype: 'Link', options: 'Company',
             default: frappe.defaults.get_user_default('Company'), reqd: 1,
             on_change: async report => {
-                await report.set_filter_value({timesheet: '', assignment: '', expense_type: '', employee: ''});
+                await report.set_filter_value({
+                    timesheet: '', assignment: '', expense_type: '', employee: '', cost_center: '', grouped_expense: '',
+                });
                 report.refresh();
             }},
         {fieldname: 'from_date', label: __('From Date'), fieldtype: 'Date', default: frappe.datetime.month_start(), reqd: 1},
@@ -23,17 +25,20 @@ frappe.query_reports['Crane Expense Report'] = {
             on_change: report => { report.$chart.attr('data-her-chart-title', __('Expenses by {0}', [__(report.get_filter_value('chart_by'))])); report.refresh(); }},
         {fieldname: 'expense_type', label: __('Expense Entry Type'), fieldtype: 'Link', options: 'Expense Entry Type',
             get_query: () => ({filters: {company: frappe.query_report.get_filter_value('company')}})},
+        {fieldname: 'grouped_expense', label: __('Grouped Expense'), fieldtype: 'Link', options: 'Grouped Expense',
+            get_query: () => ({filters: {company: frappe.query_report.get_filter_value('company'), docstatus: 1}})},
         {fieldname: 'mode_of_payment', label: __('Mode of Payment'), fieldtype: 'Link', options: 'Mode of Payment'},
-        {fieldname: 'source', label: __('Expense Source'), fieldtype: 'Select', options: ['All', 'Grouped Expense', 'Expense Entry'], default: 'All'},
+        {fieldname: 'cost_center', label: __('Cost Center'), fieldtype: 'Link', options: 'Cost Center',
+            get_query: () => ({filters: {company: frappe.query_report.get_filter_value('company'), is_group: 0}})},
         {fieldname: 'assignment', label: __('Rental Contract'), fieldtype: 'Link', options: 'Rental Contract',
             get_query: () => ({filters: {company: frappe.query_report.get_filter_value('company')}})},
-        {fieldname: 'employee', label: __('Driver'), fieldtype: 'Link', options: 'Employee',
+        {fieldname: 'employee', label: __('Employee'), fieldtype: 'Link', options: 'Employee',
             get_query: () => ({filters: {company: frappe.query_report.get_filter_value('company')}})},
         {fieldname: 'show_details', label: __('Show Individual Expenses'), fieldtype: 'Check', default: 1},
     ],
     onload(report) {
         report.page.main.attr('data-her-expenses', '1');
-        const advancedNames = ['expense_type', 'mode_of_payment', 'source', 'assignment', 'employee'];
+        const advancedNames = ['expense_type', 'grouped_expense', 'mode_of_payment', 'cost_center', 'employee', 'assignment'];
         const advanced = report.filters.filter(f => advancedNames.includes(f.df.fieldname));
         for (const field of report.filters) {
             const wrapper = $(field.wrapper);
@@ -57,7 +62,7 @@ frappe.query_reports['Crane Expense Report'] = {
         const toggle = $('<button type="button" class="btn btn-default btn-sm her-expense-filter-toggle">')
             .attr('aria-controls', panel.attr('id')).appendTo(actions);
         actions.append(details.wrapper);
-        let expanded = advanced.some(f => f.get_value() && !(f.df.fieldname === 'source' && f.get_value() === 'All'));
+        let expanded = advanced.some(f => f.get_value());
         const apply = () => {
             panel.prop('hidden', !expanded);
             toggle.text(expanded ? __('Fewer Filters') : __('More Filters')).attr('aria-expanded', String(expanded));
@@ -155,7 +160,7 @@ frappe.query_reports['Crane Expense Report'] = {
         }
         const formatted = ['description', 'crane_name'].includes(column.fieldname) ? frappe.utils.escape_html(value || '')
             : default_formatter(value, row, column, data);
-        if (data?.is_group) return `<span class="her-expense-group">${formatted}</span>`;
+        if (data?.is_group || data?.is_total_row) return `<span class="her-expense-group">${formatted}</span>`;
         if (column.fieldname === 'amount') return `<span class="her-expense-amount">${formatted}</span>`;
         return formatted;
     },

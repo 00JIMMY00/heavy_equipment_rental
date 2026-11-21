@@ -16,7 +16,7 @@ def execute(filters=None):
     frappe.get_doc("Company", filters.company).check_permission("read")
     # Never return a plausible but incomplete profit because a source is inaccessible.
     for doctype in ("Rental Contract", "Crane", "Crane Timesheet", "Sales Invoice",
-                    "Purchase Invoice", "Expense Entry", "Journal Entry"):
+                    "Purchase Invoice", "Grouped Expense", "Journal Entry"):
         if not frappe.has_permission(doctype, "read"):
             frappe.throw(_("Read permission for {0} is required for this report.").format(doctype),
                          frappe.PermissionError)
@@ -70,35 +70,7 @@ def execute(filters=None):
                                  voucher=header.name, assignment=assignment, crane=crane,
                                  description=line.description, currency=currency,
                                  **{amount_field: flt(line.base_net_amount)}))
-    expense_filters = {"docstatus": 1, "company": filters.company, "posting_date": dates}
-    if filters.assignment:
-        expense_filters["crane_assignment"] = ["in", assignments]
-    if filters.crane:
-        expense_filters["crane"] = filters.crane
     unposted_expenses = []
-    for header in frappe.get_list("Expense Entry", filters=expense_filters,
-                                  fields=["name", "crane", "crane_assignment"], limit_page_length=0):
-        if header.crane_assignment and header.crane_assignment not in assignments:
-            continue
-        if header.crane and header.crane not in items:
-            continue
-        if not header.crane and not header.crane_assignment:
-            continue
-        expense = frappe.get_doc("Expense Entry", header.name)
-        if not expense.journal_entry or not frappe.db.exists("Journal Entry", expense.journal_entry):
-            unposted_expenses.append(expense.name)
-            continue
-        journal = frappe.get_doc("Journal Entry", expense.journal_entry)
-        journal.check_permission("read")
-        if journal.docstatus != 1 or journal.company != expense.company:
-            unposted_expenses.append(expense.name)
-            continue
-        accounts = ", ".join(sorted({row.account for row in journal.accounts if row.credit}))
-        data.append(dict(posting_date=expense.posting_date, voucher_type="Expense Entry",
-                         voucher=expense.name, assignment=expense.crane_assignment,
-                         crane=expense.crane, description=expense.description,
-                         mode_of_payment=expense.mode_of_payment, source_account=accounts,
-                         expenses=sum(flt(row.amount) for row in expense.expenses), currency=currency))
     # Native repair ledger costs and attributed depreciation/other journals.
     # These sources are independent of customer billing and cash disbursement.
     from heavy_equipment_rental.consolidated_accounting import fleet_sources
@@ -106,11 +78,13 @@ def execute(filters=None):
     from heavy_equipment_rental.profit_sharing import attributed_journals
 
     period = [getdate(filters.from_date), getdate(filters.to_date)]
-    for crane, journal, source in fleet_sources(items, filters.company, period, filters.assignment):
+    for crane, journal, source in fleet_sources(items, filters.company, period, filters.assignment,
+            include_legacy=True, unposted=unposted_expenses):
         if source["rental_assignment"] and source["rental_assignment"] not in assignments:
             continue
-        data.append(dict(posting_date=source["posting_date"], voucher_type="Journal Entry",
-            voucher=journal.name, assignment=source["rental_assignment"], crane=crane,
+        data.append(dict(posting_date=source["posting_date"], voucher_type="Grouped Expense",
+            source_account=", ".join(sorted({r.account for r in journal.accounts if r.credit})),
+            voucher=source["consolidated_expense"], assignment=source["rental_assignment"], crane=crane,
             description=source["description"], mode_of_payment=source["mode_of_payment"],
             expenses=source["expenses"], currency=currency))
     for crane, source in fleet_repair_expenses(items, filters.company, period):

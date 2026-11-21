@@ -7,8 +7,26 @@ from frappe.utils import today
 from heavy_equipment_rental.patches.backfill_expense_employee_parties import backfill_expense
 
 
+def enable_historical_fixtures(test):
+    from unittest.mock import patch
+    from heavy_equipment_rental.expenses import RentalExpenseEntry
+
+    guard = patch.object(RentalExpenseEntry, "before_validate")
+    guard.start()
+    test.addCleanup(guard.stop)
+
+
+def legacy_expense(batch, row):
+    return frappe.get_doc(dict(doctype="Expense Entry", company=batch.company, crane=batch.crane,
+        crane_assignment=batch.crane_assignment, crane_timesheet=batch.crane_timesheet,
+        employee=batch.employee, cost_center=batch.cost_center, posting_date=row.posting_date,
+        mode_of_payment=row.mode_of_payment, description=row.description,
+        expenses=[dict(expense_entry_type=row.expense_entry_type, amount=row.amount)]))
+
+
 class TestExpenseParties(FrappeTestCase):
     def make_expense(self, with_employee=True):
+        enable_historical_fixtures(self)
         expense_type = frappe.get_all(
             "Expense Entry Type", filters={"enabled": 1}, fields=["name", "company"], limit=1,
         )[0]

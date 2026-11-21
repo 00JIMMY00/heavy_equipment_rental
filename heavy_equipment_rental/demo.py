@@ -111,11 +111,10 @@ def _create_cycle(company, start_date, *, location=None, daily_rate=5000,
         if not expense_type:
             expense_type = frappe.get_doc(dict(doctype="Expense Entry Type", company=company,
                 title="HER DEMO " + title, enabled=1, account=company_doc.default_expense_account)).insert().name
-        expense = frappe.get_doc(dict(doctype="Expense Entry", company=company, posting_date=end,
+        expense = frappe.get_doc(dict(doctype="Grouped Expense", company=company,
             crane=crane.name, crane_assignment=assignment.name, crane_timesheet=sheet.name, employee=employee.name,
-            service_from_date=end, service_to_date=end,
-            description="HER DEMO " + title + " paid from " + kind, mode_of_payment=modes[kind],
-            expenses=[dict(expense_entry_type=expense_type, amount=amount)])).insert()
+            mode_of_payment=modes[kind],
+            items=[dict(posting_date=end, description="HER DEMO " + title + " paid from " + kind, expense_entry_type=expense_type, amount=amount)])).insert()
         expense.submit()
     assignment.add_comment("Info", f"Simulated rental cycle: {rental_days} days × {daily_rate}; invoice Grand Total "
                            f"{invoice.base_grand_total}; costs {sum(amounts)}. Treasury transfers are not costs.")
@@ -130,7 +129,7 @@ def describe_cycle(assignment):
                             fields=["name", "sales_invoice", "total_crane_billable_hours"])
     return dict(assignment=assignment, company=rental.company, crane=rental.assigned_cranes[0].crane,
                 customer=rental.customer, timesheets=sheets,
-                expenses=frappe.get_all("Expense Entry", filters={"crane_assignment": assignment}, pluck="name"),
+                expenses=frappe.get_all("Grouped Expense", filters={"crane_assignment": assignment}, pluck="name"),
                 from_date=str(rental.assigned_cranes[0].start_date),
                 to_date=str(rental.assigned_cranes[0].expected_end_date),
                 report="/app/query-report/Crane%20Rental%20Profitability")

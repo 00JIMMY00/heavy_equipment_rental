@@ -256,9 +256,9 @@ class TestMaintenancePosting(FrappeTestCase):
     def test_quick_repair_uses_settings_account_and_cancels(self):
         job = self.job(repair_method='Quick Repair', cost=125)
         job.submit()
-        expense = frappe.get_doc('Expense Entry', job.expense_entry)
+        expense = frappe.get_doc('Grouped Expense', job.grouped_expense)
         self.assertEqual(expense.docstatus, 1)
-        self.assertEqual(self.gl('Journal Entry', expense.journal_entry, 'Expense'), 125)
+        self.assertEqual(self.gl('Journal Entry', expense.items[0].journal_entry, 'Expense'), 125)
         self.assertEqual(frappe.db.get_value('Expense Entry Type', job.expense_type, 'account'), self.company.default_expense_account)
         job.cancel()
         self.assertEqual(expense.reload().docstatus, 2)

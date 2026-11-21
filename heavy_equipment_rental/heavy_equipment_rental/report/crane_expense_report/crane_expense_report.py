@@ -22,11 +22,12 @@ def execute(filters=None):
     if f.get('chart_by', 'Crane') not in ('Crane', 'Expense Type', 'Month'):
         frappe.throw(_('Invalid chart grouping.'))
     frappe.get_doc('Company', f.company).check_permission('read')
-    for dt in ('Expense Entry', 'Grouped Expense', 'Journal Entry'):
+    for dt in ('Grouped Expense', 'Journal Entry'):
         frappe.has_permission(dt, 'read', throw=True)
     for field, dt in (('crane', 'Crane'), ('timesheet', 'Crane Timesheet'),
                       ('assignment', 'Rental Contract'), ('expense_type', 'Expense Entry Type'),
-                      ('employee', 'Employee'), ('mode_of_payment', 'Mode of Payment')):
+                      ('employee', 'Employee'), ('mode_of_payment', 'Mode of Payment'),
+                      ('cost_center', 'Cost Center'), ('grouped_expense', 'Grouped Expense')):
         if f.get(field):
             frappe.get_doc(dt, f[field]).check_permission('read')
     currency = frappe.get_cached_value('Company', f.company, 'default_currency')
@@ -35,14 +36,18 @@ def execute(filters=None):
     total = sum(r['amount'] for r in rows)
     grouping = f.get('group_by') or 'Crane'
     data = group_rows(rows, grouping, cint(f.get('show_details')), currency)
-    summary = [dict(label=_('Total Expenses'), value=total, datatype='Currency', currency=currency)]
+    total_label = _('Total Expenses')
+    if data:
+        data = [*data, dict(crane_name=total_label, amount=total, currency=currency, indent=0, is_total_row=1)]
+    summary = [dict(label=total_label, value=total, datatype='Currency', currency=currency)]
     return columns(), data, None, expense_chart(rows, f.get('chart_by') or 'Crane', currency), summary, True
 
 
 def expense_rows(f, currency):
     base = dict(company=f.company, docstatus=1)
     for field, target in (('crane', 'crane'), ('timesheet', 'crane_timesheet'),
-                          ('assignment', 'crane_assignment'), ('employee', 'employee')):
+                          ('assignment', 'crane_assignment'), ('employee', 'employee'),
+                          ('cost_center', 'cost_center'), ('grouped_expense', 'name')):
         if f.get(field):
             base[target] = f[field]
     first, last = getdate(f.from_date), getdate(f.to_date)
@@ -60,16 +65,8 @@ def expense_rows(f, currency):
             titles[key] = doc.get(field) or name
         return titles[key]
 
-    def append(source, row, journal_name):
-        day = getdate(row.posting_date if source.doctype == 'Grouped Expense' else source.posting_date)
-        if not first <= day <= last:
-            return
-        kind = row.expense_entry_type
-        mode = row.mode_of_payment if source.doctype == 'Grouped Expense' else source.mode_of_payment
-        if (f.expense_type and kind != f.expense_type) or (f.mode_of_payment and mode != f.mode_of_payment):
-            return
-        if f.source and f.source != 'All' and source.doctype != f.source:
-            return
+    def append(source, row, journal_name, account=None):
+        day = getdate(row.posting_date)
         if journal_name not in journals:
             if not journal_name:
                 frappe.throw(_('Expense {0} has no posted journal.').format(source.name))
@@ -80,7 +77,6 @@ def expense_rows(f, currency):
             journals[journal_name] = journal
         journal = journals[journal_name]
         # Account comes from posted evidence, not the expense type's current default.
-        account = row.get('expense_entry_account')
         if not account:
             account = next((r.account for r in journal.accounts if r.debit > 0), None)
         if source.crane_timesheet:
@@ -91,19 +87,26 @@ def expense_rows(f, currency):
             crane=source.crane, crane_name=title('Crane', source.crane, 'crane_name'),
             timesheet=source.crane_timesheet, assignment=source.crane_assignment,
             employee=source.employee, employee_name=title('Employee', source.employee, 'employee_name') if source.employee else '',
-            expense_type=kind, expense_type_title=title('Expense Entry Type', kind, 'title'),
-            mode_of_payment=mode, description=row.description if source.doctype == 'Grouped Expense' else source.description,
+            expense_type=row.expense_entry_type,
+            expense_type_title=title('Expense Entry Type', row.expense_entry_type, 'title'),
+            mode_of_payment=row.mode_of_payment, cost_center=source.cost_center, description=row.description,
             amount=flt(row.amount), currency=currency, account=account,
             source_type=source.doctype, source=source.name, journal_entry=journal.name,
-            row_number=row.idx, label=row.description if source.doctype == 'Grouped Expense' else source.description,
+            row_number=row.idx, label=row.description,
             indent=0, is_group=0, line_count=1))
 
-    # Grouped documents own legacy Expense Entries too. Direct journals and legacy
-    # sources are separate rows here; the latter are excluded from the normal pass.
+    # Each grouped row has either a direct journal or its original accounting voucher.
     for name in frappe.get_list('Grouped Expense', filters=base, pluck='name', limit_page_length=0):
         batch = frappe.get_doc('Grouped Expense', name)
+        # Saved filters from before the merge can still isolate standalone originals.
+        if f.source == 'Expense Entry' and not batch.legacy_expense:
+            continue
         for row in batch.items:
             if not first <= getdate(row.posting_date) <= last:
+                continue
+            if f.expense_type and row.expense_entry_type != f.expense_type:
+                continue
+            if f.mode_of_payment and row.mode_of_payment != f.mode_of_payment:
                 continue
             if row.journal_entry:
                 append(batch, row, row.journal_entry)
@@ -112,20 +115,10 @@ def expense_rows(f, currency):
                 legacy.check_permission('read')
                 if legacy.docstatus != 1:
                     frappe.throw(_('Expense {0} is not submitted.').format(legacy.name))
-                append(batch, row, legacy.journal_entry)
+                line = legacy.expenses[row.idx - 1] if batch.legacy_expense else legacy.expenses[0]
+                append(batch, row, legacy.journal_entry, line.expense_entry_account)
             else:
                 frappe.throw(_("Expense {0} has no posted journal.").format(batch.name))
-    normal_filters = dict(base, posting_date=['between', [f.from_date, f.to_date]])
-    for name in frappe.get_list('Expense Entry', filters=normal_filters, pluck='name', limit_page_length=0):
-        parent = frappe.db.get_value('Grouped Expense Item',
-            {'expense_entry': name, 'parenttype': 'Grouped Expense', 'docstatus': 1}, 'parent')
-        if parent:
-            # Never expose an inaccessible batch through its legacy source.
-            frappe.get_doc('Grouped Expense', parent).check_permission('read')
-            continue
-        expense = frappe.get_doc('Expense Entry', name)
-        for row in expense.expenses:
-            append(expense, row, expense.journal_entry)
     return result
 
 
@@ -185,4 +178,7 @@ def columns():
         col('timesheet', 'Crane Timesheet', 'Link', 145, 'Crane Timesheet'),
         col('expense_type_title', 'Expense Type', width=150),
         col('source', 'Expense Document', 'Dynamic Link', 150, 'source_type'),
+        col('mode_of_payment', 'Mode of Payment', 'Link', 150, 'Mode of Payment'),
+        col('cost_center', 'Cost Center', 'Link', 170, 'Cost Center'),
+        col('employee', 'Employee', 'Link', 145, 'Employee'),
     ]

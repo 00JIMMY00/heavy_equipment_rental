@@ -1,5 +1,5 @@
 // Keep confirmation and execution together for circular rental links.
-for (const doctype of ["Sales Invoice", "Crane Timesheet", "Crane Profit Settlement", "Expense Entry"]) {
+for (const doctype of ["Sales Invoice", "Crane Timesheet", "Crane Profit Settlement", "Expense Entry", "Grouped Expense"]) {
     frappe.ui.form.on(doctype, {
         setup(frm) {
             frm.savecancel = async function (btn, callback, on_error) {

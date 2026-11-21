@@ -1,0 +1,58 @@
+:host{display:block;min-width:0}
+.insights{--ink:#19283c;--muted:#526173;--line:#dde1e7;--yellow:#ffca2c;background:#f3f4f6;color:var(--ink);font-family:var(--font-stack,Inter,system-ui,sans-serif);padding:clamp(8px,1.4vw,16px);border-radius:12px;font-variant-numeric:tabular-nums}
+.insights *{box-sizing:border-box}
+.insights [hidden]{display:none!important}
+.insights h1,.insights h2,.insights p{margin:0;color:inherit}
+.hero{isolation:isolate;position:relative;overflow:hidden;border-radius:8px;background:#142339;color:white;padding:12px 20px;border-inline-start:5px solid var(--yellow)}
+.hero:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#142339 5%,#142339df 38%,#14233930 90%),url('/assets/heavy_equipment_rental/branding/cranes-panorama-v2.png') center 57%/cover}
+[dir=rtl] .hero:before{background:linear-gradient(270deg,#142339 5%,#142339df 38%,#14233930 90%),url('/assets/heavy_equipment_rental/branding/cranes-panorama-v2.png') center 57%/cover}
+.insights h1{font-size:clamp(22px,2.3vw,32px);letter-spacing:-.035em;line-height:1.15;font-weight:680}
+.insights .stamp{color:#fff1bf;font-size:11px;margin-top:3px}
+.toolbar,.expense-head,.heading,.row,.axis{display:flex;align-items:center;gap:8px}
+.toolbar,.expense-head,.row,.axis{justify-content:space-between}
+.toolbar{margin:11px 0 8px;flex-wrap:wrap}
+.insights h2{font-size:16px;font-weight:670;letter-spacing:-.02em}
+.periods{display:flex;border:1px solid var(--line);padding:2px;background:#fff;border-radius:7px}
+.periods button,.notice button{font:inherit;font-size:12px;font-weight:600;border:0;border-radius:4px;background:transparent;color:var(--ink);padding:4px 9px;cursor:pointer}
+.periods button[aria-pressed=true],.notice button{background:var(--yellow);color:#1b2637}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid #936200;outline-offset:1px}
+.metrics,.charts{display:grid;gap:7px}
+.metrics{grid-template-columns:repeat(4,minmax(0,1fr))}
+.metric,.panel{background:#fff;border:1px solid var(--line);border-radius:8px;min-width:0}
+.metric{padding:7px 12px}
+.metric:first-child{background:var(--ink);border-color:var(--ink);color:white}
+.metric:first-child strong{color:var(--yellow)}
+.label-line,.metric small,.insights .caption,.expense-period,.axis,.empty,.line-count,.crane-name small,.expense-line small{font-size:11px;color:var(--muted)}
+.metric:first-child .label-line,.metric:first-child small{color:#e4e8ed}
+.metric strong{display:block;font-size:clamp(18px,1.8vw,25px);line-height:1.2;letter-spacing:-.025em;overflow-wrap:anywhere}
+.panel{padding:13px}
+.expense-panel,.charts{margin:9px 0}
+.expense-head{flex-wrap:wrap}
+.insights .caption{margin:2px 0 8px}
+.ledger-entry{border-top:1px solid var(--line)}
+.crane-row{display:grid;grid-template-columns:12px minmax(0,1fr) auto minmax(95px,auto);align-items:center;gap:8px;padding:6px 4px;font-size:13px;list-style:none}
+.crane-row::-webkit-details-marker{display:none}
+.crane-row:before{content:""}
+summary.crane-row{cursor:pointer}
+summary.crane-row:before{content:"+";color:#805700;font-weight:750}
+details[open]>summary:before{content:"−"}
+summary:hover,details[open]>summary{background:#fff6d9}
+.crane-name{font-weight:650;overflow-wrap:anywhere}
+.crane-name small{display:inline-block;margin-inline-start:7px;font-weight:400}
+.amount{text-align:end;overflow-wrap:anywhere}
+.expense-line{display:flex;justify-content:space-between;gap:10px;padding:6px 12px 6px 22px;background:#f7f8fa;font-size:12px}
+.expense-line>span{min-width:0;overflow-wrap:anywhere}
+.expense-line small{display:inline-block;margin-inline-start:8px}
+.expense-line a,.leader a{color:#283d59;text-decoration:underline}
+.charts{grid-template-columns:1.6fr 1fr}
+.signal,.dot{display:inline-block;width:8px;height:8px;background:var(--yellow);border-radius:2px}
+.plot svg{width:100%;height:70px;display:block}
+.axis{direction:ltr}
+.condition-bar,.track{height:6px;display:flex;overflow:hidden;background:#edf0f3;border-radius:4px}
+.row{font-size:12px;margin:5px 0}
+.dot{margin-inline-end:6px}
+.leader{display:grid;grid-template-columns:minmax(100px,1fr) 2fr auto;gap:12px;align-items:center;border-top:1px solid var(--line);padding:5px 0;font-size:12px}
+.leader a{overflow-wrap:anywhere}
+.track i{background:linear-gradient(90deg,#cb9010,#ffca2c)}
+.notice button{margin-inline-start:8px}
+@media(max-width:700px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.charts{grid-template-columns:1fr}.crane-row{grid-template-columns:10px minmax(0,1fr) auto minmax(55px,auto);gap:5px}.crane-name small{display:block;margin:0}.expense-period{font-size:10px}.panel{padding:10px}}

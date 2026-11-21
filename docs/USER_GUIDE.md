@@ -121,12 +121,12 @@ Open **Heavy Equipment Rental Settings** and review:
 
 | Setting | Purpose |
 | --- | --- |
-| Default Selling UOM | Starting billing unit for new rental work: Hour, Day or Month |
+| Default Selling UOM | Starting billing unit for new rental work: Hour or Day |
 | Default Supplier Billing UOM | Starting supplier hire unit, saved separately on each Timesheet |
 | Rental Service Item | Shared invoice service used by new Cranes |
 | Day Shift | Default clock window for generated work rows |
 
-The shared service must be an enabled non-stock, non-fixed-asset Item, sellable and purchasable, with Hour UOM. Assignment terms determine the actual Hour/Day/Month selling calculation.
+The shared service must be an enabled non-stock, non-fixed-asset Item, sellable and purchasable, with Hour UOM. Assignment terms determine the actual Hour/Day selling calculation.
 
 Settings and reference-rate changes do not reprice saved agreements or historical invoices.
 
@@ -137,7 +137,7 @@ Settings and reference-rate changes do not reprice saved agreements or historica
 1. Open **Crane Operations → Cranes → Add Crane**.
 2. Enter Crane Name, Company, model, capacity and license plate as applicable.
 3. Choose Ownership Type and Operational Condition.
-4. Set reference Hour, Day and Month prices.
+4. Set reference Hour and Day prices.
 5. Upload a photo if needed, then save.
 
 The Operations hub appears after saving. Save later changes before using its action buttons.
@@ -227,7 +227,7 @@ You can also begin with **Record Work**. With customer, location, period and ter
 
 Example: a shift is 08:00–16:00 but actual operation is 6 hours. Enter Worked Hours = 6. Editing the clock window does not overwrite that entered value. Zero worked hours represents downtime. Overlapping drivers do not cause crane time to be billed twice.
 
-Hourly billing uses the agreed hourly rate and distinct crane operating hours. Daily billing counts worked dates once. Monthly billing prorates worked dates by the calendar month length. Driver-hours totals can differ from distinct crane-hours totals.
+Hourly billing uses the agreed hourly rate and distinct crane operating hours. Daily billing counts worked dates once. Driver Payroll uses each driver’s regular plus overtime hours multiplied by their Price / Hour. Entering a fixed Payroll Amount keeps that amount when hours change. Driver-hours totals can differ from distinct crane-hours totals.
 
 ### Invoice and collect
 
@@ -262,7 +262,7 @@ Maintenance uses **Draft → Submit → Cancel → Amend**. Start at Crane → O
 5. Review **Paid Amount to Supplier** (full by default; smaller for partial payment, zero for unpaid) and Payment Method. HER Settings supplies company repair-account/payment defaults.
 6. Save and **Submit**. Maintenance posts the purchase, consumption, payment and Asset Repair documents appropriate to your choices. Connections shows their links.
 
-For operating costs, choose **Crane Timesheet** to charge only its CPS, or **Crane Assignment** to share the cost across its submitted timesheets by working hours. Selecting a Timesheet fills its Assignment. Leave both empty for a general crane expense: the form shows **Unallocated**, and CPS excludes it. Dates do not fill or change these links. Expense Entry follows the same rules.
+For operating costs, choose **Crane Timesheet** to charge only its CPS, or **Crane Assignment** to share the cost across its submitted timesheets by working hours. Selecting a Timesheet fills its Assignment. Leave both empty for a general crane expense: the form shows **Unallocated**, and CPS excludes it. Dates do not fill or change these links. Grouped Expense follows the same rules.
 
 ### Correct a submitted repair
 
@@ -274,7 +274,7 @@ The old Maintenance and its cancelled documents remain in history. The amendment
 
 ### Other repair workflows
 
-**Manual Documents** supports owner billing, complex native transactions and legacy records. Prepare its native documents using Create, then submit Maintenance. For **Recover from Owner**, select the owner's Customer, create/submit the owner Sales Invoice (Update Stock for parts), then submit Maintenance. For **Cash Expense**, enter Cost, Expense Entry Type and Payment Method; Maintenance submission creates the Expense Entry. **No Cost** records an inspection without financial postings.
+**Manual Documents** supports owner billing, complex native transactions and legacy records. Prepare its native documents using Create, then submit Maintenance. For **Recover from Owner**, select the owner's Customer, create/submit the owner Sales Invoice (Update Stock for parts), then submit Maintenance. For **Cash Expense**, enter Cost, Expense Entry Type and Payment Method; Maintenance submission creates the Grouped Expense. **No Cost** records an inspection without financial postings.
 
 Routine servicing is an expense. Only qualifying improvements increase the Asset. Stock quantities and costs follow native valuation, and supplier payments are not a second repair expense. See [the design notes](NATIVE_CRANE_WORKFLOW.md#repairs-including-company-owned-shared-and-external-cranes).
 
@@ -506,3 +506,10 @@ Use the normal **Cancel** button. Review the linked documents in the warning bef
 To correct a cancelled expense: choose **Amend**, edit and submit. Then open each cancelled settlement, choose **Amend**, save to recalculate current costs, review and submit. Submit periods oldest first. Replacement expense and settlement documents receive new generated journals and retain Amended From history. The submitted settlement updates the Timesheet link. If the expense was erroneous, leave it cancelled without an amendment.
 
 Use native Amend for any cancelled payments that need corrected replacement records; review their references and amounts before submission. Cancelled documents cannot be submitted again.
+
+
+### Employee Salary Withdrawals
+
+In Crane Operations → Financial Reports, select Employee Salary Withdrawals, the company, employee and date range. The report compares saved draft and submitted Timesheet payroll with submitted salary expense payments by posting date, including payments without a Timesheet or crane. It uses the same salary accounts as the Monthly Salary Report. The difference applies to the selected period only.
+
+For Timesheets spanning the date range, payroll is allocated by the driver’s recorded work quantity. Hourly shifts use their work date. Historical daily and monthly payroll use distinct worked dates. A fixed amount without any worked quantity falls on the Timesheet end date.

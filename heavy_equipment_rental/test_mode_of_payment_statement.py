@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import frappe
 import frappe.permissions
+from heavy_equipment_rental.test_expenses import legacy_expense
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import add_days, today
 
@@ -12,6 +13,8 @@ from heavy_equipment_rental.heavy_equipment_rental.report.mode_of_payment_statem
 
 class TestModeOfPaymentStatement(FrappeTestCase):
     def setUp(self):
+        from heavy_equipment_rental.test_expenses import enable_historical_fixtures
+        enable_historical_fixtures(self)
         from heavy_equipment_rental.heavy_equipment_rental.doctype.treasury_transaction.test_treasury_transaction import TestTreasuryTransaction
 
         self.fixture = TestTreasuryTransaction()
@@ -116,7 +119,7 @@ class TestModeOfPaymentStatement(FrappeTestCase):
         for row in batch.items:
             row.posting_date = today()
         batch.insert().submit()
-        normal = batch.make_expense(batch.items[0])
+        normal = legacy_expense(batch, batch.items[0])
         normal.description = 'Ordinary expense remarks'
         normal.insert().submit()
         rows = self.report()[1]
@@ -136,7 +139,7 @@ class TestModeOfPaymentStatement(FrappeTestCase):
             row.posting_date = today()
         batch.insert()
         for row in batch.items:
-            expense = batch.make_expense(row).insert().submit()
+            expense = legacy_expense(batch, row).insert().submit()
             row.db_set('expense_entry', expense.name)
             row.db_set('docstatus', 1)
         batch.db_set('docstatus', 1)

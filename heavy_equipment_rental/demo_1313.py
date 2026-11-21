@@ -176,10 +176,10 @@ def create():
     for title,amount in (("وقود",8000),("أجر سائق",4000),("نقل",1000)):
         expense_type=frappe.get_doc(dict(doctype="Expense Entry Type",title="HER1313 "+title,
             company=COMPANY,account=operating_expense,enabled=1)).insert()
-        expense=frappe.get_doc(dict(doctype="Expense Entry",company=COMPANY,posting_date=END,
+        expense=frappe.get_doc(dict(doctype="Grouped Expense",company=COMPANY,
             crane=crane.name,crane_assignment=assignment.name,crane_timesheet=sheet.name,
-            service_from_date=START,service_to_date=END,cost_center=cc,mode_of_payment=mode,
-            description="HER1313 "+title,employee=driver.name if title=="أجر سائق" else None,expenses=[dict(expense_entry_type=expense_type.name,amount=amount)])).insert()
+            cost_center=cc,mode_of_payment=mode,
+            employee=driver.name if title=="أجر سائق" else None,items=[dict(posting_date=END,description="HER1313 "+title,expense_entry_type=expense_type.name,amount=amount)])).insert()
         expense.submit()
         expenses.append(expense.name)
     from erpnext.assets.doctype.asset.depreciation import make_depreciation_entry

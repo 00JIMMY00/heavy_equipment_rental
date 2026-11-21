@@ -12,6 +12,7 @@ class TestOperatingFees(FrappeTestCase):
         original=demo.create_rental_cycle
         company=frappe.db.get_value('Company',{},'name')
         fixture=TestPartnerSettlements()
+        self.addCleanup(fixture.doCleanups)
         with patch.object(demo,'create_rental_cycle',side_effect=lambda name,*a,**k:original(company,*a,**k)):
             fixture.setUp()
         return fixture

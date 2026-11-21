@@ -72,7 +72,7 @@
   {
    "type": "Card Break",
    "label": "Accounting",
-   "link_count": 6
+   "link_count": 5
   },
   {
    "type": "Link",
@@ -91,12 +91,6 @@
    "label": "Grouped Expense",
    "link_type": "DocType",
    "link_to": "Grouped Expense"
-  },
-  {
-   "type": "Link",
-   "label": "Expense Entry",
-   "link_type": "DocType",
-   "link_to": "Expense Entry"
   },
   {
    "type": "Link",
@@ -176,7 +170,15 @@
   {
    "type": "Card Break",
    "label": "Financial Reports",
-   "link_count": 6
+   "link_count": 7
+  },
+  {
+   "type": "Link",
+   "label": "Simple Receivable Summary",
+   "link_type": "Report",
+   "link_to": "Simple Receivable Summary",
+   "is_query_report": 1,
+   "report_ref_doctype": "Sales Invoice"
   },
   {
    "type": "Link",
@@ -192,7 +194,7 @@
    "link_type": "Report",
    "link_to": "Crane Expense Report",
    "is_query_report": 1,
-   "report_ref_doctype": "Expense Entry"
+   "report_ref_doctype": "Grouped Expense"
   },
   {
    "type": "Link",

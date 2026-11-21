@@ -128,7 +128,7 @@ frappe.ui.form.on("Crane", {
                 frm.add_child("ownership_partners", {is_company:1, ownership_percentage:100, profit_percentage:100});
                 frm.refresh_field("ownership_partners");
             }
-            for (const period of ["Hour", "Day", "Month"]) {
+            for (const period of ["Hour", "Day"]) {
                 if (!(frm.doc.period_prices || []).some(row => row.period === period))
                     frm.add_child("period_prices", { period, price: 0 });
             }
@@ -152,12 +152,12 @@ frappe.ui.form.on("Crane", {
         }, __("View"));
         for (const [label, doctype] of [["Rental Contracts", "Rental Contract"],
             ["Timesheets", "Crane Timesheet"], ["Maintenance", "Crane Maintenance"],
-            ["Expenses", "Expense Entry"]]) {
+            ["Expenses", "Grouped Expense"]]) {
             if (doctype === "Rental Contract") continue;
             frm.add_custom_button(__(label), () => frappe.set_route("List", doctype, { crane: frm.doc.name }), __("View"));
         }
         for (const [label, doctype] of [["Equipment Work Log", "Crane Timesheet"],
-            ["Equipment Expense", "Expense Entry"], ["Maintenance", "Crane Maintenance"]]) {
+            ["Equipment Expense", "Grouped Expense"], ["Maintenance", "Crane Maintenance"]]) {
             if (frappe.model.can_create(doctype))
                 frm.add_custom_button(__(label), () => frappe.new_doc(doctype, { crane: frm.doc.name, ...(doctype === "Crane Maintenance" ? { company: frm.doc.sharing_company || frappe.defaults.get_user_default("Company"), cost_treatment: "Operating Expense" } : {}) }), __("Create"));
         }

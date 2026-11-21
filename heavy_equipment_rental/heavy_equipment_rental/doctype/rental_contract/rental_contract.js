@@ -1,9 +1,17 @@
 frappe.ui.form.on("Rental Contract", {
+    setup(frm) {
+        $(frm.wrapper).on("grid-row-render", (_event, gridRow) => {
+            if (gridRow.doc?.parentfield !== "assigned_cranes") return;
+            const field = gridRow.docfields.find(df => df.fieldname === "rental_rate_unit");
+            field.options = gridRow.doc.rental_rate_unit === "Month" && !gridRow.doc.__islocal
+                ? "\nHour\nDay\nMonth" : "\nHour\nDay";
+        });
+    },
     refresh(frm) {
         if (frm.is_new()) return;
-        if (frappe.model.can_create("Expense Entry"))
+        if (frappe.model.can_create("Grouped Expense"))
             frm.add_custom_button(__("Expense"), () =>
-                frappe.new_doc("Expense Entry", { crane_assignment: frm.doc.name }), __("Create"));
+                frappe.new_doc("Grouped Expense", { crane_assignment: frm.doc.name, company: frm.doc.company }), __("Create"));
         frm.add_custom_button(__("New Timesheet"), () => {
             if (frm.is_dirty()) return frappe.msgprint(__("Save the Rental Contract before creating a Timesheet."));
             const cranes = [...new Set((frm.doc.assigned_cranes || []).filter(r => !r.cancelled && r.crane).map(r => r.crane))];

@@ -8,7 +8,7 @@ def get_data():
             'Crane Timesheet': 'crane_timesheet', 'Payment Entry': 'repair_payment_entry'},
         'transactions': [
             {'label': _('Stock and Accounting'), 'items': ['Stock Entry', 'Purchase Invoice',
-                'Sales Invoice', 'Asset Repair', 'Expense Entry', 'Payment Entry']},
+                'Sales Invoice', 'Asset Repair', 'Grouped Expense', 'Payment Entry']},
             {'label': _('Rental'), 'items': ['Crane', 'Rental Contract', 'Crane Timesheet']},
         ],
     }

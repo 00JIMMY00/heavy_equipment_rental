@@ -1,8 +1,39 @@
 """Populate the combined payroll grid on existing Timesheets without reposting."""
 
-import frappe
+from calendar import monthrange
+from collections import defaultdict
+from datetime import time, timedelta
 
-from heavy_equipment_rental.driver_payroll import driver_work_summary
+import frappe
+from frappe.utils import flt, get_time, getdate
+
+
+def driver_work_summary(sheet):
+    units = {row.rental_rate_unit for row in sheet.timesheet_entries if row.rental_rate_unit}
+    unit = sheet.rental_rate_unit or (units.pop() if len(units) == 1 else "Hour")
+    hours_by_driver = defaultdict(float)
+    days_by_driver = defaultdict(set)
+    for row in sheet.timesheet_entries:
+        if not row.employee:
+            continue
+        hours = flt(row.worked_hours) + flt(row.overtime_hours)
+        hours_by_driver[row.employee] += hours
+        if unit in ("Day", "Month") and hours > 0 and row.work_date:
+            day = getdate(row.work_date)
+            days_by_driver[row.employee].add(day)
+            if row.ends_next_day and row.end_time and get_time(row.end_time) > time.min:
+                days_by_driver[row.employee].add(day + timedelta(days=1))
+
+    summary = {}
+    for employee, hours in hours_by_driver.items():
+        days = days_by_driver[employee]
+        quantity = hours
+        if unit == "Day":
+            quantity = len(days)
+        elif unit == "Month":
+            quantity = sum(1 / monthrange(day.year, day.month)[1] for day in sorted(days))
+        summary[employee] = {"unit": unit, "worked_hours": flt(hours, 6), "quantity": flt(quantity, 9)}
+    return summary
 
 
 def execute():

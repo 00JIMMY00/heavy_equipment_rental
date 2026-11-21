@@ -45,35 +45,28 @@ def seed_defaults():
 
 
 def update_workspace():
-    key = 'her_grouped_expense_workspace_v3'
+    key = 'her_grouped_expense_workspace_v4'
     if frappe.db.get_default(key) or not frappe.db.exists('Workspace', 'Crane Operations'):
         return
     workspace = frappe.get_doc('Workspace', 'Crane Operations')
     for table in ('links', 'shortcuts'):
-        for row in workspace.get(table):
-            if row.link_to in ('Consolidated Expense', 'Grouped Expense'):
-                row.link_to = 'Grouped Expense'
-                row.label = 'Grouped Expense'
-    links = list(workspace.links)
-    grouped = next((row for row in links if row.link_to == 'Grouped Expense'), None)
-    if grouped:
-        normal = next((row for row in links if row.link_to == 'Expense Entry'), None)
-        if normal:
-            links.remove(normal)
-        else:
-            normal = workspace.append('links', dict(type='Link', label='Expense Entry',
-                link_type='DocType', link_to='Expense Entry'))
-        links.insert(links.index(grouped) + 1, normal)
-        workspace.set('links', links)
-        for index, row in enumerate(workspace.links, 1):
-            row.idx = index
-        card = None
-        for row in workspace.links:
-            if row.type == 'Card Break':
-                card = row
-                card.link_count = 0
-            elif card:
-                card.link_count += 1
+        has_grouped = any(row.link_to == 'Grouped Expense' for row in workspace.get(table))
+        for row in list(workspace.get(table)):
+            if row.get('report_ref_doctype') == 'Expense Entry':
+                row.report_ref_doctype = 'Grouped Expense'
+            if row.link_to in ('Expense Entry', 'Consolidated Expense'):
+                if has_grouped and table == 'links':
+                    workspace.remove(row)
+                else:
+                    row.link_to = row.label = 'Grouped Expense'
+                    has_grouped = True
+    card = None
+    for row in workspace.links:
+        if row.type == 'Card Break':
+            card = row
+            card.link_count = 0
+        elif card:
+            card.link_count += 1
     was_in_patch = frappe.flags.in_patch
     frappe.flags.in_patch = True
     try:

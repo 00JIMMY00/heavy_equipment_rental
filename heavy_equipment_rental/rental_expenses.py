@@ -115,7 +115,7 @@ def affected_settlements(expense):
     for row in frappe.get_all("Crane Profit Settlement", filters={"crane": expense.crane,
             "company": expense.company, "docstatus": 1},
             fields=["name", "from_date", "to_date", "timesheet", "settlement_basis", "source_snapshot"]):
-        captured = any(s["doctype"] == "Expense Entry" and s["name"] == expense.name
+        captured = any(s["doctype"] == expense.doctype and s["name"] == expense.name
                        for s in json.loads(row.source_snapshot or "[]"))
         overlaps = settlement_matches(expense, row, start, end)
         if captured or overlaps:

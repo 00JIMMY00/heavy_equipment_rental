@@ -56,7 +56,7 @@ class TestTreasuryWorkbook(FrappeTestCase):
     def test_post_reconcile_repeat_export_and_cancel(self):
         result = self.import_file()
         self.assertEqual(result["rows"], 6)
-        self.assertEqual(result["counts"], {"Treasury Transaction": 5, "Expense Entry": 1})
+        self.assertEqual(result["counts"], {"Treasury Transaction": 5, "Grouped Expense": 1})
         self.assertEqual(result["currency"], "LYD")
         self.assertEqual(get_defaults(self.company)["account"], result["filters"]["account"])
         self.assertEqual(get_defaults(self.company)["batch"], result["batch"])
@@ -74,7 +74,7 @@ class TestTreasuryWorkbook(FrappeTestCase):
         self.assertTrue(exported.active.sheet_view.rightToLeft)
         self.assertEqual(exported.active["D12"].value, 340)
         self.assertEqual(tuple(exported.active.cell(5, i).value for i in range(1, 8)), HEADERS)
-        expense = frappe.get_doc("Expense Entry", {"company": self.company, "her_workbook_batch": result["batch"]})
+        expense = frappe.get_doc("Grouped Expense", {"company": self.company, "her_workbook_batch": result["batch"]})
         expense.cancel()
         _, rows, _, _, summary = execute(result["filters"])
         self.assertEqual(len(rows), 5)
@@ -96,8 +96,8 @@ class TestTreasuryWorkbook(FrappeTestCase):
                 execute(filters)
 
     def test_failed_posting_rolls_back_whole_import(self):
-        from heavy_equipment_rental.expenses import RentalExpenseEntry
-        with patch.object(RentalExpenseEntry, "on_submit", side_effect=frappe.ValidationError("Posting denied")):
+        from heavy_equipment_rental.heavy_equipment_rental.doctype.grouped_expense.grouped_expense import GroupedExpense
+        with patch.object(GroupedExpense, "on_submit", side_effect=frappe.ValidationError("Posting denied")):
             with self.assertRaises(frappe.ValidationError):
                 self.import_file()
         self.assertFalse(frappe.db.exists("Company", self.company))

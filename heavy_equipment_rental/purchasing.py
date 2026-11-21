@@ -17,7 +17,7 @@ def purchase_work_quantity(sheet):
     if sheet.purchase_uom == "Hour":
         return hours, 1
     if sheet.purchase_uom not in ("Day", "Month"):
-        frappe.throw(_("Select an Hour, Day or Month Supplier Billing UOM."))
+        frappe.throw(_("Select an Hour or Day Supplier Billing UOM."))
     days = {day for row in sheet.timesheet_entries if flt(row.worked_hours) + flt(row.overtime_hours) > 0
             for day in work_days(*interval(row))}
     quantity = len(days) if sheet.purchase_uom == "Day" else float(sum(

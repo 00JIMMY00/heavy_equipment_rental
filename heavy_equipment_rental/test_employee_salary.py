@@ -11,6 +11,8 @@ from heavy_equipment_rental.heavy_equipment_rental.report.monthly_salary_report.
 
 class TestEmployeeSalary(FrappeTestCase):
     def setUp(self):
+        from heavy_equipment_rental.test_expenses import enable_historical_fixtures
+        enable_historical_fixtures(self)
         self.company = frappe.db.get_value("Company", {}, "name")
         self.mode = frappe.db.get_value("Mode of Payment Account", {"company": self.company}, "parent")
         self.expense_type = frappe.db.get_value("Expense Entry Type", {
@@ -28,7 +30,7 @@ class TestEmployeeSalary(FrappeTestCase):
         )).insert()
         self.employee = frappe.get_doc(dict(
             doctype="Employee", first_name=f"Payroll {key}", company=self.company, gender="Male",
-            date_of_joining=get_first_day(add_months(self.day, -1)), her_basic_salary=100, her_kpi_incentive=50,
+            date_of_joining=get_first_day(add_months(self.day, -1)),
         )).insert().name
 
     def expense(self, *amounts, day=None, with_employee=True):
@@ -59,34 +61,28 @@ class TestEmployeeSalary(FrappeTestCase):
         first_payment = self.expense(90, 30)
         first_payment.append("expenses", dict(expense_entry_type=self.expense_type.name, amount=100))
         first_payment.insert().submit()
-        excess = self.expense(20, 11).insert()
-        with self.assertRaisesRegex(frappe.ValidationError, r"only entitled to .*30"):
-            excess.submit()
-        self.assertEqual(excess.reload().docstatus, 0)
-        self.assertFalse(excess.journal_entry)
-
-        row = self.report_row()
-        self.assertEqual((row["basic_salary"], row["kpi_incentive"]), (100, 50))
-        self.assertEqual((row["basic_paid"], row["kpi_paid"], row["total_paid"]), (100, 20, 120))
-        self.assertEqual((row["basic_due"], row["kpi_due"], row["total_due"]), (0, 30, 30))
-        self.expense(30).insert().submit()
-        self.assertEqual(self.report_row()["total_due"], 0)
+        self.assertEqual(self.report_row()["total_paid"], 120)
+        self.batch(80).insert().submit()
+        self.assertEqual(self.report_row()["total_paid"], 200)
         first_payment.cancel()
-        self.assertEqual(self.report_row()["total_due"], 120)
-        excess.submit()
+        self.assertEqual(self.report_row()["total_paid"], 80)
 
-    def test_grouped_and_normal_payments_share_the_limit(self):
-        self.expense(100).insert().submit()
-        excess = self.batch(25, 26).insert()
-        with self.assertRaisesRegex(frappe.ValidationError, r"only entitled to .*50"):
-            excess.submit()
-        self.assertTrue(all(not row.journal_entry for row in excess.reload().items))
-        batch = self.batch(25, 25).insert().submit()
-        self.assertEqual(self.report_row()["total_paid"], 150)
-        with self.assertRaisesRegex(frappe.ValidationError, r"only entitled to .*0"):
-            self.expense(1).insert().submit()
+    def test_withdrawals_include_standalone_salary_only_in_selected_period(self):
+        from heavy_equipment_rental.heavy_equipment_rental.report.employee_salary_withdrawals.employee_salary_withdrawals import execute as withdrawals
+
+        batch = self.batch(30)
+        batch.append("items", dict(posting_date=self.day, description="Other expense", amount=7,
+                                  expense_entry_type=self.expense_type.name))
+        batch.insert().submit()
+        self.expense(20).insert().submit()
+        self.batch(10).insert()
+        filters = dict(company=self.company, employee=self.employee, from_date=self.day, to_date=self.day)
+        row = withdrawals(filters)[1][0]
+        self.assertEqual((row["linked_paid"], row["standalone_paid"], row["paid"], row["balance"]), (0, 50, 50, -50))
         batch.cancel()
-        self.assertEqual(self.report_row()["total_paid"], 100)
+        self.assertEqual(withdrawals(filters)[1][0]["paid"], 20)
+        other_day = add_months(self.day, -1)
+        self.assertEqual(withdrawals(dict(filters, from_date=other_day, to_date=other_day))[1][0]["paid"], 0)
 
     def test_salary_requires_an_employee(self):
         with self.assertRaisesRegex(frappe.MandatoryError, r"Select an Employee"):

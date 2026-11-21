@@ -52,7 +52,7 @@
    "fieldtype": "Link",
    "label": "Driver (Employee)",
    "options": "Employee",
-   "reqd": 1,
+   "mandatory_depends_on": "eval:doc.worked_hours > 0 || doc.overtime_hours > 0",
    "in_list_view": 1,
    "columns": 2,
    "read_only": 0
@@ -98,7 +98,7 @@
    "label": "Price for Overtime / Hour",
    "in_list_view": 0,
    "non_negative": 1,
-   "description": "Leave zero to use the agreed hourly rate, or the Crane Hour price for Day and Month rentals."
+   "description": "Leave zero to use the agreed hourly rate, or the Crane Hour price for Day rentals."
   },
   {
    "default": "0",

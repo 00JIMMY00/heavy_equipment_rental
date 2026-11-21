@@ -20,7 +20,7 @@ class TestMaintenanceLifecycle(FrappeTestCase):
         amended.amended_from = job.name
         amended.insert()
         self.assertEqual(amended.status, 'Planned')
-        for field in ('repair_purchase_invoice', 'repair_material_issue', 'repair_payment_entry', 'expense_entry'):
+        for field in ('repair_purchase_invoice', 'repair_material_issue', 'repair_payment_entry', 'expense_entry', 'grouped_expense'):
             self.assertFalse(amended.get(field))
         return amended
 
@@ -109,8 +109,8 @@ class TestMaintenanceLifecycle(FrappeTestCase):
         expense_type.insert()
         job = self.job('Cash Expense', expense_type=expense_type.name, mode_of_payment=self.mode.name, cost=125)
         job.submit()
-        expense = frappe.get_doc('Expense Entry', job.expense_entry)
-        journal = expense.journal_entry
+        expense = frappe.get_doc('Grouped Expense', job.grouped_expense)
+        journal = expense.items[0].journal_entry
         self.assertIn(dict(doctype='Journal Entry',name=journal),build_plan(job.name))
         job.cancel()
         self.assertEqual(expense.reload().docstatus,2)
@@ -118,8 +118,8 @@ class TestMaintenanceLifecycle(FrappeTestCase):
         amended = self.amendment(job)
         amended.cost=150
         amended.submit()
-        self.assertNotEqual(amended.expense_entry,expense.name)
-        self.assertEqual(frappe.get_doc('Expense Entry',amended.expense_entry).expenses[0].amount,150)
+        self.assertNotEqual(amended.grouped_expense,expense.name)
+        self.assertEqual(frappe.get_doc('Grouped Expense',amended.grouped_expense).items[0].amount,150)
 
     def test_new_record_cannot_claim_existing_generated_links(self):
         data = dict(doctype='Crane Maintenance',crane=self.crane.name,company=self.company.name,

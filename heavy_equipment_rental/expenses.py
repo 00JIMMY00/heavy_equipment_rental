@@ -19,6 +19,9 @@ class RentalExpenseEntry(ExpenseEntry):
                 self.journal_entry = None
         super()._validate_links()
 
+    def before_validate(self):
+        frappe.throw(_("Use Grouped Expense to enter or amend an expense."))
+
     def validate(self):
         super().validate()
         from heavy_equipment_rental.rental_expenses import validate_expense

@@ -1,14 +1,13 @@
-"""Monthly salary limits for employee payments posted through expenses."""
+"""Employee salary payments posted through expenses."""
 
 from collections import defaultdict
 from decimal import Decimal
 
 import frappe
 from frappe import _
-from frappe.utils import fmt_money, get_first_day, get_last_day, getdate
+from frappe.utils import get_first_day, get_last_day
 
 
-SALARY_FIELDS = ("her_basic_salary", "her_kpi_incentive")
 SALARY_ACCOUNT_NAMES = ("Salary", "Salaries", "Salaries and Wages", "الرواتب", "رواتب", "الأجور والرواتب")
 
 
@@ -26,18 +25,27 @@ def money(value):
 
 
 def monthly_paid(company, accounts, employees, month, *, for_update=False):
+    totals = defaultdict(Decimal)
+    for employee, sheet, amount in salary_payment_rows(
+        company, accounts, employees, get_first_day(month), get_last_day(month), for_update=for_update
+    ):
+        totals[employee] += money(amount)
+    return dict(totals)
+
+
+def salary_payment_rows(company, accounts, employees, first, last, *, for_update=False):
     if not accounts or not employees:
-        return {}
+        return []
 
     params = {
         "company": company, "accounts": tuple(accounts), "employees": tuple(employees),
-        "first": get_first_day(month), "last": get_last_day(month),
+        "first": first, "last": last,
     }
     # A locking read sees the latest payments even if this transaction already read a snapshot.
     lock = " FOR UPDATE" if for_update else ""
     rows = frappe.db.sql(
         """
-        SELECT expense.employee, line.amount
+        SELECT expense.employee, expense.crane_timesheet, line.amount
         FROM `tabExpense Entry` AS expense
         INNER JOIN `tabExpense Entry Detail` AS line
             ON line.parent = expense.name AND line.parenttype = 'Expense Entry'
@@ -50,7 +58,7 @@ def monthly_paid(company, accounts, employees, month, *, for_update=False):
     )
     grouped_rows = frappe.db.sql(
         """
-        SELECT expense.employee, line.debit
+        SELECT expense.employee, expense.crane_timesheet, line.debit
         FROM `tabGrouped Expense` AS expense
         INNER JOIN `tabGrouped Expense Item` AS item
             ON item.parent = expense.name AND item.parenttype = 'Grouped Expense'
@@ -67,38 +75,14 @@ def monthly_paid(company, accounts, employees, month, *, for_update=False):
         params,
     )
     # Legacy grouped rows post through Expense Entry and are already counted there.
-    total = defaultdict(Decimal)
-    for employee, amount in rows + grouped_rows:
-        total[employee] += money(amount)
-    return dict(total)
+    return rows + grouped_rows
 
 
 def validate_salary_payment(company, employee, payments):
     accounts = set(salary_accounts(company))
-    requested = defaultdict(Decimal)
-    for posting_date, account, amount in payments:
-        if account in accounts:
-            requested[get_first_day(getdate(posting_date))] += money(amount)
-    if not requested:
+    if not any(account in accounts for _date, account, _amount in payments):
         return
-
     if not employee:
         frappe.throw(_("Select an Employee for a salary expense."), frappe.MandatoryError)
-
-    # Serialize salary submissions for the same employee, including grouped payments.
-    details = frappe.db.get_value("Employee", employee, ("company", *SALARY_FIELDS),
-                                  as_dict=True, for_update=True)
-    if not details or details.company != company:
+    if frappe.db.get_value("Employee", employee, "company") != company:
         frappe.throw(_("The Employee must belong to the salary expense Company."))
-    entitlement = sum(money(details[field]) for field in SALARY_FIELDS)
-    for month, amount in sorted(requested.items()):
-        paid = monthly_paid(company, accounts, [employee], month, for_update=True).get(employee, Decimal(0))
-        remaining = max(entitlement - paid, Decimal(0))
-        if amount > remaining:
-            currency = frappe.get_cached_value("Company", company, "default_currency")
-            frappe.throw(
-                _("The employee is only entitled to {0} for {1}.").format(
-                    fmt_money(remaining, currency=currency), month.strftime("%Y-%m"),
-                ),
-                title=_("Salary Entitlement Exceeded"),
-            )

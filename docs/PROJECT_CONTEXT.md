@@ -1,8 +1,33 @@
 # Project context
 
+## Timesheet salary overpayments
+
+A positive salary installment may exceed earned pay. The full payment posts to salary expense and the payment account. Remaining Salary shows earned pay less submitted payments, including negative balances. Timesheet submission pays only a positive remainder.
+
+## 2026-11-21 — Hourly driver payroll and rental pricing
+
+Crane reference prices and new selling and supplier terms use Hour or Day. Driver Payroll sums each employee’s regular and overtime hours and applies the hourly payroll rate, including on daily rentals.
+
+## 2026-11-21 — Crane downtime without a driver
+
+In Timesheet Entries, enter zero Worked Hours and leave overtime at zero to record downtime. The driver and clock times can be blank. Regular work and overtime require a driver.
+
+## 2026-11-21 — Simple Receivable Summary
+
+Crane Operations lists Simple Receivable Summary under Financial Reports. It shows open Sales Invoices in company currency as of the report date, with grouping, overdue filtering, totals, and a customer chart. Collection opens a native unsaved Payment Entry using the current balances.
+
+## 2026-11-21 — Unified expense entry
+
+Crane Maintenance and Crane Driver Payroll link to Grouped Expense. Crane and Rental Contract actions open the grouped form. Historical Expense Entry rows remain linked for ledger tracing and reversal. See [Grouped Expense](CONSOLIDATED_EXPENSES.md).
+
+## Timesheet salary installments
+
+Use Pay Salary below Driver Payroll on a draft Timesheet. Select a payroll row when several drivers are present. Submit the prefilled Grouped Expense to record the installment. The balance uses the current payroll amount and submitted installments for that driver and Timesheet. Updating hours recalculates rate-based pay. Cancelling an installment restores its balance. Timesheet submission pays only the positive remainder, using the payroll row’s payment mode.
+
+
 ## 2026-11-21 — Monthly employee salaries
 
-The Employee Salary tab stores Basic Salary and KPI Incentive. The Monthly Salary Report under Financial Reports shows both amounts, payments and balances for the selected calendar month. It uses current Employee amounts and company currency.
+Employee Salary Withdrawals compares Timesheet earnings with all posted salary expenses for the selected employee and date range. Monthly Salary Report summarizes posted withdrawals by employee. Standalone salary payments have no monthly salary cap.
 
 ## 2026-11-19 — Submitted work and invoice coverage
 

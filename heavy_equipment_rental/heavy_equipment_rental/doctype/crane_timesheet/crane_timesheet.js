@@ -73,30 +73,13 @@ async function load_driver_names(frm) {
     frm.refresh_field("timesheet_entries");
 }
 
-function payroll_work_by_driver(shifts, unit) {
-    const totals = new Map();
+function payroll_work_by_driver(shifts) {
+    const drivers = new Map();
     for (const row of shifts) {
         if (!row.employee) continue;
-        const work = totals.get(row.employee) || {worked_hours: 0, days: new Set()};
-        const hours = flt(row.worked_hours) + flt(row.overtime_hours);
-        work.worked_hours += hours;
-        if (unit !== "Hour" && hours > 0 && row.work_date) {
-            work.days.add(row.work_date);
-            if (row.ends_next_day && moment.duration(row.end_time).asSeconds() > 0) {
-                work.days.add(moment(row.work_date).add(1, "day").format("YYYY-MM-DD"));
-            }
-        }
-        totals.set(row.employee, work);
-    }
-
-    const drivers = new Map();
-    for (const [employee, work] of totals) {
-        let quantity = work.worked_hours;
-        if (unit === "Day") quantity = work.days.size;
-        if (unit === "Month") {
-            quantity = [...work.days].sort().reduce((total, day) => total + 1 / moment(day).daysInMonth(), 0);
-        }
-        drivers.set(employee, {unit, quantity: flt(quantity, 9), worked_hours: flt(work.worked_hours, 6)});
+        const hours = flt((drivers.get(row.employee)?.quantity || 0) +
+            flt(row.worked_hours) + flt(row.overtime_hours), 6);
+        drivers.set(row.employee, {unit: "Hour", quantity: hours, worked_hours: hours});
     }
     return drivers;
 }
@@ -105,8 +88,7 @@ function sync_payroll_drivers(frm) {
     const shifts = frm.doc.timesheet_entries || [];
     const payroll = frm.doc.driver_payroll || [];
     const grid = frm.fields_dict.driver_payroll.grid;
-    const shiftUnits = [...new Set(shifts.map(row => row.rental_rate_unit).filter(Boolean))];
-    const unit = frm.doc.rental_rate_unit || (shiftUnits.length === 1 ? shiftUnits[0] : "Hour");
+    const unit = frm.doc.docstatus ? payroll[0]?.unit : "Hour";
     const labels = {
         Hour: [__("Hours"), __("Price / Hour")],
         Day: [__("Days"), __("Price / Day")],
@@ -118,7 +100,7 @@ function sync_payroll_drivers(frm) {
         if (df && df.label !== label) grid.update_docfield_property(field, "label", label);
     }
     if (frm.doc.docstatus !== 0) return;
-    const drivers = payroll_work_by_driver(shifts, unit);
+    const drivers = payroll_work_by_driver(shifts);
     const amountField = frappe.meta.get_docfield("Crane Driver Payroll", "amount", frm.docname);
     const rateField = frappe.meta.get_docfield("Crane Driver Payroll", "rate", frm.docname);
     let rowsChanged = false;
@@ -128,7 +110,7 @@ function sync_payroll_drivers(frm) {
             drivers.delete(row.employee);
             const rate = flt(row.rate);
             const amount = flt(row.amount);
-            if (cint(row.fixed_amount) || (amount > 0 && !rate)) {
+            if (["Day", "Month"].includes(row.unit) || cint(row.fixed_amount) || (amount > 0 && !rate)) {
                 work.fixed_amount = 1;
                 const precision = frappe.meta.get_field_precision(rateField, row);
                 work.rate = work.quantity > 0 && amount ? flt(amount / work.quantity, precision) : null;
@@ -152,10 +134,68 @@ function sync_payroll_drivers(frm) {
         frm.add_child("driver_payroll", {employee, ...work});
         rowsChanged = true;
     }
+    render_salary_balance(frm);
     if (rowsChanged) {
         frm.dirty();
         frm.refresh_field("driver_payroll");
     }
+}
+
+function render_salary_balance(frm) {
+    const wrapper = frm.fields_dict.salary_balance.$wrapper.empty();
+    const payroll = new Map((frm.doc.driver_payroll || []).map(row => [row.employee, row]));
+    const paid = frm.salary_payment_state;
+    if (!paid || paid.name !== frm.doc.name) return;
+    const employees = new Set([...payroll.keys(), ...Object.keys(paid.totals)]);
+    if (!employees.size) return;
+    const table = $('<table class="table table-bordered">').appendTo(wrapper);
+    const header = $('<tr>').appendTo($('<thead>').appendTo(table));
+    for (const label of ["Driver", "Earned Salary", "Salary Paid", "Remaining Salary"]) {
+        $('<th>').text(__(label)).appendTo(header);
+    }
+    const body = $('<tbody>').appendTo(table);
+    for (const employee of employees) {
+        const earned = flt(payroll.get(employee)?.amount);
+        const amount = flt(paid.totals[employee]);
+        const shift = frm.doc.timesheet_entries?.find(row => row.employee === employee);
+        const tr = $('<tr>').appendTo(body);
+        $('<td>').text(shift?.driver_name || employee).appendTo(tr);
+        for (const value of [earned, amount, earned - amount]) {
+            $('<td>').text(format_currency(value, erpnext.get_currency(frm.doc.payroll_company))).appendTo(tr);
+        }
+    }
+}
+
+async function refresh_salary_balance(frm) {
+    const doc = frm.doc;
+    const totals = frm.is_new() ? {} : await frappe.xcall(
+        "heavy_equipment_rental.driver_payroll.get_salary_payments", {timesheet: doc.name});
+    if (frm.doc !== doc) return;
+    frm.salary_payment_state = {name: doc.name, totals};
+    render_salary_balance(frm);
+}
+
+async function pay_timesheet_salary(frm) {
+    const drivers = frm.doc.driver_payroll || [];
+    if (!drivers.length) return frappe.msgprint(__("Add a driver to the Timesheet first."));
+    let employee = drivers[0].employee;
+    if (drivers.length > 1) {
+        const selected = frm.fields_dict.driver_payroll.grid.get_selected_children();
+        if (selected.length !== 1) return frappe.msgprint(__("Select one Driver Payroll row to pay."));
+        employee = selected[0].employee;
+    }
+    if (frm.is_dirty() || frm.is_new()) await frm.save();
+    if (frm.is_dirty() || frm.is_new()) return;
+    const payment = await frappe.xcall("heavy_equipment_rental.driver_payroll.make_salary_payment",
+        {timesheet: frm.doc.name, employee});
+    await frappe.model.with_doctype("Grouped Expense");
+    const doc = frappe.model.get_new_doc("Grouped Expense");
+    for (const key of ["company", "employee", "crane", "crane_assignment", "crane_timesheet", "timesheet_salary_payment"]) {
+        doc[key] = payment[key];
+    }
+    const item = frappe.model.add_child(doc, "Grouped Expense Item", "items");
+    Object.assign(item, {posting_date: payment.items[0].posting_date, expense_entry_type: payment.items[0].expense_entry_type});
+    frappe.set_route("Form", doc.doctype, doc.name);
 }
 
 async function load_timesheet_defaults(frm) {
@@ -167,7 +207,7 @@ async function load_timesheet_defaults(frm) {
     frm._rental_defaults_request = request;
     const { message: defaults } = await frappe.call({
         method: "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.crane_timesheet.get_timesheet_defaults",
-        args: { crane, selling_uom: unit === frm._default_selling_unit ? null : unit },
+        args: { crane, selling_uom: frm.doc.assignment || unit === frm._default_selling_unit ? null : unit },
     });
     if (request !== frm._rental_defaults_request || frm.doc.crane !== crane ||
         frm.doc.rental_rate_unit !== unit || !frm.is_new() || frm.doc.docstatus !== 0) return;
@@ -310,7 +350,14 @@ frappe.ui.form.on("Crane Timesheet", {
             sync_payroll_drivers(frm);
         }
     },
+    pay_salary: pay_timesheet_salary,
     refresh(frm) {
+        for (const field of ["rental_rate_unit", "purchase_uom"]) {
+            const options = frm.doc[field] === "Month" ? "\nHour\nDay\nMonth" : "\nHour\nDay";
+            frm.set_df_property(field, "options", options);
+        }
+        frm.toggle_display("pay_salary", frm.doc.docstatus === 0 && frappe.model.can_create("Grouped Expense"));
+        refresh_salary_balance(frm);
         sync_payroll_drivers(frm);
         fill_entry_rental_terms(frm);
         purchase_price_label(frm);

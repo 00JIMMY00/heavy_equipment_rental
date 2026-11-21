@@ -19,6 +19,12 @@ def build_plan(name):
             linked.check_permission('read')
             if linked.get('crane_maintenance') != name:
                 frappe.throw(_('Linked document {0} does not belong to this Maintenance.').format(linked.name))
+    if job.grouped_expense:
+        batch = frappe.get_doc('Grouped Expense', job.grouped_expense)
+        batch.check_permission('read')
+        if batch.crane_maintenance != name:
+            frappe.throw(_('Linked expense does not belong to this Maintenance.'))
+        rows.append(dict(doctype=batch.doctype, name=batch.name, docstatus=batch.docstatus))
     if any(row['docstatus'] == 0 for row in rows):
         frappe.throw(_('Delete draft repair documents before cancelling Maintenance. Drafts have no accounting to reverse.'))
     pending = [(row['doctype'], row['name']) for row in rows if row['docstatus'] == 1]
@@ -37,6 +43,9 @@ def build_plan(name):
         result.append(dict(doctype=dt, name=dn))
         if dt == 'Asset Repair':
             asset_order[dn] = -get_datetime(doc.creation).timestamp()
+        if dt == 'Grouped Expense':
+            pending.extend(('Journal Entry', row.journal_entry) for row in doc.items if row.journal_entry)
+            pending.extend(('Expense Entry', row.expense_entry) for row in doc.items if row.expense_entry)
         if dt == 'Expense Entry' and doc.journal_entry:
             pending.append(('Journal Entry', doc.journal_entry))
         if dt in ('Purchase Invoice', 'Sales Invoice', 'Journal Entry'):
@@ -58,7 +67,7 @@ def build_plan(name):
             if any(r.allocated_amount and (r.reference_doctype, r.reference_name) not in targets for r in payment.references):
                 frappe.throw(_('Payment {0} also pays documents outside this repair. Cancel or unreconcile that payment separately first.').format(payment.name))
     priority = {'Payment Entry': 0, 'Asset Repair': 1, 'Stock Entry': 2,
-        'Sales Invoice': 3, 'Purchase Invoice': 3, 'Expense Entry': 3, 'Journal Entry': 4}
+        'Grouped Expense': 2, 'Sales Invoice': 3, 'Purchase Invoice': 3, 'Expense Entry': 3, 'Journal Entry': 4}
     result.sort(key=lambda row: (priority[row['doctype']], asset_order.get(row['name'], 0) if row['doctype'] == 'Asset Repair' else 0, row['name']))
     result.append(dict(doctype='Crane Maintenance', name=name))
     return result

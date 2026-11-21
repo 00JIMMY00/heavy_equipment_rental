@@ -19,13 +19,9 @@ Migration creates account/identity defaults and links historical Timesheets to t
 
 ## Choosing rental work for costs (2026-11-13)
 
-Maintenance and Expense Entry costs require explicit rental links for CPS: a Timesheet charges only its settlement and fills Assignment; Assignment alone shares the cost across its submitted crane Timesheets by working hours. Neither link means a general, unallocated crane expense excluded from CPS. Dates do not choose or automatically fill the charged work. Mismatched links are rejected. Submitted settlement snapshots and ledgers remain unchanged; corrections use Cancel and Amend. Native link searches filter by Crane, Company and selected Assignment, independently of repair/posting dates. The form displays unallocated status when both links are empty.
+On Maintenance or Grouped Expense, select a Timesheet to charge its settlement. Select a Crane and Rental Contract to share the expense across that crane’s submitted Timesheets by worked hours. A crane-only expense stays outside Timesheet settlements. Record the actual posting date on each grouped row.
 
-Maintenance uses Actual Start/End only; its removed planned dates are archived privately on the record. Completing maintenance carries rental links and the matching actual work period into its generated expense. Those links and financial dates cannot change after expense creation. For late-posted expenses, select the earlier Assignment or Timesheet directly: its work dates populate read-only service dates without changing Posting Date. Normal source permissions, settlement closures, payment protections and historical records remain preserved.
-
-## Rental expenses by Assignment and service period (2026-11-12)
-
-Use Expense Entry's Crane and optional Crane Assignment to identify the work bearing the cost. Service From Date and Service To Date describe that work, independently of Posting Date. A single-crane Assignment can fill Crane automatically; the booking supplies the default service dates. An explicit period must fit the selected Crane's booking. A Crane without an Assignment may have an explicit service period. Without either an Assignment or service dates, the posting date remains the work date.
+Submitting a cash repair copies its rental links to a Grouped Expense and posts the repair cost on its actual end date. Historical Expense Entries keep their accounting documents and settlement references.
 
 Automatic Timesheet settlements allocate linked costs using the selected Timesheet, or all submitted Timesheets of that Crane in the selected Assignment, regardless of service-date overlap. Assignment costs use distinct crane billable hours and deterministic currency rounding. Snapshots retain the full expense, work links, candidates and weights. Expense journals are excluded from separate journal-source totals. New or cancelled work that changes captured allocation requires reopening affected settlements first.
 

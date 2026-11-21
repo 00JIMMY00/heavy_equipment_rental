@@ -109,7 +109,8 @@ def execute(filters=None):
             party_name=source.get("her_workbook_name") or document.get("party_name") or amounts["against"] or "",
             category=source.get("her_workbook_category") or source_center or amounts["cost_center"] or "",
             cost_center=source_center or amounts["cost_center"] or "",
-            description=source.get("description") or document.get("user_remark") or document.get("remarks") or "",
+            description=(next((row.description for row in source.items if row.journal_entry == number), "")
+                         if source.doctype == "Grouped Expense" else source.get("description")) or document.get("user_remark") or document.get("remarks") or "",
             voucher_type=source.doctype, voucher=source.name, journal=number if kind == "Journal Entry" else "",
             batch=source.get("her_workbook_batch") or "", sheet_row=cint(source.get("her_workbook_row")), currency=currency,
         ))
@@ -155,7 +156,7 @@ def columns():
 def get_defaults(company=None):
     """Open the most recent accessible workbook without changing user defaults."""
     candidates = []
-    for doctype in ("Expense Entry", "Treasury Transaction"):
+    for doctype in ("Grouped Expense", "Expense Entry", "Treasury Transaction"):
         if not frappe.has_permission(doctype, "read"):
             frappe.throw(_("Read permission for {0} is required for this report.").format(doctype), frappe.PermissionError)
         conditions = {"docstatus": 1, "her_workbook_batch": ["!=", ""]}
@@ -175,6 +176,11 @@ def get_defaults(company=None):
     account = frappe.get_doc("Account", document.default_cash_account)
     account.check_permission("read")
     dates = []
+    batches = frappe.get_list("Grouped Expense", filters={"company": latest.company, "docstatus": 1,
+        "her_workbook_batch": latest.her_workbook_batch}, pluck="name", limit_page_length=0)
+    if batches:
+        dates.extend(frappe.get_all("Grouped Expense Item", filters={"parent": ["in", batches]},
+            pluck="posting_date"))
     for doctype in ("Expense Entry", "Treasury Transaction"):
         dates.extend(frappe.get_list(doctype, filters={"company": latest.company, "docstatus": 1,
             "her_workbook_batch": latest.her_workbook_batch}, pluck="posting_date", limit_page_length=0))

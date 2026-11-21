@@ -73,7 +73,7 @@ frappe.ui.form.on("Crane Maintenance", {
 frappe.ui.form.on('Crane Maintenance', {
     onload(frm) {
         if (frm.is_new() && frm.doc.amended_from) {
-            for (const field of ['repair_purchase_invoice', 'repair_material_issue', 'repair_payment_entry', 'expense_entry', 'legacy_lifecycle']) frm.doc[field] = null;
+            for (const field of ['repair_purchase_invoice', 'repair_material_issue', 'repair_payment_entry', 'grouped_expense', 'expense_entry', 'legacy_lifecycle']) frm.doc[field] = null;
             frm.doc.status = 'Planned';
             frm.refresh_fields();
         }
@@ -169,7 +169,7 @@ function update_cost_treatment_description(frm) {
         'Operating Expense': __('Use for routine repairs, servicing and replacement parts. The cost is recorded as a repair expense without increasing the crane Asset value.'),
         'Capitalize Improvement': __('Use for a major improvement or replacement that adds future benefit to the crane. The cost is added to the crane Asset automatically when you submit Maintenance. Explain the improvement below.'),
         'Recover from Owner': __('Use when the crane owner must reimburse the repair. Select the owner as a Customer and create a Sales Invoice to bill them.'),
-        'Cash Expense': __('Use for a repair paid directly from cash or bank. Enter the Cost and Payment Method; submitting Maintenance creates and submits an Expense Entry.'),
+        'Cash Expense': __('Use for a repair paid directly from cash or bank. Enter the Cost and Payment Method; submitting Maintenance creates and submits a Grouped Expense.'),
         'No Cost': __('Use for an inspection or maintenance job with no cost to record. No accounting or stock document is required.'),
     };
     let description = descriptions[frm.doc.cost_treatment]

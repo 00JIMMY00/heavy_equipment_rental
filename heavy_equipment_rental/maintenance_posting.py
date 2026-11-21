@@ -16,7 +16,7 @@ def financial_value(doc, field):
 
 def validate_inputs(doc):
     before = doc.get_doc_before_save()
-    if doc.is_new() and any(doc.get(field) for field in LINK_FIELDS + ('expense_entry',)):
+    if doc.is_new() and any(doc.get(field) for field in LINK_FIELDS + ('expense_entry', 'grouped_expense')):
         frappe.throw(_('Generated repair links cannot be supplied on a new Maintenance.'))
     normalize_method(doc)
     doc.repair_source = doc.repair_source or 'Manual Documents'

@@ -65,12 +65,12 @@ def create():
 	sheet.submit()
 	settlement = frappe.get_doc("Crane Profit Settlement", sheet.reload().profit_settlement)
 	assert settlement.docstatus == 0
-	template = frappe.get_doc("Expense Entry", "EXPE-00123")
-	expense = frappe.get_doc(dict(doctype="Expense Entry", company=company, posting_date=day,
+	template = frappe.get_doc("Grouped Expense", {"legacy_expense": "EXPE-00123"})
+	expense = frappe.get_doc(dict(doctype="Grouped Expense", company=company,
 		crane=crane.name, crane_assignment=assignment.name, crane_timesheet=sheet.name,
-		service_from_date=day, service_to_date=day, cost_center=crane.sharing_cost_center,
-		mode_of_payment=mode, description="تجربة التوزيع التلقائي: تكلفة تشغيل مسجلة قبل فاتورة البيع",
-		expenses=[dict(expense_entry_type=template.expenses[0].expense_entry_type, amount=1500)])).insert()
+		cost_center=crane.sharing_cost_center,
+		mode_of_payment=mode, items=[dict(posting_date=day, description="تجربة التوزيع التلقائي: تكلفة تشغيل مسجلة قبل فاتورة البيع",
+		expense_entry_type=template.items[0].expense_entry_type, amount=1500)])).insert()
 	expense.submit()
 	invoice = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=sheet.name)["name"])
 	invoice.update(dict(posting_date=day, due_date=day, set_posting_time=1, cost_center=crane.sharing_cost_center,
@@ -135,7 +135,7 @@ def verify(result):
 	assert len(balances) == 3 and all(r["entitlement"] == r["paid_amount"] == 1500 and r["outstanding_amount"] == 0 for r in balances)
 	assert frappe.db.get_value("Sales Invoice", result["sales_invoice"], "outstanding_amount") == 0
 	vouchers = [("Sales Invoice", result["sales_invoice"]), ("Journal Entry", result["entitlement_journal"]),
-		("Journal Entry", frappe.db.get_value("Expense Entry", result["expense"], "journal_entry"))]
+		("Journal Entry", frappe.db.get_value("Grouped Expense Item", {"parent": result["expense"]}, "journal_entry"))]
 	vouchers += [("Payment Entry", name) for name in [result["customer_receipt"], *result["partner_payments"]]]
 	for doctype, name in vouchers:
 		rows = frappe.get_all("GL Entry", filters={"voucher_type": doctype, "voucher_no": name, "is_cancelled": 0}, fields=["debit", "credit"])

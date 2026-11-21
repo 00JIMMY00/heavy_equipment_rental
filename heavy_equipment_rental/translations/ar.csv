@@ -997,6 +997,7 @@ Row {0} overtime,الصفوف {0} ساعات العمل الإضافية
 Revenue minus this operating fee and allocated expenses is distributed using Remaining Profit percentages.,يتم توزيع الإيرادات مطروحًا منها رسوم التشغيل هذه والمصروفات المخصصة باستخدام النسب المئوية للأرباح المتبقية.
 Row {0}: future work cannot be recorded.,الصف {0}: لا يمكن تسجيل العمل المستقبلي.
 Row {0}: Worked Hours must be a finite non-negative number.,الصف {0}: يجب أن تكون ساعات العمل عددًا محدودًا غير سالب.
+Row {0}: select a Driver when recording worked hours or overtime.,الصف {0}: اختر سائقًا عند تسجيل ساعات العمل أو العمل الإضافي.
 Row {0}: a shift must fit exactly one booked crane period.,الصف {0}: يجب أن تتناسب المناوبة تمامًا مع فترة رافعة واحدة محجوزة.
 Row {0}: overtime cannot exceed worked hours.,الصف {0}: لا يمكن أن تتجاوز ساعات العمل الإضافي ساعات العمل.
 Row {0}: work falls outside the agreed rental dates. Extend the Rental Contract deliberately.,الصف {0}: يقع العمل خارج تواريخ الإيجار المتفق عليها. مدد المهمة عن قصد.
@@ -1246,3 +1247,104 @@ The Employee must belong to the salary expense Company.,يجب أن يكون ا�
 Salary Entitlement Exceeded,المبلغ يتجاوز مستحقات الراتب
 The employee is only entitled to {0} for {1}.,الموظف غير مستحق له سوى {0} عن شهر {1}.
 "The report uses current employee salary amounts and submitted salary expenses in company currency. Payments are applied to basic salary first, then to the KPI incentive.",يعرض التقرير قيم الرواتب الحالية للموظفين ومصروفات الرواتب المعتمدة بعملة الشركة. يُخصم المدفوع من الراتب الأساسي أولًا ثم من حافز الأداء.
+
+Pay Salary,دفع راتب
+Earned Salary,الراتب المستحق
+Salary Paid,الراتب المدفوع
+Remaining Salary,الراتب المتبقي
+Salary Balance,رصيد الراتب
+Select one Driver Payroll row to pay.,اختر صف سائق واحد من جدول المرتبات لدفع راتبه.
+Add a driver to the Timesheet first.,أضف سائقًا إلى التايم شيت أولًا.
+Payment exceeds the remaining Timesheet salary.,قيمة الدفعة أكبر من الراتب المتبقي في التايم شيت.
+Simple Receivable Summary,ملخص مديونية العملاء
+Customer / Group,العميل / المجموعة
+Collect Selected Invoices,تحصيل الفواتير المحددة
+Collect from Customer,تحصيل من العميل
+Collect Payment,تحصيل
+Overdue Only,المتأخر فقط
+Open Invoices,الفواتير المفتوحة
+Invoice Total,إجمالي الفاتورة
+Overdue Amount,المبلغ المتأخر
+Days Overdue,أيام التأخير
+Not Due,غير متأخر
+Outstanding by Customer,المستحق حسب العميل
+Preparing Payment Entry,جارٍ تجهيز سند الدفع
+Select one or more invoices for the same customer.,حدد فاتورة أو أكثر للعميل نفسه.
+Select between 1 and 200 invoices for one customer.,حدد من فاتورة واحدة إلى ٢٠٠ فاتورة لعميل واحد.
+Invalid invoice selection,اختيار الفواتير غير صالح
+Invalid Group By option,خيار التجميع غير صالح
+Not permitted for this company,ليست لديك صلاحية الوصول إلى هذه الشركة
+An invoice is no longer payable. Refresh the report and select open invoices.,إحدى الفواتير لم تعد قابلة للتحصيل. حدّث التقرير وحدد الفواتير المفتوحة.
+Future-dated invoices cannot be paid from this report.,لا يمكن تحصيل الفواتير ذات التاريخ المستقبلي من هذا التقرير.
+"Select invoices for the same customer, company, receivable account and currency.",حدد فواتير للعميل والشركة وحساب المدينين والعملة نفسها.
+These invoices require separate payments because their payment accounts differ.,تتطلب هذه الفواتير سندات دفع منفصلة لاختلاف حسابات الدفع.
+"Open sales invoices as of the selected date, in company currency. Paid amounts follow ERPNext allocations. Credit notes are shown separately. Collection opens an unsaved Payment Entry using the current balance.",فواتير المبيعات المفتوحة حتى التاريخ المحدد بعملة الشركة. المبالغ المدفوعة حسب تخصيصات ERPNext. تظهر الإشعارات الدائنة بشكل منفصل. يفتح التحصيل سند دفع غير محفوظ بالرصيد الحالي.
+Crane Insights,مؤشرات الرافعات
+Crane Fleet Overview,نظرة عامة على أسطول الرافعات
+Fleet intelligence,مؤشرات الأسطول
+Performance overview,مؤشرات الأداء
+Billable hours trend,تطور الساعات القابلة للفوترة
+Submitted hours by timesheet end date,الساعات المعتمدة حسب تاريخ نهاية سجل العمل
+Fleet condition,حالة الأسطول
+Current crane master records,حسب الحالة الحالية في سجلات الرافعات
+Leading cranes,الرافعات الأكثر عملاً
+Ranked by billable hours in the selected period,مرتبة حسب الساعات القابلة للفوترة خلال الفترة المحددة
+Reporting period,فترة التقرير
+Fleet size,حجم الأسطول
+Registered cranes,الرافعات المسجلة
+Current condition,الحالة الحالية
+Billable hours,الساعات القابلة للفوترة
+Selected period,الفترة المحددة
+Working cranes,الرافعات العاملة
+With billable hours,لديها ساعات قابلة للفوترة
+Timesheet access required,يلزم إذن لقراءة سجلات العمل
+No billable hours in this period.,لا توجد ساعات قابلة للفوترة خلال هذه الفترة.
+Peak daily billable hours,أعلى ساعات قابلة للفوترة في يوم
+Loading fleet metrics…,جارٍ تحميل مؤشرات الأسطول…
+Fleet snapshot,حالة الأسطول في
+Fleet metrics could not be loaded.,تعذّر تحميل مؤشرات الأسطول.
+{0} days,{0} أيام
+hrs,ساعة
+Unspecified,غير محدد
+Choose a supported reporting period.,اختر فترة تقرير متاحة.
+Use Grouped Expense to enter or amend an expense.,استخدم مصروف مجمع لتسجيل مصروف أو تعديله.
+Original Expense Entry,قيد المصروف الأصلي
+The original expense reference is managed by migration.,يُحدَّد مرجع المصروف الأصلي عند ترحيل البيانات.
+The generated expense link cannot be edited.,لا يمكن تعديل رابط المصروف المُنشأ تلقائيًا.
+Driver payroll expense links are managed automatically.,تُربط مصروفات رواتب السائقين تلقائيًا.
+Submit Maintenance to create its expense.,اعتمد الصيانة لإنشاء المصروف المرتبط بها.
+Cancel Crane Maintenance {0} to reverse its expense.,ألغِ صيانة المعدة {0} لعكس مصروفها.
+Use for a repair paid directly from cash or bank. Enter the Cost and Payment Method; submitting Maintenance creates and submits a Grouped Expense.,أدخل تكلفة الإصلاح المدفوعة نقدًا أو من البنك وطريقة الدفع. عند اعتماد الصيانة يُنشأ مصروف مجمع ويُعتمد.
+"Enter a price per unit to calculate payroll, or type the amount directly. Submit to post one Grouped Expense per driver with a positive amount.",أدخل سعر الوحدة لحساب الأجر أو أدخل المبلغ مباشرة. عند الاعتماد يُرحّل مصروف مجمع لكل سائق له مبلغ مستحق.
+Grouped Expense {0} has an invalid Journal Entry.,يرتبط المصروف المجمع {0} بقيد يومية غير صالح.
+Select a Crane from a Rental Contract in the same Company.,اختر معدة من عقد إيجار تابع لنفس الشركة.
+Select an enabled company payment account in the company currency.,اختر حساب دفع مفعّلًا للشركة بعملة الشركة.
+Row {0}: Select an enabled expense type with a company expense account.,الصف {0}: اختر نوع مصروف مفعّلًا مرتبطًا بحساب مصروفات في الشركة.
+A Grouped Expense is already linked to this maintenance.,يوجد مصروف مجمع مرتبط بهذه الصيانة بالفعل.
+Crane-linked expenses,مصروفات الرافعات
+Expense batches,مستندات المصروف المجمع
+Expense lines,بنود المصروفات
+Cranes with expenses,رافعات لها مصروفات
+Expenses by crane,المصروفات حسب الرافعة
+Crane-linked Grouped Expense rows by posting date,بنود المصروف المجمع المرتبطة بالرافعات حسب تاريخ الترحيل
+Grouped Expense access required,يلزم إذن قراءة المصروف المجمع
+No visible cranes.,لا توجد رافعات متاحة للعرض.
+{0} lines,{0} بنود
+Employee Salary Withdrawals,مسحوبات راتب الموظف
+Draft Timesheet Salary,مستحق من تايم شيت مسودة
+Submitted Timesheet Salary,مستحق من تايم شيت معتمدة
+Total Timesheet Salary,إجمالي مستحق التايم شيت
+Paid with Timesheet,مدفوع مرتبط بتايم شيت
+Paid without Timesheet,مدفوع بدون تايم شيت
+Total Salary Withdrawals,إجمالي مسحوبات الراتب
+Salary Difference for Period,المستحق ناقص المسحوبات خلال الفترة
+"Select a company, employee and date range.",اختر الشركة والموظف والفترة.
+Timesheet salary follows work dates. Withdrawals follow the posting date of submitted salary expenses. A negative difference means withdrawals exceeded earnings in this period.,المستحق حسب تواريخ العمل في التايم شيت والمسحوبات حسب تاريخ ترحيل مصروف الراتب المعتمد. الفرق السالب يعني أن مسحوبات الفترة تجاوزت مستحقاتها.
+
+"Crane prices must contain Hour and Day exactly once.",يجب أن تتضمن أسعار المعدات الساعة واليوم مرة واحدة لكل منها.
+"Select an Hour or Day Billing Unit.",اختر ساعة أو يومًا كوحدة فوترة.
+"Select an Hour or Day Rental Rate Unit.",اختر ساعة أو يومًا كوحدة لسعر التأجير.
+"Select an Hour or Day Supplier Billing UOM.",اختر ساعة أو يومًا كوحدة فوترة المورد.
+"{0}: enter a positive agreed Hour or Day rate.",{0}: أدخل سعرًا متفقًا عليه أكبر من صفر للساعة أو اليوم.
+"Enter a positive agreed rate and an Hour or Day Billing Unit.",أدخل سعرًا متفقًا عليه أكبر من صفر ووحدة فوترة بالساعة أو اليوم.
+"Leave zero to use the agreed hourly rate, or the Crane Hour price for Day rentals.",اتركه صفرًا لاستخدام سعر الساعة المتفق عليه أو سعر الساعة في المعدة للإيجار اليومي.

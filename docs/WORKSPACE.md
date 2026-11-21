@@ -34,3 +34,13 @@ Then reload the browser. Standard installation/migration also runs the initializ
 The regenerated panorama displays at 10:1 with a maximum height of one quarter of the viewport. The Sections/الأقسام heading has been removed.
 
 The Mode of Payment Statement is under Financial Reports. Its one-time upgrade patch adds only the report link and preserves the site's other links and layout.
+
+**Simple Receivable Summary** is also under Financial Reports. Installation and migration add its link once to the saved workspace.
+
+## Crane Insights
+
+Open **Crane Insights** at `/app/crane-insights` for the stakeholder dashboard. Fleet size and condition reflect the current visible Crane records. The 7-, 30- and 90-day controls apply to submitted Crane Timesheets ending in the selected period, through today. Each timesheet contributes its full billable hours on its end date. Working cranes have positive hours in the period. The ranking links the five highest-hour cranes to their records.
+
+The workspace uses the existing System Manager, Projects Manager, Projects User and Accounts Manager roles. Figures respect record permissions. Viewers without Timesheet read access see the fleet snapshot and an access message for work metrics. Installation and migration create the workspace and update its app-managed dashboard block. To install just the dashboard, run `bench --site YOUR_SITE execute heavy_equipment_rental.crane_insights.install_workspace` and clear the site's cache.
+
+The compact yellow and navy dashboard lists every visible crane, including those with zero expenses. Expand a crane to inspect dated charges and open their Grouped Expense documents. Expense cards count submitted crane-linked batches and lines by **row posting date** in the selected period. Totals are shown separately per currency. Expenses without a crane are excluded. Grouped Expense read access is required for amounts and details.

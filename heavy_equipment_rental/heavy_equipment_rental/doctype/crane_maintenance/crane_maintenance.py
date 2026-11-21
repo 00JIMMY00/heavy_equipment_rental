@@ -14,7 +14,7 @@ class CraneMaintenance(Document):
 			source.check_permission("read")
 			if source.docstatus == 2:
 				from heavy_equipment_rental.maintenance_posting import LINK_FIELDS
-				for field in LINK_FIELDS + ("expense_entry", "legacy_lifecycle"):
+				for field in LINK_FIELDS + ("expense_entry", "grouped_expense", "legacy_lifecycle"):
 					if self.get(field) and self.get(field) != source.get(field):
 						frappe.throw(_("An amendment cannot supply unrelated generated document links."))
 					self.set(field, None)
@@ -95,8 +95,8 @@ class CraneMaintenance(Document):
 		validate_inputs(self)
 		from heavy_equipment_rental.crane_repairs import validate_maintenance
 		validate_maintenance(self)
-		if before and before.expense_entry != self.expense_entry:
-			frappe.throw(_("Use Create Expense to link an Expense Entry."))
+		if before and (before.grouped_expense != self.grouped_expense or before.expense_entry != self.expense_entry):
+			frappe.throw(_("The generated expense link cannot be edited."))
 		if before and before.status in ("Completed", "Cancelled") and self.status != before.status:
 			frappe.throw(_("Completed or Cancelled maintenance cannot be reopened."))
 		allowed = {
@@ -109,7 +109,7 @@ class CraneMaintenance(Document):
 			frappe.throw(_("Invalid maintenance status transition."))
 		if before and before.crane != self.crane and before.status != "Planned":
 			frappe.throw(_("A started maintenance record cannot move to another crane."))
-		if before and before.expense_entry and any(
+		if before and before.grouped_expense and any(
 			self.get(field) != before.get(field)
 			for field in ("crane", "crane_assignment", "crane_timesheet", "cost", "expense_type", "mode_of_payment", "credit_account", "actual_start_date", "actual_end_date")
 		):
@@ -121,7 +121,7 @@ class CraneMaintenance(Document):
 			flt(self.cost) <= 0 or not self.expense_type or not (self.mode_of_payment or legacy_completed)
 		):
 			frappe.throw(_("Set a positive cost, Expense Entry Type and Mode of Payment before completing maintenance."))
-		if self.mode_of_payment and self.expense_type and not self.expense_entry:
+		if self.mode_of_payment and self.expense_type and not self.grouped_expense:
 			debit_name = frappe.db.get_value("Expense Entry Type", self.expense_type, "account")
 			company = frappe.db.get_value("Account", debit_name, "company") if debit_name else None
 			if company:
@@ -167,49 +167,29 @@ class CraneMaintenance(Document):
 			)
 
 	def on_trash(self):
-		if self.status != "Planned" or self.expense_entry:
+		if self.status != "Planned" or self.grouped_expense:
 			frappe.throw(_("Only planned maintenance without an expense can be deleted."))
 
 	def make_expense(self):
 		if self.cost_treatment != "Cash Expense":
 			frappe.throw(_("This repair uses native accounting documents; a second cash expense is not allowed."))
-		if self.expense_entry and frappe.db.exists("Expense Entry", self.expense_entry):
-			if frappe.db.get_value("Expense Entry", self.expense_entry, "docstatus") != 2:
-				frappe.throw(_("An active Expense Entry is already linked to this maintenance."))
-		if not self.mode_of_payment:
-			frappe.throw(_("Select a Mode of Payment before creating an Expense Entry."))
-		expense_type = frappe.db.get_value(
-			"Expense Entry Type", self.expense_type, ("company", "account", "enabled"), as_dict=True
-		)
-		if not expense_type or not expense_type.enabled:
-			frappe.throw(_("Select an enabled Expense Entry Type."))
-		service_dates = {}
-		if self.crane_assignment:
-			from heavy_equipment_rental.rental_expenses import work_window
-			if self.crane_timesheet:
-				sheet = frappe.get_doc("Crane Timesheet", self.crane_timesheet)
-				first, last = getdate(sheet.period_start), getdate(sheet.period_end)
-			else:
-				first, last = work_window(frappe._dict(crane=self.crane, crane_assignment=self.crane_assignment))
-			service_dates = dict(service_from_date=max(first, getdate(self.actual_start_date or self.actual_end_date)),
-				service_to_date=min(last, getdate(self.actual_end_date)))
+		if self.grouped_expense:
+			frappe.throw(_("A Grouped Expense is already linked to this maintenance."))
 		expense = frappe.get_doc({
-			"doctype": "Expense Entry",
-			"company": expense_type.company,
+			"doctype": "Grouped Expense",
+			"company": self.company,
 			"crane": self.crane,
 			"crane_maintenance": self.name,
 			"crane_assignment": self.crane_assignment,
 			"crane_timesheet": self.crane_timesheet,
-			"expenses": [{"expense_entry_type": self.expense_type, "amount": self.cost}],
 			"mode_of_payment": self.mode_of_payment,
-			"posting_date": self.actual_end_date,
-			"description": _("Crane Maintenance {0}: {1}").format(self.name, self.description),
-			**service_dates,
-		}).insert()
-		# Keep completion and expense submission in the same transaction.
-		expense.submit()
-		self.expense_entry = expense.name
-		frappe.db.set_value("Crane Maintenance", self.name, "expense_entry", expense.name, update_modified=False)
+			"cost_center": self.repair_cost_center,
+			"items": [{"posting_date": self.actual_end_date, "expense_entry_type": self.expense_type,
+				"amount": self.cost, "description": _("Crane Maintenance {0}: {1}").format(self.name, self.description)}],
+		})
+		expense.flags.from_maintenance = True
+		expense.insert().submit()
+		self.db_set("grouped_expense", expense.name, update_modified=False)
 		return expense.name
 
 

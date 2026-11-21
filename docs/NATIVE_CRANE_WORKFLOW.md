@@ -47,7 +47,7 @@ Migration archives each existing Maintenance's old status/docstatus, promotes co
 | Capitalize Improvement | Asset Repair, with justification and a reviewed, submitted company Asset; optional posted service Purchase Invoice | Consumed stock and qualifying services increase the native Asset. Related depreciation schedules remain native. The improvement itself is excluded from operating repair costs. |
 | Recover from Owner | Sales Invoice to the owner's Customer, with Update Stock for spare parts | Owner receivable and repair revenue; native stock consumption/COGS. Payment uses native customer receipts. This separate repair activity does not enter rental profit settlement. |
 | No Cost | Operational inspection/repair record only | No invented expense or zero-value financial document. |
-| Cash Expense | Existing Expense Entry workflow | Retained for direct paid repairs and historical records; not combined with native-document repair costs. |
+| Cash Expense | Grouped Expense | Submitting a paid repair posts its expense row and journal. Cancelling the repair reverses both. |
 
 Ordinary servicing and replacement consumables are expenses. Capitalization requires a qualifying future benefit/major replacement and appropriate derecognition of any replaced component through native asset accounting. It is not a checkbox for increasing profit. See [IAS 16](https://www.ifrs.org/content/dam/ifrs/publications/pdf-standards/english/2022/issued/part-a/ias-16-property-plant-and-equipment.pdf) and [ERPNext Asset Repair](https://docs.frappe.io/erpnext/asset-repair).
 

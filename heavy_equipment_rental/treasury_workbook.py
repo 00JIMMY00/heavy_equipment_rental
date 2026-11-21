@@ -13,7 +13,7 @@ import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 
-SOURCE_DOCTYPES = ("Expense Entry", "Treasury Transaction", "Journal Entry")
+SOURCE_DOCTYPES = ("Grouped Expense", "Expense Entry", "Treasury Transaction", "Journal Entry")
 HEADERS = ("التاربخ", "الوارد", "المنصرف", "الرصيد", "الإسم", "مركز التكلفة", "البيان")
 
 
@@ -164,10 +164,9 @@ def import_libya_workbook(path, company="شركة المعدات الثقيلة 
             fields = source_fields(batch, row)
             fields["her_workbook_date"] = row["display_date"]
             if row["kind"] == "expense":
-                document = frappe.get_doc(dict(doctype="Expense Entry", company=company,
-                    posting_date=row["posting_date"], mode_of_payment=modes["cash"],
-                    cost_center=centers[row["category"]], description=row["description"],
-                    expenses=[dict(expense_entry_type=types[row["category"]], amount=row["outgoing"])], **fields))
+                document = frappe.get_doc(dict(doctype="Grouped Expense", company=company,
+                    mode_of_payment=modes["cash"], cost_center=centers[row["category"]],
+                    items=[dict(posting_date=row["posting_date"], description=row["description"], expense_entry_type=types[row["category"]], amount=row["outgoing"])], **fields))
             else:
                 source = "cash"
                 if row["kind"] == "funding":

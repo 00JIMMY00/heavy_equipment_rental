@@ -4,7 +4,18 @@
  "module": "Heavy Equipment Rental",
  "istable": 1,
  "editable_grid": 1,
- "field_order": ["employee", "quantity", "rate", "amount", "fixed_amount", "unit", "worked_hours", "mode_of_payment", "expense_entry"],
+ "field_order": [
+  "employee",
+  "quantity",
+  "rate",
+  "amount",
+  "fixed_amount",
+  "unit",
+  "worked_hours",
+  "mode_of_payment",
+  "expense_entry",
+  "grouped_expense"
+ ],
  "fields": [
   {
    "fieldname": "employee",
@@ -28,6 +39,7 @@
    "fieldname": "rate",
    "fieldtype": "Currency",
    "label": "Price / Unit",
+   "precision": "9",
    "options": "Company:payroll_company:default_currency",
    "columns": 2,
    "in_list_view": 1
@@ -53,8 +65,7 @@
    "fieldtype": "Select",
    "label": "Payroll Unit",
    "options": "\nHour\nDay\nMonth",
-   "read_only": 1,
-   "no_copy": 1
+   "read_only": 1
   },
   {
    "fieldname": "worked_hours",
@@ -75,6 +86,15 @@
    "fieldtype": "Link",
    "label": "Expense Entry",
    "options": "Expense Entry",
+   "read_only": 1,
+   "no_copy": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "grouped_expense",
+   "fieldtype": "Link",
+   "label": "Grouped Expense",
+   "options": "Grouped Expense",
    "read_only": 1,
    "no_copy": 1
   }

@@ -19,6 +19,8 @@ from heavy_equipment_rental.timesheet_settlement import ensure_settlement
 
 class TestPartnerSettlements(FrappeTestCase):
     def setUp(self):
+        from heavy_equipment_rental.test_expenses import enable_historical_fixtures
+        enable_historical_fixtures(self)
         self.key = frappe.generate_hash(length=8)
         with patch.object(demo, "DEMO_LOCATION", "HER auto settlement " + self.key):
             self.cycle = demo.create_rental_cycle(get_default_company())
@@ -358,11 +360,11 @@ class TestPartnerSettlements(FrappeTestCase):
         self.assertEqual(amounts, {self.partners[0].name: 1800, self.partners[1].name: 2600})
 
     def rental_expense(self, amount=900, **values):
-        template = frappe.get_doc("Expense Entry", self.cycle["expenses"][0])
+        template = frappe.get_doc("Grouped Expense", self.cycle["expenses"][0])
         doc = frappe.get_doc(dict(doctype="Expense Entry", company=self.company.name,
             posting_date=today(), crane=self.crane.name, crane_assignment=self.assignment.name,
             description="HER work expense " + self.key, mode_of_payment=template.mode_of_payment,
-            expenses=[dict(expense_entry_type=template.expenses[0].expense_entry_type, amount=amount)]))
+            expenses=[dict(expense_entry_type=template.items[0].expense_entry_type, amount=amount)]))
         doc.update(values)
         return doc
 
@@ -549,11 +551,10 @@ class TestPartnerSettlements(FrappeTestCase):
             cost=100)).insert()
         self.assertEqual(maintenance.crane_assignment,self.assignment.name)
         maintenance.submit()
-        expense=frappe.get_doc('Expense Entry',maintenance.expense_entry)
+        expense=frappe.get_doc('Grouped Expense',maintenance.grouped_expense)
         self.assertEqual((expense.crane_assignment,expense.crane_timesheet,expense.docstatus),
             (self.assignment.name,first.name,1))
-        self.assertEqual(str(expense.service_from_date), str(self.start))
-        self.assertEqual(str(expense.service_to_date), str(self.start))
+        self.assertEqual(str(expense.items[0].posting_date), str(self.start))
         with self.assertRaisesRegex(frappe.ValidationError,'Expense details cannot change|Not allowed to change'):
             maintenance.crane_timesheet=None
             maintenance.save()

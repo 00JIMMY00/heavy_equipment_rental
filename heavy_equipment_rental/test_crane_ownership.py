@@ -32,6 +32,7 @@ class TestCraneOwnership(FrappeTestCase):
         original=demo.create_rental_cycle
         def cycle(name,*args,**kwargs): return original(company,*args,**kwargs)
         fixture=TestPartnerSettlements()
+        self.addCleanup(fixture.doCleanups)
         with patch.object(demo,'create_rental_cycle',side_effect=cycle): fixture.setUp()
         crane=fixture.crane
         crane.enable_profit_sharing=1

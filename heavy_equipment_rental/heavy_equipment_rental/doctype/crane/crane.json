@@ -451,7 +451,7 @@
    "fieldname": "default_selling_uom",
    "fieldtype": "Select",
    "label": "Default Selling UOM",
-   "options": "\nHour\nDay\nMonth"
+   "options": "\nHour\nDay"
   },
   {
    "fieldname": "legacy_agreement_data",

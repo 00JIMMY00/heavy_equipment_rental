@@ -53,7 +53,7 @@ def dashboard_data(sources=None):
 	groups = []
 	for label, doctypes in (
 		("Rental", ["Rental Contract", "Crane Timesheet", "Sales Invoice", "Purchase Invoice"]),
-		("Operations", ["Crane Maintenance", "Expense Entry", "Stock Entry", "Asset Repair"]),
+		("Operations", ["Crane Maintenance", "Grouped Expense", "Stock Entry", "Asset Repair"]),
 		("Profit Sharing & Payments", ["Crane Profit Settlement", "Journal Entry", "Payment Entry"]),
 		("Masters", sorted(masters)),
 		("Other Linked Documents", sorted(remaining)),

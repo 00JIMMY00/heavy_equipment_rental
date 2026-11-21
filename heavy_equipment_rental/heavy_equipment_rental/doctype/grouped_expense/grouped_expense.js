@@ -6,9 +6,21 @@ frappe.ui.form.on('Grouped Expense', {
         frm.set_query('mode_of_payment', 'items', () => ({filters: {enabled: 1}}));
         frm.set_query('employee', () => ({filters: {company: frm.doc.company}}));
         frm.set_query('cost_center', () => ({filters: {company: frm.doc.company, is_group: 0, disabled: 0}}));
+        frm.set_query('crane_assignment', () => ({filters: {company: frm.doc.company}}));
+        frm.set_query('crane', () => frm.doc.crane_assignment ? {
+            query: 'heavy_equipment_rental.rental_expenses.assignment_cranes',
+            filters: {assignment: frm.doc.crane_assignment}
+        } : {});
         frm.set_query('crane_timesheet', () => ({filters: {crane: frm.doc.crane, docstatus: ['<', 2]}}));
     },
     async refresh(frm) {
+        const salary = Boolean(frm.doc.timesheet_salary_payment);
+        for (const field of ['company', 'employee', 'crane', 'crane_timesheet']) frm.set_df_property(field, 'read_only', salary);
+        const items_grid = frm.fields_dict.items.grid;
+        for (const field of ['expense_entry_type', 'mode_of_payment']) {
+            items_grid.update_docfield_property(field, 'read_only', salary);
+        }
+        frm.set_df_property('mode_of_payment', 'label', salary ? __('Mode of Payment') : __('Default Mode of Payment'));
         if (frm.doc.docstatus > 0) {
             frm.add_custom_button(__("Accounting Ledger"), () => {
                 const dates = (frm.doc.items || []).map(row => row.posting_date).filter(Boolean).sort();
@@ -62,7 +74,7 @@ frappe.ui.form.on('Grouped Expense', {
         });
     },
     async load_defaults(frm) {
-        if (!frm.doc.company) return;
+        if (!frm.doc.company || frm.doc.timesheet_salary_payment) return;
         const company = frm.doc.company;
         const defaults = await frappe.xcall(her_expense_api + 'get_defaults', {company});
         if (company !== frm.doc.company) return;
@@ -74,6 +86,7 @@ frappe.ui.form.on('Grouped Expense', {
         }
     },
     async company(frm) {
+        if (frm.doc.timesheet_salary_payment) return;
         frm.her_expense_defaults = {};
         await frm.set_value({mode_of_payment: null, cost_center: null, employee: null});
         for (const row of frm.doc.items || []) {
@@ -81,7 +94,7 @@ frappe.ui.form.on('Grouped Expense', {
         }
         await frm.trigger('load_defaults');
     },
-    crane(frm) { frm.set_value({crane_timesheet: null, crane_assignment: null, profit_settlement: null}); },
+    crane(frm) { if (!frm.doc.timesheet_salary_payment) frm.set_value({crane_timesheet: null, profit_settlement: null}); },
     async crane_timesheet(frm) {
         if (!frm.doc.crane_timesheet) return frm.set_value({crane_assignment: null, profit_settlement: null});
         const name = frm.doc.crane_timesheet;
@@ -90,7 +103,7 @@ frappe.ui.form.on('Grouped Expense', {
     },
     mode_of_payment(frm) {
         for (const row of frm.doc.items || []) {
-            if (!row.mode_of_payment) frappe.model.set_value(row.doctype, row.name, 'mode_of_payment', frm.doc.mode_of_payment);
+            if (frm.doc.timesheet_salary_payment || !row.mode_of_payment) frappe.model.set_value(row.doctype, row.name, 'mode_of_payment', frm.doc.mode_of_payment);
         }
     },
     calculate_total(frm) { frm.set_value('total', (frm.doc.items || []).reduce((sum, row) => sum + flt(row.amount), 0)); }

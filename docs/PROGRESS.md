@@ -1,5 +1,29 @@
 # Progress
 
+## Timesheet salary overpayments
+
+A positive salary installment may exceed earned pay. The full payment posts to salary expense and the payment account. Remaining Salary shows earned pay less submitted payments, including negative balances. Timesheet submission pays only a positive remainder.
+
+## 2026-11-21 — Hourly driver payroll and rental pricing
+
+Retired monthly Crane prices and defaults. The migration archives original Crane and Item price rows under legacy_month_prices, changes monthly defaults to Hour, and converts draft payroll. New Hour and Day rentals calculate payroll from regular plus overtime hours.
+
+## 2026-11-21 — Zero-hour Timesheet Entries
+
+Migrated cranes-dev3. Timesheet Entries with zero Worked Hours and zero overtime can be saved and submitted with no driver or clock times. All 38 Timesheet and Rental Contract workflow tests passed, including checks for clock-derived work and overtime without a driver.
+
+## 2026-11-21 — Grouped Expense report filters
+
+Extended Crane Expense Report with filters for a specific Grouped Expense document and Cost Center. The detail table shows payment mode, cost center and employee. Five report tests passed on cranes-dev3, and the standard Frappe report runner returned matching rows and totals with combined filters on existing data.
+
+## 2026-11-21 — Simple Receivable Summary
+
+Migrated cranes-dev3 and verified the Financial Reports link, summary cards, live open invoice rows, and the unsaved Payment Entry action in Chrome. Two report integration tests and six rental workflow tests passed. The report tests covered historical versus current balances, overdue filtering, and combined receipts.
+
+## 2026-11-21 — Unified expense entry
+
+Migrated cranes-dev3. All 18 original expenses are represented in Grouped Expense. Four already belonged to batches and 14 received grouped records. The migration reuses existing journals and preserves submitted and cancelled status. Reconciled all 18 amounts and statuses on dev3. 118 integration tests passed across 12 modules, including migrated drafts, reversal and amendment, payroll, repairs, treasury and financial reports.
+
 ## 2026-11-21 — Grouped Expense table columns
 
 Migrated dev3 and verified all five default columns across reloads in Chrome without saved column preferences. The pencil opens the row editor. All nine Grouped Expense workflow tests passed.
@@ -719,3 +743,9 @@ Grouped Expense rename verification: migrated dev3; all 13 accounting/rental tes
 Static-share verification: migrated dev3 and passed 19 integration tests covering repeated same-day changes, date-independent share selection, draft recalculation, unchanged submitted settlement/journal values, repeatable historical archiving, operating fees, grouped expenses and rental workflows. Browser confirmed the Crane has no Agreement Effective From field and retains the owners table. Native account, percentage-total, permission and posted-period protections remain in place.
 
 Expense report verification: migrated dev3 and passed 17 integration tests, including detail/chart/summary reconciliation to posted journals, grouping and totals-only modes, posting-date/Timesheet/type/payment/source filters, legacy batch deduplication, cancelled-source exclusion and permission rejection. Browser verified 7,161 EGP across 13 posted expense lines for the selected live range, Timesheet filtering to 3,500 EGP, summary-only mode, alternate chart grouping, and highlighted Financial Reports placement. Desktop/mobile checks found no page overflow or JavaScript errors. Arabic report labels were verified in the translation catalog. Browser sessions were removed and test transactions rolled back.
+
+## 2026-11-21 — Stakeholder fleet dashboard
+
+Added a dedicated Crane Insights workspace with a current fleet-condition snapshot, period-based billable hours, working crane counts and linked workload rankings. The dashboard uses permission-filtered Crane and submitted Crane Timesheet records and supports English and Arabic.
+
+Crane Insights now includes compact expense indicators and a per-crane ledger sourced from submitted Grouped Expense rows, with posting-date filters, currency-separated totals and links to the originating batches.

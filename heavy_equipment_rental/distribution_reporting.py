@@ -254,6 +254,11 @@ def source_rows(record, ctx):
             weights = [flt(r.amount) for r in doc.expenses]
             amounts = allocate_amount(source["expenses"], weights, record["doc"].precision("revenue")) if sum(weights) else []
             details = [(r.expense_entry_type, amount, description) for r, amount in zip(doc.expenses, amounts)] or details
+        elif source.get("consolidated_expense") and source.get("expenses"):
+            batch = ctx.doc("Grouped Expense", source["consolidated_expense"])
+            row = next((r for r in batch.items if r.journal_entry == doc.name), None)
+            if row:
+                details = [(row.expense_entry_type, source["expenses"], row.description)]
         for expense_type, expense, text in details:
             label = ctx.doc("Expense Entry Type", expense_type).title if expense_type else None
             rows.append(dict(record["common"], source_doctype=doc.doctype, source_name=doc.name,

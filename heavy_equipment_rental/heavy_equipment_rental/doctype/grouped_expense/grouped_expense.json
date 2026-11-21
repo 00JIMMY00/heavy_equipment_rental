@@ -8,17 +8,21 @@
   "company",
   "crane",
   "crane_timesheet",
+  "timesheet_salary_payment",
   "crane_assignment",
+  "crane_maintenance",
   "profit_settlement",
   "column_break",
   "employee",
   "mode_of_payment",
   "currency",
   "cost_center",
+  "receipt",
   "items_section",
   "items",
   "total",
   "amended_from",
+  "legacy_expense",
   "connections_tab"
  ],
  "fields": [
@@ -39,6 +43,7 @@
   },
   {
    "fieldname": "crane_timesheet",
+   "search_index": 1,
    "fieldtype": "Link",
    "label": "Crane Timesheet",
    "options": "Crane Timesheet"
@@ -47,8 +52,7 @@
    "fieldname": "crane_assignment",
    "fieldtype": "Link",
    "label": "Rental Contract",
-   "options": "Rental Contract",
-   "read_only": 1
+   "options": "Rental Contract"
   },
   {
    "fieldname": "profit_settlement",
@@ -127,6 +131,34 @@
    "fieldtype": "Tab Break",
    "label": "Connections",
    "show_dashboard": 1
+  },
+  {
+   "fieldname": "crane_maintenance",
+   "fieldtype": "Link",
+   "options": "Crane Maintenance",
+   "label": "Crane Maintenance",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "legacy_expense",
+   "fieldtype": "Data",
+   "label": "Original Expense Entry",
+   "read_only": 1,
+   "no_copy": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "timesheet_salary_payment",
+   "fieldtype": "Check",
+   "label": "Timesheet Salary Payment",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "receipt",
+   "label": "Receipt",
+   "fieldtype": "Attach"
   }
  ],
  "permissions": [

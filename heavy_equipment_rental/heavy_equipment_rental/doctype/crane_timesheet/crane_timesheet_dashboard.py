@@ -15,7 +15,7 @@ def get_data():
             "Crane Profit Settlement": "profit_settlement",
         },
         "transactions": [
-            {"label": _("Operations"), "items": ["Grouped Expense", "Expense Entry", "Crane Maintenance"]},
+            {"label": _("Operations"), "items": ["Grouped Expense", "Crane Maintenance"]},
             {"label": _("Rental"), "items": ["Rental Contract", "Crane", "Customer"]},
             {"label": _("Documents"), "items": ["Sales Invoice", "Purchase Invoice", "Crane Timesheet", "Crane Profit Settlement"]},
         ],

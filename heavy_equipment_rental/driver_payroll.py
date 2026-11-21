@@ -1,13 +1,11 @@
-"""Post driver pay from a Crane Timesheet through HER Expense Entries."""
+"""Post driver pay from a Crane Timesheet through Grouped Expense."""
 
-from calendar import monthrange
 from collections import defaultdict
-from datetime import time, timedelta
 from math import isfinite
 
 import frappe
 from frappe import _
-from frappe.utils import flt, get_time, getdate, today
+from frappe.utils import flt, today
 
 from heavy_equipment_rental.payment import payment_account
 
@@ -46,40 +44,31 @@ def payroll_defaults(company):
 
 
 def driver_work_summary(sheet):
-    units = {row.rental_rate_unit for row in sheet.timesheet_entries if row.rental_rate_unit}
-    unit = sheet.rental_rate_unit or (units.pop() if len(units) == 1 else "Hour")
     hours_by_driver = defaultdict(float)
-    days_by_driver = defaultdict(set)
     for row in sheet.timesheet_entries:
-        hours = flt(row.worked_hours) + flt(row.overtime_hours)
-        hours_by_driver[row.employee] += hours
-        if unit in ("Day", "Month") and hours > 0 and row.work_date:
-            day = getdate(row.work_date)
-            days_by_driver[row.employee].add(day)
-            if row.ends_next_day and row.end_time and get_time(row.end_time) > time.min:
-                days_by_driver[row.employee].add(day + timedelta(days=1))
-
-    summary = {}
-    for employee, hours in hours_by_driver.items():
-        days = days_by_driver[employee]
-        quantity = hours
-        if unit == "Day":
-            quantity = len(days)
-        elif unit == "Month":
-            quantity = sum(1 / monthrange(day.year, day.month)[1] for day in sorted(days))
-        summary[employee] = {"unit": unit, "worked_hours": flt(hours, 6), "quantity": flt(quantity, 9)}
-    return summary
+        if row.employee:
+            hours_by_driver[row.employee] += flt(row.worked_hours) + flt(row.overtime_hours)
+    return {
+        employee: {"unit": "Hour", "worked_hours": flt(hours, 6), "quantity": flt(hours, 6)}
+        for employee, hours in hours_by_driver.items()
+    }
 
 
 def sync_payroll_rows(sheet, company, summary):
     sheet.payroll_company = company
     work = {employee: values for employee, values in summary.items() if employee}
+    previous = sheet.get_doc_before_save()
+    if previous:
+        paid = installment_totals(sheet.name, lock=True)
+        if paid and (previous.crane != sheet.crane or previous.assignment != sheet.assignment
+                     or paid.keys() - work.keys()):
+            frappe.throw(_("Cancel the salary installment before changing its driver, crane or rental contract."))
     default = payroll_defaults(company) if work else None
     default_mode = default.mode_of_payment if default else None
     seen = set()
     for row in list(sheet.driver_payroll):
-        if row.expense_entry:
-            frappe.throw(_("Driver payroll Expense Entry links are managed automatically."))
+        if row.grouped_expense or row.expense_entry:
+            frappe.throw(_("Driver payroll expense links are managed automatically."))
         rate = flt(row.rate)
         if not isfinite(rate) or rate < 0:
             frappe.throw(_("Driver payroll row {0}: Enter a finite, non-negative price per unit.").format(row.idx))
@@ -94,6 +83,10 @@ def sync_payroll_rows(sheet, company, summary):
         if row.employee in seen:
             frappe.throw(_("Enter only one payroll amount per driver."))
         seen.add(row.employee)
+        # Copies of historical payroll keep their earned amount as the starting
+        # point until the user enters a new hourly rate.
+        if row.unit in ("Day", "Month"):
+            row.fixed_amount = 1
         row.update(work[row.employee])
         row.mode_of_payment = row.mode_of_payment or default_mode
         if row.fixed_amount or (amount and not rate):
@@ -121,8 +114,68 @@ def implied_payroll_rate(row):
     return flt(rate, row.precision("rate"))
 
 
+def installment_totals(sheet_name, lock=False):
+    totals = defaultdict(float)
+    for employee, amount in frappe.db.sql(
+        """select employee, total from `tabGrouped Expense`
+           where crane_timesheet = %s and timesheet_salary_payment = 1 and docstatus = 1"""
+        + (" for update" if lock else ""), sheet_name
+    ):
+        totals[employee] += flt(amount)
+    return totals
+
+
+@frappe.whitelist()
+def get_salary_payments(timesheet):
+    sheet = frappe.get_doc("Crane Timesheet", timesheet)
+    sheet.check_permission("read")
+    totals = installment_totals(sheet.name)
+    for row in sheet.driver_payroll:
+        if row.expense_entry:
+            if frappe.db.get_value("Expense Entry", row.expense_entry, "docstatus") == 1:
+                totals[row.employee] += flt(row.amount)
+        elif row.grouped_expense:
+            totals[row.employee] += flt(frappe.db.get_value("Grouped Expense",
+                {"name": row.grouped_expense, "docstatus": 1}, "total"))
+    return totals
+
+
+def installment_context(sheet, employee):
+    if sheet.docstatus != 0 or not any(row.employee == employee for row in sheet.driver_payroll):
+        frappe.throw(_("Select a driver from a draft Timesheet."))
+    default = payroll_defaults(sheet.payroll_company)
+    if not default:
+        frappe.throw(_("Set driver payroll defaults for {0} in Heavy Equipment Rental Settings.").format(sheet.payroll_company))
+    validate_payroll_expense_type(default)
+    return default.expense_type
+
+
+@frappe.whitelist()
+def make_salary_payment(timesheet, employee):
+    frappe.has_permission("Grouped Expense", "create", throw=True)
+    sheet = frappe.get_doc("Crane Timesheet", timesheet)
+    sheet.check_permission("read")
+    expense_type = installment_context(sheet, employee)
+    return frappe.get_doc({
+        "doctype": "Grouped Expense", "company": sheet.payroll_company, "employee": employee,
+        "crane": sheet.crane, "crane_timesheet": sheet.name, "crane_assignment": sheet.assignment,
+        "timesheet_salary_payment": 1,
+        "items": [{"posting_date": today(), "expense_entry_type": expense_type}],
+    })
+
+
+def validate_installment(expense, sheet):
+    expense_type = installment_context(sheet, expense.employee)
+    if (sheet.crane != expense.crane or sheet.payroll_company != expense.company
+            or any(row.expense_entry_type != expense_type for row in expense.items)):
+        frappe.throw(_("Salary payments must use the Timesheet crane, company and payroll expense type."))
+
+
 def post_driver_payroll(sheet):
-    rows = [row for row in sheet.driver_payroll if row.amount and not row.expense_entry]
+    paid = installment_totals(sheet.name, lock=True)
+    rows = [(row, flt(flt(row.amount) - paid[row.employee], row.precision("amount")))
+            for row in sheet.driver_payroll if not row.grouped_expense]
+    rows = [(row, remaining) for row, remaining in rows if remaining > 0]
     if not rows:
         return
     default = payroll_defaults(sheet.payroll_company)
@@ -131,29 +184,27 @@ def post_driver_payroll(sheet):
     validate_payroll_expense_type(default)
 
     posting_date = today()
-    for row in rows:
+    for row, remaining in rows:
         validate_payroll_mode(row.mode_of_payment, sheet.payroll_company)
         expense = frappe.get_doc({
-            "doctype": "Expense Entry",
+            "doctype": "Grouped Expense",
             "company": sheet.payroll_company,
-            "posting_date": posting_date,
             "mode_of_payment": row.mode_of_payment,
-            "description": _("Driver payroll for Crane Timesheet {0}").format(sheet.name),
             "employee": row.employee,
             "crane": sheet.crane,
             "crane_assignment": sheet.assignment,
             "crane_timesheet": sheet.name,
-            "expenses": [{"expense_entry_type": default.expense_type, "amount": row.amount}],
+            "items": [{"posting_date": posting_date, "description": _("Driver payroll for Crane Timesheet {0}").format(sheet.name), "expense_entry_type": default.expense_type, "amount": remaining}],
         })
         expense.insert()
         expense.submit()
-        row.db_set("expense_entry", expense.name, update_modified=False)
+        row.db_set("grouped_expense", expense.name, update_modified=False)
 
 
 def cancel_driver_payroll(sheet):
     for row in sheet.driver_payroll:
-        if row.expense_entry:
-            expense = frappe.get_doc("Expense Entry", row.expense_entry, for_update=True)
+        if row.grouped_expense:
+            expense = frappe.get_doc("Grouped Expense", row.grouped_expense, for_update=True)
             if expense.docstatus == 1:
                 expense.cancel()
 
@@ -163,6 +214,6 @@ def guard_payroll_cancel(expense):
         "docstatus": 1,
         "parenttype": "Crane Timesheet",
         "parent": expense.crane_timesheet,
-        "expense_entry": expense.name,
+        ("grouped_expense" if expense.doctype == "Grouped Expense" else "expense_entry"): expense.name,
     }):
         frappe.throw(_("Cancel Crane Timesheet {0} to reverse its driver payroll.").format(expense.crane_timesheet))

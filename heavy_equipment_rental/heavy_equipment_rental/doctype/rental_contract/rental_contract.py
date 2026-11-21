@@ -25,8 +25,8 @@ def get_assignment_defaults(crane=None, rental_rate_unit=None):
     settings = frappe.get_single("Heavy Equipment Rental Settings")
     settings.check_permission("read")
     unit = rental_rate_unit or (frappe.get_cached_value("Crane", crane, "default_selling_uom") if crane else None) or settings.default_selling_uom or "Hour"
-    if unit not in ("Hour", "Day", "Month"):
-        frappe.throw(_("Select an Hour, Day or Month Rental Rate Unit."))
+    if unit not in ("Hour", "Day"):
+        frappe.throw(_("Select an Hour or Day Rental Rate Unit."))
     result = dict(rental_rate_unit=unit)
     if crane:
         equipment = frappe.get_doc("Crane", crane)
@@ -74,10 +74,11 @@ class RentalContract(Document):
             check_date_order(row.start_date, row.expected_end_date, label)
             check_non_negative(row.rental_rate, label + " rental rate")
             previous = old.get(row.name)
-            if row.rental_rate_unit not in ("Hour", "Day", "Month") or (
+            legacy_month = previous and previous.rental_rate_unit == row.rental_rate_unit == "Month"
+            if (row.rental_rate_unit not in ("Hour", "Day") and not legacy_month) or (
                 not row.rental_rate and (not previous or previous.rental_rate)
             ):
-                frappe.throw(_("{0}: enter a positive agreed Hour, Day or Month rate.").format(label))
+                frappe.throw(_("{0}: enter a positive agreed Hour or Day rate.").format(label))
             if row.cancelled and (not previous or not previous.cancelled):
                 frappe.throw(_("Legacy cancellation flags cannot be edited."))
             if previous and previous.crane != row.crane:

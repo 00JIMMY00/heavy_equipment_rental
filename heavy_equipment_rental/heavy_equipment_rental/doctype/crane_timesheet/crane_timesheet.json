@@ -38,6 +38,8 @@
   "driver_payroll_section",
   "payroll_company",
   "driver_payroll",
+  "pay_salary",
+  "salary_balance",
   "totals_section",
   "total_operator_hours",
   "total_crane_billable_hours",
@@ -232,7 +234,7 @@
    "fieldtype": "Table",
    "label": "Driver Payments",
    "options": "Crane Driver Payroll",
-   "description": "Enter a price per unit to calculate payroll, or type the amount directly. Submit to post one Expense Entry per driver with a positive amount.",
+   "description": "Enter a price per unit to calculate payroll, or type the amount directly. Submit to post one Grouped Expense per driver with a positive amount.",
    "print_hide": 1
   },
   {
@@ -366,6 +368,17 @@
    "fieldtype": "Currency",
    "label": "Total Overtime Amount",
    "read_only": 1
+  },
+  {
+   "fieldname": "pay_salary",
+   "fieldtype": "Button",
+   "label": "Pay Salary",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "salary_balance",
+   "fieldtype": "HTML",
+   "label": "Salary Balance"
   }
  ],
  "grid_page_length": 100,

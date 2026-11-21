@@ -49,6 +49,7 @@
   "expense_section",
   "accounting_documents",
   "expense_entry",
+  "grouped_expense",
   "payment_column",
   "credit_account",
   "connections_tab",
@@ -200,7 +201,8 @@
    "label": "Expense Entry",
    "no_copy": 1,
    "options": "Expense Entry",
-   "read_only": 1
+   "read_only": 1,
+   "hidden": 1
   },
   {
    "fieldname": "crane_assignment",
@@ -389,6 +391,14 @@
    "fieldname": "use_existing_documents",
    "fieldtype": "Check",
    "label": "Use Existing Accounting Documents"
+  },
+  {
+   "fieldname": "grouped_expense",
+   "fieldtype": "Link",
+   "label": "Grouped Expense",
+   "no_copy": 1,
+   "options": "Grouped Expense",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,

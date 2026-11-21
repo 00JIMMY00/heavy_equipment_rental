@@ -50,7 +50,7 @@ class TestRentalWorkflow(FrappeTestCase):
             crane = frappe.get_doc(dict(doctype="Crane", crane_id=frappe.generate_hash(length=12), crane_name="Rental Contract defaults " + frappe.generate_hash(length=8),
                 operational_condition="Operational")).insert()
             for row in crane.period_prices:
-                row.price = {"Hour": 100, "Day": 700, "Month": 15000}[row.period]
+                row.price = {"Hour": 100, "Day": 700}[row.period]
             crane.save()
             day = getdate(today()) + timedelta(days=400)
             assignment = frappe.get_doc(dict(doctype="Rental Contract",
@@ -59,15 +59,16 @@ class TestRentalWorkflow(FrappeTestCase):
             self.assertTrue(assignment.name.startswith("RC-"))
             self.assertEqual((assignment.assigned_cranes[0].rental_rate_unit, assignment.assigned_cranes[0].rental_rate), ("Day", 700))
             from heavy_equipment_rental.heavy_equipment_rental.doctype.rental_contract.rental_contract import get_assignment_defaults
-            self.assertEqual(get_assignment_defaults(crane.name, "Month")["rental_rate"], 15000)
-            settings.default_selling_uom = "Month"
+            with self.assertRaises(frappe.ValidationError):
+                get_assignment_defaults(crane.name, "Month")
+            settings.default_selling_uom = "Hour"
             settings.save()
             assignment.save()
             self.assertEqual((assignment.assigned_cranes[0].rental_rate_unit, assignment.assigned_cranes[0].rental_rate), ("Day", 700))
         finally:
             frappe.db.set_single_value("Heavy Equipment Rental Settings", "default_selling_uom", original)
 
-    def test_completed_maintenance_uses_shared_expense_entry(self):
+    def test_completed_maintenance_posts_grouped_expense(self):
         expense_type = next((row for row in frappe.get_all(
             "Expense Entry Type", filters={"enabled": 1}, fields=["name", "company"],
             limit_page_length=0,
@@ -88,13 +89,13 @@ class TestRentalWorkflow(FrappeTestCase):
         maintenance.expense_type = expense_type.name
         maintenance.mode_of_payment = mode
         maintenance.submit()
-        expense = frappe.get_doc("Expense Entry", maintenance.expense_entry)
+        expense = frappe.get_doc("Grouped Expense", maintenance.grouped_expense)
         self.assertEqual(expense.company, expense_type.company)
         self.assertEqual(expense.crane, crane.name)
         self.assertEqual(expense.docstatus, 1)
-        self.assertEqual(expense.expenses[0].expense_entry_type, expense_type.name)
-        self.assertEqual(expense.expenses[0].amount, 125)
-        self.assertTrue(expense.journal_entry)
+        self.assertEqual(expense.items[0].expense_entry_type, expense_type.name)
+        self.assertEqual(expense.items[0].amount, 125)
+        self.assertTrue(expense.items[0].journal_entry)
 
     def test_future_timesheet_can_be_saved_and_submitted(self):
         day = getdate(today()) + timedelta(days=7)
@@ -144,7 +145,7 @@ class TestRentalWorkflow(FrappeTestCase):
         self.assertEqual(crane.license_plate, "TEST-" + key)
         self.assertEqual(crane.crane_image, "/files/test-crane.jpg")
         self.assertEqual(crane.crane_list_image, crane.crane_image)
-        self.assertEqual([row.period for row in crane.period_prices], ["Hour", "Day", "Month"])
+        self.assertEqual([row.period for row in crane.period_prices], ["Hour", "Day"])
         item = frappe.get_doc("Item", crane.item)
         self.assertFalse(item.image)
         self.assertEqual(
@@ -263,11 +264,17 @@ class TestRentalWorkflow(FrappeTestCase):
         self.assertEqual(hourly_invoice.items[0].rate, 120)
         self.assertEqual((first.timesheet_entries[0].rental_rate, first.timesheet_entries[0].rental_rate_unit), (120, "Hour"))
         monthly_day = later + timedelta(days=20)
+        # Simulate a booking agreed before monthly prices were retired.
+        legacy = frappe.get_doc(dict(doctype="Rental Contract", customer=customer.name,
+            company=frappe.defaults.get_user_default("Company"), location="Monthly yard",
+            assigned_cranes=[dict(crane=crane.name, start_date=monthly_day,
+                expected_end_date=monthly_day + timedelta(days=9), rental_rate_unit="Day", rental_rate=930)])).insert()
+        frappe.db.set_value("Assigned Crane", legacy.assigned_cranes[0].name, "rental_rate_unit", "Month")
         monthly = frappe.get_doc({
             "doctype": "Crane Timesheet", "crane": crane.name, "customer": customer.name,
             "location": "Monthly yard", "period_start": monthly_day,
             "period_end": monthly_day + timedelta(days=9),
-            "rental_rate_unit": "Month", "rental_rate": 930,
+            "assignment": legacy.name,
             "timesheet_entries": [{
                 "work_date": monthly_day, "employee": employee, "start_time": "08:00", "end_time": "12:00",
             }],

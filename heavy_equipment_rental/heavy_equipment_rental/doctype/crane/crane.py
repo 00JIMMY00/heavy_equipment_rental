@@ -58,17 +58,17 @@ class Crane(Document):
 			lock_cranes([self.name])
 		periods = set()
 		for row in self.period_prices:
-			if row.period not in ("Hour", "Day", "Month") or row.period in periods:
-				frappe.throw(_("Crane prices must contain Hour, Day and Month exactly once."))
+			if row.period not in ("Hour", "Day") or row.period in periods:
+				frappe.throw(_("Crane prices must contain Hour and Day exactly once."))
 			periods.add(row.period)
 			check_non_negative(row.price, _("{0} price").format(row.period))
-		for period in ("Hour", "Day", "Month"):
+		for period in ("Hour", "Day"):
 			if period not in periods:
 				row = self.append("period_prices", {"period": period, "price": 0})
 				# Validation runs after Frappe names existing children on insert.
 				if self.is_new():
 					set_new_name(row)
-		self.period_prices.sort(key=lambda row: ("Hour", "Day", "Month").index(row.period))
+		self.period_prices.sort(key=lambda row: ("Hour", "Day").index(row.period))
 		for index, row in enumerate(self.period_prices, 1):
 			row.idx = index
 		from heavy_equipment_rental.profit_sharing import validate_agreement

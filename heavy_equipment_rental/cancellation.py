@@ -31,9 +31,11 @@ def cancellation_plan(doctype, name):
             pending.extend(("Crane Profit Settlement", child)
                            for child in children.get("Crane Profit Settlement", []))
         if dt == "Grouped Expense":
+            if (dt, dn) == (doctype, name):
+                doc.before_cancel()
             from heavy_equipment_rental.rental_expenses import affected_settlements
             for row in doc.items:
-                pending.extend(("Crane Profit Settlement", n) for n in affected_settlements(doc.make_expense(row)))
+                pending.extend(("Crane Profit Settlement", n) for n in affected_settlements(doc.rental_source(row)))
             pending.extend(("Journal Entry", row.journal_entry) for row in doc.items if row.journal_entry)
             pending.extend(("Expense Entry", row.expense_entry) for row in doc.items if row.expense_entry)
         if dt == "Expense Entry":
@@ -78,10 +80,17 @@ def cancellation_plan(doctype, name):
     priority = {"Payment Entry": 0, "Crane Profit Settlement": 1,
                 "Sales Invoice": 2, "Purchase Invoice": 2,
                 "Grouped Expense": 3, "Crane Timesheet": 4, "Expense Entry": 5, "Journal Entry": 6}
+    owned_batches = set()
+    if doctype == "Crane Timesheet":
+        sheet = frappe.get_doc(doctype, name)
+        owned_batches = {r.grouped_expense for r in sheet.driver_payroll if r.grouped_expense}
     def order(row):
         # Period settlements must reverse newest first.
         end = frappe.db.get_value(row["doctype"], row["name"], "to_date") if row["doctype"] == "Crane Profit Settlement" else None
-        return (priority[row["doctype"]], -getdate(end).toordinal() if end else 0, row["name"])
+        rank = priority[row["doctype"]]
+        if row["doctype"] == "Grouped Expense" and row["name"] in owned_batches:
+            rank = 5  # The parent Timesheet reverses its payroll in on_cancel.
+        return (rank, -getdate(end).toordinal() if end else 0, row["name"])
     return sorted(docs, key=order)
 
 
@@ -128,9 +137,15 @@ def cancel_timesheet_dependencies(sheet):
     plan = cancellation_plan("Crane Timesheet", sheet.name)
     payroll = {row.expense_entry for row in sheet.driver_payroll if row.expense_entry}
     payroll_journals = {frappe.db.get_value("Expense Entry", name, "journal_entry") for name in payroll}
+    batches = {r.grouped_expense for r in sheet.driver_payroll if r.grouped_expense}
+    for name in batches:
+        batch = frappe.get_doc('Grouped Expense', name)
+        payroll_journals.update(r.journal_entry for r in batch.items if r.journal_entry)
     for row in plan:
         frappe.get_doc(row["doctype"], row["name"]).check_permission("cancel")
     for row in plan:
+        if row["doctype"] == "Grouped Expense" and row["name"] in batches:
+            continue
         if row["doctype"] == "Crane Timesheet":
             continue
         if row["doctype"] == "Expense Entry" and row["name"] in payroll:

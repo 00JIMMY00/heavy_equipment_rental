@@ -1,5 +1,25 @@
 # Current decisions
 
+## Timesheet salary overpayments
+
+A positive salary installment may exceed earned pay. The full payment posts to salary expense and the payment account. Remaining Salary shows earned pay less submitted payments, including negative balances. Timesheet submission pays only a positive remainder.
+
+## 2026-11-21 — Hourly driver payroll and rental pricing
+
+Convert draft Day/Month rate-based pay to an hourly rate using the previous earned amount divided by regular hours, then apply that rate to all hours. An overtime-only draft uses its recorded hours as the baseline. With zero hours an hourly rate must be entered once work starts. Fixed payroll keeps its amount. Historical rental terms and posted payroll retain their original units.
+
+## 2026-11-21 — Unstaffed crane downtime
+
+A Timesheet Entry with zero worked hours and zero overtime can omit the driver and clock times. Any recorded hours, including hours inferred from clock times, require a driver. Unstaffed downtime adds no driver summary or payroll row.
+
+## 2026-11-21 — Customer receivables reporting
+
+Use ERPNext's Accounts Receivable report to compute historical Sales Invoice balances from the Payment Ledger. Apply Company, Customer, and Sales Invoice permissions before showing rows. Use current outstanding amounts and ERPNext's Payment Entry mapping to prepare receipts for selected Sales Invoices that share a customer, company, receivable account, and currency.
+
+## 2026-11-21 — Unified expense entry
+
+Grouped Expense is the sole entry point for paid expenses, including cash repairs, payroll and workbook imports. Expense Entry Type remains the account mapping. Historical vouchers and settlement snapshots retain their original identifiers, while Grouped Expense owns new posting and reversal.
+
 ## 2026-11-21 — Grouped Expense table columns
 
 Use equal default widths for Date, Description, Total, Expense Entry Type and Mode of Payment. Keep the native row editor and column settings.

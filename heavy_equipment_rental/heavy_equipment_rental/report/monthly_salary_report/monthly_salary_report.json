@@ -3,7 +3,7 @@
  "name": "Monthly Salary Report",
  "report_name": "Monthly Salary Report",
  "module": "Heavy Equipment Rental",
- "ref_doctype": "Expense Entry",
+ "ref_doctype": "Grouped Expense",
  "report_type": "Script Report",
  "is_standard": "Yes",
  "disabled": 0,

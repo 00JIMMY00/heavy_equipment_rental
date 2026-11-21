@@ -49,19 +49,27 @@ def sync_operations_workspace():
 
 
 def add_salary_report():
-    key = "her_salary_report_workspace_v1"
+    add_financial_report("Employee Salary Withdrawals", "Grouped Expense", "her_salary_withdrawals_workspace_v1")
+    add_financial_report("Monthly Salary Report", "Grouped Expense", "her_salary_report_workspace_v1")
+
+
+def add_receivable_report():
+    add_financial_report("Simple Receivable Summary", "Sales Invoice", "her_receivable_report_workspace_v1")
+
+
+def add_financial_report(report, reference_doctype, key):
     if frappe.db.get_default(key) or not frappe.db.exists("Workspace", "Crane Operations"):
         return
 
     workspace = frappe.get_doc("Workspace", "Crane Operations")
-    if not any(row.link_to == "Monthly Salary Report" for row in workspace.links):
+    if not any(row.link_to == report for row in workspace.links):
         links = list(workspace.links)
         section = next((row for row in links if row.type == "Card Break" and row.label == "Financial Reports"), None)
         if not section:
             section = workspace.append("links", dict(type="Card Break", label="Financial Reports"))
             links.append(section)
-        link = workspace.append("links", dict(type="Link", label="Monthly Salary Report", link_type="Report",
-            link_to="Monthly Salary Report", is_query_report=1, report_ref_doctype="Expense Entry"))
+        link = workspace.append("links", dict(type="Link", label=report, link_type="Report",
+            link_to=report, is_query_report=1, report_ref_doctype=reference_doctype))
         links.insert(links.index(section) + 1, link)
         workspace.set("links", links)
         card = None

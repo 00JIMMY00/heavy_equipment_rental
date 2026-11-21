@@ -15,8 +15,11 @@ from heavy_equipment_rental import test_partner_settlements as partner_tests
 
 class TestDistributionReporting(FrappeTestCase):
     def setUp(self):
+        from heavy_equipment_rental.test_expenses import enable_historical_fixtures
+        enable_historical_fixtures(self)
         self.fx = partner_tests.TestPartnerSettlements()
         self.fx.setUp()
+        self.addCleanup(self.fx.doCleanups)
 
     def report(self, view="Settlement Summary", **filters):
         return execute(dict(company=self.fx.company.name, report_date=today(), crane=self.fx.crane.name,
@@ -31,13 +34,13 @@ class TestDistributionReporting(FrappeTestCase):
         return {r["label"]: r["value"] for r in result[4]}
 
     def expense(self, sheet, amounts=(60, 40)):
-        template = frappe.get_doc("Expense Entry", self.fx.cycle["expenses"][0])
-        second = frappe.get_doc("Expense Entry", self.fx.cycle["expenses"][1])
+        template = frappe.get_doc("Grouped Expense", self.fx.cycle["expenses"][0])
+        second = frappe.get_doc("Grouped Expense", self.fx.cycle["expenses"][1])
         doc = frappe.get_doc(dict(doctype="Expense Entry", company=self.fx.company.name,
             posting_date=sheet.period_start, crane=sheet.crane, crane_assignment=sheet.assignment,
             crane_timesheet=sheet.name, mode_of_payment=template.mode_of_payment,
             cost_center=self.fx.company.cost_center, description="Report cost breakdown",
-            expenses=[dict(expense_entry_type=entry.expenses[0].expense_entry_type, amount=amount)
+            expenses=[dict(expense_entry_type=entry.items[0].expense_entry_type, amount=amount)
                       for entry, amount in zip((template, second), amounts) if amount])).insert()
         doc.submit()
         return doc

@@ -401,7 +401,7 @@ def collect_sources(crane, company, start, end, *, grand_total=False, include_ex
     Fetch complete candidates and check document permissions individually: an
     inaccessible source must fail a settlement, never silently reduce its profit.
     """
-    for doctype in ("Crane Timesheet", "Sales Invoice", "Purchase Invoice", "Expense Entry", "Journal Entry"):
+    for doctype in ("Crane Timesheet", "Sales Invoice", "Purchase Invoice", "Grouped Expense", "Journal Entry"):
         frappe.has_permission(doctype, "read", throw=True)
     dates = ["between", [start, end]]
     sources = []

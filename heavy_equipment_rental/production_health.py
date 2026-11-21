@@ -13,7 +13,7 @@ def check():
     frappe.cache().ping()
     from frappe.utils.background_jobs import get_redis_conn
     get_redis_conn().ping()
-    for doctype in ("Crane", "Rental Contract", "Crane Timesheet", "Expense Entry"):
+    for doctype in ("Crane", "Rental Contract", "Crane Timesheet", "Grouped Expense"):
         frappe.get_meta(doctype)
         frappe.db.count(doctype)
     return {"status": "ok", "apps": sorted(required)}

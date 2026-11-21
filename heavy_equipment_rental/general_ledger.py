@@ -112,8 +112,32 @@ def include_payments(vouchers, company):
     return result
 
 
+def expense_employee_lines(vouchers, company):
+    journals = [name for doctype, name in vouchers if doctype == "Journal Entry"]
+    if not journals:
+        return {}
+    # Expense journals carry the employee on the debit line. The posted GL
+    # intentionally omits this attribution on non-receivable/payable accounts.
+    return dict(frappe.db.sql("""
+        SELECT gl.name, MIN(line.party)
+        FROM `tabGL Entry` gl
+        JOIN `tabJournal Entry Account` line
+            ON line.parent = gl.voucher_no AND line.account = gl.account
+        JOIN `tabAccount` account ON account.name = gl.account
+        WHERE gl.company = %s AND gl.voucher_type = 'Journal Entry'
+          AND gl.voucher_no IN %s AND account.root_type = 'Expense'
+          AND COALESCE(gl.party, '') = '' AND COALESCE(gl.party_type, '') = ''
+        GROUP BY gl.name
+        HAVING COUNT(*) = COUNT(CASE WHEN line.party_type = 'Employee'
+            AND line.party != '' AND line.debit > 0 THEN 1 END)
+            AND COUNT(DISTINCT line.party) = 1
+    """, (company, tuple(journals))))
+
+
 def execute(filters):
-    vouchers = sorted(include_payments(voucher_scope(filters), filters.company))
+    sources = voucher_scope(filters)
+    employees = expense_employee_lines(sources, filters.company) if filters.consolidated_expense else {}
+    vouchers = sorted(include_payments(sources, filters.company))
     # Load an isolated native module, retaining ERPNext's grouping, balances,
     # currencies and GL permissions. Never monkey-patch its shared globals:
     # simultaneous requests (and unfiltered reports) must remain independent.
@@ -124,6 +148,18 @@ def execute(filters):
 
     def get_conditions(values):
         conditions = native_conditions(values)
+        # Apply the same source attribution to the native party filters before
+        # opening balances, grouping and totals are calculated.
+        if employees and values.party_type == "Employee":
+            values["her_employee_rows"] = tuple(employees)
+            conditions = conditions.replace("party_type=%(party_type)s",
+                "(party_type=%(party_type)s OR name IN %(her_employee_rows)s)")
+        if employees and values.party:
+            matches = tuple(name for name, employee in employees.items() if employee in values.party)
+            if matches:
+                values["her_matching_rows"] = matches
+                conditions = conditions.replace("party in %(party)s",
+                    "(party in %(party)s OR name IN %(her_matching_rows)s)")
         clauses = []
         by_type = {}
         for doctype, name in vouchers:
@@ -135,6 +171,18 @@ def execute(filters):
         return conditions + " AND (" + (" OR ".join(clauses) if clauses else "1=0") + ")"
 
     scoped.get_conditions = get_conditions
+    if employees:
+        native_entries = scoped.get_gl_entries
+
+        def get_gl_entries(values, dimensions):
+            entries = native_entries(values, dimensions)
+            for entry in entries:
+                if employee := employees.get(entry.gl_entry):
+                    entry.party_type = "Employee"
+                    entry.party = employee
+            return entries
+
+        scoped.get_gl_entries = get_gl_entries
     columns, rows = scoped.execute(filters)
     return columns, rows, _(
         "Crane/CPS filters show complete linked accounting vouchers, including shared vouchers. "

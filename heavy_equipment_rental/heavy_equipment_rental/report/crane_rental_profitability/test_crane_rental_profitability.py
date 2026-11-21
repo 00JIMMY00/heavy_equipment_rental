@@ -25,7 +25,7 @@ class TestCraneRentalProfitability(FrappeTestCase):
         result = execute(self.filters)
         self.assertEqual(self.totals(), [15000, 3500, 11500])
         self.assertEqual(len(result[1]), 5)
-        expenses = [row for row in result[1] if row["voucher_type"] == "Expense Entry"]
+        expenses = [row for row in result[1] if row["voucher_type"] == "Grouped Expense"]
         self.assertEqual(sum(row["expenses"] for row in expenses if "Custody" in row["source_account"]), 1500)
         self.assertEqual(sum(row["expenses"] for row in expenses if "Custody" not in row["source_account"]), 2000)
         # Receipt and custody funding are balance-sheet movements, excluded above.
@@ -39,8 +39,8 @@ class TestCraneRentalProfitability(FrappeTestCase):
         self.assertEqual(self.totals(), [0, 0, 0])
 
     def test_cancelled_and_draft_expenses_and_sales_return(self):
-        expense = frappe.get_doc("Expense Entry", self.cycle["expenses"][0])
-        amount = sum(row.amount for row in expense.expenses)
+        expense = frappe.get_doc("Grouped Expense", self.cycle["expenses"][0])
+        amount = sum(row.amount for row in expense.items)
         expense.cancel()
         draft = frappe.copy_doc(expense)
         draft.docstatus = 0
@@ -106,13 +106,13 @@ class TestCraneRentalProfitability(FrappeTestCase):
         missing, deleted, unsubmitted = self.cycle["expenses"][:3]
         excluded_amount = 0
         for name in (missing, deleted, unsubmitted):
-            expense = frappe.get_doc("Expense Entry", name)
-            excluded_amount += sum(row.amount for row in expense.expenses)
+            expense = frappe.get_doc("Grouped Expense", name)
+            excluded_amount += sum(row.amount for row in expense.items)
             if name == unsubmitted:
                 # Reproduce inconsistent historical data without invoking cancellation.
-                frappe.db.set_value("Journal Entry", expense.journal_entry, "docstatus", 0)
+                frappe.db.set_value("Journal Entry", expense.items[0].journal_entry, "docstatus", 0)
             else:
-                frappe.db.set_value("Expense Entry", name, "journal_entry",
+                frappe.db.set_value("Grouped Expense Item", expense.items[0].name, "journal_entry",
                                     None if name == missing else "HER-MISSING-JOURNAL")
         result = execute(self.filters)
         self.assertEqual(self.totals(), [15000, 3500 - excluded_amount, 11500 + excluded_amount])
@@ -120,5 +120,5 @@ class TestCraneRentalProfitability(FrappeTestCase):
             self.assertIn(name, result[2])
             self.assertNotIn(name, [row["voucher"] for row in result[1]])
         self.assertIn("Review these historical records", result[2])
-        self.assertIsNone(frappe.db.get_value("Expense Entry", missing, "journal_entry"))
-        self.assertEqual(frappe.db.get_value("Expense Entry", deleted, "journal_entry"), "HER-MISSING-JOURNAL")
+        self.assertIsNone(frappe.db.get_value("Grouped Expense Item", {"parent": missing}, "journal_entry"))
+        self.assertEqual(frappe.db.get_value("Grouped Expense Item", {"parent": deleted}, "journal_entry"), "HER-MISSING-JOURNAL")

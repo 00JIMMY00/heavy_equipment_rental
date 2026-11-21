@@ -5,15 +5,17 @@ from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.permissions import add_permission, update_permission_property
 
 from heavy_equipment_rental.patches.default_rental_workspace import execute as set_default_workspace
-from heavy_equipment_rental.workspace import add_salary_report, sync_operations_workspace
+from heavy_equipment_rental.workspace import add_receivable_report, add_salary_report, sync_operations_workspace
 from heavy_equipment_rental.item_prices import install_item_price_field
 
 
 def execute():
+	from heavy_equipment_rental.crane_insights import install_workspace
+	install_workspace()
 	from heavy_equipment_rental.consolidated_expenses_setup import seed_defaults, update_workspace
 	from heavy_equipment_rental.employee_entry import setup as setup_employee_entry
 	setup_employee_entry()
-	for unit in ("Hour", "Day", "Month"):
+	for unit in ("Hour", "Day"):
 		if not frappe.db.exists("UOM", unit):
 			frappe.get_doc({"doctype": "UOM", "uom_name": unit, "must_be_whole_number": 0}).insert(ignore_permissions=True)
 	# Retain fractional worked hours and existing invoice conversion precision.
@@ -32,17 +34,6 @@ def execute():
 			"value": "1",
 			"property_type": "Check",
 		}, module="Heavy Equipment Rental")
-	# HER enables inline editing on the shared expense rows without modifying its owner app.
-	frappe.make_property_setter({
-		"doctype": "Expense Entry Detail", "doctype_or_field": "DocType",
-		"property": "editable_grid", "value": "1", "property_type": "Check",
-	}, module="Heavy Equipment Rental")
-	for field, columns in (("expense_entry_type", 5), ("expense_entry_account", 3), ("amount", 2)):
-		frappe.make_property_setter({
-			"doctype": "Expense Entry Detail", "fieldname": field,
-			"property": "columns", "value": str(columns), "property_type": "Int",
-		}, module="Heavy Equipment Rental")
-
 	for role in ("Projects Manager", "Projects User"):
 		if not frappe.db.exists(
 			"Custom DocPerm", {"parent": "Mode of Payment", "role": role, "permlevel": 0, "if_owner": 0}
@@ -58,7 +49,8 @@ def execute():
 				("read", "write", "create", "delete", "report", "export", "print", "submit", "amend", "cancel")):
 				update_permission_property(
 					doctype, role, 0, permission,
-					0 if permission == "cancel" and role == "Projects User" else 1,
+					int(permission in ("read", "select", "report", "export", "print")
+						or (permission == "cancel" and role == "Projects Manager")),
 				)
 	create_custom_fields({
 		"Account": [dict(fieldname="her_is_salary_account", fieldtype="Check", label="Salary Expense Account",
@@ -149,6 +141,7 @@ def execute():
 	install_workbook_fields()
 	sync_operations_workspace()
 	add_salary_report()
+	add_receivable_report()
 	from heavy_equipment_rental.patches.add_expense_report_workspace import execute as add_expense_report
 	add_expense_report()
 	seed_defaults()

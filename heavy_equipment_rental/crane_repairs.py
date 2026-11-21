@@ -59,7 +59,7 @@ def validate_maintenance(doc, *, require_postings=False):
 		frappe.throw(_("Cancel/delete the repair accounting documents before cancelling maintenance."))
 	if doc.cost_treatment == "Cash Expense":
 		return
-	if doc.expense_entry or flt(doc.cost):
+	if doc.grouped_expense or doc.expense_entry or flt(doc.cost):
 		frappe.throw(_("Native repair documents record the costs. Clear Cash Expense Cost; do not post the same repair twice."))
 	crane = frappe.get_doc("Crane", doc.crane)
 	crane.check_permission("read")
