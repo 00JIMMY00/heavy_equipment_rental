@@ -134,45 +134,40 @@ function sync_payroll_drivers(frm) {
         frm.add_child("driver_payroll", {employee, ...work});
         rowsChanged = true;
     }
-    render_salary_balance(frm);
+    refresh_salary_balance(frm);
     if (rowsChanged) {
         frm.dirty();
         frm.refresh_field("driver_payroll");
     }
 }
 
-function render_salary_balance(frm) {
-    const wrapper = frm.fields_dict.salary_balance.$wrapper.empty();
-    const payroll = new Map((frm.doc.driver_payroll || []).map(row => [row.employee, row]));
-    const paid = frm.salary_payment_state;
-    if (!paid || paid.name !== frm.doc.name) return;
-    const employees = new Set([...payroll.keys(), ...Object.keys(paid.totals)]);
-    if (!employees.size) return;
+async function refresh_salary_balance(frm, force = false) {
+    const wrapper = frm.fields_dict.salary_balance.$wrapper;
+    const doc = frm.doc;
+    const employees = [...new Set((doc.driver_payroll || []).map(row => row.employee).filter(Boolean))];
+    const key = JSON.stringify([doc.name, doc.payroll_company, employees]);
+    if (!force && frm.salary_balance_request?.key === key) return;
+    const request = {key};
+    frm.salary_balance_request = request;
+    wrapper.empty();
+    if (!employees.length || !frappe.boot.user.all_reports?.["Employee Salary Withdrawals"]) return;
+    const balances = await frappe.xcall("heavy_equipment_rental.employee_salary.driver_salary_balances",
+        {employees, company: doc.payroll_company || null});
+    if (frm.doc !== doc || frm.salary_balance_request !== request || !balances.length) return;
     const table = $('<table class="table table-bordered">').appendTo(wrapper);
     const header = $('<tr>').appendTo($('<thead>').appendTo(table));
-    for (const label of ["Driver", "Earned Salary", "Salary Paid", "Remaining Salary"]) {
-        $('<th>').text(__(label)).appendTo(header);
+    for (const label of ["Driver", "Remaining Salary", "Salary Difference"]) {
+        $('<th scope="col">').text(__(label)).appendTo(header);
     }
     const body = $('<tbody>').appendTo(table);
-    for (const employee of employees) {
-        const earned = flt(payroll.get(employee)?.amount);
-        const amount = flt(paid.totals[employee]);
-        const shift = frm.doc.timesheet_entries?.find(row => row.employee === employee);
-        const tr = $('<tr>').appendTo(body);
-        $('<td>').text(shift?.driver_name || employee).appendTo(tr);
-        for (const value of [earned, amount, earned - amount]) {
-            $('<td>').text(format_currency(value, erpnext.get_currency(frm.doc.payroll_company))).appendTo(tr);
+    for (const balance of balances) {
+        const row = $('<tr>').appendTo(body);
+        $('<td>').text(balance.driver).appendTo(row);
+        for (const value of [balance.remaining, balance.difference]) {
+            const color = value < 0 ? "text-danger" : value > 0 ? "text-success" : "text-muted";
+            $('<td>').addClass(color).text(format_currency(value, balance.currency)).appendTo(row);
         }
     }
-}
-
-async function refresh_salary_balance(frm) {
-    const doc = frm.doc;
-    const totals = frm.is_new() ? {} : await frappe.xcall(
-        "heavy_equipment_rental.driver_payroll.get_salary_payments", {timesheet: doc.name});
-    if (frm.doc !== doc) return;
-    frm.salary_payment_state = {name: doc.name, totals};
-    render_salary_balance(frm);
 }
 
 async function pay_timesheet_salary(frm) {
@@ -357,7 +352,7 @@ frappe.ui.form.on("Crane Timesheet", {
             frm.set_df_property(field, "options", options);
         }
         frm.toggle_display("pay_salary", frm.doc.docstatus === 0 && frappe.model.can_create("Grouped Expense"));
-        refresh_salary_balance(frm);
+        refresh_salary_balance(frm, true);
         sync_payroll_drivers(frm);
         fill_entry_rental_terms(frm);
         purchase_price_label(frm);

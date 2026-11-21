@@ -1,5 +1,11 @@
 # Current decisions
 
+## Timesheet driver salary balances
+
+For each driver on the form, Remaining Salary totals submitted Timesheet earnings in the company less salary withdrawals linked to those submitted Timesheets. Salary Difference subtracts all posted salary withdrawals from the same earnings, including standalone payments and advances on draft Timesheets. Both columns cover all dates and use Employee Salary Withdrawals report access and salary accounts.
+
+Salary Difference uses submitted Timesheet earnings by work date less submitted salary withdrawals by posting date. The report retains draft earnings for reference.
+
 ## Timesheet salary overpayments
 
 A positive salary installment may exceed earned pay. The full payment posts to salary expense and the payment account. Remaining Salary shows earned pay less submitted payments, including negative balances. Timesheet submission pays only a positive remainder.

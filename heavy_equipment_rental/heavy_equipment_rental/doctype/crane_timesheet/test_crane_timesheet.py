@@ -81,12 +81,16 @@ class TestCraneTimesheet(FrappeTestCase):
 
     def test_draft_salary_installments_and_final_hours(self):
         from heavy_equipment_rental.driver_payroll import make_salary_payment, get_salary_payments
+        from heavy_equipment_rental.employee_salary import driver_salary_balances
+        from heavy_equipment_rental.heavy_equipment_rental.report.employee_salary_withdrawals.employee_salary_withdrawals import execute as withdrawals
 
         sheet = self.make_sheet()
         sheet.driver = self.make_payroll_driver()
         settings = frappe.get_single("Heavy Equipment Rental Settings")
         mode = frappe.db.get_value("Mode of Payment Account", {"company": self.company}, "parent")
         expense_type = frappe.db.get_value("Expense Entry Type", {"company": self.company, "enabled": 1})
+        account = frappe.db.get_value("Expense Entry Type", expense_type, "account")
+        frappe.db.set_value("Account", account, "her_is_salary_account", 1)
         settings.set("driver_payroll_defaults", [
             dict(company=self.company, expense_type=expense_type, mode_of_payment=mode)])
         settings.save()
@@ -128,10 +132,27 @@ class TestCraneTimesheet(FrappeTestCase):
         installment.mode_of_payment = mode
         installment.items[0].update(dict(description="First installment", amount=30))
         installment.insert().submit()
+        def balances():
+            row, = driver_salary_balances([sheet.driver], self.company)
+            report_row, = withdrawals(dict(company=self.company, employee=sheet.driver,
+                                           from_date=sheet.period_start, to_date=today()))[1]
+            self.assertEqual(report_row["balance"], row["difference"])
+            return row["remaining"], row["difference"]
+
+        self.assertEqual(balances(), (-25, -55))
         second_sheet.submit()
         final_payment = second_sheet.driver_payroll[0].grouped_expense
         self.assertEqual(frappe.db.get_value("Grouped Expense", final_payment, "total"), 70)
         self.assertEqual(get_salary_payments(second_sheet.name)[sheet.driver], 100)
+        self.assertEqual(balances(), (-25, -25))
+        standalone = frappe.get_doc(dict(
+            doctype="Grouped Expense", company=self.company, mode_of_payment=mode, employee=sheet.driver,
+            items=[dict(posting_date=today(), description="Salary withdrawal", expense_entry_type=expense_type,
+                        amount=10)],
+        )).insert().submit()
+        self.assertEqual(balances(), (-25, -35))
+        standalone.cancel()
+        self.assertEqual(balances(), (-25, -25))
 
     def test_driver_payroll_posts_once_per_driver_and_cancels_with_timesheet(self):
         settings = frappe.get_single("Heavy Equipment Rental Settings")

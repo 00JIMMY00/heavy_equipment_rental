@@ -87,7 +87,8 @@ def execute(filters=None):
     columns = [dict(fieldname="employee", label=_("Employee"), fieldtype="Link", options="Employee", width=145)]
     columns.extend(dict(fieldname=key, label=_(label), fieldtype="Currency", options="currency", width=165)
                    for key, label in fields)
-    due, paid = sum(earned), linked + standalone
-    return columns, [dict(employee=employee.name, currency=company.default_currency, draft_earned=earned[0],
-        posted_earned=earned[1], earned=due, linked_paid=linked, standalone_paid=standalone,
-        paid=paid, balance=due-paid)], _("Timesheet salary follows work dates. Withdrawals follow the posting date of submitted salary expenses. A negative difference means withdrawals exceeded earnings in this period.")
+    draft_earned, submitted_earned = earned
+    paid = linked + standalone
+    return columns, [dict(employee=employee.name, currency=company.default_currency, draft_earned=draft_earned,
+        posted_earned=submitted_earned, earned=draft_earned + submitted_earned, linked_paid=linked, standalone_paid=standalone,
+        paid=paid, balance=submitted_earned - paid)], _("Salary Difference uses submitted Timesheet earnings by work date less submitted salary withdrawals by posting date.")

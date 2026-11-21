@@ -1251,6 +1251,7 @@ The employee is only entitled to {0} for {1}.,الموظف غير مستحق ل�
 Pay Salary,دفع راتب
 Earned Salary,الراتب المستحق
 Salary Paid,الراتب المدفوع
+Salary Difference,فرق الراتب
 Remaining Salary,الراتب المتبقي
 Salary Balance,رصيد الراتب
 Select one Driver Payroll row to pay.,اختر صف سائق واحد من جدول المرتبات لدفع راتبه.
@@ -1339,7 +1340,7 @@ Paid without Timesheet,مدفوع بدون تايم شيت
 Total Salary Withdrawals,إجمالي مسحوبات الراتب
 Salary Difference for Period,المستحق ناقص المسحوبات خلال الفترة
 "Select a company, employee and date range.",اختر الشركة والموظف والفترة.
-Timesheet salary follows work dates. Withdrawals follow the posting date of submitted salary expenses. A negative difference means withdrawals exceeded earnings in this period.,المستحق حسب تواريخ العمل في التايم شيت والمسحوبات حسب تاريخ ترحيل مصروف الراتب المعتمد. الفرق السالب يعني أن مسحوبات الفترة تجاوزت مستحقاتها.
+Salary Difference uses submitted Timesheet earnings by work date less submitted salary withdrawals by posting date.,فرق الراتب يساوي مستحقات التايم شيت المعتمد حسب تاريخ العمل مطروحًا منها مسحوبات الراتب المعتمدة حسب تاريخ الترحيل.
 
 "Crane prices must contain Hour and Day exactly once.",يجب أن تتضمن أسعار المعدات الساعة واليوم مرة واحدة لكل منها.
 "Select an Hour or Day Billing Unit.",اختر ساعة أو يومًا كوحدة فوترة.
