@@ -38,9 +38,9 @@ Extend the Rental Contract explicitly if work continues beyond its booked dates.
 
 1. In **Heavy Equipment Rental Settings → Driver Payroll**, add a row for the rental company. Choose the **Payroll Expense Type** for the salary expense account and the **Payroll Mode of Payment** whose company default account funds the payment.
 2. Add or select drivers in **Timesheet Entries**. **Driver Payroll** shows **Total Hours** (regular plus overtime), **Overtime Hours**, **Price / Hour**, **Overtime Price / Hour**, and **Payroll Amount** per driver. Enter a price to calculate the amount, or enter a fixed payroll amount to clear the overtime price and calculate a single implied hourly price. The last field you edit stays fixed when shifts change. A fixed amount can be entered before there is any worked quantity. Its price appears once work is recorded. Leave the price and amount blank or zero to skip a driver.
-3. Open a row with the pencil icon to see its payroll unit, worked hours, **Mode of Payment**, and Grouped Expense link. The payment mode defaults from the company’s payroll settings and can be changed per driver. Submit the Timesheet to post one **Grouped Expense** and Journal Entry per paid driver using the row’s payment mode and the submission date.
+3. Submit the Timesheet to record each driver’s earned salary. For a salary payment or advance, use **Create → Pay Salary / Advance** on a draft or submitted Timesheet. Choose the driver, enter the amount in the linked Grouped Expense, and submit that expense to post the payment. Its payment mode defaults from the driver’s payroll row.
 
-A blank or zero overtime price uses the driver’s regular hourly price. A separate overtime price applies only to the driver’s overtime hours, including on daily rentals. The shift’s overtime selling price applies to customer billing. Use the Timesheet's **Cancel** action to reverse its payroll expenses. Amend the Timesheet to correct amounts and post replacement entries.
+A blank or zero overtime price uses the driver’s regular hourly price. A separate overtime price applies only to the driver’s overtime hours, including on daily rentals. The shift’s overtime selling price applies to customer billing.
 
 ## Grouped expenses
 

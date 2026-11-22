@@ -12,7 +12,6 @@ from heavy_equipment_rental.driver_payroll import (
     cancel_driver_payroll,
     driver_work_summary,
     payroll_defaults,
-    post_driver_payroll,
     sync_payroll_rows,
 )
 from heavy_equipment_rental.rental_validation import (
@@ -352,7 +351,6 @@ class CraneTimesheet(Document):
             from heavy_equipment_rental.purchasing import create_purchase_invoice
 
             create_purchase_invoice(self)
-        post_driver_payroll(self)
 
     def before_cancel(self):
         from heavy_equipment_rental.cancellation import cancel_timesheet_dependencies

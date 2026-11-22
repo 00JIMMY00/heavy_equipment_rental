@@ -34,7 +34,7 @@ class GroupedExpense(Document):
         sheet = None
         if self.timesheet_salary_payment:
             if not self.crane_timesheet:
-                frappe.throw(_("Select a driver from a draft Timesheet."))
+                frappe.throw(_("Select a driver from a draft or submitted Timesheet."))
             sheet = frappe.get_doc("Crane Timesheet", self.crane_timesheet, for_update=True)
         if self.crane:
             lock_cranes([self.crane])

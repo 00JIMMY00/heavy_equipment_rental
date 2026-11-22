@@ -149,8 +149,8 @@ def get_salary_payments(timesheet):
 
 
 def installment_context(sheet, employee):
-    if sheet.docstatus != 0 or not any(row.employee == employee for row in sheet.driver_payroll):
-        frappe.throw(_("Select a driver from a draft Timesheet."))
+    if sheet.docstatus == 2 or not any(row.employee == employee for row in sheet.driver_payroll):
+        frappe.throw(_("Select a driver from a draft or submitted Timesheet."))
     default = payroll_defaults(sheet.payroll_company)
     if not default:
         frappe.throw(_("Set driver payroll defaults for {0} in Heavy Equipment Rental Settings.").format(sheet.payroll_company))
@@ -168,6 +168,7 @@ def make_salary_payment(timesheet, employee):
         "doctype": "Grouped Expense", "company": sheet.payroll_company, "employee": employee,
         "crane": sheet.crane, "crane_timesheet": sheet.name, "crane_assignment": sheet.assignment,
         "timesheet_salary_payment": 1,
+        "mode_of_payment": next(row.mode_of_payment for row in sheet.driver_payroll if row.employee == employee),
         "items": [{"posting_date": today(), "expense_entry_type": expense_type}],
     })
 
@@ -177,36 +178,6 @@ def validate_installment(expense, sheet):
     if (sheet.crane != expense.crane or sheet.payroll_company != expense.company
             or any(row.expense_entry_type != expense_type for row in expense.items)):
         frappe.throw(_("Salary payments must use the Timesheet crane, company and payroll expense type."))
-
-
-def post_driver_payroll(sheet):
-    paid = installment_totals(sheet.name, lock=True)
-    rows = [(row, flt(flt(row.amount) - paid[row.employee], row.precision("amount")))
-            for row in sheet.driver_payroll if not row.grouped_expense]
-    rows = [(row, remaining) for row, remaining in rows if remaining > 0]
-    if not rows:
-        return
-    default = payroll_defaults(sheet.payroll_company)
-    if not default:
-        frappe.throw(_("Set driver payroll defaults for {0} in Heavy Equipment Rental Settings.").format(sheet.payroll_company))
-    validate_payroll_expense_type(default)
-
-    posting_date = today()
-    for row, remaining in rows:
-        validate_payroll_mode(row.mode_of_payment, sheet.payroll_company)
-        expense = frappe.get_doc({
-            "doctype": "Grouped Expense",
-            "company": sheet.payroll_company,
-            "mode_of_payment": row.mode_of_payment,
-            "employee": row.employee,
-            "crane": sheet.crane,
-            "crane_assignment": sheet.assignment,
-            "crane_timesheet": sheet.name,
-            "items": [{"posting_date": posting_date, "description": _("Driver payroll for Crane Timesheet {0}").format(sheet.name), "expense_entry_type": default.expense_type, "amount": remaining}],
-        })
-        expense.insert()
-        expense.submit()
-        row.db_set("grouped_expense", expense.name, update_modified=False)
 
 
 def cancel_driver_payroll(sheet):

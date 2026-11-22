@@ -177,19 +177,27 @@ async function refresh_salary_balance(frm, force = false) {
 async function pay_timesheet_salary(frm) {
     const drivers = frm.doc.driver_payroll || [];
     if (!drivers.length) return frappe.msgprint(__("Add a driver to the Timesheet first."));
-    let employee = drivers[0].employee;
-    if (drivers.length > 1) {
-        const selected = frm.fields_dict.driver_payroll.grid.get_selected_children();
-        if (selected.length !== 1) return frappe.msgprint(__("Select one Driver Payroll row to pay."));
-        employee = selected[0].employee;
+    const selected = frm.fields_dict.driver_payroll.grid.get_selected_children();
+    if (drivers.length === 1 || selected.length === 1) {
+        return open_salary_payment(frm, (selected[0] || drivers[0]).employee);
     }
+    frappe.prompt({
+        fieldname: "employee", fieldtype: "Select", label: __("Driver"), reqd: 1,
+        options: drivers.map(row => ({
+            value: row.employee,
+            label: (frm.doc.timesheet_entries || []).find(shift => shift.employee === row.employee)?.driver_name || row.employee,
+        })),
+    }, values => open_salary_payment(frm, values.employee), __("Pay Salary / Advance"), __("Create"));
+}
+
+async function open_salary_payment(frm, employee) {
     if (frm.is_dirty() || frm.is_new()) await frm.save();
     if (frm.is_dirty() || frm.is_new()) return;
     const payment = await frappe.xcall("heavy_equipment_rental.driver_payroll.make_salary_payment",
         {timesheet: frm.doc.name, employee});
     await frappe.model.with_doctype("Grouped Expense");
     const doc = frappe.model.get_new_doc("Grouped Expense");
-    for (const key of ["company", "employee", "crane", "crane_assignment", "crane_timesheet", "timesheet_salary_payment"]) {
+    for (const key of ["company", "employee", "crane", "crane_assignment", "crane_timesheet", "timesheet_salary_payment", "mode_of_payment"]) {
         doc[key] = payment[key];
     }
     const item = frappe.model.add_child(doc, "Grouped Expense Item", "items");
@@ -349,13 +357,14 @@ frappe.ui.form.on("Crane Timesheet", {
             sync_payroll_drivers(frm);
         }
     },
-    pay_salary: pay_timesheet_salary,
     refresh(frm) {
         for (const field of ["rental_rate_unit", "purchase_uom"]) {
             const options = frm.doc[field] === "Month" ? "\nHour\nDay\nMonth" : "\nHour\nDay";
             frm.set_df_property(field, "options", options);
         }
-        frm.toggle_display("pay_salary", frm.doc.docstatus === 0 && frappe.model.can_create("Grouped Expense"));
+        if (frm.doc.docstatus !== 2 && frappe.model.can_create("Grouped Expense")) {
+            frm.add_custom_button(__("Pay Salary / Advance"), () => pay_timesheet_salary(frm), __("Create"));
+        }
         refresh_salary_balance(frm, true);
         sync_payroll_drivers(frm);
         fill_entry_rental_terms(frm);

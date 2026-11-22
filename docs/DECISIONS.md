@@ -1,5 +1,9 @@
 # Current decisions
 
+## Driver salary entitlement and payment
+
+Submitting a Timesheet records driver salary entitlement. Create → Pay Salary / Advance prepares a linked Grouped Expense from a draft or submitted Timesheet. Submitting that expense posts the payment. Historical auto-posted payroll retains its original links and reversal path.
+
 ## Driver overtime payroll
 
 Total Hours includes regular hours and overtime from the driver’s Timesheet Entries. Overtime Hours shows the overtime portion. An optional driver overtime price replaces the regular price on those hours. Entering a fixed Payroll Amount uses one implied hourly price. Migration fills historical overtime hours from saved shifts and preserves posted amounts.
@@ -12,7 +16,7 @@ Salary Difference uses submitted Timesheet earnings by work date less submitted 
 
 ## Timesheet salary overpayments
 
-A positive salary installment may exceed earned pay. The full payment posts to salary expense and the payment account. Remaining Salary shows earned pay less submitted payments, including negative balances. Timesheet submission pays only a positive remainder.
+A positive salary installment may exceed earned pay. The full payment posts to salary expense and the payment account. Remaining Salary shows earned pay less submitted payments, including negative balances. Timesheet submission records the driver’s earned amount.
 
 ## 2026-11-21 — Hourly driver payroll and rental pricing
 

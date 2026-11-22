@@ -1,5 +1,9 @@
 # Project context
 
+## Driver salary entitlement and payment
+
+Submitting a Timesheet records driver salary entitlement. Create → Pay Salary / Advance prepares a linked Grouped Expense from a draft or submitted Timesheet. Submitting that expense posts the payment. Historical auto-posted payroll retains its original links and reversal path.
+
 ## Driver overtime payroll
 
 Total Hours includes regular hours and overtime from the driver’s Timesheet Entries. Overtime Hours shows the overtime portion. An optional driver overtime price replaces the regular price on those hours. Entering a fixed Payroll Amount uses one implied hourly price. Migration fills historical overtime hours from saved shifts and preserves posted amounts.
@@ -10,7 +14,7 @@ For each driver on the form, Remaining Salary totals submitted Timesheet earning
 
 ## Timesheet salary overpayments
 
-A positive salary installment may exceed earned pay. The full payment posts to salary expense and the payment account. Remaining Salary shows earned pay less submitted payments, including negative balances. Timesheet submission pays only a positive remainder.
+A positive salary installment may exceed earned pay. The full payment posts to salary expense and the payment account. Remaining Salary shows earned pay less submitted payments, including negative balances. Timesheet submission records the driver’s earned amount.
 
 ## 2026-11-21 — Hourly driver payroll and rental pricing
 
@@ -30,7 +34,7 @@ Crane Maintenance and Crane Driver Payroll link to Grouped Expense. Crane and Re
 
 ## Timesheet salary installments
 
-Use Pay Salary below Driver Payroll on a draft Timesheet. Select a payroll row when several drivers are present. Submit the prefilled Grouped Expense to record the installment. The balance uses the current payroll amount and submitted installments for that driver and Timesheet. Updating hours recalculates rate-based pay. Cancelling an installment restores its balance. Timesheet submission pays only the positive remainder, using the payroll row’s payment mode.
+Use Create → Pay Salary / Advance to record an installment. Select the driver and enter the amount. Submitted Grouped Expenses count as withdrawals. Cancelling a payment restores the balance.
 
 
 ## 2026-11-21 — Monthly employee salaries

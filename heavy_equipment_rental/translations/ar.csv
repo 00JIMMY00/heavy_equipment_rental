@@ -1354,3 +1354,6 @@ Overtime Hours,ساعات العمل الإضافي
 Overtime Price / Hour,سعر ساعة العمل الإضافي
 Leave at zero to use the driver’s hourly price for overtime.,اترك السعر صفرًا لاستخدام سعر ساعة السائق العادية في حساب العمل الإضافي.
 "Driver payroll row {0}: Enter a finite, non-negative overtime price.",صف رواتب السائقين {0}: أدخل سعرًا صالحًا غير سالب للعمل الإضافي.
+Pay Salary / Advance,صرف راتب / سلفة
+Select a driver from a draft or submitted Timesheet.,اختر سائقًا من تايم شيت مسودة أو معتمد.
+Submit the Timesheet to record earned salary. Use Create → Pay Salary / Advance to prepare a payment.,اعتمد التايم شيت لإثبات استحقاق الراتب. لتحضير دفعة اختر إنشاء ← صرف راتب / سلفة.
