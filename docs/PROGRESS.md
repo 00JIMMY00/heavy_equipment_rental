@@ -1,5 +1,9 @@
 # Progress
 
+## Employee Salary Withdrawals report
+
+Employee is optional. Show Drafts reveals draft earnings for reference. The stacked bars compare submitted earnings and withdrawals. The donut shows how much was withdrawn within and above each employee’s earned salary for the current filters. Each employee row can open a standalone salary payment or advance.
+
 ## Cancel and amend audit
 
 Treasury Transaction amendments clear the original transfer’s generated journal. Grouped Expense and Timesheet-based Crane Profit Settlement amendments resolve the current settlement and invoice from the selected Timesheet. Submission still requires a submitted invoice for a Timesheet-based settlement.

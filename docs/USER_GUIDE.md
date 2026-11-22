@@ -510,6 +510,6 @@ Use native Amend for any cancelled payments that need corrected replacement reco
 
 ### Employee Salary Withdrawals
 
-In Crane Operations → Financial Reports, select Employee Salary Withdrawals, the company, employee and date range. The report compares saved draft and submitted Timesheet payroll with submitted salary expense payments by posting date, including payments without a Timesheet or crane. It uses the same salary accounts as the Monthly Salary Report. Salary Difference uses submitted Timesheet earnings by work date less submitted salary withdrawals by posting date. Draft earnings are shown for reference.
+In Employee Salary Withdrawals, choose the company and date range. Leave Employee blank to see all employees you can access in that company. Show Drafts adds draft earnings and the combined earnings total. The balance and charts use submitted earnings by work date and submitted withdrawals by posting date. The donut totals the portions of each employee’s withdrawals covered by earnings and above earnings. Pay Salary / Advance opens an unsaved standalone Grouped Expense for that employee. Review the salary expense type and amount before submitting.
 
 For Timesheets spanning the date range, payroll is allocated by the driver’s recorded work quantity. Hourly shifts use their work date. Historical daily and monthly payroll use distinct worked dates. A fixed amount without any worked quantity falls on the Timesheet end date.

@@ -196,13 +196,8 @@ async function open_salary_payment(frm, employee) {
     const payment = await frappe.xcall("heavy_equipment_rental.driver_payroll.make_salary_payment",
         {timesheet: frm.doc.name, employee});
     await frappe.model.with_doctype("Grouped Expense");
-    const doc = frappe.model.get_new_doc("Grouped Expense");
-    for (const key of ["company", "employee", "crane", "crane_assignment", "crane_timesheet", "timesheet_salary_payment", "mode_of_payment"]) {
-        doc[key] = payment[key];
-    }
-    const item = frappe.model.add_child(doc, "Grouped Expense Item", "items");
-    Object.assign(item, {posting_date: payment.items[0].posting_date, expense_entry_type: payment.items[0].expense_entry_type});
-    frappe.set_route("Form", doc.doctype, doc.name);
+    const [doc] = frappe.model.sync(payment);
+    await frappe.set_route("Form", doc.doctype, doc.name);
 }
 
 async function load_timesheet_defaults(frm) {

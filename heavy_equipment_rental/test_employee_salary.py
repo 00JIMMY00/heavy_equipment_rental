@@ -79,6 +79,18 @@ class TestEmployeeSalary(FrappeTestCase):
         filters = dict(company=self.company, employee=self.employee, from_date=self.day, to_date=self.day)
         row = withdrawals(filters)[1][0]
         self.assertEqual((row["linked_paid"], row["standalone_paid"], row["paid"], row["balance"]), (0, 50, 50, -50))
+        all_filters = {key: value for key, value in filters.items() if key != "employee"}
+        columns, employees, _, chart = withdrawals(all_filters)
+        self.assertNotIn("draft_earned", [column["fieldname"] for column in columns])
+        self.assertIn(row, employees)
+        self.assertTrue(chart["barOptions"]["stacked"])
+        self.assertEqual([sum(totals) for totals in zip(*(d["values"] for d in chart["data"]["datasets"]))],
+                         [float(sum(r[field] for r in employees)) for field in ("posted_earned", "paid")])
+        donut = chart["withdrawal_breakdown"]["data"]["datasets"][0]["values"]
+        self.assertEqual(donut[1], float(sum(max(-r["balance"], 0) for r in employees)))
+        columns, rows, _, _ = withdrawals(dict(filters, show_drafts=1))
+        self.assertIn("draft_earned", [column["fieldname"] for column in columns])
+        self.assertEqual(rows[0]["balance"], row["balance"])
         batch.cancel()
         self.assertEqual(withdrawals(filters)[1][0]["paid"], 20)
         other_day = add_months(self.day, -1)

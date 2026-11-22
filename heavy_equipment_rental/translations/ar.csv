@@ -1357,3 +1357,14 @@ Leave at zero to use the driver’s hourly price for overtime.,اترك السع
 Pay Salary / Advance,صرف راتب / سلفة
 Select a driver from a draft or submitted Timesheet.,اختر سائقًا من تايم شيت مسودة أو معتمد.
 Submit the Timesheet to record earned salary. Use Create → Pay Salary / Advance to prepare a payment.,اعتمد التايم شيت لإثبات استحقاق الراتب. لتحضير دفعة اختر إنشاء ← صرف راتب / سلفة.
+Show Drafts,عرض المسودات
+Set up an enabled salary expense type for this company.,أعدّ نوع مصروف رواتب مفعّل لهذه الشركة.
+Select a company and date range.,اختر الشركة والفترة الزمنية.
+Covered by earnings,مسحوبات ضمن المستحق
+Still owed,متبقي للصرف
+Above earnings,مسحوبات فوق المستحق
+Salary Withdrawals,مسحوبات الراتب
+Earned Salary and Withdrawals,الراتب المستحق والمسحوبات
+Withdrawal Breakdown,توزيع مسحوبات الراتب
+No salary activity for this period.,لا توجد حركة رواتب في هذه الفترة.
+No salary withdrawals for this period.,لا توجد مسحوبات رواتب في هذه الفترة.
