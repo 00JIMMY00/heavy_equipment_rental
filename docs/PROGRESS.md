@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-11-22 — Treasury Balances
+
+Added a current-balance report to Crane Operations. The table lists treasury accounts once, and the chart shows daily balances for the last 30 days.
+
 ## 2026-11-22 — Crane Partner Statement layout
 
 The statement uses a pinned, clickable Partner Name with no separate Shareholder column. It adds settlement movement drill-downs, a currency filter, balance cards, and charts for positive outstanding balances by partner and age. The totals and charts use the selected statement date.

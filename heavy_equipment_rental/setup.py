@@ -5,7 +5,9 @@ from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.permissions import add_permission, update_permission_property
 
 from heavy_equipment_rental.patches.default_rental_workspace import execute as set_default_workspace
-from heavy_equipment_rental.workspace import add_receivable_report, add_salary_report, sync_operations_workspace
+from heavy_equipment_rental.workspace import (
+    add_receivable_report, add_salary_report, add_treasury_balances_report, sync_operations_workspace,
+)
 from heavy_equipment_rental.item_prices import install_item_price_field
 
 
@@ -142,6 +144,7 @@ def execute():
 	sync_operations_workspace()
 	add_salary_report()
 	add_receivable_report()
+	add_treasury_balances_report()
 	from heavy_equipment_rental.patches.add_expense_report_workspace import execute as add_expense_report
 	add_expense_report()
 	seed_defaults()

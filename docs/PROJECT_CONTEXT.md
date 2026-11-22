@@ -55,6 +55,10 @@ One employee can enter adjacent shifts on a Timesheet. Overlapping entries for t
 
 Date of Birth is optional and hidden. Setup clears its mandatory flag before hiding it so fresh installation passes Frappe's per-setter validation. Existing birth dates are retained.
 
+## Treasury Balances
+
+Use Treasury Balances for a current snapshot of each cash, bank, or designated treasury account. Company is the only report filter. The 30-day chart can show the total or an individual account. Posted debits less credits are shown in company currency, and accounts shared by several payment modes appear once.
+
 ## 2026-11-17 — Mode of Payment Statement
 
 Added a native payment-account statement with Company/date-range/payment-mode filters, Date/IN/OUT/running Balance/Remarks and source links. Posted GL movements supply opening balances, expenses, receipts and both transfer sides. A bar chart compares IN, OUT and closing balance per payment account. Modes sharing one account are combined to prevent duplicate balances. See [report guide](MODE_OF_PAYMENT_STATEMENT.md).

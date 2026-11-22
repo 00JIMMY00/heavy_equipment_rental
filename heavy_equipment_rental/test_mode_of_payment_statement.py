@@ -70,6 +70,44 @@ class TestModeOfPaymentStatement(FrappeTestCase):
             'posting_date', 'payment_modes', 'incoming', 'outgoing', 'balance', 'remarks', 'voucher',
         ])
 
+    def test_treasury_balances_match_current_postings_and_daily_trend(self):
+        from heavy_equipment_rental.heavy_equipment_rental.report.treasury_balances import treasury_balances
+
+        alias = frappe.copy_doc(self.mode)
+        alias.mode_of_payment = 'Balances alias ' + self.fixture.key
+        alias.insert()
+        self.bank_mode.delete()  # An eligible bank account can have no payment mode.
+        self.journal(1000, add_days(today(), -1))
+        self.fixture.transaction(amount=200).insert().submit()
+        self.fixture.transaction(amount=75, posting_date=add_days(today(), 1)).insert().submit()
+        self.journal(999, submit=False)
+        cancelled = self.journal(125)
+        cancelled.cancel()
+
+        def balances():
+            _, rows, _, chart, summary = treasury_balances.execute(dict(company=self.company))
+            self.assertEqual(chart['data']['datasets'][0]['values'][-1], summary[0]['value'])
+            self.assertEqual({row['account']: row['balance'] for row in rows},
+                             {series['name']: series['values'][-1] for series in chart['treasury_accounts']})
+            return {row['account']: row for row in rows}, {
+                series['name']: series['values'] for series in chart['treasury_accounts']
+            }, chart['data']['labels']
+
+        rows, trends, dates = balances()
+        self.assertEqual(len(dates), 30)
+        self.assertEqual(dates[-1], today())
+        self.assertEqual([rows[self.cash]['balance'], rows[self.bank]['balance']], [800, 200])
+        self.assertIn(alias.name, rows[self.cash]['payment_modes'])
+        self.assertEqual(rows[self.bank]['payment_modes'], '')
+        self.assertEqual(trends[self.cash][-2:], [1000, 800])
+        self.assertEqual(trends[self.bank][-2:], [0, 200])
+
+        with patch.object(treasury_balances, 'today', return_value=add_days(today(), 29)):
+            _, trends, dates = balances()
+        self.assertEqual(dates[0], today())
+        self.assertEqual(trends[self.cash][:3], [800, 725, 725])
+        self.assertEqual(trends[self.bank][:3], [200, 275, 275])
+
     def test_native_payment_entry_and_cancellation(self):
         payment = frappe.get_doc(dict(
             doctype='Payment Entry', payment_type='Internal Transfer', company=self.company,

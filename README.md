@@ -134,6 +134,8 @@ Cancel the Treasury Transaction to cancel its Journal Entry and reverse the tran
 
 ## Treasury workbook and custody statements
 
+**Crane Operations → Financial Reports → Treasury Balances** shows today’s balance for each cash, bank, or designated treasury account. Balances use posted debits less credits in company currency. The 30-day line chart defaults to the company total and can show an individual account.
+
 **Crane Operations → Financial Reports → Mode of Payment Statement** shows Date, payment mode, IN, OUT, running Balance, Remarks and source documents. Filter Company, From/To Date and optional Mode of Payment. Opening balances and a bar chart compare posted movements and closing balances; modes sharing an account appear together without counting money twice. See [report guide](docs/MODE_OF_PAYMENT_STATEMENT.md).
 
 Open **Crane Operations → Treasury Workbook** for the seven-column RTL treasury/custody statement, source document links, a company-specific **Cost Center** filter, period opening balance and print/Excel output in the workbook layout. With a Cost Center selected, balances and totals apply to that center only. The report reads posted native General Ledger movements, includes advances/current-account transfers, and opens the latest accessible import without changing user company defaults. See [the LYD workbook reconciliation and audited development reset](docs/TREASURY_WORKBOOK.md). Imports/resets are explicit commands, never migration hooks.

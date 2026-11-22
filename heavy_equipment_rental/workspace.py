@@ -56,6 +56,10 @@ def add_receivable_report():
     add_financial_report("Simple Receivable Summary", "Sales Invoice", "her_receivable_report_workspace_v1")
 
 
+def add_treasury_balances_report():
+    add_financial_report("Treasury Balances", "GL Entry", "her_treasury_balances_workspace_v1")
+
+
 def add_financial_report(report, reference_doctype, key):
     if frappe.db.get_default(key) or not frappe.db.exists("Workspace", "Crane Operations"):
         return

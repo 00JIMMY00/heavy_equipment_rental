@@ -1401,3 +1401,11 @@ Settlement Movements,حركات التسوية
 Click an outstanding amount to open that partner’s statement.,اضغط على الرصيد المستحق لفتح كشف حساب الشريك.
 Table totals are available when all rows use the same currency.,تظهر إجماليات الجدول عندما تستخدم جميع الصفوف العملة نفسها.
 View Partner Statement,عرض كشف حساب الشريك
+Treasury Balances,أرصدة الخزائن
+Current Balance,الرصيد الحالي
+Balances as of {0} in {1}. Credit balances are negative.,الأرصدة حتى {0} بعملة {1}. تظهر الأرصدة الدائنة بالسالب.
+Daily Balance · Last 30 Days,الرصيد اليومي · آخر ٣٠ يومًا
+Total Balance,إجمالي الرصيد
+Treasury Accounts,حسابات الخزينة
+Trend Account,حساب الرسم البياني
+All Accounts,جميع الحسابات

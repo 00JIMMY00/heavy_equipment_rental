@@ -96,7 +96,7 @@ def execute(filters=None):
     return columns(), data, message, payment_chart(totals, currency), summary, True
 
 
-def payment_accounts(filters):
+def payment_accounts(filters, *, account_names=None):
     """Include disabled modes/accounts for history; never duplicate account money."""
     accounts = defaultdict(list)
     selected_account = None
@@ -104,7 +104,8 @@ def payment_accounts(filters):
         mode = frappe.get_doc('Mode of Payment', name)
         mode.check_permission('read')
         for row in mode.accounts:
-            if row.company == filters.company and row.default_account:
+            if (row.company == filters.company and row.default_account
+                    and (account_names is None or row.default_account in account_names)):
                 accounts[row.default_account].append(name)
                 if name == filters.mode_of_payment:
                     selected_account = row.default_account

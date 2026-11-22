@@ -170,7 +170,15 @@
   {
    "type": "Card Break",
    "label": "Financial Reports",
-   "link_count": 7
+   "link_count": 8
+  },
+  {
+   "type": "Link",
+   "label": "Treasury Balances",
+   "link_type": "Report",
+   "link_to": "Treasury Balances",
+   "is_query_report": 1,
+   "report_ref_doctype": "GL Entry"
   },
   {
    "type": "Link",
