@@ -417,6 +417,8 @@ Under the restored automatic workflow, a deficit blocks settlement posting and r
 | What remains unpaid by a customer/supplier? | Native invoice outstanding balances / receivable/payable reports |
 | What cash/treasury movements occurred? | Treasury Workbook and native Cash/Bank ledgers |
 
+In Crane Partner Statement, click a partner name to open their record or click an amount to see that partner’s settlement movements and vouchers. The charts group positive outstanding balances by partner and by days since settlement posting. Select a currency to see charts and table totals when the statement contains several currencies.
+
 Rental Profitability uses accounting posting dates. Timesheet settlements charge repair/expense costs only through their selected Timesheet or Assignment; dates alone do not allocate them. Both links empty means Unallocated and excluded from CPS. Company-wide funding, available cash, accounting margin and distributable contract amounts can therefore differ. An Assignment filter cannot invent an allocation for general depreciation with no Assignment attribution.
 
 ### Correct a posted mistake

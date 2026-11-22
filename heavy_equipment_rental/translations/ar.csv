@@ -1390,3 +1390,11 @@ Report Total,إجمالي التقرير
 As of {0},حتى تاريخ {0}
 Open invoice balances whose due date has not passed as of the report date.,أرصدة الفواتير المفتوحة التي لم يتجاوز تاريخ استحقاقها تاريخ التقرير.
 Open invoice balances whose due date has passed as of the report date.,أرصدة الفواتير المفتوحة التي سبق تاريخ استحقاقها تاريخ التقرير.
+Payments and balances use the payment ledger as of Report Date. The charts show positive outstanding balances by days since settlement posting. Allocated Invoice Value is split across partners.,تُحتسب المدفوعات والأرصدة من دفتر المدفوعات حتى تاريخ التقرير. تعرض الرسوم الأرصدة المستحقة الموجبة حسب عدد الأيام منذ ترحيل التسوية. تُوزع قيمة الفاتورة على الشركاء.
+Select one currency to see charts and table totals.,اختر عملة واحدة لعرض الرسوم وإجماليات الجدول.
+Other Partners,شركاء آخرون
+Outstanding by Partner,المستحق حسب الشريك
+Outstanding by Age,المستحق حسب عمر الرصيد
+How is age calculated?,كيف يُحسب عمر الرصيد؟
+Age counts days from the settlement posting date to the report date.,يُحسب عمر الرصيد بعدد الأيام من تاريخ ترحيل التسوية حتى تاريخ التقرير.
+Settlement Movements,حركات التسوية

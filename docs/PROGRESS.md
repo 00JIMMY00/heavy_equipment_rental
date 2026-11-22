@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-11-22 — Crane Partner Statement layout
+
+The statement uses a pinned, clickable Partner Name with no separate Shareholder column. It adds settlement movement drill-downs, a currency filter, balance cards, and charts for positive outstanding balances by partner and age. The totals and charts use the selected statement date.
+
 ## Employee Salary Withdrawals report
 
 Employee is optional. Show Drafts reveals draft earnings for reference. The stacked bars compare submitted earnings and withdrawals. The donut shows how much was withdrawn within and above each employee’s earned salary for the current filters. Each employee row can open a standalone salary payment or advance.

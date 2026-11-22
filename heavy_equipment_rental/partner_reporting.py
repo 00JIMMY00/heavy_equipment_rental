@@ -137,6 +137,8 @@ def execute_report(filters=None, summary=False):
     query = {"company": filters.company, "docstatus": ["in", [0, 1]], "posting_date": ["<=", filters.report_date]}
     if filters.from_date:
         query["posting_date"] = ["between", [filters.from_date, filters.report_date]]
+    if filters.currency:
+        query["currency"] = filters.currency
     if filters.crane:
         query["crane"] = filters.crane
     if filters.timesheet:
@@ -189,6 +191,7 @@ def execute_report(filters=None, summary=False):
                 frappe.get_doc(kind, voucher).check_permission("read")
                 rows.append(dict(posting_date=day, settlement=doc.name, timesheet=doc.timesheet, crane=doc.crane,
                     shareholder=balance["shareholder"], partner_name=balance["partner_name"],
+                    party_type=balance["party_type"], party=balance["party"],
                     voucher_type=kind, voucher_no=voucher, movement_type=_("Payment / Adjustment"),
                     paid_amount=paid, currency=doc.currency, status=balance["status"]))
     if summary:
