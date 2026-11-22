@@ -266,7 +266,8 @@ class TestCraneTimesheet(FrappeTestCase):
             self.assertEqual(frappe.db.get_value("Grouped Expense", expense, "docstatus"), 2)
             self.assertEqual(frappe.db.get_value("Journal Entry", journal, "docstatus"), 2)
 
-        amendment = frappe.copy_doc(sheet, ignore_no_copy=False)
+        amendment = frappe.copy_doc(sheet)
+        self.assertEqual([row.grouped_expense for row in amendment.driver_payroll[:2]], list(expenses))
         amendment.docstatus = 0
         amendment.amended_from = sheet.name
         amendment.insert()

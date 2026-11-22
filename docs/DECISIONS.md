@@ -1,5 +1,9 @@
 # Current decisions
 
+## Timesheet amendments
+
+On Amend, the new Timesheet clears inherited payroll expense, invoice and settlement links before Frappe validates them. The cancelled original retains its history. The replacement keeps its driver earnings and links back through Amended From.
+
 ## Driver salary entitlement and payment
 
 Submitting a Timesheet records driver salary entitlement. Create → Pay Salary / Advance prepares a linked Grouped Expense from a draft or submitted Timesheet. Submitting that expense posts the payment. Historical auto-posted payroll retains its original links and reversal path.

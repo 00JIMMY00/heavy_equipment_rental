@@ -102,6 +102,24 @@ def get_default_payroll_mode(assignment):
 
 
 class CraneTimesheet(Document):
+    def _validate_links(self):
+        # Desk's Amend action copies generated links before before_validate runs.
+        if self.is_new() and self.amended_from:
+            source = frappe.get_doc(self.doctype, self.amended_from)
+            source.check_permission("amend")
+            if source.docstatus == 2:
+                for field in ("sales_invoice", "purchase_invoice", "profit_settlement"):
+                    if self.get(field) and self.get(field) != source.get(field):
+                        frappe.throw(_("An amendment cannot supply unrelated generated document links."))
+                    self.set(field, None)
+                for field in ("expense_entry", "grouped_expense"):
+                    inherited = {row.get(field) for row in source.driver_payroll}
+                    for row in self.driver_payroll:
+                        if row.get(field) and row.get(field) not in inherited:
+                            frappe.throw(_("An amendment cannot supply unrelated generated document links."))
+                        row.set(field, None)
+        super()._validate_links()
+
     def before_validate(self):
         previous = self.get_doc_before_save()
         if self.is_new():
