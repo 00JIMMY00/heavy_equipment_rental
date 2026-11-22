@@ -17,11 +17,14 @@ from heavy_equipment_rental.partner_accounts import modern_agreement, share_part
 
 class CraneProfitSettlement(Document):
     def _validate_links(self):
-        if self.is_new() and self.amended_from and self.journal_entry:
+        if self.is_new() and self.amended_from:
             source = frappe.db.get_value(self.doctype, self.amended_from,
-                ["docstatus", "journal_entry"], as_dict=True)
-            if source and source.docstatus == 2 and source.journal_entry == self.journal_entry:
-                self.journal_entry = None
+                ["docstatus", "journal_entry", "sales_invoice"], as_dict=True)
+            if source and source.docstatus == 2:
+                if source.journal_entry == self.journal_entry:
+                    self.journal_entry = None
+                if self.sales_invoice == source.sales_invoice and self.settlement_basis == "Timesheet":
+                    self.sales_invoice = None  # Derived again from the selected Timesheet.
         super()._validate_links()
 
     def validate(self):
@@ -34,7 +37,8 @@ class CraneProfitSettlement(Document):
                 frappe.throw(_("Select a submitted Crane Timesheet."))
             self.crane = sheet.crane
             self.from_date, self.to_date = sheet.period_start, sheet.period_end
-            self.sales_invoice = sheet.sales_invoice
+            from heavy_equipment_rental.timesheet_settlement import current_sales_invoice
+            self.sales_invoice = current_sales_invoice(sheet)
         lock_cranes([self.crane])
         crane = frappe.get_doc("Crane", self.crane)
         crane.check_permission("read")

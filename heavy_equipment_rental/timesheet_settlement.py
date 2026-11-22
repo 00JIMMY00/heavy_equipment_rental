@@ -14,6 +14,12 @@ def active_settlement(timesheet):
     return frappe.db.get_value("Crane Profit Settlement", {"timesheet": timesheet, "docstatus": ["!=", 2]}, "name")
 
 
+def current_sales_invoice(sheet):
+    return sheet.sales_invoice and frappe.db.get_value(
+        "Sales Invoice", {"name": sheet.sales_invoice, "docstatus": ["!=", 2]}, "name"
+    )
+
+
 def ensure_settlement(sheet, method=None):
     if sheet.docstatus != 1 or not frappe.db.get_value("Crane", sheet.crane, "enable_profit_sharing"):
         return
@@ -32,8 +38,9 @@ def ensure_settlement(sheet, method=None):
         doc.insert(ignore_permissions=True)
     frappe.db.set_value("Crane Timesheet", sheet.name, "profit_settlement", doc.name, update_modified=False)
     sheet.profit_settlement = doc.name
-    if doc.docstatus == 0 and doc.sales_invoice != sheet.sales_invoice:
-        doc.sales_invoice = sheet.sales_invoice
+    invoice = current_sales_invoice(sheet)
+    if doc.docstatus == 0 and doc.sales_invoice != invoice:
+        doc.sales_invoice = invoice
         doc.save(ignore_permissions=True)
     from heavy_equipment_rental.profit_sharing import agreement_for
     agreement = agreement_for(frappe.get_doc("Crane", sheet.crane), sheet.period_start, sheet.period_end)

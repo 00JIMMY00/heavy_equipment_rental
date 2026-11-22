@@ -13,6 +13,8 @@ class GroupedExpense(Document):
         if self.is_new() and self.amended_from:
             original = frappe.get_doc(self.doctype, self.amended_from)
             if original.docstatus == 2:
+                if self.profit_settlement == original.profit_settlement:
+                    self.profit_settlement = None  # Derived again from the selected Timesheet.
                 if self.legacy_expense == original.legacy_expense:
                     self.legacy_expense = None
                 old_journals = {row.journal_entry for row in original.items}
@@ -50,7 +52,9 @@ class GroupedExpense(Document):
             if sheet.docstatus == 2 or sheet.crane != self.crane:
                 frappe.throw(_('Select a non-cancelled Timesheet for this Crane.'))
             self.crane_assignment = sheet.assignment
-            self.profit_settlement = sheet.profit_settlement
+            self.profit_settlement = sheet.profit_settlement and frappe.db.get_value(
+                "Crane Profit Settlement", {"name": sheet.profit_settlement, "docstatus": ["!=", 2]}, "name"
+            )
         else:
             if previous and previous.crane_timesheet and self.crane_assignment == previous.crane_assignment:
                 self.crane_assignment = None

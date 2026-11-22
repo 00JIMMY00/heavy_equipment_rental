@@ -7,6 +7,13 @@ from frappe.utils import flt
 
 
 class TreasuryTransaction(Document):
+    def _validate_links(self):
+        if self.is_new() and self.amended_from and self.journal_entry:
+            source = frappe.db.get_value(self.doctype, {"name": self.amended_from, "docstatus": 2}, "journal_entry")
+            if self.journal_entry == source:
+                self.journal_entry = None
+        super()._validate_links()
+
     def validate(self):
         if self.docstatus == 0 and self.journal_entry:
             frappe.throw(_("The Journal Entry is assigned automatically on submission."))

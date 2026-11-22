@@ -1,5 +1,9 @@
 # Progress
 
+## Cancel and amend audit
+
+Treasury Transaction amendments clear the original transfer’s generated journal. Grouped Expense and Timesheet-based Crane Profit Settlement amendments resolve the current settlement and invoice from the selected Timesheet. Submission still requires a submitted invoice for a Timesheet-based settlement.
+
 ## Timesheet amendments
 
 On Amend, the new Timesheet clears inherited payroll expense, invoice and settlement links before Frappe validates them. The cancelled original retains its history. The replacement keeps its driver earnings and links back through Amended From.

@@ -72,11 +72,14 @@ class TestTreasuryTransaction(FrappeTestCase):
         transfer.cancel()
         self.assertEqual(frappe.db.get_value("Journal Entry", journal.name, "docstatus"), 2)
         self.assertFalse(self.ledger(journal.name))
-        amendment = frappe.copy_doc(transfer, ignore_no_copy=False)
+        amendment = frappe.copy_doc(transfer)
+        self.assertEqual(amendment.journal_entry, journal.name)
         amendment.docstatus = 0
         amendment.amended_from = transfer.name
         amendment.amount = 75
         amendment.insert()
+        self.assertFalse(amendment.journal_entry)
+        self.assertEqual(transfer.reload().journal_entry, journal.name)
         amendment.submit()
         self.assertNotEqual(amendment.journal_entry, journal.name)
         self.assertEqual(frappe.db.get_value("Journal Entry", amendment.journal_entry, "total_debit"), 75)
@@ -163,7 +166,8 @@ class TestTreasuryTransaction(FrappeTestCase):
                     unrelated.submit()
                 transfer.cancel()
                 self.assertFalse(self.ledger(journal.name))
-                amendment = frappe.copy_doc(transfer, ignore_no_copy=False)
+                amendment = frappe.copy_doc(transfer)
+                self.assertEqual(amendment.journal_entry, journal.name)
                 amendment.docstatus = 0
                 amendment.amended_from = transfer.name
                 amendment.insert()

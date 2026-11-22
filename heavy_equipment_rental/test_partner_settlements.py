@@ -636,6 +636,46 @@ class TestPartnerSettlements(FrappeTestCase):
         self.assertEqual(settlement.reload().docstatus, 2)
         self.assertEqual(frappe.db.get_value("Journal Entry", settlement.journal_entry, "docstatus"), 2)
 
+    def test_amend_expense_and_settlement_after_invoice_cancellation(self):
+        from heavy_equipment_rental.cancellation import get_plan, cancel_all
+
+        sheet = self.sheet()
+        company = self.company.name
+        batch = frappe.get_doc(dict(doctype="Grouped Expense", company=company, crane=sheet.crane,
+            crane_timesheet=sheet.name, mode_of_payment=frappe.db.get_value(
+                "Mode of Payment Account", {"company": company}, "parent"),
+            items=[dict(posting_date=sheet.period_end, description="Rental cost", amount=50,
+                        expense_entry_type=frappe.db.get_value("Expense Entry Type", {"company": company, "enabled": 1}))],
+        )).insert().submit()
+        invoice = self.invoice(sheet).submit()
+        settlement = frappe.get_doc("Crane Profit Settlement", sheet.profit_settlement)
+        cancel_all(invoice.doctype, invoice.name, get_plan(invoice.doctype, invoice.name))
+        batch.reload().cancel()
+
+        self.assertEqual(batch.profit_settlement, settlement.name)
+        amended = frappe.copy_doc(batch)
+        amended.docstatus = 0
+        amended.amended_from = batch.name
+        amended.insert().submit()
+        self.assertFalse(amended.profit_settlement)
+        self.assertEqual(amended.crane_timesheet, sheet.name)
+
+        replacement = frappe.copy_doc(settlement.reload())
+        replacement.docstatus = 0
+        replacement.amended_from = settlement.name
+        replacement.insert()
+        self.assertFalse(replacement.sales_invoice)
+        self.assertFalse(replacement.journal_entry)
+        self.assertEqual(settlement.sales_invoice, invoice.name)
+        with self.assertRaisesRegex(frappe.ValidationError, "Submit the linked Sales Invoice"):
+            replacement.submit()
+        ensure_settlement(sheet.reload())
+        new_invoice = self.invoice(sheet).submit()
+        replacement.reload()
+        self.assertEqual(replacement.docstatus, 1)
+        self.assertEqual(replacement.sales_invoice, new_invoice.name)
+        self.assertNotEqual(replacement.journal_entry, settlement.journal_entry)
+
     def correction_cycle(self):
         sheet = self.sheet()
         expense = self.rental_expense(crane_timesheet=sheet.name,
