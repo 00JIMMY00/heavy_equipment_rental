@@ -8,6 +8,10 @@ from heavy_equipment_rental.crane_repairs import repair_expense_sources
 
 
 class TestMaintenancePosting(FrappeTestCase):
+    def assert_reported_cost(self, job, amount):
+        from heavy_equipment_rental.heavy_equipment_rental.report.maintenance_and_downtime.maintenance_and_downtime import posted_costs
+        self.assertEqual(posted_costs([job])[job.name], amount)
+
     job = fixtures.TestNativeCraneWorkflow.job
     gl = fixtures.TestNativeCraneWorkflow.gl
 
@@ -228,6 +232,7 @@ class TestMaintenancePosting(FrappeTestCase):
             self.assertEqual(job.status, 'Completed')
             repair = frappe.get_doc('Asset Repair', {'crane_maintenance': job.name, 'docstatus': 1})
             self.assertEqual(repair.total_repair_cost, amount)
+            self.assert_reported_cost(job, amount)
             if source == 'External Parts':
                 from heavy_equipment_rental.crane_repairs import validate_native_document
                 repair.purchase_invoice = job.repair_purchase_invoice
@@ -259,6 +264,7 @@ class TestMaintenancePosting(FrappeTestCase):
         expense = frappe.get_doc('Grouped Expense', job.grouped_expense)
         self.assertEqual(expense.docstatus, 1)
         self.assertEqual(self.gl('Journal Entry', expense.items[0].journal_entry, 'Expense'), 125)
+        self.assert_reported_cost(job, 125)
         self.assertEqual(frappe.db.get_value('Expense Entry Type', job.expense_type, 'account'), self.company.default_expense_account)
         job.cancel()
         self.assertEqual(expense.reload().docstatus, 2)
@@ -276,6 +282,7 @@ class TestMaintenancePosting(FrappeTestCase):
         self.assertEqual(self.gl('Purchase Invoice', invoice.name, 'Expense'), 30)
         self.assertEqual(self.gl('Stock Entry', issue.name, 'Expense'), 80)
         self.assertEqual(job.supplier_paid_amount, 110)
+        self.assert_reported_cost(job, 110)
         job.cancel()
         self.assertEqual(invoice.reload().docstatus, 2)
         self.assertEqual(issue.reload().docstatus, 2)

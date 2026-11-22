@@ -1,4 +1,4 @@
-> Latest (2026-11-13): restored pre-550f4f5d automatic invoice approval, source-revenue debits, Invoice Grand Total and no depreciation deduction. Complete costs before submitting the Sales Invoice. Payments from the settlement remain manual native Pay entries. Older alternative treatments remain only for historical snapshots. See [the posted existing-Crane example](RESTORED_SETTLEMENT_AR.md).
+> Latest (2026-11-13): restored pre-550f4f5d automatic invoice approval, source-revenue debits, Invoice Grand Total and no depreciation deduction. Complete costs before submitting the Sales Invoice. Payments from the settlement remain manual native Pay entries. Older alternative treatments remain only for historical snapshots.
 
 # Automatic Timesheet settlements — current workflow (2026-11-10)
 
@@ -126,8 +126,7 @@ are 91,000, the 90,000 after operating is insufficient by 1,000: stop.
 **Reviewed no-tax example:** revenue 100,000, operating costs 20,000 and external
 owner entitlements 70,000 leave 10,000 for our company. With the expense-allocation
 account used by the demo, the posted accounting result is also 10,000. Raising the
-operating percentage to 12% leaves 12,000. See [the actual posted examples and
-journal explanation](OPERATING_FIRST_DEMO.md).
+operating percentage to 12% leaves 12,000.
 
 ## Settle, pay and change terms
 

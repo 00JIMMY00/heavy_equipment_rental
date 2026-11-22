@@ -1,6 +1,6 @@
 # Production readiness audit — cranes-dev3
 
-Follow-up: disposed-asset restrictions and company derivation have since been implemented; see PROGRESS.md. The results below describe the original audited commit. Asset master cost is not itself a defect: the opening-ledger observation is a reconciliation check, not a recommendation to change `total_asset_cost`.
+Follow-up: disposed-asset restrictions and company derivation have since been implemented. The results below describe the original audited commit. Asset master cost is not itself a defect: the opening-ledger observation is a reconciliation check, not a recommendation to change `total_asset_cost`.
 
 **Verdict: hold production release.** The core rental/accounting flows have substantial passing coverage, but a confirmed disposed-asset booking defect, company-default problems, unreliable test fixtures, and unverified deployment/operational controls remain. This audit is not evidence that every possible combination is safe.
 

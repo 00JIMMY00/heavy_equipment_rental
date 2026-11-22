@@ -49,28 +49,33 @@ def sync_operations_workspace():
 
 
 def add_salary_report():
-    add_financial_report("Employee Salary Withdrawals", "Grouped Expense", "her_salary_withdrawals_workspace_v1")
+    add_workspace_report("Employee Salary Withdrawals", "Grouped Expense", "her_salary_withdrawals_workspace_v1")
 
 
 def add_receivable_report():
-    add_financial_report("Simple Receivable Summary", "Sales Invoice", "her_receivable_report_workspace_v1")
+    add_workspace_report("Simple Receivable Summary", "Sales Invoice", "her_receivable_report_workspace_v1")
 
 
 def add_treasury_balances_report():
-    add_financial_report("Treasury Balances", "GL Entry", "her_treasury_balances_workspace_v1")
+    add_workspace_report("Treasury Balances", "GL Entry", "her_treasury_balances_workspace_v1")
 
 
-def add_financial_report(report, reference_doctype, key):
+def add_workspace_report(report, reference_doctype, key, section_label="Financial Reports"):
     if frappe.db.get_default(key) or not frappe.db.exists("Workspace", "Crane Operations"):
         return
 
     workspace = frappe.get_doc("Workspace", "Crane Operations")
     if not any(row.link_to == report for row in workspace.links):
         links = list(workspace.links)
-        section = next((row for row in links if row.type == "Card Break" and row.label == "Financial Reports"), None)
+        section = next((row for row in links if row.type == "Card Break" and row.label == section_label), None)
         if not section:
-            section = workspace.append("links", dict(type="Card Break", label="Financial Reports"))
+            section = workspace.append("links", dict(type="Card Break", label=section_label))
             links.append(section)
+            content = frappe.parse_json(workspace.content or "[]")
+            if not any(block.get("data", {}).get("card_name") == section_label for block in content):
+                content.append(dict(id=frappe.generate_hash(length=10), type="card",
+                                    data=dict(card_name=section_label, col=3)))
+                workspace.content = frappe.as_json(content)
         link = workspace.append("links", dict(type="Link", label=report, link_type="Report",
             link_to=report, is_query_report=1, report_ref_doctype=reference_doctype))
         links.insert(links.index(section) + 1, link)

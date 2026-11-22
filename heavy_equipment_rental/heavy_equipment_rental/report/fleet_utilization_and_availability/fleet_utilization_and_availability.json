@@ -1,0 +1,25 @@
+{
+ "doctype": "Report",
+ "name": "Fleet Utilization and Availability",
+ "report_name": "Fleet Utilization and Availability",
+ "module": "Heavy Equipment Rental",
+ "ref_doctype": "Crane",
+ "report_type": "Script Report",
+ "is_standard": "Yes",
+ "disabled": 0,
+ "add_total_row": 0,
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Projects Manager"
+  },
+  {
+   "role": "Projects User"
+  },
+  {
+   "role": "Accounts Manager"
+  }
+ ]
+}

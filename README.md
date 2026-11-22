@@ -100,8 +100,6 @@ The financial panel shows only Company cost, capitalized improvements and book v
 
 **Crane Operations → Crane Profit Distribution** shows company operating/residual shares, partner entitlements, expense burden, source documents and payment balances, with five charted views. Use More Filters for settlement status, payment status and source documents. [دليل التقرير الشامل](docs/PROFIT_DISTRIBUTION_REPORT.md).
 
-[تجربة استعادة التوزيع التلقائي على ونش موجود](docs/RESTORED_SETTLEMENT_AR.md).
-
 Crane supports **Shared Ownership**, **Operated for Owner**, and **Operated by
 Partner**, with separate ownership and remaining balance percentages. Enter the
 operator, operating fees and current owner/profit shares. Submitting a sharing
@@ -116,7 +114,7 @@ Edit **Owners & Profit Shares** and **Operating Fees**, then Save. No effective 
 are preserved by migration. Optional Crane attribution on native invoice items
 and journal rows covers other revenue/costs. Rental Profitability retains its
 net-sales basis. See [configuration and accounting](docs/PROFIT_SHARING.md) and
-[the full numerical development example](docs/OPERATING_FIRST_DEMO.md).
+[the shared-crane and owner-payment example](docs/USER_GUIDE.md#7-complete-example-shared-crane-and-owner-payments).
 
 Maintenance and expenses show editable **Rental Contract** and **Crane Timesheet** links directly. Choose Crane and start date to default uniquely matching rental links. Both links are optional and editable; ambiguous Timesheets remain for manual selection. Maintenance uses Actual Start/End dates only. A Timesheet fills its Rental Contract automatically; Crane-only records are allowed when no work matches. Maintenance carries its selection into the generated expense.
 
@@ -159,8 +157,7 @@ Historical expenses with a missing, draft, cancelled, or wrong-company Journal E
 excluded with a visible warning listing their IDs. Review those records before relying on totals;
 opening the report never changes or reposts them.
 
-See [the simulated rental cycle](docs/SIMULATED_RENTAL.md) for the development-site example
-and the explicit, repeatable demo command. Demo records are never created by migration.
+Demo records are never created by migration.
 
 ## Existing records
 

@@ -82,7 +82,7 @@ For a manual rollback after a previously accepted release, first enable `/opt/he
 
 ## Verified production delivery
 
-The [2026-11-16 workflow](https://github.com/00JIMMY00/heavy_equipment_rental/actions/runs/43907282490) passed all jobs, including an automatic update from the previous image. A live failure drill restored the SQL database, site files and configuration, removed temporary probes, and verified the recreated containers and public login. [Recorded evidence](../docs/PRODUCTION_DEPLOYMENT_20261116.json). The clean production site is ready for the native ERPNext setup wizard.
+The [2026-11-16 workflow](https://github.com/00JIMMY00/heavy_equipment_rental/actions/runs/43907282490) passed all jobs, including an automatic update from the previous image. A live failure drill restored the SQL database, site files and configuration, removed temporary probes, and verified the recreated containers and public login. [Recorded evidence](../docs/archive/PRODUCTION_DEPLOYMENT_20261116.json). The clean production site is ready for the native ERPNext setup wizard.
 
 ## Validation
 

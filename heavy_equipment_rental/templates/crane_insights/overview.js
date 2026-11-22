@@ -31,12 +31,38 @@ function metrics(data) {
         ["Billable hours", work?.hours, __("Timesheet access required")],
         ["Working cranes", work?.active, __("Timesheet access required")],
     ];
+    if (data.utilization) {
+        const percent = data.utilization.utilization;
+        values.push(["Booked Utilization", percent == null ? "—" : new Intl.NumberFormat(locale, {
+            style: "percent", maximumFractionDigits: 1,
+        }).format(percent / 100)], ["Missing Timesheet Days", data.utilization.missing_days]);
+    }
     for (const [label, value, reason] of values) {
         const card = make("div", "metric");
         const display = typeof value === "number" ? number.format(value) : value;
         card.append(make("span", "label-line", __(label)), make("strong", "", display ?? "—"));
         if (value == null) card.append(make("small", "", reason));
         cards.append(card);
+    }
+}
+
+function utilizationTable(data) {
+    const panel = find(".utilization-panel");
+    panel.hidden = !data.utilization;
+    if (panel.hidden) return;
+    find(".utilization-report").href = "/app/query-report/Fleet%20Utilization%20and%20Availability?" +
+        new URLSearchParams({from_date: data.start, to_date: data.as_of});
+    const body = panel.querySelector("tbody");
+    body.replaceChildren();
+    for (const record of data.utilization.cranes) {
+        const row = body.insertRow();
+        const link = make("a", "", record.crane);
+        link.href = "/app/crane/" + encodeURIComponent(record.crane);
+        row.insertCell().append(link);
+        for (const field of ["booked_days", "worked_days", "downtime_days", "maintenance_days", "missing_days"]) {
+            row.insertCell().textContent = number.format(record[field]);
+        }
+        row.insertCell().textContent = record.free_from ? date(record.free_from) : "—";
     }
 }
 
@@ -160,6 +186,7 @@ async function load(days) {
         if (current !== request) return;
         const data = response.message;
         metrics(data);
+        utilizationTable(data);
         activity(data);
         condition(data);
         expenseLedger(data);

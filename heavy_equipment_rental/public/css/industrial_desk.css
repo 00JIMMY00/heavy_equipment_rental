@@ -301,7 +301,7 @@ html .crane-ownership-field .control-value {
 .crane-ownership__warning { margin-top: 8px; font-size: 12px; color: var(--text-danger); }
 
 /* Profit report summaries adapt to the available width in either Desk language. */
-body:is([data-route="query-report/Crane Rental Profitability"], [data-route="query-report/Crane Profit Distribution"]) {
+body:is([data-route="query-report/Fleet Utilization and Availability"], [data-route="query-report/Maintenance and Downtime"], [data-route="query-report/Crane Rental Profitability"], [data-route="query-report/Crane Profit Distribution"]) {
   .page-form .frappe-control[data-original-title]::before {
     content: attr(data-original-title);
     display: block;
@@ -338,7 +338,7 @@ body:is([data-route="query-report/Crane Rental Profitability"], [data-route="que
   }
 }
 
-body:is([data-route="query-report/Crane Rental Profitability"], [data-route="query-report/Crane Profit Distribution"]) .dt-scrollable .dt-row:is(:hover, :focus-within) > .dt-cell {
+body:is([data-route="query-report/Fleet Utilization and Availability"], [data-route="query-report/Maintenance and Downtime"], [data-route="query-report/Crane Rental Profitability"], [data-route="query-report/Crane Profit Distribution"]) .dt-scrollable .dt-row:is(:hover, :focus-within) > .dt-cell {
   --dt-cell-bg: color-mix(in srgb, var(--fg-color) 85%, var(--blue-500));
 }
 

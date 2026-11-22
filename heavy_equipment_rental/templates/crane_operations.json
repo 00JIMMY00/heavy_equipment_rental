@@ -141,7 +141,23 @@
   {
    "type": "Card Break",
    "label": "Operational Reports",
-   "link_count": 2
+   "link_count": 4
+  },
+  {
+   "type": "Link",
+   "label": "Fleet Utilization and Availability",
+   "link_type": "Report",
+   "link_to": "Fleet Utilization and Availability",
+   "is_query_report": 1,
+   "report_ref_doctype": "Crane"
+  },
+  {
+   "type": "Link",
+   "label": "Maintenance and Downtime",
+   "link_type": "Report",
+   "link_to": "Maintenance and Downtime",
+   "is_query_report": 1,
+   "report_ref_doctype": "Crane Maintenance"
   },
   {
    "type": "Link",

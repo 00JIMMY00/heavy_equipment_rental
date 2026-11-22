@@ -1424,3 +1424,34 @@ Shares by participant,الحصص حسب المشارك
 {0} (latest 12 months),{0} (آخر 12 شهراً)
 {0} (10 largest by amount),{0} (أكبر 10 حسب المبلغ)
 "Amounts use posting dates and company currency. Income excludes invoice taxes. Costs include posted hire, linked expense payments, repairs and attributed journals. Driver salary enters costs when a linked payment posts.",تعرض المبالغ حسب تاريخ الترحيل وبعملة الشركة. الإيراد يستبعد ضرائب الفواتير. تشمل التكاليف إيجار المعدات والمصروفات المدفوعة المرتبطة والإصلاحات والقيود المنسوبة. يدخل راتب السائق ضمن التكاليف عند ترحيل دفعة مرتبطة.
+Fleet Utilization and Availability,استغلال الرافعات وتوافرها
+Maintenance and Downtime,الصيانة وفترات التوقف
+Select From Date and To Date.,اختر تاريخ البداية وتاريخ النهاية.
+From Date must be on or before To Date.,يجب ألا يتجاوز تاريخ البداية تاريخ النهاية.
+Current Condition,الحالة الحالية
+Booked Utilization,نسبة تشغيل أيام الحجز
+Booked Days,أيام الحجز
+Elapsed Booked Days,أيام الحجز المنقضية
+Worked Days,أيام العمل
+Elapsed Booked Days Worked,أيام الحجز المنقضية التي تم العمل فيها
+Recorded Downtime Days,أيام التوقف المسجّلة
+Missing Timesheet Days,أيام بلا تايم شيت معتمد
+Maintenance Days,أيام الصيانة
+Next Free From,متاحة اعتباراً من
+Free Through,متاحة حتى
+"Utilization uses booked crane-days through yesterday. Only submitted shifts confirm work or downtime. Free dates use the visible schedule from today or the selected start, whichever is later. Free From stays blank for unavailable cranes or incomplete schedules. A blank Free Through on a free crane means no later booking.",تُحسب نسبة التشغيل من أيام حجز الرافعة حتى أمس. تؤكد الورديات المعتمدة أيام العمل أو التوقف. يبدأ البحث عن فترة التوافر من اليوم أو بداية الفترة المحددة، أيهما أبعد. لا يظهر تاريخ بدء التوافر إذا كانت الرافعة غير متاحة أو لم تظهر كل حجوزاتها. وإذا ظهر تاريخ بدء التوافر وحده فلا يوجد حجز لاحق.
+Repair History,سجل الإصلاحات
+Bookings at Risk,حجوزات مهددة بالتعطل
+Total Repair Days,إجمالي أيام الإصلاح
+Booking Start,بداية الحجز
+Booking End,نهاية الحجز
+Next Booking,الحجز التالي
+Recorded Repair Cost,تكلفة الإصلاح المسجّلة
+Cranes Under Repair,رافعات قيد الإصلاح
+Dates select repair history. In-progress repairs flag visible bookings active today or starting in the next 30-day window. Costs cover the whole repair using visible postings and completed cash repairs. Owner billing revenue is excluded.,يحدد التاريخان فترة سجل الإصلاحات. تظهر الحجوزات المهددة إذا كانت الصيانة مستمرة وكان الحجز سارياً اليوم أو يبدأ خلال فترة الثلاثين يوماً التي تبدأ اليوم. تشمل المبالغ تكلفة الإصلاح بالكامل حسب القيود المتاحة والإصلاحات النقدية المكتملة، وتستبعد إيراد الفوترة للمالك.
+Open Report,فتح التقرير
+Worked booked days divided by elapsed booked days.,أيام العمل المحجوزة مقسومة على أيام الحجز المنقضية.
+Past booked days without a submitted timesheet entry.,أيام حجز منقضية بلا وردية في تايم شيت معتمد.
+Submitted days with zero work and zero overtime.,أيام معتمدة بلا ساعات عمل أو ساعات إضافية.
+Visible bookings in the next 30 days while this repair is open.,الحجوزات المتاحة خلال الثلاثين يوماً القادمة أثناء استمرار هذا الإصلاح.
+Calendar days from the start of this repair through completion or today.,عدد الأيام من بداية الإصلاح حتى اكتماله أو حتى اليوم.

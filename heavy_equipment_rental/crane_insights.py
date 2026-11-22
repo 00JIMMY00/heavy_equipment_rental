@@ -84,6 +84,13 @@ def get_overview(days=30):
     conditions = Counter(row.operational_condition or "Unspecified" for row in fleet)
     result = {"as_of": end, "start": start, "fleet": len(fleet), "conditions": conditions, "work": None}
     result["cranes"] = sorted(fleet, key=lambda row: (names[row.name].casefold(), row.name))
+    result["utilization"] = None
+    if all(frappe.has_permission(dt, "read") for dt in ("Rental Contract", "Crane Timesheet", "Crane Maintenance")):
+        from heavy_equipment_rental.heavy_equipment_rental.report.fleet_utilization_and_availability.fleet_utilization_and_availability import (
+            fleet_rows, fleet_totals,
+        )
+        rows = fleet_rows(start, end, end)
+        result["utilization"] = dict(fleet_totals(rows), cranes=rows)
     result["expenses"] = crane_expenses(names, start, end)
     if not frappe.has_permission("Crane Timesheet", "read"):
         return result
