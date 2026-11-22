@@ -67,8 +67,7 @@ def execute(filters=None):
         ("paid", "Total Salary Withdrawals"), ("balance", "Salary Difference for Period"),
     ])
     columns = [
-        dict(fieldname="employee", label=_("Employee"), fieldtype="Link", options="Employee", width=145),
-        dict(fieldname="employee_name", label=_("Employee Name"), fieldtype="Data", width=155),
+        dict(fieldname="employee_name", label=_("Employee Name"), fieldtype="Data", width=188, sticky=True),
     ]
     if frappe.has_permission("Grouped Expense", "create"):
         columns.append(dict(fieldname="payment", label=_("Payment"), fieldtype="Data", width=180))

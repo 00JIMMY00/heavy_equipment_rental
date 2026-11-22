@@ -106,15 +106,50 @@ frappe.query_reports["Employee Salary Withdrawals"] = {
                 }
             });
     },
+    get_datatable_options(options) {
+        return {
+            ...options,
+            hooks: {
+                ...options.hooks,
+                columnTotal(values, cell) {
+                    if (cell.column.fieldname === "employee_name") return __("Total");
+                    return frappe.utils.report_column_total(values, cell);
+                },
+            },
+        };
+    },
+    after_datatable_render(datatable) {
+        const table = $(datatable.datatableWrapper);
+        if (table.children("style.her-salary-table-style").length) return;
+        table.append(`<style class="her-salary-table-style">
+            .datatable:has(.her-salary-employee) .dt-scrollable .dt-row:nth-child(even) > .dt-cell {
+                --dt-cell-bg: var(--subtle-accent);
+            }
+            .datatable:has(.her-salary-employee) .dt-scrollable .dt-row:is(:hover, :focus-within) > .dt-cell {
+                --dt-cell-bg: color-mix(in srgb, var(--fg-color) 87%, var(--blue-500));
+            }
+            .datatable:has(.her-salary-employee) .dt-footer .dt-cell {
+                --dt-cell-bg: var(--subtle-accent);
+                border-top-color: var(--dark-border-color);
+                font-weight: 600;
+            }
+        </style>`);
+    },
     formatter(value, row, column, data, default_formatter) {
         const field = column.fieldname;
-        if (field === "payment" && data) {
+        if (field === "payment" && data?.employee) {
             const employee = frappe.utils.escape_html(data.employee);
             return `<button type="button" class="btn btn-xs btn-primary" data-salary-employee="${employee}">${__("Pay Salary / Advance")}</button>`;
         }
-        if (field === "employee_name") return frappe.utils.escape_html(value || "");
-        const formatted = default_formatter(value, row, column, data);
-        if (!data || column.fieldtype !== "Currency") return formatted;
+        if (field === "employee_name") {
+            const name = frappe.utils.escape_html(value || "");
+            if (!data?.employee) return name;
+            const link = frappe.utils.get_form_link("Employee", data.employee, true, name);
+            return `<span class="her-salary-employee">${link}</span>`;
+        }
+        const currencyRow = column.fieldtype === "Currency" ? data || frappe.query_report.data[0] : data;
+        const formatted = default_formatter(value, row, column, currencyRow);
+        if (column.fieldtype !== "Currency") return formatted;
         let color = "text-muted";
         if (field === "balance") color = value > 0 ? "text-success" : value < 0 ? "text-danger" : "text-muted";
         else if (field === "posted_earned") color = "text-success";
