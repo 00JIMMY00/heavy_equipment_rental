@@ -164,6 +164,8 @@ def execute_report(filters=None, summary=False):
         for balance, invoice_value in zip(balances, invoice_values):
             if filters.shareholder and balance["shareholder"] != filters.shareholder:
                 continue
+            if filters.partner_supplier and (balance["party_type"] != "Supplier" or balance["party"] != filters.partner_supplier):
+                continue
             if filters.status and balance["status"] != filters.status:
                 continue
             # A shared invoice is shown once in totals, proportioned over its external entitlements.
@@ -197,8 +199,11 @@ def execute_report(filters=None, summary=False):
     if summary:
         grouped = {}
         for row in rows:
-            key = row["shareholder"] or row["party"]
-            target = grouped.setdefault(key, dict(shareholder=row["shareholder"], partner_name=row["partner_name"], currency=row["currency"]))
+            partner = ("Shareholder", row["shareholder"]) if row["shareholder"] else (row["party_type"], row["party"])
+            key = (*partner, row["currency"])
+            target = grouped.setdefault(key, {field: row[field] for field in (
+                "shareholder", "partner_name", "party_type", "party", "currency",
+            )})
             target.setdefault("_statuses", set()).add(row["status"])
             for field in ("invoice_value", "entitlement", "pending_entitlement", "operating_amount", "residual_amount", "paid_amount", "outstanding_amount", "range1", "range2", "range3", "range4"):
                 target[field] = target.get(field, 0) + flt(row.get(field))
@@ -217,20 +222,30 @@ def execute_report(filters=None, summary=False):
 def columns(summary):
     def col(fieldname, label, fieldtype="Currency", options="currency", width=135):
         return dict(fieldname=fieldname, label=_(label), fieldtype=fieldtype, options=options, width=width)
-    result = [col("shareholder", "Shareholder", "Link", "Shareholder", 155), col("partner_name", "Partner Name", "Data", None, 170)]
-    if not summary:
-        result += [col("posting_date", "Posting Date", "Date", None, 105),
+    if summary:
+        result = [
+            col("partner_name", "Partner Name", "Data", None, 270),
+            col("entitlement", "Posted Entitlement", width=170),
+            col("paid_amount", "Paid / Adjusted", width=155),
+            col("outstanding_amount", "Outstanding", width=155),
+            col("pending_entitlement", "Pending Entitlement", width=175),
+        ]
+        result[0]["sticky"] = True
+    else:
+        result = [
+            col("shareholder", "Shareholder", "Link", "Shareholder", 155),
+            col("partner_name", "Partner Name", "Data", None, 170),
+            col("posting_date", "Posting Date", "Date", None, 105),
             col("settlement", "Settlement", "Link", "Crane Profit Settlement", 135),
             col("timesheet", "Timesheet", "Link", "Crane Timesheet"), col("crane", "Crane", "Link", "Crane"),
             col("sales_invoice", "Sales Invoice", "Link", "Sales Invoice", 175),
             col("movement_type", "Movement", "Data", None), col("voucher_type", "Voucher Type", "Data", None),
             col("voucher_no", "Voucher", "Dynamic Link", "voucher_type", 180),
-            col("invoice_grand_total", "Settlement Invoice Total", "Data", None, 150)]
-    result += [col("invoice_value", "Allocated Invoice Value"), col("entitlement", "Posted Entitlement"),
-        col("pending_entitlement", "Pending Entitlement"), col("operating_amount", "Operating Share"),
-        col("residual_amount", "Remaining Balance Share"), col("paid_amount", "Paid / Adjusted"),
-        col("outstanding_amount", "Outstanding"), col("status", "Entitlement Status", "Data", None, 140)]
-    if summary:
-        result += [col("range1", "0-30 Days"), col("range2", "31-60 Days"), col("range3", "61-90 Days"), col("range4", "91+ Days")]
+            col("invoice_grand_total", "Settlement Invoice Total", "Data", None, 150),
+            col("invoice_value", "Allocated Invoice Value"), col("entitlement", "Posted Entitlement"),
+            col("pending_entitlement", "Pending Entitlement"), col("operating_amount", "Operating Share"),
+            col("residual_amount", "Remaining Balance Share"), col("paid_amount", "Paid / Adjusted"),
+            col("outstanding_amount", "Outstanding"), col("status", "Entitlement Status", "Data", None, 140),
+        ]
     result.append(dict(fieldname="currency", label=_("Currency"), fieldtype="Link", options="Currency", hidden=1))
     return result

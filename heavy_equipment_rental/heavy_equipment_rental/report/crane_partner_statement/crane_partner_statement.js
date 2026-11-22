@@ -108,6 +108,7 @@ frappe.query_reports["Crane Partner Statement"] = {
         { fieldname: "company", label: __("Company"), fieldtype: "Link", options: "Company", reqd: 1,
             default: frappe.defaults.get_user_default("Company"),
             on_change(report) {
+                if (report._no_refresh) return;
                 if (report.get_filter_value("shareholder")) report.set_filter_value("shareholder", "");
                 else report.refresh();
             } },
@@ -121,8 +122,13 @@ frappe.query_reports["Crane Partner Statement"] = {
             options: ["", "Awaiting Invoice", "Draft", "Unpaid", "Partly Paid", "Paid", "No Entitlement"]
                 .map(value => ({value, label: value ? __(value) : __("Entitlement Status")})) },
         { fieldname: "currency", label: __("Currency"), fieldtype: "Link", options: "Currency" },
+        { fieldname: "partner_supplier", label: __("Supplier"), fieldtype: "Link", options: "Supplier", hidden: 1 },
     ],
-    onload(report) {
+    async onload(report) {
+        // Link titles can still be loading when a statement is opened from a filtered URL.
+        const links = report.filters.filter(field =>
+            field.df.fieldtype === "Link" && field.value && !field.df.hidden && !field.get_value());
+        await Promise.all(links.map(field => field.set_link_title(field.value)));
         report.render_chart = renderPartnerAging;
         $(report.page.wrapper).off("click.herPartnerMovements", "[data-partner-movement]")
             .on("click.herPartnerMovements", "[data-partner-movement]", event => {
@@ -152,6 +158,7 @@ frappe.query_reports["Crane Partner Statement"] = {
             }
             .datatable:has(.her-partner-name) .dt-scrollable .dt-row:is(:hover, :focus-within) > .dt-cell {
                 --dt-cell-bg: color-mix(in srgb, var(--fg-color) 87%, var(--blue-500));
+                background-color: var(--dt-cell-bg);
             }
             .datatable:has(.her-partner-name) .dt-footer .dt-cell {
                 --dt-cell-bg: var(--subtle-accent);

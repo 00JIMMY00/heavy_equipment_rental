@@ -1398,3 +1398,6 @@ Outstanding by Age,المستحق حسب عمر الرصيد
 How is age calculated?,كيف يُحسب عمر الرصيد؟
 Age counts days from the settlement posting date to the report date.,يُحسب عمر الرصيد بعدد الأيام من تاريخ ترحيل التسوية حتى تاريخ التقرير.
 Settlement Movements,حركات التسوية
+Click an outstanding amount to open that partner’s statement.,اضغط على الرصيد المستحق لفتح كشف حساب الشريك.
+Table totals are available when all rows use the same currency.,تظهر إجماليات الجدول عندما تستخدم جميع الصفوف العملة نفسها.
+View Partner Statement,عرض كشف حساب الشريك
