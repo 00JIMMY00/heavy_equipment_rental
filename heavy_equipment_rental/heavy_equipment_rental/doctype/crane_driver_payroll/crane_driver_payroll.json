@@ -24,7 +24,7 @@
    "fieldtype": "Link",
    "label": "Driver",
    "options": "Employee",
-   "columns": 2,
+   "columns": 3,
    "in_list_view": 1,
    "read_only": 1
   },
@@ -35,7 +35,7 @@
    "precision": "6",
    "read_only": 1,
    "no_copy": 1,
-   "columns": 1,
+   "columns": 2,
    "in_list_view": 1
   },
   {
@@ -45,8 +45,7 @@
    "precision": "6",
    "read_only": 1,
    "no_copy": 1,
-   "columns": 1,
-   "in_list_view": 1
+   "columns": 1
   },
   {
    "fieldname": "rate",
@@ -64,7 +63,6 @@
    "precision": "9",
    "options": "Company:payroll_company:default_currency",
    "columns": 2,
-   "in_list_view": 1,
    "description": "Leave at zero to use the driver’s hourly price for overtime."
   },
   {
@@ -72,7 +70,7 @@
    "fieldtype": "Currency",
    "label": "Payroll Amount",
    "options": "Company:payroll_company:default_currency",
-   "columns": 2,
+   "columns": 3,
    "in_list_view": 1,
    "print_hide": 1
   },

@@ -10,7 +10,7 @@ Submitting a Timesheet records driver salary entitlement. Create → Pay Salary 
 
 ## Driver overtime payroll
 
-Total Hours includes regular hours and overtime from the driver’s Timesheet Entries. Overtime Hours shows the overtime portion. An optional driver overtime price replaces the regular price on those hours. Entering a fixed Payroll Amount uses one implied hourly price. Migration fills historical overtime hours from saved shifts and preserves posted amounts.
+Total Hours includes regular hours and overtime from the driver’s Timesheet Entries. The Driver Payroll row editor shows Overtime Hours and Overtime Price / Hour. An optional driver overtime price replaces the regular price on those hours. Entering a fixed Payroll Amount uses one implied hourly price. Migration fills historical overtime hours from saved shifts and preserves posted amounts.
 
 ## Timesheet driver salary balances
 

@@ -9,10 +9,10 @@
   "details_tab",
   "context_section",
   "naming_series",
+  "crane",
   "assignment",
   "customer",
   "location",
-  "crane",
   "period_col",
   "period_start",
   "period_end",
@@ -96,8 +96,8 @@
    "fieldname": "location",
    "fieldtype": "Link",
    "label": "Location",
-   "reqd": 1,
-   "options": "Location"
+   "options": "Location",
+   "reqd": 1
   },
   {
    "fieldname": "crane",
@@ -178,9 +178,9 @@
   {
    "fieldname": "driver_hours",
    "fieldtype": "Table",
+   "hidden": 1,
    "label": "Hours by Driver",
    "options": "Driver Hours",
-   "hidden": 1,
    "read_only": 1
   },
   {
@@ -191,9 +191,9 @@
   {
    "fieldname": "total_operator_hours",
    "fieldtype": "Float",
+   "hidden": 1,
    "label": "Total Driver Hours",
    "precision": "6",
-   "hidden": 1,
    "read_only": 1
   },
   {
@@ -220,20 +220,20 @@
    "print_hide": 1
   },
   {
+   "fetch_from": "assignment.company",
    "fieldname": "payroll_company",
    "fieldtype": "Link",
-   "options": "Company",
+   "hidden": 1,
    "label": "Payroll Company",
-   "fetch_from": "assignment.company",
-   "read_only": 1,
-   "hidden": 1
+   "options": "Company",
+   "read_only": 1
   },
   {
+   "description": "Submit the Timesheet to record earned salary. Use Create \u2192 Pay Salary / Advance to prepare a payment.",
    "fieldname": "driver_payroll",
    "fieldtype": "Table",
    "label": "Driver Payments",
    "options": "Crane Driver Payroll",
-   "description": "Submit the Timesheet to record earned salary. Use Create → Pay Salary / Advance to prepare a payment.",
    "print_hide": 1
   },
   {
@@ -274,86 +274,86 @@
    "fieldtype": "Column Break"
   },
   {
+   "fetch_from": "crane.ownership_type",
    "fieldname": "crane_ownership_type",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Crane Ownership Type",
-   "fetch_from": "crane.ownership_type",
-   "read_only": 1,
-   "hidden": 1
+   "read_only": 1
   },
   {
+   "depends_on": "eval:doc.crane_ownership_type=='Rented'",
+   "description": "When Rented is checked, submission purchases actual recorded work using the Supplier Billing UOM and purchase price. Prices use the Rental Contract company currency.",
    "fieldname": "purchase_section",
    "fieldtype": "Section Break",
-   "label": "Supplier Purchase",
-   "depends_on": "eval:doc.crane_ownership_type=='Rented'",
-   "description": "When Rented is checked, submission purchases actual recorded work using the Supplier Billing UOM and purchase price. Prices use the Rental Contract company currency."
+   "label": "Supplier Purchase"
   },
   {
-   "fieldname": "rented",
-   "fieldtype": "Check",
-   "label": "Rented",
    "default": "1",
    "depends_on": "eval:doc.crane_ownership_type=='Rented'",
-   "description": "Uncheck to submit this Timesheet without creating a supplier Purchase Invoice."
+   "description": "Uncheck to submit this Timesheet without creating a supplier Purchase Invoice.",
+   "fieldname": "rented",
+   "fieldtype": "Check",
+   "label": "Rented"
   },
   {
+   "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
+   "fetch_from": "crane.supplier",
    "fieldname": "purchase_supplier",
    "fieldtype": "Link",
    "label": "Supplier",
    "options": "Supplier",
-   "fetch_from": "crane.supplier",
-   "read_only": 1,
-   "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented"
+   "read_only": 1
   },
   {
+   "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
    "fieldname": "purchase_column",
-   "fieldtype": "Column Break",
-   "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented"
+   "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
+   "description": "Defaults from Heavy Equipment Rental Settings and is saved with this Timesheet.",
    "fieldname": "purchase_uom",
    "fieldtype": "Select",
    "label": "Supplier Billing UOM",
-   "options": "\nHour\nDay\nMonth",
-   "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
    "mandatory_depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
-   "description": "Defaults from Heavy Equipment Rental Settings and is saved with this Timesheet."
+   "options": "\nHour\nDay\nMonth"
   },
   {
+   "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
+   "description": "Supplier price per Supplier Billing UOM selected here.",
    "fieldname": "purchase_rate",
    "fieldtype": "Currency",
    "label": "Purchase Price per Unit",
-   "depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented",
-   "mandatory_depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented && (doc.timesheet_entries || []).some(row => row.worked_hours > 0 || row.overtime_hours > 0)",
-   "description": "Supplier price per Supplier Billing UOM selected here."
+   "mandatory_depends_on": "eval:doc.crane_ownership_type==\"Rented\" && doc.rented && (doc.timesheet_entries || []).some(row => row.worked_hours > 0 || row.overtime_hours > 0)"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "purchase_invoice",
    "fieldtype": "Link",
    "label": "Purchase Invoice",
-   "options": "Purchase Invoice",
-   "read_only": 1,
    "no_copy": 1,
-   "allow_on_submit": 1
+   "options": "Purchase Invoice",
+   "read_only": 1
   },
   {
    "fieldname": "legacy_purchase_terms",
    "fieldtype": "Code",
-   "options": "JSON",
-   "label": "Legacy Purchase Terms",
    "hidden": 1,
-   "read_only": 1,
-   "no_copy": 1
+   "label": "Legacy Purchase Terms",
+   "no_copy": 1,
+   "options": "JSON",
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "profit_settlement",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Profit Settlement",
-   "options": "Crane Profit Settlement",
-   "read_only": 1,
-   "allow_on_submit": 1,
    "no_copy": 1,
-   "in_standard_filter": 1
+   "options": "Crane Profit Settlement",
+   "read_only": 1
   },
   {
    "fieldname": "total_overtime_hours",
@@ -377,7 +377,7 @@
  "grid_page_length": 100,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-22 13:19:50.114380",
+ "modified": "2026-11-22 12:08:24.895072",
  "modified_by": "Administrator",
  "module": "Heavy Equipment Rental",
  "name": "Crane Timesheet",
