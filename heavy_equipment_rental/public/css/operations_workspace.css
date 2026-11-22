@@ -331,29 +331,3 @@ body.her-operations-reference .links-widget-box .link-item[href="/app/grouped-ex
   border-inline-start: 3px solid #d39b12;
   font-weight: 700;
 }
-
-/* Expense analytics entry point. */
-body.her-operations-reference .links-widget-box .link-item:is([href="/app/query-report/Crane Expense Report"], [href="/app/query-report/Crane%20Expense%20Report"]) {
-  background: #fff1f1; color: #b80000; border: 1px solid #ffc6c6;
-  border-inline-start: 4px solid #d00000; border-radius: 8px; font-weight: 700;
-}
-html[data-theme="dark"] body.her-operations-reference .links-widget-box .link-item:is([href="/app/query-report/Crane Expense Report"], [href="/app/query-report/Crane%20Expense%20Report"]) {
-  background: #411919; color: #ff8585; border-color: #893838;
-}
-body.her-operations-reference .links-widget-box .link-item:is([href="/app/query-report/Crane Expense Report"], [href="/app/query-report/Crane%20Expense%20Report"]) :is(.her-link-icon, .link-text) {
-  color: inherit;
-  --icon-stroke: currentColor;
-}
-
-/* Payment statement entry point. */
-body.her-operations-reference .links-widget-box .link-item:is([href="/app/query-report/Mode of Payment Statement"], [href="/app/query-report/Mode%20of%20Payment%20Statement"]) {
-  background: #eaf8ef; color: #176b3a; border: 1px solid #b8e3c8;
-  border-inline-start: 4px solid #249c68; border-radius: 8px; font-weight: 700;
-}
-html[data-theme="dark"] body.her-operations-reference .links-widget-box .link-item:is([href="/app/query-report/Mode of Payment Statement"], [href="/app/query-report/Mode%20of%20Payment%20Statement"]) {
-  background: #173b29; color: #8be0ae; border-color: #367a53;
-}
-body.her-operations-reference .links-widget-box .link-item:is([href="/app/query-report/Mode of Payment Statement"], [href="/app/query-report/Mode%20of%20Payment%20Statement"]) :is(.her-link-icon, .link-text) {
-  color: inherit;
-  --icon-stroke: currentColor;
-}
