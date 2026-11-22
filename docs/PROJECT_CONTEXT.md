@@ -30,7 +30,7 @@ In Timesheet Entries, enter zero Worked Hours and leave overtime at zero to reco
 
 ## 2026-11-21 — Simple Receivable Summary
 
-Crane Operations lists Simple Receivable Summary under Financial Reports. It shows open Sales Invoices in company currency as of the report date, with grouping, overdue filtering, totals, and a customer chart. Collection opens a native unsaved Payment Entry using the current balances.
+Crane Operations lists Simple Receivable Summary under Financial Reports. It shows open Sales Invoices in company currency as of the report date, with grouping, due-status filtering, clickable invoice breakdowns, totals, stacked customer bars, and a due-status donut. Collection opens a native unsaved Payment Entry using the current balances.
 
 ## 2026-11-21 — Unified expense entry
 

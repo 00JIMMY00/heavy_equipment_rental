@@ -40,6 +40,10 @@ Migrated cranes-dev3. Timesheet Entries with zero Worked Hours and zero overtime
 
 Extended Crane Expense Report with filters for a specific Grouped Expense document and Cost Center. The detail table shows payment mode, cost center and employee. Five report tests passed on cranes-dev3, and the standard Frappe report runner returned matching rows and totals with combined filters on existing data.
 
+## 2026-11-22 — Simple Receivable Summary layout
+
+Added stacked customer balances, a due-status donut and help icons, a due-status filter, and an invoice breakdown from each amount. The pinned customer column and report totals make grouped rows easier to reconcile without counting invoices twice.
+
 ## 2026-11-21 — Simple Receivable Summary
 
 Migrated cranes-dev3 and verified the Financial Reports link, summary cards, live open invoice rows, and the unsaved Payment Entry action in Chrome. Two report integration tests and six rental workflow tests passed. The report tests covered historical versus current balances, overdue filtering, and combined receipts.

@@ -21,7 +21,7 @@ See [the complete operational and accounting design](docs/NATIVE_CRANE_WORKFLOW.
 
 Customer payments use ERPNext's normal invoice/payment workflow. Sales Invoices do not allocate amounts to drivers or record customer-to-driver payments. Driver names and hours remain on Timesheets. Migration preserves previously saved direct-payment details in a hidden legacy archive and leaves posted invoices/journals unchanged.
 
-Open **Crane Operations → Financial Reports → Simple Receivable Summary** for open Sales Invoices as of a selected date. Filter by customer or overdue status and group by customer, invoice, customer group, or territory. **Collect Payment** and **Collect Selected Invoices** open an unsaved native Payment Entry using current balances. A combined receipt requires the same customer, company, receivable account, and currency.
+Open **Crane Operations → Financial Reports → Simple Receivable Summary** for open Sales Invoices as of a selected date. Filter by customer or due status and group by customer, invoice, customer group, or territory. Click an amount to see the invoice breakdown as of the report date. The stacked bars and donut show what is overdue and what is still within terms. **Collect Payment** and **Collect Selected Invoices** open an unsaved native Payment Entry using current balances. A combined receipt requires the same customer, company, receivable account, and currency.
 
 ### Start with a Timesheet
 
@@ -44,7 +44,7 @@ A blank or zero overtime price uses the driver’s regular hourly price. A separ
 
 ## Grouped expenses
 
-Use **Crane Operations → مصروف مجمع (Grouped Expense)** to enter dated expenses with optional Crane and Crane Timesheet links. Download/upload the Excel template, edit type/payment overrides with the row pencil, and Submit to post the batch. Configure company defaults under **HER Settings → Grouped Expenses**. [Usage and accounting](docs/CONSOLIDATED_EXPENSES.md).
+Use **Crane Operations → Expenses** to enter dated expenses with optional Crane and Crane Timesheet links. Download/upload the Excel template, edit type/payment overrides with the row pencil, and Submit to post the batch. Configure company defaults under **HER Settings → Grouped Expenses**. [Usage and accounting](docs/CONSOLIDATED_EXPENSES.md).
 
 ## Expense reporting
 

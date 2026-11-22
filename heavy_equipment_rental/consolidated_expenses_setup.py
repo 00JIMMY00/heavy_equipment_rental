@@ -58,7 +58,8 @@ def update_workspace():
                 if has_grouped and table == 'links':
                     workspace.remove(row)
                 else:
-                    row.link_to = row.label = 'Grouped Expense'
+                    row.link_to = 'Grouped Expense'
+                    row.label = 'Expenses' if table == 'links' else 'Grouped Expense'
                     has_grouped = True
     card = None
     for row in workspace.links:

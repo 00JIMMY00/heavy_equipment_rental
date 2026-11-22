@@ -50,7 +50,6 @@ def sync_operations_workspace():
 
 def add_salary_report():
     add_financial_report("Employee Salary Withdrawals", "Grouped Expense", "her_salary_withdrawals_workspace_v1")
-    add_financial_report("Monthly Salary Report", "Grouped Expense", "her_salary_report_workspace_v1")
 
 
 def add_receivable_report():

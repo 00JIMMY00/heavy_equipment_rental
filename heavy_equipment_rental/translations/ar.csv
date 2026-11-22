@@ -1381,3 +1381,12 @@ No transactions in this period.,لا توجد معاملات في هذه الف�
 The total includes records you do not have permission to open.,يشمل الإجمالي سجلات لا تملك صلاحية فتحها.
 You do not have access to this employee.,لا تملك صلاحية الوصول إلى هذا الموظف.
 Select an employee and a salary amount.,اختر موظفًا ومبلغًا من التقرير.
+Due Status,حالة الاستحقاق
+Invalid Due Status option,خيار حالة الاستحقاق غير صالح
+Other Customers,عملاء آخرون
+Outstanding by Due Status,المبالغ المستحقة حسب حالة الاستحقاق
+Not Due Amount,المبلغ غير المتأخر
+Report Total,إجمالي التقرير
+As of {0},حتى تاريخ {0}
+Open invoice balances whose due date has not passed as of the report date.,أرصدة الفواتير المفتوحة التي لم يتجاوز تاريخ استحقاقها تاريخ التقرير.
+Open invoice balances whose due date has passed as of the report date.,أرصدة الفواتير المفتوحة التي سبق تاريخ استحقاقها تاريخ التقرير.

@@ -29,10 +29,21 @@ frappe.query_reports['Mode of Payment Statement'] = {
                 .prependTo(wrapper);
         }
     },
+    after_datatable_render(datatable) {
+        const table = $(datatable.datatableWrapper);
+        if (table.children('style.her-payment-statement-style').length) return;
+        table.append(`<style class="her-payment-statement-style">
+            .datatable:has(.her-payment-statement-row) .dt-scrollable .dt-row:is(:hover, :focus-within) > .dt-cell {
+                --dt-cell-bg: color-mix(in srgb, var(--fg-color) 87%, var(--blue-500));
+            }
+        </style>`);
+    },
     formatter(value, row, column, data, default_formatter) {
         const formatted = ['remarks', 'payment_modes'].includes(column.fieldname)
             ? frappe.utils.escape_html(value || '')
             : default_formatter(value, row, column, data);
-        return data?.is_opening ? `<strong>${formatted}</strong>` : formatted;
+        const content = data?.is_opening ? `<strong>${formatted}</strong>` : formatted;
+        return data && column.fieldname === 'remarks'
+            ? `<span class="her-payment-statement-row">${content}</span>` : content;
     },
 };

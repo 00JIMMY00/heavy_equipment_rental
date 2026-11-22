@@ -21,7 +21,10 @@ def execute(filters=None):
     if group_by not in (*GROUP_FIELDS, "Invoice"):
         frappe.throw(_("Invalid Group By option"))
 
-    rows = get_invoice_rows(company, report_date, filters)
+    due_status = filters.due_status or ("Overdue" if cint(filters.overdue_only) else "")
+    if due_status not in ("", "All", "Overdue", "Not Due"):
+        frappe.throw(_("Invalid Due Status option"))
+    rows = get_invoice_rows(company, report_date, filters.customer, due_status)
     return (
         get_columns(),
         group_rows(rows, group_by),
@@ -46,10 +49,10 @@ def get_company(name):
     return company
 
 
-def get_invoice_rows(company, report_date, filters):
+def get_invoice_rows(company, report_date, customer_name=None, due_status=None):
     invoice_filters = {"company": company.name, "docstatus": 1, "is_return": 0, "posting_date": ["<=", report_date]}
-    if filters.customer:
-        invoice_filters["customer"] = filters.customer
+    if customer_name:
+        invoice_filters["customer"] = customer_name
     invoices = {row.name: row for row in frappe.get_list(
         "Sales Invoice", filters=invoice_filters,
         fields=["name", "customer", "posting_date", "due_date"], limit_page_length=0,
@@ -75,7 +78,7 @@ def get_invoice_rows(company, report_date, filters):
             continue
         outstanding = flt(native.get("outstanding"), precision)
         days = max(0, date_diff(report_date, invoice.due_date or invoice.posting_date))
-        if outstanding <= 0 or (cint(filters.overdue_only) and not days):
+        if outstanding <= 0 or (due_status == "Overdue" and not days) or (due_status == "Not Due" and days):
             continue
         customer = customers[invoice.customer]
         rows.append(frappe._dict(
@@ -91,20 +94,21 @@ def get_invoice_rows(company, report_date, filters):
 
 
 def get_columns():
-    return [dict(fieldname=field, label=_(label), fieldtype=fieldtype, options=options, width=width)
+    return [dict(fieldname=field, label=_(label), fieldtype=fieldtype, options=options, width=width,
+                 sticky=field == "label")
             for field, label, fieldtype, options, width in (
-                ("label", "Customer / Group", "Data", None, 210),
-                ("invoice", "Sales Invoice", "Link", "Sales Invoice", 190),
-                ("payment", "Payment", "Data", None, 195),
-                ("invoiced", "Invoice Total", "Currency", "currency", 150),
-                ("paid", "Total Paid", "Currency", "currency", 150),
-                ("outstanding", "Outstanding Amount", "Currency", "currency", 170),
-                ("credit_note", "Credit Note", "Currency", "currency", 140),
-                ("due_date", "Due Date", "Date", None, 110),
-                ("days_overdue", "Days Overdue", "Int", None, 105),
-                ("status", "Status", "Data", None, 110),
-                ("posting_date", "Posting Date", "Date", None, 110),
-                ("customer", "Customer", "Link", "Customer", 170),
+                ("label", "Customer / Group", "Data", None, 205),
+                ("invoice", "Sales Invoice", "Link", "Sales Invoice", 160),
+                ("outstanding", "Outstanding", "Currency", "currency", 165),
+                ("overdue", "Overdue Amount", "Currency", "currency", 145),
+                ("paid", "Total Paid", "Currency", "currency", 130),
+                ("payment", "Payment", "Data", None, 175),
+                ("invoiced", "Invoice Total", "Currency", "currency", 135),
+                ("credit_note", "Credit Note", "Currency", "currency", 120),
+                ("due_date", "Due Date", "Date", None, 105),
+                ("days_overdue", "Days Overdue", "Int", None, 115),
+                ("status", "Status", "Data", None, 100),
+                ("posting_date", "Posting Date", "Date", None, 105),
             )]
 
 
@@ -131,21 +135,34 @@ def group_rows(rows, group_by):
 def get_chart(rows):
     if not rows:
         return None
-    totals = defaultdict(float)
+    totals = defaultdict(lambda: [0, 0])
     names = {}
     for row in rows:
-        totals[row.customer] += row.outstanding
+        totals[row.customer][bool(row.days_overdue)] += row.outstanding
         names[row.customer] = row.label
     name_counts = Counter(names.values())
-    customers = sorted(totals, key=lambda customer: (-totals[customer], names[customer], customer))
+    customers = sorted(totals, key=lambda customer: (-sum(totals[customer]), names[customer], customer))
+    top = customers[:5]
+    labels = [f"{names[customer]} ({customer})" if name_counts[names[customer]] > 1 else names[customer]
+              for customer in top]
+    if len(customers) > len(top):
+        labels.append(_("Other Customers"))
+    balances = [totals[customer] for customer in top]
+    if len(customers) > len(top):
+        balances.append([sum(totals[customer][i] for customer in customers[len(top):]) for i in (0, 1)])
+    breakdown = [sum(balance[i] for balance in balances) for i in (0, 1)]
+    currency = rows[0].currency
+    precision = frappe.get_precision("Sales Invoice", "base_grand_total", currency=currency)
+    statuses = [_("Not Due"), _("Overdue")]
+    colors = ["#18794E", "#BF4045"]
     return dict(
-        type="bar", title=_("Outstanding by Customer"), fieldtype="Currency", options=rows[0].currency,
-        colors=["#14b8a6"], showLegend=0,
-        data=dict(
-            labels=[f"{names[customer]} ({customer})" if name_counts[names[customer]] > 1 else names[customer]
-                    for customer in customers],
-            datasets=[dict(name=_("Outstanding Amount"), values=[totals[customer] for customer in customers])],
-        ),
+        type="bar", title=_("Outstanding by Customer"), currency=currency, precision=precision,
+        colors=colors, showLegend=0, barOptions=dict(stacked=True),
+        data=dict(labels=labels, datasets=[
+            dict(name=status, values=[balance[i] for balance in balances]) for i, status in enumerate(statuses)
+        ]),
+        receivable_breakdown=dict(type="donut", title=_("Outstanding by Due Status"), showLegend=0, colors=colors,
+                                  data=dict(labels=statuses, datasets=[dict(values=breakdown)])),
     )
 
 
@@ -156,5 +173,7 @@ def get_summary(rows, currency):
                    ("Invoice Total", "invoiced", "Blue"), ("Total Paid", "paid", "Green"),
                    ("Outstanding Amount", "outstanding", "Orange"), ("Overdue Amount", "overdue", "Red"),
                )]
+    summary.insert(3, dict(label=_("Not Due Amount"), value=sum(row.outstanding - row.overdue for row in rows),
+                           datatype="Currency", currency=currency, indicator="Green"))
     summary.append(dict(label=_("Open Invoices"), value=len(rows), datatype="Int", indicator="Blue"))
     return summary

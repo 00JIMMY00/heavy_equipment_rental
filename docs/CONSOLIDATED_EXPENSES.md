@@ -1,6 +1,6 @@
 # مصروف مجمع — Grouped Expense
 
-Open the highlighted **Grouped Expense / مصروف مجمع** link in the Accounting card of Crane Operations. Use one row for a single expense, or add several rows to the same document. Crane Maintenance, driver payroll and treasury workbook imports create Grouped Expenses.
+Open the highlighted **Expenses** link in the Accounting card of Crane Operations. Use one row for a single expense, or add several rows to the same document. Crane Maintenance, driver payroll and treasury workbook imports create Grouped Expenses.
 
 Choose a Company and a default Mode of Payment. Crane, Driver and Cost Center are optional. Select a Rental Contract directly for contract-wide costs, or select one of the Crane’s Timesheets to supply the Rental Contract and Crane Profit Settlement links. The selected links apply to all rows. Row dates are the actual accounting posting dates and may differ from the rental dates.
 

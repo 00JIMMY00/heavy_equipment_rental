@@ -126,6 +126,9 @@ frappe.query_reports['Crane Expense Report'] = {
                 [data-her-expenses="1"] .chart-wrapper::before {content:attr(data-her-chart-title);display:block;font-size:14px;font-weight:650;padding:16px 20px 0;color:var(--text-color);}
                 [data-her-expenses="1"] .chart-wrapper {border:1px solid var(--border-color);border-radius:14px;background:var(--card-bg);margin-bottom:20px;}
                 [data-her-expenses="1"] .report-wrapper {border-radius:12px;overflow:hidden;border:1px solid var(--border-color);}
+                [data-her-expenses="1"] .dt-scrollable .dt-row:is(:hover, :focus-within) > .dt-cell {
+                    --dt-cell-bg: color-mix(in srgb, var(--fg-color) 87%, var(--blue-500));
+                }
                 [data-her-expenses="1"] .her-expense-group {font-weight:700;color:var(--text-color);}
                 [data-her-expenses="1"] {--her-expense-red:#d00000;}
                 html[data-theme="dark"] [data-her-expenses="1"] {--her-expense-red:#ff6868;}
