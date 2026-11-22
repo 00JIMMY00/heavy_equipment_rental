@@ -1360,11 +1360,14 @@ Submit the Timesheet to record earned salary. Use Create → Pay Salary / Advanc
 Show Drafts,عرض المسودات
 Set up an enabled salary expense type for this company.,أعدّ نوع مصروف رواتب مفعّل لهذه الشركة.
 Select a company and date range.,اختر الشركة والفترة الزمنية.
-Covered by earnings,مسحوبات ضمن المستحق
-Still owed,متبقي للصرف
-Above earnings,مسحوبات فوق المستحق
+Still Owed,متبقي للصرف
+Extra Withdrawals,مسحوبات زائدة
 Salary Withdrawals,مسحوبات الراتب
 Earned Salary and Withdrawals,الراتب المستحق والمسحوبات
 Withdrawal Breakdown,توزيع مسحوبات الراتب
 No salary activity for this period.,لا توجد حركة رواتب في هذه الفترة.
 No salary withdrawals for this period.,لا توجد مسحوبات رواتب في هذه الفترة.
+What does {0} mean?,ما معنى {0}؟
+"Salary already withdrawn, up to what each employee earned in the selected period.",جزء الراتب الذي سحبه كل موظف في الفترة المحددة في حدود ما استحقه.
+Salary employees earned but have yet to withdraw in the selected period.,الراتب الذي استحقه الموظفون ولم يسحبوه في الفترة المحددة.
+Money employees withdrew beyond what they earned in the selected period.,المبالغ التي سحبها الموظفون زيادة على ما استحقوه في الفترة المحددة.

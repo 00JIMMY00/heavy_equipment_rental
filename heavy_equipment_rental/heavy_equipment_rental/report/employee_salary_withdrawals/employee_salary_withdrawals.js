@@ -1,8 +1,10 @@
 function renderSalaryCharts(options) {
+    for (const tooltip of this.salaryChartTooltips || []) tooltip.dispose();
+    const tooltips = this.salaryChartTooltips = [];
     this.chart?.destroy?.();
     this.salaryWithdrawalDonut?.destroy();
     this.salaryWithdrawalDonut = null;
-    const {withdrawal_breakdown: donut, currency, precision, ...bar} = options;
+    const {withdrawal_breakdown: donut, legend_help, currency, precision, ...bar} = options;
     if (!donut) return frappe.views.QueryReport.prototype.render_chart.call(this, options);
 
     const charts = $("<div>").addClass("salary-withdrawal-charts").css({
@@ -28,12 +30,25 @@ function renderSalaryCharts(options) {
     const addLegend = (legend, items, colors) => {
         items.forEach(({label, amount}, index) => {
             const item = $("<span>").addClass("small").css({
-                display: "inline-flex", alignItems: "baseline", gap: "0.4rem", maxWidth: "100%",
+                display: "inline-flex", alignItems: "center", gap: "0.4rem", maxWidth: "100%",
             }).appendTo(legend);
             $("<span>").attr("aria-hidden", "true").css({
                 width: "0.6rem", height: "0.6rem", flexShrink: 0, borderRadius: "2px", backgroundColor: colors[index],
             }).appendTo(item);
             $("<span>").text(label + " · " + formatAmount(amount)).appendTo(item);
+            const info = $('<button type="button">').addClass("btn btn-default btn-xs")
+                .attr("aria-label", __("What does {0} mean?", [label]))
+                .css({
+                    flexShrink: 0, padding: 0, width: "1.25rem", height: "1.25rem",
+                    fontStyle: "italic", borderRadius: "50%",
+                }).text("i").appendTo(item)
+                .tooltip({title: legend_help?.[label], container: charts[0], boundary: "viewport",
+                    trigger: "hover focus", placement: "top", animation: false})
+                .on("click", event => $(event.currentTarget).tooltip("show"))
+                .on("keydown", event => {
+                    if (event.key === "Escape") $(event.currentTarget).tooltip("hide");
+                });
+            tooltips.push(info.data("bs.tooltip"));
         });
     };
 

@@ -115,9 +115,9 @@ def execute(filters=None):
     covered = float(sum(min(row["posted_earned"], row["paid"]) for row in rows))
     owed = float(sum(max(row["balance"], 0) for row in rows))
     above_earnings = float(sum(max(-row["balance"], 0) for row in rows))
-    covered_label = _("Covered by earnings")
-    owed_label = _("Still owed")
-    excess_label = _("Above earnings")
+    covered_label = _("Salary Paid")
+    owed_label = _("Still Owed")
+    excess_label = _("Extra Withdrawals")
     covered_color, owed_color, excess_color = "#18794E", "#74B88B", "#BF4045"
 
     chart = dict(
@@ -129,6 +129,11 @@ def execute(filters=None):
             dict(name=excess_label, values=[0, above_earnings]),
         ]),
         currency=company.default_currency, precision=precision,
+        legend_help={
+            covered_label: _("Salary already withdrawn, up to what each employee earned in the selected period."),
+            owed_label: _("Salary employees earned but have yet to withdraw in the selected period."),
+            excess_label: _("Money employees withdrew beyond what they earned in the selected period."),
+        },
         withdrawal_breakdown=dict(
             type="donut", showLegend=0, colors=[covered_color, excess_color],
             data=dict(labels=[covered_label, excess_label], datasets=[dict(values=[covered, above_earnings])]),
