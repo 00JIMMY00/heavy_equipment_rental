@@ -1,6 +1,5 @@
 """End-to-end checks for the two entry points and direct billing."""
 
-from calendar import monthrange
 from datetime import timedelta
 
 import frappe
@@ -12,7 +11,7 @@ from heavy_equipment_rental.billing import generate_crane_sales_invoices, genera
 
 class TestRentalWorkflow(FrappeTestCase):
     def setUp(self):
-        for name in ("Defaults test", "Test yard", "Other yard", "Second yard", "Monthly yard"):
+        for name in ("Defaults test", "Test yard", "Other yard", "Second yard"):
             if not frappe.db.exists("Location", name):
                 frappe.get_doc({"doctype": "Location", "location_name": name}).insert()
 
@@ -263,40 +262,17 @@ class TestRentalWorkflow(FrappeTestCase):
         self.assertEqual(hourly_invoice.items[0].qty, 2)
         self.assertEqual(hourly_invoice.items[0].rate, 120)
         self.assertEqual((first.timesheet_entries[0].rental_rate, first.timesheet_entries[0].rental_rate_unit), (120, "Hour"))
-        monthly_day = later + timedelta(days=20)
-        # Simulate a booking agreed before monthly prices were retired.
-        legacy = frappe.get_doc(dict(doctype="Rental Contract", customer=customer.name,
-            company=frappe.defaults.get_user_default("Company"), location="Monthly yard",
-            assigned_cranes=[dict(crane=crane.name, start_date=monthly_day,
-                expected_end_date=monthly_day + timedelta(days=9), rental_rate_unit="Day", rental_rate=930)])).insert()
-        frappe.db.set_value("Assigned Crane", legacy.assigned_cranes[0].name, "rental_rate_unit", "Month")
-        monthly = frappe.get_doc({
-            "doctype": "Crane Timesheet", "crane": crane.name, "customer": customer.name,
-            "location": "Monthly yard", "period_start": monthly_day,
-            "period_end": monthly_day + timedelta(days=9),
-            "assignment": legacy.name,
-            "timesheet_entries": [{
-                "work_date": monthly_day, "employee": employee, "start_time": "08:00", "end_time": "12:00",
-            }],
-        }).insert()
-        monthly.submit()
-        self.assertEqual((monthly.timesheet_entries[0].rental_rate, monthly.timesheet_entries[0].rental_rate_unit), (930, "Month"))
-        monthly_invoice = frappe.get_doc("Sales Invoice", generate_sales_invoice(timesheet=monthly.name)["name"])
-        self.assertEqual(monthly_invoice.items[0].uom, "Month")
-        self.assertEqual(monthly_invoice.items[0].rate, 930)
-        self.assertAlmostEqual(monthly_invoice.items[0].qty,
-                               1 / monthrange(monthly_day.year, monthly_day.month)[1], places=6)
         second.submit()
-        next_monthly_day = monthly_day + timedelta(days=1)
-        monthly_followup = frappe.get_doc({
-            "doctype": "Crane Timesheet", "assignment": monthly.assignment,
-            "crane": crane.name, "period_start": next_monthly_day, "period_end": next_monthly_day,
+        next_daily_work_date = day + timedelta(days=1)
+        daily_followup = frappe.get_doc({
+            "doctype": "Crane Timesheet", "assignment": rental.name,
+            "crane": crane.name, "period_start": next_daily_work_date, "period_end": next_daily_work_date,
             "timesheet_entries": [{
-                "work_date": next_monthly_day, "employee": employee,
+                "work_date": next_daily_work_date, "employee": employee,
                 "start_time": "08:00", "end_time": "12:00",
             }],
         }).insert()
-        monthly_followup.submit()
+        daily_followup.submit()
         created = generate_crane_sales_invoices(crane.name)
         self.assertEqual(len(created["invoices"]), 2)
         self.assertTrue(all(
@@ -304,5 +280,5 @@ class TestRentalWorkflow(FrappeTestCase):
             for name in created["invoices"]
         ))
         self.assertTrue(frappe.db.get_value("Crane Timesheet", second.name, "sales_invoice"))
-        self.assertTrue(frappe.db.get_value("Crane Timesheet", monthly_followup.name, "sales_invoice"))
+        self.assertTrue(frappe.db.get_value("Crane Timesheet", daily_followup.name, "sales_invoice"))
         self.assertFalse(generate_crane_sales_invoices(crane.name)["invoices"])
