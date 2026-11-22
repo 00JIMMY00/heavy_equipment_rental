@@ -71,6 +71,78 @@ function renderSalaryCharts(options) {
     }
 }
 
+const salaryDetailFields = {
+    posted_earned: "earned",
+    draft_earned: "draft",
+    earned: "total_earned",
+    paid: "paid",
+    balance: "balance",
+};
+
+function showSalaryDetails(result, detail) {
+    const employee = result.employee;
+    const hasEarnings = detail !== "paid";
+    const hasWithdrawals = ["paid", "balance"].includes(detail);
+    const dialog = new frappe.ui.Dialog({
+        title: employee.employee_name,
+        size: detail === "balance" ? "extra-large" : "large",
+        fields: [{fieldtype: "HTML", fieldname: "salary_details"}],
+    });
+    const content = $(dialog.fields_dict.salary_details.wrapper);
+    const amount = value => format_currency(value, employee.currency);
+    const date = value => frappe.datetime.str_to_user(value);
+    if (detail === "balance") {
+        $("<p>").addClass("font-weight-bold")
+            .text(__("Salary Difference") + " · " + amount(employee.balance)).appendTo(content);
+    }
+    const panels = $("<div>").css({
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))",
+        gap: "1rem",
+    }).appendTo(content);
+
+    const renderSources = (title, total, sources, headers, describe) => {
+        const panel = $("<section>").css({minWidth: 0}).appendTo(panels);
+        $("<h5>").text(title + " · " + amount(total)).appendTo(panel);
+        if (sources.rows.length) {
+            const table = $('<table class="table table-sm">').appendTo($('<div class="table-responsive">').appendTo(panel));
+            const header = $("<tr>").appendTo($("<thead>").appendTo(table));
+            headers.forEach(label => $('<th scope="col">').text(label).appendTo(header));
+            const body = $("<tbody>").appendTo(table);
+            sources.rows.forEach(source => {
+                const row = $("<tr>").appendTo(body);
+                $("<a>").attr("href", frappe.utils.get_form_link(source.doctype, source.name))
+                    .text(source.name).appendTo($("<td>").appendTo(row));
+                describe(source).forEach(value => $("<td>").text(value).appendTo(row));
+                $("<td>").text(amount(source.amount)).appendTo(row);
+            });
+        } else if (!sources.restricted) {
+            $("<p>").addClass("text-muted").text(__("No transactions in this period.")).appendTo(panel);
+        }
+        if (sources.restricted) {
+            $("<p>").addClass("text-muted small")
+                .text(__("The total includes records you do not have permission to open.")).appendTo(panel);
+        }
+    };
+
+    if (hasEarnings) {
+        const field = {draft: "draft_earned", total_earned: "earned"}[detail] || "posted_earned";
+        const title = {draft: __("Draft Timesheet Salary"), total_earned: __("Total Timesheet Salary")}[detail] || __("Earned Salary");
+        renderSources(title, employee[field], result.earnings,
+            [__("Timesheet"), __("Work Dates"), __("Status"), __("Amount")], source => [
+                source.from_date === source.to_date ? date(source.from_date) : date(source.from_date) + " – " + date(source.to_date),
+                source.docstatus ? __("Submitted") : __("Draft"),
+            ]);
+    }
+    if (hasWithdrawals) {
+        renderSources(__("Withdrawals"), employee.paid, result.withdrawals,
+            [__("Expense"), __("Posting Date"), __("Payment Type"), __("Amount")], source => [
+                date(source.date), source.linked ? __("Paid with Timesheet") : __("Paid without Timesheet"),
+            ]);
+    }
+    dialog.show();
+}
+
 frappe.query_reports["Employee Salary Withdrawals"] = {
     filters: [
         {fieldname: "company", label: __("Company"), fieldtype: "Link", options: "Company",
@@ -86,9 +158,31 @@ frappe.query_reports["Employee Salary Withdrawals"] = {
         {fieldname: "to_date", label: __("To Date"), fieldtype: "Date", reqd: 1,
             default: frappe.datetime.month_end()},
         {fieldname: "show_drafts", label: __("Show Drafts"), fieldtype: "Check", default: 0},
+        {fieldname: "balance_status", label: __("Balance Status"), fieldtype: "Select", options: [
+            {value: "", label: __("All")},
+            {value: "Owed", label: __("Still Owed")},
+            {value: "Extra", label: __("Extra Withdrawals")},
+            {value: "Settled", label: __("Settled")},
+        ]},
     ],
     onload(report) {
         report.render_chart = renderSalaryCharts;
+        $(report.page.wrapper).off("click.herSalaryDetails", "[data-salary-detail]")
+            .on("click.herSalaryDetails", "[data-salary-detail]", async event => {
+                event.stopPropagation();
+                const button = event.currentTarget;
+                const {company, from_date, to_date, show_drafts} = report.get_filter_values();
+                const {employee, salaryDetail: detail} = button.dataset;
+                button.disabled = true;
+                try {
+                    const result = await frappe.xcall(
+                        "heavy_equipment_rental.heavy_equipment_rental.report.employee_salary_withdrawals.employee_salary_withdrawals.get_salary_details",
+                        {company, employee, from_date, to_date, show_drafts, detail});
+                    showSalaryDetails(result, detail);
+                } finally {
+                    button.disabled = false;
+                }
+            });
         $(report.page.wrapper).off("click.herSalary", "[data-salary-employee]")
             .on("click.herSalary", "[data-salary-employee]", async event => {
                 event.stopPropagation();
@@ -154,6 +248,12 @@ frappe.query_reports["Employee Salary Withdrawals"] = {
         if (field === "balance") color = value > 0 ? "text-success" : value < 0 ? "text-danger" : "text-muted";
         else if (field === "posted_earned") color = "text-success";
         else if (["paid", "linked_paid", "standalone_paid"].includes(field)) color = "text-primary";
+        const detail = salaryDetailFields[field];
+        if (detail && data?.employee) {
+            const employee = frappe.utils.escape_html(data.employee);
+            return `<button type="button" class="btn btn-link btn-xs p-0 ${color}" style="text-decoration:underline"
+                data-salary-detail="${detail}" data-employee="${employee}">${formatted}</button>`;
+        }
         return `<span class="${color}">${formatted}</span>`;
     },
 };

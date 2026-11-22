@@ -80,7 +80,7 @@ class TestEmployeeSalary(FrappeTestCase):
         row = withdrawals(filters)[1][0]
         self.assertEqual((row["linked_paid"], row["standalone_paid"], row["paid"], row["balance"]), (0, 50, 50, -50))
         all_filters = {key: value for key, value in filters.items() if key != "employee"}
-        columns, employees, _, chart = withdrawals(all_filters)
+        columns, employees, _, chart, summary = withdrawals(all_filters)
         self.assertNotIn("draft_earned", [column["fieldname"] for column in columns])
         self.assertIn(row, employees)
         self.assertTrue(chart["barOptions"]["stacked"])
@@ -88,9 +88,19 @@ class TestEmployeeSalary(FrappeTestCase):
                          [float(sum(r[field] for r in employees)) for field in ("posted_earned", "paid")])
         donut = chart["withdrawal_breakdown"]["data"]["datasets"][0]["values"]
         self.assertEqual(donut[1], float(sum(max(-r["balance"], 0) for r in employees)))
-        columns, rows, _, _ = withdrawals(dict(filters, show_drafts=1))
+        columns, rows, _, _, _ = withdrawals(dict(filters, show_drafts=1))
         self.assertIn("draft_earned", [column["fieldname"] for column in columns])
         self.assertEqual(rows[0]["balance"], row["balance"])
+        self.assertEqual(summary[1]["value"], donut[1])
+        self.assertIn(row, withdrawals(dict(all_filters, balance_status="Extra"))[1])
+        self.assertFalse(withdrawals(dict(filters, balance_status="Owed"))[1])
+        self.assertFalse(withdrawals(dict(filters, balance_status="Settled"))[1])
+        from heavy_equipment_rental.heavy_equipment_rental.report.employee_salary_withdrawals.employee_salary_withdrawals import get_salary_details
+
+        details = get_salary_details(**filters, detail="balance")
+        self.assertEqual(details["employee"]["balance"], -50)
+        self.assertEqual(sum(line["amount"] for line in details["withdrawals"]["rows"]), 50)
+        self.assertEqual({line["doctype"] for line in details["withdrawals"]["rows"]}, {"Expense Entry", "Grouped Expense"})
         batch.cancel()
         self.assertEqual(withdrawals(filters)[1][0]["paid"], 20)
         other_day = add_months(self.day, -1)

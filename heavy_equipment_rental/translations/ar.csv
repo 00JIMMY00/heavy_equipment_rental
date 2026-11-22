@@ -1371,3 +1371,13 @@ What does {0} mean?,ما معنى {0}؟
 "Salary already withdrawn, up to what each employee earned in the selected period.",جزء الراتب الذي سحبه كل موظف في الفترة المحددة في حدود ما استحقه.
 Salary employees earned but have yet to withdraw in the selected period.,الراتب الذي استحقه الموظفون ولم يسحبوه في الفترة المحددة.
 Money employees withdrew beyond what they earned in the selected period.,المبالغ التي سحبها الموظفون زيادة على ما استحقوه في الفترة المحددة.
+Withdrawals,المسحوبات
+Balance Status,حالة الرصيد
+Settled,مسدد بالكامل
+Net Balance,صافي الرصيد
+Work Dates,تواريخ العمل
+Payment Type,نوع الدفع
+No transactions in this period.,لا توجد معاملات في هذه الفترة.
+The total includes records you do not have permission to open.,يشمل الإجمالي سجلات لا تملك صلاحية فتحها.
+You do not have access to this employee.,لا تملك صلاحية الوصول إلى هذا الموظف.
+Select an employee and a salary amount.,اختر موظفًا ومبلغًا من التقرير.

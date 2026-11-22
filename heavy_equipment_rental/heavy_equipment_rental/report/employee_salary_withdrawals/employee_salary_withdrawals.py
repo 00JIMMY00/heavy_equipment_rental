@@ -41,6 +41,10 @@ def period_amount(row, shifts, first, last, precision):
 
 
 def execute(filters=None):
+    return salary_report(filters)
+
+
+def salary_report(filters, detail=None):
     filters = frappe._dict(filters or {})
     if not all(filters.get(key) for key in ("company", "from_date", "to_date")):
         frappe.throw(_("Select a company and date range."))
@@ -59,22 +63,21 @@ def execute(filters=None):
     employees = frappe.get_list("Employee", filters=employee_filters, fields=["name", "employee_name"],
                                 order_by="employee_name, name", limit_page_length=0)
     show_drafts = cint(filters.show_drafts)
-    fields = [("posted_earned", "Submitted Timesheet Salary")]
+    fields = [("posted_earned", "Earned Salary")]
     if show_drafts:
         fields.extend([("draft_earned", "Draft Timesheet Salary"), ("earned", "Total Timesheet Salary")])
-    fields.extend([
-        ("linked_paid", "Paid with Timesheet"), ("standalone_paid", "Paid without Timesheet"),
-        ("paid", "Total Salary Withdrawals"), ("balance", "Salary Difference for Period"),
-    ])
+    fields.extend([("paid", "Withdrawals"), ("balance", "Salary Difference")])
     columns = [
         dict(fieldname="employee_name", label=_("Employee Name"), fieldtype="Data", width=188, sticky=True),
     ]
+    columns.extend(dict(fieldname=key, label=_(label), fieldtype="Currency", options="currency", width=155)
+                   for key, label in fields)
     if frappe.has_permission("Grouped Expense", "create"):
         columns.append(dict(fieldname="payment", label=_("Payment"), fieldtype="Data", width=180))
-    columns.extend(dict(fieldname=key, label=_(label), fieldtype="Currency", options="currency", width=165)
-                   for key, label in fields)
     ids = tuple(employee.name for employee in employees)
     if not ids:
+        if detail:
+            frappe.throw(_("You do not have access to this employee."), frappe.PermissionError)
         return columns, []
 
     payroll = frappe.db.sql("""
@@ -93,12 +96,26 @@ def execute(filters=None):
             shifts[shift.parent, shift.employee].append(shift)
     precision = get_currency_precision()
     earnings = defaultdict(Decimal)
+    earning_sources = []
+    withdrawal_sources = defaultdict(Decimal)
     for row in payroll:
         amount = period_amount(row, shifts[row.name, row.employee], first, last, precision)
-        earnings[row.employee, row.docstatus] += money(flt(amount, precision))
+        amount = money(flt(amount, precision))
+        earnings[row.employee, row.docstatus] += amount
+        if (
+            detail in ("earned", "draft", "total_earned", "balance") and amount
+            and (detail not in ("earned", "draft") or row.docstatus == int(detail == "earned"))
+        ):
+            earning_sources.append(dict(doctype="Crane Timesheet", name=row.name, amount=amount,
+                from_date=max(first, row.period_start), to_date=min(last, row.period_end), docstatus=row.docstatus))
     withdrawals = defaultdict(Decimal)
-    for employee, sheet, amount in salary_payment_rows(company.name, salary_accounts(company.name), ids, first, last):
+    payments = salary_payment_rows(company.name, salary_accounts(company.name), ids, first, last,
+                                   with_sources=detail in ("paid", "balance"))
+    for employee, sheet, amount, *source in payments:
         withdrawals[employee, bool(sheet)] += money(amount)
+        if source:
+            name, date, doctype = source
+            withdrawal_sources[doctype, name, date, bool(sheet)] += money(amount)
 
     rows = []
     for employee in employees:
@@ -111,6 +128,20 @@ def execute(filters=None):
         if show_drafts:
             row.update(draft_earned=earnings[name, 0], earned=posted + earnings[name, 0])
         rows.append(row)
+    if detail:
+        sources = [dict(doctype=doctype, name=name, date=date, linked=linked, amount=amount)
+                   for (doctype, name, date, linked), amount in withdrawal_sources.items()]
+        return dict(employee=rows[0],
+                    earnings=readable_sources(earning_sources, "from_date"),
+                    withdrawals=readable_sources(sources, "date"))
+
+    balance_status = filters.get("balance_status")
+    if balance_status == "Owed":
+        rows = [row for row in rows if row["balance"] > 0]
+    elif balance_status == "Extra":
+        rows = [row for row in rows if row["balance"] < 0]
+    elif balance_status == "Settled":
+        rows = [row for row in rows if row["balance"] == 0 and (row["posted_earned"] or row["paid"])]
     covered = float(sum(min(row["posted_earned"], row["paid"]) for row in rows))
     owed = float(sum(max(row["balance"], 0) for row in rows))
     above_earnings = float(sum(max(-row["balance"], 0) for row in rows))
@@ -138,7 +169,44 @@ def execute(filters=None):
             data=dict(labels=[covered_label, excess_label], datasets=[dict(values=[covered, above_earnings])]),
         ),
     )
-    return columns, rows, _("Salary Difference uses submitted Timesheet earnings by work date less submitted salary withdrawals by posting date."), chart
+    net = sum(row["balance"] for row in rows)
+    summary = [
+        dict(label=_("Still Owed"), value=owed, indicator="Green", datatype="Currency", currency=company.default_currency),
+        dict(label=_("Extra Withdrawals"), value=above_earnings, indicator="Red", datatype="Currency",
+             currency=company.default_currency),
+        dict(label=_("Net Balance"), value=net, indicator="Red" if net < 0 else "Green", datatype="Currency",
+             currency=company.default_currency),
+    ]
+    return (columns, rows,
+            _("Salary Difference uses submitted Timesheet earnings by work date less submitted salary withdrawals by posting date."),
+            chart, summary)
+
+
+def readable_sources(rows, sort_date):
+    visible = []
+    restricted = False
+    permissions = {}
+    for row in sorted(rows, key=lambda row: (row[sort_date], row["name"])):
+        key = row["doctype"], row["name"]
+        if key not in permissions:
+            permissions[key] = frappe.has_permission(key[0], "read", doc=key[1])
+        if permissions[key]:
+            visible.append(row)
+        else:
+            restricted = True
+    return dict(rows=visible, restricted=restricted)
+
+
+@frappe.whitelist()
+def get_salary_details(company, employee, from_date, to_date, detail, show_drafts=0):
+    from frappe.desk.query_report import get_report_doc
+
+    get_report_doc("Employee Salary Withdrawals")
+    if not employee or detail not in ("earned", "draft", "total_earned", "paid", "balance"):
+        frappe.throw(_("Select an employee and a salary amount."))
+    return salary_report(dict(company=company, employee=employee, from_date=from_date, to_date=to_date,
+                              show_drafts=detail in ("draft", "total_earned") and cint(show_drafts)),
+                         detail=detail)
 
 
 @frappe.whitelist()

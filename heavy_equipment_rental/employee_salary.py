@@ -33,7 +33,7 @@ def monthly_paid(company, accounts, employees, month, *, for_update=False):
     return dict(totals)
 
 
-def salary_payment_rows(company, accounts, employees, first=None, last=None, *, for_update=False):
+def salary_payment_rows(company, accounts, employees, first=None, last=None, *, for_update=False, with_sources=False):
     if not accounts or not employees:
         return []
 
@@ -47,9 +47,12 @@ def salary_payment_rows(company, accounts, employees, first=None, last=None, *, 
     if first is not None or last is not None:
         expense_dates = " AND expense.posting_date BETWEEN %(first)s AND %(last)s"
         journal_dates = " AND journal.posting_date BETWEEN %(first)s AND %(last)s"
+    expense_source = ", expense.name, expense.posting_date, 'Expense Entry'" if with_sources else ""
+    grouped_source = ", expense.name, journal.posting_date, 'Grouped Expense'" if with_sources else ""
     rows = frappe.db.sql(
         """
         SELECT expense.employee, expense.crane_timesheet, line.amount
+        """ + expense_source + """
         FROM `tabExpense Entry` AS expense
         INNER JOIN `tabExpense Entry Detail` AS line
             ON line.parent = expense.name AND line.parenttype = 'Expense Entry'
@@ -62,6 +65,7 @@ def salary_payment_rows(company, accounts, employees, first=None, last=None, *, 
     grouped_rows = frappe.db.sql(
         """
         SELECT expense.employee, expense.crane_timesheet, line.debit
+        """ + grouped_source + """
         FROM `tabGrouped Expense` AS expense
         INNER JOIN `tabGrouped Expense Item` AS item
             ON item.parent = expense.name AND item.parenttype = 'Grouped Expense'

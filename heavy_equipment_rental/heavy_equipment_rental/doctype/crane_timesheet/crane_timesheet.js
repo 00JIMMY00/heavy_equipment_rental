@@ -160,17 +160,16 @@ async function refresh_salary_balance(frm, force = false) {
     if (frm.doc !== doc || frm.salary_balance_request !== request || !balances.length) return;
     const table = $('<table class="table table-bordered">').appendTo(wrapper);
     const header = $('<tr>').appendTo($('<thead>').appendTo(table));
-    for (const label of ["Driver", "Remaining Salary", "Salary Difference"]) {
+    for (const label of ["Driver", "Salary Difference"]) {
         $('<th scope="col">').text(__(label)).appendTo(header);
     }
     const body = $('<tbody>').appendTo(table);
     for (const balance of balances) {
         const row = $('<tr>').appendTo(body);
         $('<td>').text(balance.driver).appendTo(row);
-        for (const value of [balance.remaining, balance.difference]) {
-            const color = value < 0 ? "text-danger" : value > 0 ? "text-success" : "text-muted";
-            $('<td>').addClass(color).text(format_currency(value, balance.currency)).appendTo(row);
-        }
+        const value = balance.difference;
+        const color = value < 0 ? "text-danger" : value > 0 ? "text-success" : "text-muted";
+        $('<td>').addClass(color).text(format_currency(value, balance.currency)).appendTo(row);
     }
 }
 
