@@ -125,13 +125,18 @@ class TestRentalWorkflow(FrappeTestCase):
         self.assertEqual(getdate(timesheet.timesheet_entries[0].work_date), day)
 
     def test_assignment_first_and_timesheet_first(self):
-        employee = frappe.db.get_value("Employee", {}, "name")
-        other_employee = frappe.db.get_value("Employee", {"name": ["!=", employee]}, "name") if employee else None
+        driver = frappe.db.get_value("Employee", {}, ["name", "company"], as_dict=True)
         group = frappe.db.get_value("Customer Group", {"is_group": 0}, "name")
         territory = frappe.db.get_value("Territory", {"is_group": 0}, "name")
-        if not all((employee, group, territory)):
+        if not all((driver, group, territory)):
             self.skipTest("Employee, Customer Group and Territory are required")
+        employee = driver.name
         key = frappe.generate_hash(length=8)
+        second_employee = frappe.get_doc({
+            "doctype": "Employee", "first_name": "Rental test driver " + key,
+            "company": driver.company, "gender": "Male", "date_of_birth": "1985-01-01",
+            "date_of_joining": getdate(today()) - timedelta(days=365), "status": "Active",
+        }).insert().name
         customer = frappe.get_doc({
             "doctype": "Customer", "customer_name": "Rental test " + key,
             "customer_type": "Company", "customer_group": group, "territory": territory,
@@ -190,12 +195,12 @@ class TestRentalWorkflow(FrappeTestCase):
             "driver": employee,
             "timesheet_entries": [
                 {"work_date": day, "start_time": "08:00", "end_time": "12:00"},
-                {"work_date": day, "employee": other_employee or employee,
+                {"work_date": day, "employee": second_employee,
                  "start_time": "10:00", "end_time": "14:00"},
             ],
         }).insert()
         self.assertEqual(sheet.timesheet_entries[0].employee, employee)
-        self.assertEqual(sheet.timesheet_entries[1].employee, other_employee or employee)
+        self.assertEqual(sheet.timesheet_entries[1].employee, second_employee)
         self.assertEqual(sum(row.total_hours for row in sheet.driver_hours), 8)
         self.assertTrue(all(row.driver_name for row in sheet.driver_hours))
         self.assertTrue(all(row.driver_name for row in sheet.timesheet_entries))
