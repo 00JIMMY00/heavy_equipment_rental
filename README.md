@@ -37,10 +37,10 @@ Extend the Rental Contract explicitly if work continues beyond its booked dates.
 ### Driver payroll
 
 1. In **Heavy Equipment Rental Settings → Driver Payroll**, add a row for the rental company. Choose the **Payroll Expense Type** for the salary expense account and the **Payroll Mode of Payment** whose company default account funds the payment.
-2. Add or select drivers in **Timesheet Entries**. **Driver Payroll** shows regular plus overtime hours per driver, **Price / Hour**, and **Payroll Amount**. Enter a price to calculate the amount, or enter an amount to calculate the price. The last field you edit stays fixed when shifts change. A fixed amount can be entered before there is any worked quantity. Its price appears once work is recorded. Leave the price and amount blank or zero to skip a driver.
+2. Add or select drivers in **Timesheet Entries**. **Driver Payroll** shows **Total Hours** (regular plus overtime), **Overtime Hours**, **Price / Hour**, **Overtime Price / Hour**, and **Payroll Amount** per driver. Enter a price to calculate the amount, or enter a fixed payroll amount to clear the overtime price and calculate a single implied hourly price. The last field you edit stays fixed when shifts change. A fixed amount can be entered before there is any worked quantity. Its price appears once work is recorded. Leave the price and amount blank or zero to skip a driver.
 3. Open a row with the pencil icon to see its payroll unit, worked hours, **Mode of Payment**, and Grouped Expense link. The payment mode defaults from the company’s payroll settings and can be changed per driver. Submit the Timesheet to post one **Grouped Expense** and Journal Entry per paid driver using the row’s payment mode and the submission date.
 
-Each driver earns the same hourly payroll rate for regular and overtime hours, including on daily rentals. The shift’s overtime selling price applies to customer billing. Use the Timesheet's **Cancel** action to reverse its payroll expenses. Amend the Timesheet to correct amounts and post replacement entries.
+A blank or zero overtime price uses the driver’s regular hourly price. A separate overtime price applies only to the driver’s overtime hours, including on daily rentals. The shift’s overtime selling price applies to customer billing. Use the Timesheet's **Cancel** action to reverse its payroll expenses. Amend the Timesheet to correct amounts and post replacement entries.
 
 ## Grouped expenses
 

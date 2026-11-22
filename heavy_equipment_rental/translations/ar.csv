@@ -1349,3 +1349,8 @@ Salary Difference uses submitted Timesheet earnings by work date less submitted 
 "{0}: enter a positive agreed Hour or Day rate.",{0}: أدخل سعرًا متفقًا عليه أكبر من صفر للساعة أو اليوم.
 "Enter a positive agreed rate and an Hour or Day Billing Unit.",أدخل سعرًا متفقًا عليه أكبر من صفر ووحدة فوترة بالساعة أو اليوم.
 "Leave zero to use the agreed hourly rate, or the Crane Hour price for Day rentals.",اتركه صفرًا لاستخدام سعر الساعة المتفق عليه أو سعر الساعة في المعدة للإيجار اليومي.
+Total Hours,إجمالي الساعات
+Overtime Hours,ساعات العمل الإضافي
+Overtime Price / Hour,سعر ساعة العمل الإضافي
+Leave at zero to use the driver’s hourly price for overtime.,اترك السعر صفرًا لاستخدام سعر ساعة السائق العادية في حساب العمل الإضافي.
+"Driver payroll row {0}: Enter a finite, non-negative overtime price.",صف رواتب السائقين {0}: أدخل سعرًا صالحًا غير سالب للعمل الإضافي.

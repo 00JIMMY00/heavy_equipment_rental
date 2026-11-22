@@ -185,13 +185,17 @@ class TestCraneTimesheet(FrappeTestCase):
         self.assertEqual([row.employee for row in sheet.driver_payroll], [sheet.driver, second_driver, unpaid_driver])
         self.assertEqual([row.quantity for row in sheet.driver_payroll], [6, 4, 4])
         self.assertEqual([row.mode_of_payment for row in sheet.driver_payroll], [mode, mode, mode])
+        sheet.timesheet_entries[0].overtime_hours = 1
+        sheet.timesheet_entries[-1].overtime_hours = 2
         sheet.driver_payroll[0].rate = 25
+        sheet.driver_payroll[0].overtime_price = 40
         sheet.driver_payroll[1].amount = 75
         sheet.driver_payroll[1].mode_of_payment = alternate_mode
         sheet.save()
-        self.assertEqual([flt(row.amount) for row in sheet.driver_payroll], [150, 75, 0])
+        self.assertEqual([flt(row.amount) for row in sheet.driver_payroll], [270, 75, 0])
         self.assertFalse(frappe.db.exists("Grouped Expense", {"crane_timesheet": sheet.name}))
 
+        self.assertEqual([row.overtime_hours for row in sheet.driver_payroll], [3, 0, 0])
         sheet.submit()
         sheet.reload()
         self.assertFalse(sheet.driver_payroll[2].grouped_expense)
@@ -227,8 +231,8 @@ class TestCraneTimesheet(FrappeTestCase):
         execute()
         backfill_payment_modes()
         sheet.reload()
-        self.assertEqual([flt(row.amount) for row in sheet.driver_payroll], [150, 75, 0])
-        self.assertEqual([row.quantity for row in sheet.driver_payroll], [6, 4, 4])
+        self.assertEqual([flt(row.amount) for row in sheet.driver_payroll], [270, 75, 0])
+        self.assertEqual([row.quantity for row in sheet.driver_payroll], [9, 4, 4])
         self.assertTrue(all(row.docstatus == 1 for row in sheet.driver_payroll))
         self.assertEqual([row.grouped_expense for row in sheet.driver_payroll[:2]], list(expenses))
         self.assertEqual(sheet.driver_payroll[1].mode_of_payment, alternate_mode)
@@ -251,7 +255,7 @@ class TestCraneTimesheet(FrappeTestCase):
         amendment.docstatus = 0
         amendment.amended_from = sheet.name
         amendment.insert()
-        self.assertEqual([flt(row.amount) for row in amendment.driver_payroll], [150, 75, 0])
+        self.assertEqual([flt(row.amount) for row in amendment.driver_payroll], [270, 75, 0])
         self.assertFalse(any(row.grouped_expense for row in amendment.driver_payroll))
         amendment.submit()
         self.assertTrue(all(row.grouped_expense not in expenses for row in amendment.driver_payroll[:2]))
@@ -278,7 +282,15 @@ class TestCraneTimesheet(FrappeTestCase):
         sheet.timesheet_entries[0].overtime_hours = 4
         sheet.timesheet_entries[0].overtime_price = 25
         sheet.save()
-        self.assertEqual((payroll.unit, payroll.quantity, payroll.amount), ("Hour", 16, 800))
+        self.assertEqual((payroll.unit, payroll.quantity, payroll.overtime_hours, payroll.amount),
+                         ("Hour", 16, 4, 800))
+        payroll.overtime_price = 75
+        sheet.save()
+        self.assertEqual(payroll.amount, 12 * 50 + 4 * 75)
+        self.assertEqual(sheet.timesheet_entries[0].overtime_price, 25)
+        payroll.overtime_price = 0
+        sheet.save()
+        self.assertEqual(payroll.amount, 800)
         sheet.timesheet_entries[0].overtime_hours = 0
 
         payroll.rate, payroll.amount = 0, 123

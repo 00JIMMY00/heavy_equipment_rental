@@ -45,11 +45,14 @@ def payroll_defaults(company):
 
 def driver_work_summary(sheet):
     hours_by_driver = defaultdict(float)
+    overtime_by_driver = defaultdict(float)
     for row in sheet.timesheet_entries:
         if row.employee:
+            overtime_by_driver[row.employee] += flt(row.overtime_hours)
             hours_by_driver[row.employee] += flt(row.worked_hours) + flt(row.overtime_hours)
     return {
-        employee: {"unit": "Hour", "worked_hours": flt(hours, 6), "quantity": flt(hours, 6)}
+        employee: {"unit": "Hour", "worked_hours": flt(hours, 6), "quantity": flt(hours, 6),
+                   "overtime_hours": flt(overtime_by_driver[employee], 6)}
         for employee, hours in hours_by_driver.items()
     }
 
@@ -72,11 +75,14 @@ def sync_payroll_rows(sheet, company, summary):
         rate = flt(row.rate)
         if not isfinite(rate) or rate < 0:
             frappe.throw(_("Driver payroll row {0}: Enter a finite, non-negative price per unit.").format(row.idx))
+        overtime_price = flt(row.overtime_price)
+        if not isfinite(overtime_price) or overtime_price < 0:
+            frappe.throw(_("Driver payroll row {0}: Enter a finite, non-negative overtime price.").format(row.idx))
         amount = flt(row.amount)
         if not isfinite(amount) or amount < 0:
             frappe.throw(_("Driver payroll row {0}: Enter a finite, non-negative amount.").format(row.idx))
         if row.employee not in work:
-            if amount or (rate and not row.fixed_amount):
+            if amount or overtime_price or (rate and not row.fixed_amount):
                 frappe.throw(_("Driver payroll row {0}: Clear the amount and price for the driver who is no longer on an operator shift.").format(row.idx))
             sheet.remove(row)
             continue
@@ -89,11 +95,13 @@ def sync_payroll_rows(sheet, company, summary):
             row.fixed_amount = 1
         row.update(work[row.employee])
         row.mode_of_payment = row.mode_of_payment or default_mode
-        if row.fixed_amount or (amount and not rate):
+        if row.fixed_amount or (amount and not rate and not overtime_price):
             row.fixed_amount = 1
+            row.overtime_price = 0
             row.rate = implied_payroll_rate(row)
-        elif rate:
-            calculated = rate * row.quantity
+        else:
+            regular_hours = row.worked_hours - row.overtime_hours
+            calculated = rate * regular_hours + (overtime_price or rate) * row.overtime_hours
             if not isfinite(calculated):
                 frappe.throw(_("Driver payroll row {0}: The calculated amount must be finite.").format(row.idx))
             row.amount = flt(calculated, row.precision("amount"))

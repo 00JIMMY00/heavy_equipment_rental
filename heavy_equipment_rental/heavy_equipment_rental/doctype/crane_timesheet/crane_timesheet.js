@@ -79,7 +79,8 @@ function payroll_work_by_driver(shifts) {
         if (!row.employee) continue;
         const hours = flt((drivers.get(row.employee)?.quantity || 0) +
             flt(row.worked_hours) + flt(row.overtime_hours), 6);
-        drivers.set(row.employee, {unit: "Hour", quantity: hours, worked_hours: hours});
+        const overtime = flt((drivers.get(row.employee)?.overtime_hours || 0) + flt(row.overtime_hours), 6);
+        drivers.set(row.employee, {unit: "Hour", quantity: hours, worked_hours: hours, overtime_hours: overtime});
     }
     return drivers;
 }
@@ -110,13 +111,16 @@ function sync_payroll_drivers(frm) {
             drivers.delete(row.employee);
             const rate = flt(row.rate);
             const amount = flt(row.amount);
-            if (["Day", "Month"].includes(row.unit) || cint(row.fixed_amount) || (amount > 0 && !rate)) {
+            const overtimePrice = flt(row.overtime_price);
+            if (["Day", "Month"].includes(row.unit) || cint(row.fixed_amount) || (amount > 0 && !rate && !overtimePrice)) {
                 work.fixed_amount = 1;
+                work.overtime_price = 0;
                 const precision = frappe.meta.get_field_precision(rateField, row);
                 work.rate = work.quantity > 0 && amount ? flt(amount / work.quantity, precision) : null;
-            } else if (rate > 0) {
+            } else if (rate || overtimePrice || amount) {
                 const precision = frappe.meta.get_field_precision(amountField, row);
-                work.amount = flt(rate * work.quantity, precision);
+                work.amount = flt(rate * (work.worked_hours - work.overtime_hours) +
+                    (overtimePrice || rate) * work.overtime_hours, precision);
             }
             for (const [field, value] of Object.entries(work)) {
                 if (row[field] === value) continue;
@@ -126,7 +130,7 @@ function sync_payroll_drivers(frm) {
             }
             continue;
         }
-        if (flt(row.amount) || (flt(row.rate) && !cint(row.fixed_amount))) continue;
+        if (flt(row.amount) || flt(row.overtime_price) || (flt(row.rate) && !cint(row.fixed_amount))) continue;
         frappe.model.clear_doc(row.doctype, row.name);
         rowsChanged = true;
     }
@@ -386,6 +390,16 @@ frappe.ui.form.on("Crane Timesheet", {
     },
 });
 
+function payroll_price_changed(frm, cdt, cdn) {
+    const row = locals[cdt][cdn];
+    row.fixed_amount = 0;
+    if (!flt(row.rate) && !flt(row.overtime_price)) {
+        row.amount = null;
+        frm.fields_dict.driver_payroll.grid.set_value("amount", null, row);
+    }
+    sync_payroll_drivers(frm);
+}
+
 frappe.ui.form.on("Crane Driver Payroll", {
     async form_render(frm, cdt, cdn) {
         const doc = frm.doc;
@@ -401,15 +415,8 @@ frappe.ui.form.on("Crane Driver Payroll", {
             await frappe.model.set_value(cdt, cdn, "mode_of_payment", mode);
         }
     },
-    rate(frm, cdt, cdn) {
-        const row = locals[cdt][cdn];
-        row.fixed_amount = 0;
-        if (!flt(row.rate)) {
-            row.amount = null;
-            frm.fields_dict.driver_payroll.grid.set_value("amount", null, row);
-        }
-        sync_payroll_drivers(frm);
-    },
+    rate: payroll_price_changed,
+    overtime_price: payroll_price_changed,
     amount(frm, cdt, cdn) {
         const row = locals[cdt][cdn];
         row.fixed_amount = 1;

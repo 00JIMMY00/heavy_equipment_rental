@@ -6,12 +6,14 @@
  "editable_grid": 1,
  "field_order": [
   "employee",
-  "quantity",
+  "worked_hours",
+  "overtime_hours",
   "rate",
+  "overtime_price",
   "amount",
   "fixed_amount",
   "unit",
-  "worked_hours",
+  "quantity",
   "mode_of_payment",
   "expense_entry",
   "grouped_expense"
@@ -22,18 +24,29 @@
    "fieldtype": "Link",
    "label": "Driver",
    "options": "Employee",
-   "columns": 3,
+   "columns": 2,
    "in_list_view": 1,
    "read_only": 1
   },
   {
-   "fieldname": "quantity",
+   "fieldname": "worked_hours",
    "fieldtype": "Float",
-   "label": "Worked Quantity",
-   "precision": "9",
-   "columns": 2,
-   "in_list_view": 1,
-   "read_only": 1
+   "label": "Total Hours",
+   "precision": "6",
+   "read_only": 1,
+   "no_copy": 1,
+   "columns": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "overtime_hours",
+   "fieldtype": "Float",
+   "label": "Overtime Hours",
+   "precision": "6",
+   "read_only": 1,
+   "no_copy": 1,
+   "columns": 1,
+   "in_list_view": 1
   },
   {
    "fieldname": "rate",
@@ -45,11 +58,21 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "overtime_price",
+   "fieldtype": "Currency",
+   "label": "Overtime Price / Hour",
+   "precision": "9",
+   "options": "Company:payroll_company:default_currency",
+   "columns": 2,
+   "in_list_view": 1,
+   "description": "Leave at zero to use the driver’s hourly price for overtime."
+  },
+  {
    "fieldname": "amount",
    "fieldtype": "Currency",
    "label": "Payroll Amount",
    "options": "Company:payroll_company:default_currency",
-   "columns": 3,
+   "columns": 2,
    "in_list_view": 1,
    "print_hide": 1
   },
@@ -68,12 +91,13 @@
    "read_only": 1
   },
   {
-   "fieldname": "worked_hours",
+   "fieldname": "quantity",
    "fieldtype": "Float",
-   "label": "Worked Hours",
-   "precision": "6",
+   "label": "Worked Quantity",
+   "precision": "9",
+   "columns": 2,
    "read_only": 1,
-   "no_copy": 1
+   "depends_on": "eval:doc.unit=='Day' || doc.unit=='Month'"
   },
   {
    "fieldname": "mode_of_payment",

@@ -1,5 +1,9 @@
 # Project context
 
+## Driver overtime payroll
+
+Total Hours includes regular hours and overtime from the driver’s Timesheet Entries. Overtime Hours shows the overtime portion. An optional driver overtime price replaces the regular price on those hours. Entering a fixed Payroll Amount uses one implied hourly price. Migration fills historical overtime hours from saved shifts and preserves posted amounts.
+
 ## Timesheet driver salary balances
 
 For each driver on the form, Remaining Salary totals submitted Timesheet earnings in the company less salary withdrawals linked to those submitted Timesheets. Salary Difference subtracts all posted salary withdrawals from the same earnings, including standalone payments and advances on draft Timesheets. Both columns cover all dates and use Employee Salary Withdrawals report access and salary accounts.
