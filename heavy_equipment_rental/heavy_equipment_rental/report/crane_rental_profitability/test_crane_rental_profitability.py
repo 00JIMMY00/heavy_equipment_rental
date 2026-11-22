@@ -25,6 +25,11 @@ class TestCraneRentalProfitability(FrappeTestCase):
         result = execute(self.filters)
         self.assertEqual(self.totals(), [15000, 3500, 11500])
         self.assertEqual(len(result[1]), 5)
+        for view in ("By Crane", "By Contract", "By Month"):
+            comparison = execute(dict(self.filters, view=view))
+            self.assertEqual(sum(row["net_sales"] for row in comparison[1]), 11500)
+            self.assertEqual([sum(series["values"]) for series in comparison[3]["data"]["datasets"]],
+                             [15000, 3500, 11500])
         expenses = [row for row in result[1] if row["voucher_type"] == "Grouped Expense"]
         self.assertEqual(sum(row["expenses"] for row in expenses if "Custody" in row["source_account"]), 1500)
         self.assertEqual(sum(row["expenses"] for row in expenses if "Custody" not in row["source_account"]), 2000)

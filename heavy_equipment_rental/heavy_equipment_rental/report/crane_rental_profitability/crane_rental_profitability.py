@@ -1,10 +1,12 @@
 """Posted rental income and costs, in company currency and excluding invoice taxes."""
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 import frappe
 from frappe import _
 from frappe.utils import escape_html, flt, getdate
+
+from heavy_equipment_rental.profit_charts import comparison_chart
 
 
 def execute(filters=None):
@@ -25,8 +27,9 @@ def execute(filters=None):
                                   pluck="name", limit_page_length=0)
     if filters.assignment:
         assignments = [name for name in assignments if name == filters.assignment]
-    cranes = frappe.get_list("Crane", fields=["name", "item"], limit_page_length=0)
+    cranes = frappe.get_list("Crane", fields=["name", "item", "crane_name"], limit_page_length=0)
     items = {row.name: row.item for row in cranes if not filters.crane or row.name == filters.crane}
+    crane_names = {row.name: row.crane_name or row.name for row in cranes}
     sheets = frappe.get_list("Crane Timesheet", filters={
         "docstatus": 1, "assignment": ["in", assignments], "crane": ["in", list(items)],
     }, fields=["name", "assignment", "crane", "sales_invoice", "purchase_invoice"], limit_page_length=0)
@@ -102,6 +105,7 @@ def execute(filters=None):
                 income=source.get("revenue", 0), expenses=source.get("expenses", 0)))
     data.sort(key=lambda row: (getdate(row["posting_date"]), row["voucher_type"], row["voucher"]))
     for row in data:
+        row["crane_name"] = crane_names[row["crane"]]
         row["income"] = flt(row.get("income"))
         row["expenses"] = flt(row.get("expenses"))
         row["net_sales"] = row["income"] - row["expenses"]
@@ -110,18 +114,50 @@ def execute(filters=None):
     summary = [dict(label=_(label), value=value, datatype="Currency", currency=currency,
                     indicator=indicator) for label, value, indicator in (
                         ("Total Income", income, "Green"), ("Total Expenses", expenses, "Red"),
-                        ("Net Sales (Income - Expenses)", income - expenses,
+                        ("Net Profit", income - expenses,
                          "Green" if income >= expenses else "Red"))]
-    message = _("Submitted documents only, by posting date, in company currency. Invoice amounts exclude taxes. "
-                "Includes posted repair stock consumption, external repair services and attributed journals/depreciation. "
-                "Net Sales means rental income minus recorded costs, not cash collected. "
-                "Treasury transfers and invoice payments are excluded to avoid counting costs twice. "
-                "Rental Contract filters require expenses to have an Rental Contract link; crane filters require a Crane link.")
+    message = _("Amounts use posting dates and company currency. Income excludes invoice taxes. "
+                "Costs include posted hire, linked expense payments, repairs and attributed journals. "
+                "Driver salary enters costs when a linked payment posts.")
     if unposted_expenses:
         message += "<br><strong>" + _("Expenses excluded from totals because they have no valid submitted Journal Entry: {0}. "
                                     "Review these historical records before relying on the totals.").format(
                                         escape_html(", ".join(sorted(unposted_expenses)))) + "</strong>"
-    return get_columns(), data, message, None, summary
+    view = filters.view or "Document Details"
+    dimension = {"By Crane": "crane", "By Contract": "assignment", "By Month": "month",
+                 "Document Details": "crane"}.get(view)
+    if not dimension:
+        frappe.throw(_("Invalid report view."))
+    grouped = {}
+    for row in data:
+        key = str(row["posting_date"])[:7] if dimension == "month" else row.get(dimension)
+        group = grouped.setdefault(key, {dimension: key, "currency": currency, "income": 0,
+                                         "expenses": 0, "net_sales": 0})
+        for field in ("income", "expenses", "net_sales"):
+            group[field] += row[field]
+    columns = get_columns()
+    series = [("income", "Income", "#2563eb"), ("expenses", "Expenses", "#df626b"),
+              ("net_sales", "Net Profit", "#0d9488")]
+    titles = {"crane": _("Profit by crane"), "assignment": _("Profit by contract"), "month": _("Monthly profit")}
+    if dimension == "crane":
+        name_counts = Counter(crane_names[key] for key in grouped)
+        for key, group in grouped.items():
+            name = crane_names[key]
+            group["crane_name"] = name
+            group["chart_label"] = name if name_counts[name] == 1 else f"{name} ({key})"
+    chart = comparison_chart(grouped.values(), lambda row: row.get("chart_label") or row[dimension] or _("Unassigned"),
+                             series, currency, titles[dimension], chronological=dimension == "month")
+    if view != "Document Details":
+        display_field = "crane_name" if dimension == "crane" else dimension
+        ordered = sorted(grouped.values(), key=lambda row: row[display_field] or "")
+        key_column = (dict(fieldname="month", label=_("Month"), fieldtype="Data", width=140)
+                      if dimension == "month" else next(col for col in columns if col["fieldname"] == display_field))
+        fields = {"income", "expenses", "net_sales", "currency"}
+        if dimension == "crane":
+            fields.add("crane")  # Hidden Link keeps the document identity alongside its display name.
+        columns = [dict(key_column, sticky=True)] + [col for col in columns if col["fieldname"] in fields]
+        data = ordered
+    return columns, data, message, chart, summary
 
 
 def get_columns():
@@ -130,11 +166,12 @@ def get_columns():
         dict(fieldname="voucher_type", label=_("Document Type"), fieldtype="Data", width=125),
         dict(fieldname="voucher", label=_("Document"), fieldtype="Dynamic Link", options="voucher_type", width=175),
         dict(fieldname="assignment", label=_("Rental Contract"), fieldtype="Link", options="Rental Contract", width=125),
-        dict(fieldname="crane", label=_("Crane"), fieldtype="Link", options="Crane", width=125),
+        dict(fieldname="crane_name", label=_("Crane Name"), fieldtype="Data", width=205),
+        dict(fieldname="crane", label=_("Crane"), fieldtype="Link", options="Crane", hidden=1),
         dict(fieldname="description", label=_("Description"), fieldtype="Data", width=240),
         dict(fieldname="mode_of_payment", label=_("Mode of Payment"), fieldtype="Link", options="Mode of Payment", width=150),
         dict(fieldname="source_account", label=_("Source Account"), fieldtype="Data", width=200),
         *[dict(fieldname=field, label=_(label), fieldtype="Currency", options="currency", width=145)
-          for field, label in (("income", "Income"), ("expenses", "Expenses"), ("net_sales", "Net Sales"))],
+          for field, label in (("income", "Income"), ("expenses", "Expenses"), ("net_sales", "Net Profit"))],
         dict(fieldname="currency", label=_("Currency"), fieldtype="Link", options="Currency", hidden=1),
     ]

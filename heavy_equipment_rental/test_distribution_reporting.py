@@ -217,6 +217,10 @@ class TestDistributionReporting(FrappeTestCase):
         totals = [r for r in result[1] if r.get("is_total_row")]
         self.assertEqual(len(totals), 2)
         self.assertEqual(sorted(r["revenue"] for r in totals), [4000, 8000])
+        chart = result[3]["data"]
+        self.assertEqual(len(chart["labels"]), 2)
+        self.assertEqual(set(chart["labels"]), {f"{self.fx.crane.crane_name} · {r['settlement_status']}" for r in self.details(result)})
+        self.assertEqual(sorted(chart["datasets"][1]["values"]), [1800, 3600])
         self.assertEqual(self.cards(result)["Posted Settlement Revenue"], 8000)
         self.assertEqual(self.cards(result)["Draft Partner Estimates"], 1800)
 

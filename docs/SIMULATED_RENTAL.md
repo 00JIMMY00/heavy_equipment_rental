@@ -38,9 +38,9 @@ From Date `2026-10-25`, To Date `2026-10-27`, and Assignment `ASG-00065`:
 | Cash expenses | 2,000 |
 | Custody expenses | 1,500 |
 | Total Expenses | 3,500 |
-| Net Sales (Income − Expenses) | 11,500 |
+| Net Profit (Income − Expenses) | 11,500 |
 
-The report's expense rows show each source account. It includes supplier invoice costs for
+Choose Document Details to see the source account on each expense row. It includes supplier invoice costs for
 rented cranes too; this particular example uses an owned crane and has no supplier hire cost.
 
 ## Repeatable creation

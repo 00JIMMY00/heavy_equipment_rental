@@ -1409,3 +1409,18 @@ Total Balance,إجمالي الرصيد
 Treasury Accounts,حسابات الخزينة
 Trend Account,حساب الرسم البياني
 All Accounts,جميع الحسابات
+By Crane,حسب الرافعة
+By Contract,حسب عقد الإيجار
+By Month,حسب الشهر
+Document Details,تفاصيل المستندات
+Net Profit,صافي الربح
+Profit by crane,الربح حسب الرافعة
+Profit by contract,الربح حسب عقد الإيجار
+Monthly profit,الربح الشهري
+Distribution by crane,توزيع الأرباح حسب الرافعة
+Amounts by source type,المبالغ حسب نوع المصدر
+Entitlement movements by partner,حركات الاستحقاق حسب الشريك
+Shares by participant,الحصص حسب المشارك
+{0} (latest 12 months),{0} (آخر 12 شهراً)
+{0} (10 largest by amount),{0} (أكبر 10 حسب المبلغ)
+"Amounts use posting dates and company currency. Income excludes invoice taxes. Costs include posted hire, linked expense payments, repairs and attributed journals. Driver salary enters costs when a linked payment posts.",تعرض المبالغ حسب تاريخ الترحيل وبعملة الشركة. الإيراد يستبعد ضرائب الفواتير. تشمل التكاليف إيجار المعدات والمصروفات المدفوعة المرتبطة والإصلاحات والقيود المنسوبة. يدخل راتب السائق ضمن التكاليف عند ترحيل دفعة مرتبطة.

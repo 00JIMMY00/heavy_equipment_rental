@@ -98,7 +98,7 @@ The financial panel shows only Company cost, capitalized improvements and book v
 
 ## Crane ownership and profit sharing
 
-**Crane Operations → Crane Profit Distribution** shows company operating/residual shares, partner entitlements, expense burden, source documents and payment balances, with five views and company/Crane/partner/date/status filters. [دليل التقرير الشامل](docs/PROFIT_DISTRIBUTION_REPORT.md).
+**Crane Operations → Crane Profit Distribution** shows company operating/residual shares, partner entitlements, expense burden, source documents and payment balances, with five charted views. Use More Filters for settlement status, payment status and source documents. [دليل التقرير الشامل](docs/PROFIT_DISTRIBUTION_REPORT.md).
 
 [تجربة استعادة التوزيع التلقائي على ونش موجود](docs/RESTORED_SETTLEMENT_AR.md).
 
@@ -138,14 +138,15 @@ Cancel the Treasury Transaction to cancel its Journal Entry and reverse the tran
 
 **Crane Operations → Financial Reports → Mode of Payment Statement** shows Date, payment mode, IN, OUT, running Balance, Remarks and source documents. Filter Company, From/To Date and optional Mode of Payment. Opening balances and a bar chart compare posted movements and closing balances; modes sharing an account appear together without counting money twice. See [report guide](docs/MODE_OF_PAYMENT_STATEMENT.md).
 
-Open **Crane Operations → Treasury Workbook** for the seven-column RTL treasury/custody statement, source document links, a company-specific **Cost Center** filter, period opening balance and print/Excel output in the workbook layout. With a Cost Center selected, balances and totals apply to that center only. The report reads posted native General Ledger movements, includes advances/current-account transfers, and opens the latest accessible import without changing user company defaults. See [the LYD workbook reconciliation and audited development reset](docs/TREASURY_WORKBOOK.md). Imports/resets are explicit commands, never migration hooks.
+Search Desk for **Treasury Workbook** for the seven-column RTL treasury/custody statement, source document links, a company-specific **Cost Center** filter, period opening balance and print/Excel output in the workbook layout. With a Cost Center selected, balances and totals apply to that center only. The report reads posted native General Ledger movements, includes advances/current-account transfers, and opens the latest accessible import without changing user company defaults. See [the LYD workbook reconciliation and audited development reset](docs/TREASURY_WORKBOOK.md). Imports/resets are explicit commands, never migration hooks.
 
 ## Rental income and expenses
 
 Open **Crane Operations → Rental Profitability** (or search **Crane Rental Profitability**).
 Choose Company and posting-date range; optionally filter by Rental Contract or Crane. The report
-shows Total Income, Total Expenses, and **Net Sales = Income − Expenses**, with linked
-documents and the actual cash/custody source account for expenses.
+opens with a crane comparison of income, expenses, and **Net Profit** in company currency.
+Switch View to compare contracts or months, or choose Document Details for linked vouchers and payment accounts.
+Click a crane name to open its record. Click Income or Expenses to see the contributing voucher lines, or Net Profit to see both sides and their totals. The chart shows up to ten categories or the latest twelve months. The table and cards cover the full selection.
 
 Income is submitted Sales Invoice item net amounts linked through submitted rental Timesheets.
 Costs include linked supplier hire invoices, rental Grouped Expenses, native repair stock/service postings and attributed depreciation/other journals. Native invoice returns reduce the corresponding amounts. Drafts, cancelled records,

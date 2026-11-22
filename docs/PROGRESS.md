@@ -1,5 +1,15 @@
 # Progress
 
+Crane Profit Distribution links crane names to their records, highlights focused and hovered rows, and opens source or participant breakdowns from settlement amounts. Participant summaries drill into settlement allocations.
+
+## Rental profitability drill-downs
+
+The crane name opens the Crane record. Income, Expenses and Net Profit open voucher breakdowns for the selected row or summary card. Hover or keyboard focus highlights the full row.
+
+## 2026-11-22 — Operational profit reports
+
+Crane Operations retains Rental Profitability and Crane Profit Distribution. Treasury Workbook is available through Desk search. Profitability compares posted income, costs and net profit by crane, contract or month with a separate voucher view. Distribution charts follow the selected settlement, participant, source or movement view. Mixed-status charts identify drafts separately. On cranes-dev3, all 22 profitability, distribution and rental workflow tests passed. Chrome checks covered crane and month voucher drill-downs, the five distribution views, advanced filters and narrow-screen chart rendering.
+
 ## 2026-11-22 — Treasury Balances
 
 Added a current-balance report to Crane Operations. The table lists treasury accounts once, and the chart shows daily balances for the last 30 days.

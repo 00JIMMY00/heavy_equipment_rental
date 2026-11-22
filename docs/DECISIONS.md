@@ -1,5 +1,9 @@
 # Current decisions
 
+## 2026-11-22 — Crane Operations reports
+
+Keep Rental Profitability and Crane Profit Distribution under Operational Reports. Use Treasury Balances and Mode of Payment Statement for routine treasury work. Keep Treasury Workbook searchable for custody reconciliation and workbook-format exports.
+
 ## Timesheet amendments
 
 On Amend, the new Timesheet clears inherited payroll expense, invoice and settlement links before Frappe validates them. The cancelled original retains its history. The replacement keeps its driver earnings and links back through Amended From.

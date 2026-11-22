@@ -141,7 +141,7 @@
   {
    "type": "Card Break",
    "label": "Operational Reports",
-   "link_count": 3
+   "link_count": 2
   },
   {
    "type": "Link",
@@ -158,14 +158,6 @@
    "link_to": "Crane Profit Distribution",
    "is_query_report": 1,
    "report_ref_doctype": "Crane Profit Settlement"
-  },
-  {
-   "type": "Link",
-   "label": "Treasury Workbook",
-   "link_type": "Report",
-   "link_to": "Treasury Workbook",
-   "is_query_report": 1,
-   "report_ref_doctype": "GL Entry"
   },
   {
    "type": "Card Break",

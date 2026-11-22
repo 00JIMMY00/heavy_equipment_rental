@@ -299,3 +299,49 @@ html .crane-ownership-field .control-value {
 .crane-ownership__owner i { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
 .crane-ownership__owner b { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .crane-ownership__warning { margin-top: 8px; font-size: 12px; color: var(--text-danger); }
+
+/* Profit report summaries adapt to the available width in either Desk language. */
+body:is([data-route="query-report/Crane Rental Profitability"], [data-route="query-report/Crane Profit Distribution"]) {
+  .page-form .frappe-control[data-original-title]::before {
+    content: attr(data-original-title);
+    display: block;
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    margin-block-end: 4px;
+  }
+  .page-form .select-icon.xs { top: auto; bottom: 6px; }
+  .report-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 155px), 1fr));
+    gap: 8px;
+    border: 0;
+    padding: 8px 0;
+  }
+  .summary-item {
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 10px;
+    height: auto;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+  }
+  .summary-label { white-space: normal; text-align: center; }
+  .summary-value { font-variant-numeric: tabular-nums; }
+  .chart-wrapper {
+    margin-block: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    background: var(--card-bg);
+  }
+}
+
+body:is([data-route="query-report/Crane Rental Profitability"], [data-route="query-report/Crane Profit Distribution"]) .dt-scrollable .dt-row:is(:hover, :focus-within) > .dt-cell {
+  --dt-cell-bg: color-mix(in srgb, var(--fg-color) 85%, var(--blue-500));
+}
+
+body[data-route="query-report/Crane Profit Distribution"] .her-distribution-cost {
+  color: #df626b;
+}

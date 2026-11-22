@@ -93,6 +93,30 @@ def add_financial_report(report, reference_doctype, key):
     frappe.db.set_default(key, "1")
 
 
+def remove_report_link(report_name):
+    if not frappe.db.exists("Workspace", "Crane Operations"):
+        return
+    workspace = frappe.get_doc("Workspace", "Crane Operations")
+    card = None
+    removed = False
+    for row in list(workspace.links):
+        if row.type == "Card Break":
+            card = row
+        elif row.link_type == "Report" and row.link_to == report_name:
+            workspace.remove(row)
+            if card:
+                card.link_count = max(0, (card.link_count or 0) - 1)
+            removed = True
+    if removed:
+        was_in_patch = frappe.flags.in_patch
+        frappe.flags.in_patch = True
+        try:
+            workspace.save(ignore_permissions=True)
+        finally:
+            frappe.flags.in_patch = was_in_patch
+        frappe.clear_document_cache("Workspace", workspace.name)
+
+
 @frappe.whitelist()
 def get_operations_counts():
     """Counts for this workspace's visible DocType links, using user permissions."""

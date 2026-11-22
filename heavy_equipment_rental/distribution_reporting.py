@@ -9,6 +9,7 @@ from frappe.utils import flt, getdate, strip_html
 
 from heavy_equipment_rental.partner_accounts import share_party
 from heavy_equipment_rental.partner_reporting import partner_balances
+from heavy_equipment_rental.profit_charts import comparison_chart
 from heavy_equipment_rental.profit_sharing import allocate_amount
 
 VIEWS = ("Settlement Summary", "Participant Summary", "Distribution Details", "Source Details", "Entitlement Movements")
@@ -130,6 +131,10 @@ def execute(filters=None, *, dashboard=False):
     if f.view == "Participant Summary":
         rows = aggregate_participants(rows)
     cols = columns(f.view, bool(f.shareholder or f.payment_status))
+    if not dashboard:
+        for col in cols:
+            if col["fieldname"] == "crane":
+                col["hidden"] = 1
     # Posted and draft figures have separate totals, even in the All view.
     total_groups = defaultdict(list)
     for row in rows:
@@ -159,7 +164,48 @@ def execute(filters=None, *, dashboard=False):
         return dict(columns=cols, rows=rows, message=message,
             cards=cards(selected, company.default_currency, f), currency=company.default_currency, precision=precision,
             settlement_count=len(selected), statuses=dict(statuses))
-    return cols, rows, message, None, cards(selected, company.default_currency, f), True
+    chart = distribution_chart(rows, f, company.default_currency)
+    return cols, rows, message, chart, cards(selected, company.default_currency, f), True
+
+
+def distribution_chart(rows, filters, currency):
+    if filters.view == "Settlement Summary":
+        dimension, title = "crane", _("Distribution by crane")
+        series = [("company_total", "Company Total Retention", "#0d9488"),
+                  ("external_total", "Partners Calculated Share", "#6366f1"),
+                  ("expenses", "Settlement Costs", "#df626b")]
+    elif filters.view == "Source Details":
+        dimension, title = "source_doctype", _("Amounts by source type")
+        series = [("revenue", "Allocated Revenue", "#2563eb"), ("expenses", "Allocated Cost", "#df626b")]
+    elif filters.view == "Entitlement Movements":
+        dimension, title = "partner_name", _("Entitlement movements by partner")
+        series = [("increase", "Entitlement Increase", "#6366f1"),
+                  ("decrease", "Settlement / Payment Decrease", "#0d9488")]
+    else:
+        dimension, title = "partner_name", _("Shares by participant")
+        series = [("operating_share", "Operating Share", "#2563eb"),
+                  ("residual_share", "Remaining Balance Share", "#0d9488")]
+
+    cranes_by_name = defaultdict(set)
+    if dimension == "crane":
+        for row in rows:
+            if not row.get("is_total_row"):
+                cranes_by_name[row["crane_name"]].add(row["crane"])
+
+    def label(row):
+        name = row[dimension]
+        if dimension == "crane" and row["crane_name"]:
+            name = row["crane_name"]
+            if len(cranes_by_name[name]) > 1:
+                name = f"{name} ({row['crane']})"
+        if dimension == "source_doctype":
+            name = _(name)
+        if filters.settlement_status == "All":
+            return f"{name} · {row['settlement_status']}"
+        return name
+
+    return comparison_chart((row for row in rows if not row.get("is_total_row")), label,
+                            series, currency, title)
 
 
 def paid_parts(balance, precision):
@@ -304,7 +350,7 @@ def cards(records, currency, filters):
             totals[key] += flt(row[key])
     result = [dict(label=_(label), value=flt(totals[key], precision), datatype="Currency", currency=currency, indicator=color)
         for key, label, color in (
-            ("revenue", "Posted Settlement Revenue", "Blue"), ("expenses", "Settlement Costs", "Orange"),
+            ("revenue", "Posted Settlement Revenue", "Blue"), ("expenses", "Settlement Costs", "her-distribution-cost"),
             ("company_operating", "Company Operating Share", "Green"), ("company_residual", "Company Residual Share", "Green"),
             ("company_total", "Company Total Retention", "Green"), ("posted_entitlement", "Partners Posted Entitlement", "Blue"),
             ("cash_paid", "Partner Payments", "Green"), ("adjustments", "Other Partner Adjustments", "Gray"),
