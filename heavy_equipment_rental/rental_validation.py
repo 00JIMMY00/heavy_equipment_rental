@@ -101,18 +101,18 @@ def interval(row):
 		frappe.throw(_("Row {0}: work date, start time and end time are required.").format(row.idx))
 	try:
 		start = datetime.combine(getdate(row.work_date), get_time(row.start_time))
-		end = datetime.combine(getdate(row.work_date), get_time(row.end_time)) + timedelta(
-			days=cint(row.ends_next_day)
-		)
+		end = datetime.combine(start.date(), get_time(row.end_time))
 	except (ValueError, TypeError):
 		frappe.throw(_("Row {0}: invalid shift time.").format(row.idx))
-	hours = (end - start).total_seconds() / 3600
+	next_day = cint(row.ends_next_day)
+	if next_day not in (0, 1):
+		frappe.throw(_("Row {0}: invalid shift time.").format(row.idx))
+	if next_day or end < start:
+		end += timedelta(days=1)
 	idle = flt(row.worked_hours) == 0 and flt(row.get("overtime_hours")) == 0
-	if not (0 <= hours <= 24 if idle else 0 < hours <= 24) or cint(row.ends_next_day) not in (0, 1):
+	if end == start and not idle:
 		frappe.throw(
-			_(
-				"Row {0}: shift must be longer than zero and at most 24 hours. Mark Ends Next Day for overnight work."
-			).format(row.idx)
+			_("Row {0}: start and end times match. Select Ends Next Day for a 24-hour shift.").format(row.idx)
 		)
 	return start, end
 

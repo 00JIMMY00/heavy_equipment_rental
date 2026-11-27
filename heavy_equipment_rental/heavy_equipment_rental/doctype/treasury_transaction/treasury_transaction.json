@@ -28,11 +28,8 @@
    "in_standard_filter": 1
   },
   {
-   "fieldname": "cost_center",
-   "fieldtype": "Link",
-   "label": "Cost Center",
-   "options": "Cost Center",
-   "in_standard_filter": 1
+   "fieldname": "posting_column",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "posting_date",
@@ -47,6 +44,7 @@
    "fieldtype": "Link",
    "label": "Currency",
    "options": "Currency",
+   "hidden": 1,
    "read_only": 1,
    "fetch_from": "company.default_currency"
   },
@@ -58,7 +56,7 @@
   {
    "fieldname": "mode_of_payment",
    "fieldtype": "Link",
-   "label": "Mode of Payment",
+   "label": "From Mode of Payment",
    "options": "Mode of Payment",
    "reqd": 1,
    "in_list_view": 1
@@ -68,20 +66,31 @@
    "fieldtype": "Link",
    "label": "Source Account",
    "options": "Account",
-   "read_only": 1,
-   "description": "The default account for the selected Mode of Payment and Company."
+   "read_only": 1
   },
   {
    "fieldname": "transfer_column",
    "fieldtype": "Column Break"
   },
   {
+   "fieldname": "destination_mode_of_payment",
+   "fieldtype": "Link",
+   "label": "To Mode of Payment",
+   "options": "Mode of Payment",
+   "depends_on": "eval:doc.docstatus === 0 || doc.destination_mode_of_payment",
+   "mandatory_depends_on": "eval:doc.docstatus === 0",
+   "in_list_view": 1
+  },
+  {
    "fieldname": "destination_account",
    "fieldtype": "Link",
    "label": "Destination Account",
    "options": "Account",
-   "reqd": 1,
-   "in_list_view": 1
+   "read_only": 1
+  },
+  {
+   "fieldname": "amount_section",
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "amount",
@@ -92,9 +101,18 @@
    "in_list_view": 1
   },
   {
-   "fieldname": "party_section",
+   "fieldname": "reference_section",
    "fieldtype": "Section Break",
-   "label": "Party Details"
+   "label": "Additional Details",
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:doc.cost_center || doc.party_type || doc.reference_no || doc.reference_date || doc.description"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Cost Center",
+   "options": "Cost Center",
+   "in_standard_filter": 1
   },
   {
    "fieldname": "party_type",
@@ -102,10 +120,6 @@
    "label": "Party Type",
    "options": "DocType",
    "mandatory_depends_on": "eval:doc.party"
-  },
-  {
-   "fieldname": "party_column",
-   "fieldtype": "Column Break"
   },
   {
    "fieldname": "party",
@@ -117,9 +131,8 @@
    "description": "The recipient of this transfer."
   },
   {
-   "fieldname": "reference_section",
-   "fieldtype": "Section Break",
-   "label": "Reference"
+   "fieldname": "reference_column",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "reference_no",
@@ -137,11 +150,17 @@
    "label": "Description"
   },
   {
+   "fieldname": "posting_links_section",
+   "fieldtype": "Section Break",
+   "depends_on": "eval:doc.journal_entry || doc.amended_from"
+  },
+  {
    "fieldname": "journal_entry",
    "fieldtype": "Link",
    "label": "Journal Entry",
    "options": "Journal Entry",
    "read_only": 1,
+   "depends_on": "journal_entry",
    "no_copy": 1
   },
   {
@@ -150,29 +169,33 @@
    "label": "Amended From",
    "options": "Treasury Transaction",
    "read_only": 1,
+   "depends_on": "amended_from",
    "no_copy": 1
   }
  ],
  "field_order": [
   "naming_series",
   "company",
-  "cost_center",
+  "posting_column",
   "posting_date",
   "currency",
   "transfer_section",
   "mode_of_payment",
   "source_account",
   "transfer_column",
+  "destination_mode_of_payment",
   "destination_account",
+  "amount_section",
   "amount",
-  "party_section",
-  "party_type",
-  "party_column",
-  "party",
   "reference_section",
+  "cost_center",
+  "party_type",
+  "party",
+  "reference_column",
   "reference_no",
   "reference_date",
   "description",
+  "posting_links_section",
   "journal_entry",
   "amended_from"
  ],

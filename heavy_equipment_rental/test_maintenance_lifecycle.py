@@ -60,6 +60,32 @@ class TestMaintenanceLifecycle(FrappeTestCase):
         self.amendment(job).submit()
         self.assertEqual(frappe.db.get_value('Bin', {'item_code':self.part.name,'warehouse':self.warehouse}, 'actual_qty'), 8)
 
+    def test_delete_cancelled_maintenance_preserves_repair_vouchers(self):
+        job = self.repair('External Parts')
+        job.submit()
+        job.cancel()
+        amendment = self.amendment(job)
+        vouchers = {
+            'Purchase Invoice': job.repair_purchase_invoice,
+            'Stock Entry': job.repair_material_issue,
+            'Payment Entry': job.repair_payment_entry,
+        }
+        frappe.db.savepoint('delete_maintenance')
+        with self.assertRaisesRegex(frappe.LinkExistsError, amendment.name):
+            frappe.delete_doc(job.doctype, job.name)
+        frappe.db.rollback(save_point='delete_maintenance')
+        for doctype in ('Purchase Invoice', 'Stock Entry'):
+            self.assertEqual(frappe.db.get_value(doctype, vouchers[doctype], 'crane_maintenance'), job.name)
+
+        frappe.delete_doc(amendment.doctype, amendment.name)
+        frappe.delete_doc(job.doctype, job.name)
+        self.assertFalse(frappe.db.exists(job.doctype, job.name))
+        for doctype, name in vouchers.items():
+            self.assertEqual(frappe.db.get_value(doctype, name, 'docstatus'), 2)
+            if doctype != 'Payment Entry':
+                self.assertFalse(frappe.db.get_value(doctype, name, 'crane_maintenance'))
+        self.assertEqual(self.receipt.reload().docstatus, 1)
+
     def test_failed_cancellation_rolls_back_prior_payment_cancellation(self):
         job = self.repair('External Parts')
         job.submit()

@@ -58,6 +58,46 @@ class TestMaintenancePosting(FrappeTestCase):
         with self.assertRaisesRegex(frappe.ValidationError, 'Not allowed to change|inputs cannot change'):
             job.save()
 
+    def test_expense_report_includes_posted_stock_cost_for_maintenance_crane(self):
+        from frappe.desk.query_report import run
+        from frappe.utils import add_days, today
+
+        job = self.repair()
+        cash = self.job(repair_method='Quick Repair', cost=125)
+        cash.submit()
+        filters = dict(company=job.company, crane=job.crane, from_date=today(), to_date=today(),
+            group_by='Crane', show_details=1)
+
+        def report(**overrides):
+            return run('Crane Expense Report', dict(filters, **overrides), ignore_prepared_report=True)
+
+        self.assertEqual(report()['report_summary'][0]['value'], 125)
+        job.submit()
+        issue = job.repair_material_issue
+        result = report()
+        group, paid, stock, total = result['result']
+        self.assertEqual((group['crane'], group['crane_name']), (job.crane, self.crane.crane_name))
+        self.assertEqual(paid['source'], cash.grouped_expense)
+        self.assertEqual((stock['source_type'], stock['source'], stock['maintenance']), ('Stock Entry', issue, job.name))
+        self.assertEqual((stock['crane'], stock['posting_date']), (job.crane, today()))
+        self.assertEqual((stock['account'], stock['cost_center']), (job.repair_expense_account, job.repair_cost_center))
+        self.assertEqual(stock['amount'], self.gl('Stock Entry', issue, 'Expense'))
+        self.assertEqual(stock['amount'], 50)
+        self.assertEqual((group['amount'], total['amount'], result['report_summary'][0]['value']), (175, 175, 175))
+        self.assertEqual(result['chart']['data']['datasets'][0]['values'], [175])
+        self.assertEqual(report(cost_center=job.repair_cost_center)['report_summary'][0]['value'], 175)
+        self.assertEqual(report(mode_of_payment=self.mode.name)['report_summary'][0]['value'], 125)
+        self.assertEqual(report(source='Grouped Expense')['report_summary'][0]['value'], 125)
+        self.assertEqual(report(from_date=add_days(today(), -1), to_date=add_days(today(), -1))['result'], [])
+        other_crane = frappe.get_doc(dict(doctype='Crane', crane_id=frappe.generate_hash(length=12),
+            crane_name=self.key + ' other', sharing_company=job.company)).insert()
+        self.assertEqual(report(crane=other_crane.name)['result'], [])
+        chart = report(chart_by='Expense Type')['chart']['data']
+        self.assertEqual(dict(zip(chart['labels'], chart['datasets'][0]['values']))[stock['expense_type_title']], 50)
+
+        job.cancel()
+        self.assertEqual(report()['report_summary'][0]['value'], 125)
+
     def test_external_parts_receive_then_issue_and_reverse(self):
         job = self.repair('External Parts')
         post_and_complete(job.name)

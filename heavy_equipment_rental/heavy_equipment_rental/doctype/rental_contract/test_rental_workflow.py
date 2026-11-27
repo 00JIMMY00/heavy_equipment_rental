@@ -81,6 +81,7 @@ class TestRentalWorkflow(FrappeTestCase):
         }).insert()
         maintenance = frappe.get_doc({
             "doctype": "Crane Maintenance", "crane": crane.name, "cost_treatment": "Cash Expense",
+            "company": expense_type.company,
             "maintenance_type": "Corrective", "description": "Expense integration test",
             "status": "Planned",
         }).insert()

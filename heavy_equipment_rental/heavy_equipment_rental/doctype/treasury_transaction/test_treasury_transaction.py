@@ -4,10 +4,17 @@ from unittest.mock import patch
 
 import erpnext
 import frappe
-from heavy_equipment_rental.testing import other_company
 import frappe.permissions
+from frappe.desk.search import search_widget
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import getdate, today
+
+from heavy_equipment_rental.patches.backfill_treasury_destination_modes import (
+    execute as backfill_destination_modes,
+)
+from heavy_equipment_rental.testing import other_company
+
+from .treasury_transaction import treasury_payment_mode_query
 
 
 class TestTreasuryTransaction(FrappeTestCase):
@@ -27,17 +34,21 @@ class TestTreasuryTransaction(FrappeTestCase):
                 "parent_account": parent, "account_type": account_type,
                 "account_currency": self.currency,
             }).insert().name)
-        self.mode = frappe.get_doc({
-            "doctype": "Mode of Payment", "mode_of_payment": "Treasury test " + self.key,
-            "type": "Cash", "enabled": 1,
-            "accounts": [{"company": self.company, "default_account": self.accounts[0]}],
+        self.mode = self.payment_mode(self.accounts[0], "Cash", mode_type="Cash")
+        self.bank_mode = self.payment_mode(self.accounts[1], "Bank", mode_type="Bank")
+
+    def payment_mode(self, account, label, *, mode_type="General"):
+        return frappe.get_doc({
+            "doctype": "Mode of Payment", "mode_of_payment": f"Treasury test {label} {self.key}",
+            "type": mode_type, "enabled": 1,
+            "accounts": [{"company": self.company, "default_account": account}],
         }).insert()
 
     def transaction(self, **values):
         fields = {
             "doctype": "Treasury Transaction", "company": self.company,
             "posting_date": today(), "mode_of_payment": self.mode.name,
-            "destination_account": self.accounts[1], "amount": 125.75,
+            "destination_mode_of_payment": self.bank_mode.name, "amount": 125.75,
             "description": "Treasury integration test",
         }
         fields.update(values)
@@ -49,9 +60,10 @@ class TestTreasuryTransaction(FrappeTestCase):
         }, fields=["account", "debit", "credit"])
 
     def test_post_reverse_and_amend(self):
-        transfer = self.transaction().insert()
+        transfer = self.transaction(source_account=self.accounts[1], destination_account=self.accounts[0]).insert()
         self.assertFalse(transfer.journal_entry)
         self.assertEqual(transfer.source_account, self.accounts[0])
+        self.assertEqual(transfer.destination_account, self.accounts[1])
         transfer.submit()
         journal = frappe.get_doc("Journal Entry", transfer.journal_entry)
         self.assertEqual(journal.docstatus, 1)
@@ -85,10 +97,8 @@ class TestTreasuryTransaction(FrappeTestCase):
         self.assertEqual(frappe.db.get_value("Journal Entry", amendment.journal_entry, "total_debit"), 75)
 
     def test_bank_to_cash(self):
-        self.mode.accounts[0].default_account = self.accounts[1]
-        self.mode.type = "Bank"
-        self.mode.save()
-        transfer = self.transaction(destination_account=self.accounts[0], reference_no="TR-123", reference_date=today()).insert()
+        transfer = self.transaction(mode_of_payment=self.bank_mode.name, destination_mode_of_payment=self.mode.name,
+                                    reference_no="TR-123", reference_date=today()).insert()
         transfer.submit()
         journal = frappe.get_doc("Journal Entry", transfer.journal_entry)
         rows = {row.account: row for row in self.ledger(journal.name)}
@@ -191,8 +201,9 @@ class TestTreasuryTransaction(FrappeTestCase):
                 "her_treasury_kind": kind,
             }).insert()
             with self.subTest(kind=kind):
+                mode = self.payment_mode(account.name, kind)
                 transfer = self.transaction(
-                    destination_account=account.name, party_type="Supplier", party=supplier,
+                    destination_mode_of_payment=mode.name, party_type="Supplier", party=supplier,
                 ).insert()
                 transfer.submit()
                 self.assert_journal_party(transfer)
@@ -210,8 +221,10 @@ class TestTreasuryTransaction(FrappeTestCase):
                 self.transaction(**values).insert()
 
     def test_reject_invalid_amount_accounts_and_manual_journal(self):
+        same_account_mode = self.payment_mode(self.accounts[0], "Cash alias")
         for values in ({"amount": 0}, {"amount": -1}, {"amount": 0.000001},
-                       {"destination_account": self.accounts[0]},
+                       {"destination_mode_of_payment": same_account_mode.name},
+                       {"destination_mode_of_payment": None, "destination_account": self.accounts[1]},
                        {"journal_entry": "not-a-journal"}):
             with self.subTest(values=values), self.assertRaises(frappe.ValidationError):
                 self.transaction(**values).insert()
@@ -242,6 +255,47 @@ class TestTreasuryTransaction(FrappeTestCase):
         with self.assertRaises(frappe.ValidationError):
             self.transaction().insert()
 
+    def test_form_lists_enabled_company_modes_with_eligible_accounts(self):
+        def options(company):
+            return dict(search_widget(
+                "Mode of Payment", self.key,
+                query=f"{treasury_payment_mode_query.__module__}.treasury_payment_mode_query",
+                filters={"company": company},
+            ))
+
+        self.assertEqual(options(self.company), {self.mode.name: self.accounts[0], self.bank_mode.name: self.accounts[1]})
+        self.assertEqual(options(other_company(self.company)), {})
+        self.bank_mode.enabled = 0
+        self.bank_mode.save()
+        self.assertEqual(options(self.company), {self.mode.name: self.accounts[0]})
+        with self.assertRaises(frappe.ValidationError):
+            self.transaction().insert()
+        frappe.db.set_value("Account", self.accounts[0], "disabled", 1)
+        self.assertEqual(options(self.company), {})
+
+    def test_legacy_destination_migration_preserves_posted_accounts(self):
+        draft = self.transaction().insert()
+        posted = self.transaction().insert().submit()
+        for doc in (draft, posted):
+            doc.db_set("destination_mode_of_payment", None)
+
+        alias = self.payment_mode(self.accounts[1], "Bank alias")
+        backfill_destination_modes()
+        self.assertFalse(draft.reload().destination_mode_of_payment)
+        with self.assertRaises(frappe.ValidationError):
+            draft.save()
+
+        alias.enabled = 0
+        alias.save()
+        backfill_destination_modes()
+        self.assertEqual(draft.reload().destination_mode_of_payment, self.bank_mode.name)
+        self.assertEqual(draft.destination_account, self.accounts[1])
+        self.assertFalse(posted.reload().destination_mode_of_payment)
+        self.assertEqual(posted.destination_account, self.accounts[1])
+        self.assertEqual(len(self.ledger(posted.journal_entry)), 2)
+        posted.cancel()
+        self.assertFalse(self.ledger(posted.journal_entry))
+
     def test_journal_permission_failure_rolls_back_submission(self):
         native_permission = frappe.permissions.has_permission
         for denied_permission in ("create", "submit"):
@@ -264,5 +318,5 @@ class TestTreasuryTransaction(FrappeTestCase):
             self.assertEqual(transfer.docstatus, 0)
             self.assertFalse(transfer.journal_entry)
             self.assertFalse(frappe.db.exists("Journal Entry", {
-                "user_remark": "Treasury Transaction {0}: Treasury integration test".format(transfer.name),
+                "user_remark": f"Treasury Transaction {transfer.name}: Treasury integration test",
             }))

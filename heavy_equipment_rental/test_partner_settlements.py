@@ -636,17 +636,54 @@ class TestPartnerSettlements(FrappeTestCase):
         self.assertEqual(settlement.reload().docstatus, 2)
         self.assertEqual(frappe.db.get_value("Journal Entry", settlement.journal_entry, "docstatus"), 2)
 
-    def test_amend_expense_and_settlement_after_invoice_cancellation(self):
-        from heavy_equipment_rental.cancellation import get_plan, cancel_all
-
+    def test_delete_cancelled_timesheet_after_deleting_its_draft_settlement(self):
         sheet = self.sheet()
+        settlement = frappe.get_doc("Crane Profit Settlement", sheet.profit_settlement)
+        self.assertEqual(settlement.docstatus, 0)
+        with self.assertRaises(frappe.LinkExistsError):
+            frappe.delete_doc(settlement.doctype, settlement.name)
+        self.assertEqual(sheet.reload().profit_settlement, settlement.name)
+        sheet.cancel()
+        with self.assertRaises(frappe.LinkExistsError):
+            frappe.delete_doc(sheet.doctype, sheet.name)
+
+        frappe.delete_doc(settlement.doctype, settlement.name)
+        self.assertFalse(sheet.reload().profit_settlement)
+        frappe.delete_doc(sheet.doctype, sheet.name)
+        self.assertFalse(frappe.db.exists(sheet.doctype, sheet.name))
+
+    def test_delete_cancelled_settlement_preserves_accounting_documents(self):
+        sheet = self.sheet()
+        batch = self.grouped_cost(sheet)
+        invoice = self.invoice(sheet).submit()
+        settlement = frappe.get_doc("Crane Profit Settlement", sheet.profit_settlement)
+        sheet.reload().cancel()
+        self.assertEqual(settlement.reload().docstatus, 2)
+        self.assertEqual(sheet.reload().profit_settlement, settlement.name)
+        self.assertEqual(batch.reload().profit_settlement, settlement.name)
+
+        frappe.delete_doc(settlement.doctype, settlement.name)
+        self.assertFalse(sheet.reload().profit_settlement)
+        self.assertEqual(batch.reload().docstatus, 2)
+        self.assertFalse(batch.profit_settlement)
+        self.assertEqual(batch.crane_timesheet, sheet.name)
+        self.assertEqual(invoice.reload().docstatus, 2)
+        self.assertEqual(frappe.db.get_value("Journal Entry", settlement.journal_entry, "docstatus"), 2)
+
+    def grouped_cost(self, sheet):
         company = self.company.name
-        batch = frappe.get_doc(dict(doctype="Grouped Expense", company=company, crane=sheet.crane,
+        return frappe.get_doc(dict(doctype="Grouped Expense", company=company, crane=sheet.crane,
             crane_timesheet=sheet.name, mode_of_payment=frappe.db.get_value(
                 "Mode of Payment Account", {"company": company}, "parent"),
             items=[dict(posting_date=sheet.period_end, description="Rental cost", amount=50,
                         expense_entry_type=frappe.db.get_value("Expense Entry Type", {"company": company, "enabled": 1}))],
         )).insert().submit()
+
+    def test_amend_expense_and_settlement_after_invoice_cancellation(self):
+        from heavy_equipment_rental.cancellation import get_plan, cancel_all
+
+        sheet = self.sheet()
+        batch = self.grouped_cost(sheet)
         invoice = self.invoice(sheet).submit()
         settlement = frappe.get_doc("Crane Profit Settlement", sheet.profit_settlement)
         cancel_all(invoice.doctype, invoice.name, get_plan(invoice.doctype, invoice.name))

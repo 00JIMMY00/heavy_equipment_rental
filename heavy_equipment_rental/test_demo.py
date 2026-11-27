@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 import frappe
+from erpnext import get_default_company
 from frappe.tests.utils import FrappeTestCase
 
 from heavy_equipment_rental import demo
@@ -12,7 +13,7 @@ class TestDemo(FrappeTestCase):
     def test_distinct_cycles_keep_unique_cranes_and_repeat_without_duplicates(self):
         frappe.db.savepoint("demo_crane_ids")
         try:
-            company = frappe.db.get_value("Company", {}, "name")
+            company = get_default_company()
             if not frappe.db.exists("Crane", "HER-DEMO-50"):
                 frappe.get_doc(dict(doctype="Crane", crane_id="HER-DEMO-50",
                     crane_name="Legacy demo crane")).insert()

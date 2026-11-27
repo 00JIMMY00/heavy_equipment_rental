@@ -167,8 +167,20 @@ class CraneMaintenance(Document):
 			)
 
 	def on_trash(self):
-		if self.status != "Planned" or self.grouped_expense:
-			frappe.throw(_("Only planned maintenance without an expense can be deleted."))
+		if self.docstatus == 2:
+			from heavy_equipment_rental.crane_repairs import DOCUMENTS
+
+			# Keep cancelled repair vouchers and their accounting when the job is deleted.
+			filters = {"crane_maintenance": self.name, "docstatus": 2}
+			for doctype in (*DOCUMENTS, "Grouped Expense", "Expense Entry"):
+				vouchers = frappe.get_all(doctype, filters=filters, pluck="name")
+				if vouchers:
+					frappe.db.set_value(
+						doctype, {**filters, "name": ["in", vouchers]},
+						"crane_maintenance", None, update_modified=False,
+					)
+		elif self.status != "Planned" or self.grouped_expense:
+			frappe.throw(_("Draft Maintenance can be deleted while it is Planned and has no expense."))
 
 	def make_expense(self):
 		if self.cost_treatment != "Cash Expense":

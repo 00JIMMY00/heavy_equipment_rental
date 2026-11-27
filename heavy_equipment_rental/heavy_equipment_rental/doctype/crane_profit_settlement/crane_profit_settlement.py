@@ -206,6 +206,17 @@ class CraneProfitSettlement(Document):
         journal.ignore_linked_doctypes = ("Crane Profit Settlement",)
         journal._cancel()
 
+    def on_trash(self):
+        # Release managed backlinks on cancelled work before Frappe validates incoming links.
+        filters = {"profit_settlement": self.name, "docstatus": 2}
+        for doctype in ("Crane Timesheet", "Grouped Expense"):
+            names = frappe.get_all(doctype, filters=filters, pluck="name")
+            if names:
+                frappe.db.set_value(
+                    doctype, {**filters, "name": ["in", names]},
+                    "profit_settlement", None, update_modified=False,
+                )
+
 
 @frappe.whitelist()
 def make_partner_payment(settlement, supplier=None, shareholder=None):

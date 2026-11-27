@@ -164,7 +164,17 @@ frappe.query_reports['Crane Expense Report'] = {
         const formatted = ['description', 'crane_name'].includes(column.fieldname) ? frappe.utils.escape_html(value || '')
             : default_formatter(value, row, column, data);
         if (data?.is_group || data?.is_total_row) return `<span class="her-expense-group">${formatted}</span>`;
-        if (column.fieldname === 'amount') return `<span class="her-expense-amount">${formatted}</span>`;
+        if (column.fieldname === 'description' && data?.maintenance) {
+            const url = frappe.utils.get_form_link('Crane Maintenance', data.maintenance);
+            return `<a href="${url}">${formatted}</a>`;
+        }
+        if (column.fieldname === 'amount') {
+            if (data?.source_type === 'Stock Entry') {
+                const url = frappe.utils.get_form_link('Stock Entry', data.source);
+                return `<a class="her-expense-amount" href="${url}">${formatted}</a>`;
+            }
+            return `<span class="her-expense-amount">${formatted}</span>`;
+        }
         return formatted;
     },
 };

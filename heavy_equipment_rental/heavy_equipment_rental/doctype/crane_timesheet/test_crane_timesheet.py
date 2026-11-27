@@ -276,6 +276,17 @@ class TestCraneTimesheet(FrappeTestCase):
         amendment.submit()
         self.assertFalse(frappe.db.exists("Grouped Expense", {"crane_timesheet": amendment.name}))
 
+        amendment.cancel()
+        frappe.delete_doc(amendment.doctype, amendment.name)
+        frappe.delete_doc(sheet.doctype, sheet.name)
+        self.assertFalse(frappe.db.exists(sheet.doctype, sheet.name))
+        for expense, journal in expenses.items():
+            voucher = frappe.get_doc("Grouped Expense", expense)
+            self.assertEqual(voucher.docstatus, 2)
+            self.assertFalse(voucher.crane_timesheet)
+            self.assertEqual(voucher.items[0].journal_entry, journal)
+            self.assertEqual(frappe.db.get_value("Journal Entry", journal, "docstatus"), 2)
+
     def test_driver_payroll_includes_overtime_on_day_rentals_and_preserves_fixed_amount(self):
         sheet = self.make_sheet(length=4)
         sheet.rented = 0
@@ -787,6 +798,33 @@ class TestCraneTimesheet(FrappeTestCase):
         self.assertEqual(sale.items[0].uom, "Hour")
         self.assertEqual(sale.items[0].qty, invoice.items[0].qty)
         self.assertEqual(sale.items[0].rate, 100)
+
+    def test_auto_overnight_and_shifts_over_24_hours(self):
+        sheet = self.make_sheet(length=2)
+        sheet.rented = 0
+        row = sheet.timesheet_entries[0]
+        row.update({"start_time": "22:00", "end_time": "02:00", "worked_hours": 4})
+        sheet.insert()
+        self.assertEqual(sheet.reload().timesheet_entries[0].ends_next_day, 1)
+        self.assertEqual(sheet.total_crane_billable_hours, 4)
+
+        row = sheet.timesheet_entries[0]
+        row.update({"start_time": "08:00", "end_time": "16:00", "worked_hours": 32})
+        sheet.submit()
+        self.assertEqual(sheet.total_crane_billable_hours, 32)
+        self.assertEqual(sheet.driver_payroll[0].quantity, 32)
+
+    def test_equal_shift_times_require_next_day_for_positive_work(self):
+        sheet = self.make_sheet(length=2)
+        sheet.rented = 0
+        row = sheet.timesheet_entries[0]
+        row.update({"end_time": row.start_time, "worked_hours": 24})
+        with self.assertRaisesRegex(frappe.ValidationError, "start and end times match"):
+            sheet.insert()
+
+        row.ends_next_day = 1
+        sheet.insert()
+        self.assertEqual(sheet.total_crane_billable_hours, 24)
 
     def test_unchecked_rented_skips_purchase_and_survives_saves(self):
         sheet = self.make_sheet(rate=0)

@@ -102,7 +102,7 @@
   },
   {
    "default": "0",
-   "description": "Use for overnight shifts, such as 22:00 to 02:00. It also allows a 24-hour shift when start and end times match.",
+   "description": "Select when the shift ends the following day. An end time earlier than the start time sets this automatically on save.",
    "fieldname": "ends_next_day",
    "fieldtype": "Check",
    "label": "Ends Next Day"

@@ -159,7 +159,7 @@ def import_libya_workbook(path, company="شركة المعدات الثقيلة 
                 default_currency="LYD", country="Libya", create_chart_of_accounts_based_on="Standard Template",
                 chart_of_accounts="Standard")).insert()
             settings.reload()
-        accounts, modes, types, centers = _prepare_accounts(settings, inspection["rows"])
+        modes, types, centers = _prepare_accounts(settings, inspection["rows"])
         for row in inspection["rows"]:
             fields = source_fields(batch, row)
             fields["her_workbook_date"] = row["display_date"]
@@ -180,7 +180,7 @@ def import_libya_workbook(path, company="شركة المعدات الثقيلة 
                 document = frappe.get_doc(dict(doctype="Treasury Transaction", company=company,
                     posting_date=row["posting_date"], mode_of_payment=modes[source],
                     cost_center=centers[row["category"]],
-                    destination_account=accounts[destination], amount=row["incoming"] or row["outgoing"],
+                    destination_mode_of_payment=modes[destination], amount=row["incoming"] or row["outgoing"],
                     reference_no=f"{batch}/{row['row']}", reference_date=row["posting_date"],
                     description=row["description"], **fields))
             document.insert()
@@ -258,7 +258,7 @@ def _prepare_accounts(company, rows):
         types[category] = expense_type
     for category in sorted({r["category"] for r in rows}):
         centers[category] = ensure_workbook_cost_center(company, category)
-    return accounts, modes, types, centers
+    return modes, types, centers
 
 
 def ensure_workbook_cost_center(company, category):

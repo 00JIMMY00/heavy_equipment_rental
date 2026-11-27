@@ -254,6 +254,7 @@ class CraneTimesheet(Document):
                 days = [day]
             else:
                 start, end = interval(row)
+                row.ends_next_day = int(end.date() > start.date())
                 days = list(work_days(start, end))
                 # Initialize omitted legacy/API values once from clock times.
                 if row.worked_hours is None:
@@ -384,3 +385,19 @@ class CraneTimesheet(Document):
 
     def on_cancel(self):
         cancel_driver_payroll(self)
+
+    def on_trash(self):
+        if self.docstatus != 2:
+            return
+
+        # Cancelled auto-payroll vouchers stay in accounting when their Timesheet is deleted.
+        for doctype, field in (("Grouped Expense", "grouped_expense"), ("Expense Entry", "expense_entry")):
+            vouchers = [row.get(field) for row in self.driver_payroll if row.get(field)]
+            if vouchers:
+                frappe.db.set_value(
+                    doctype,
+                    {"name": ["in", vouchers], "crane_timesheet": self.name, "docstatus": 2},
+                    "crane_timesheet",
+                    None,
+                    update_modified=False,
+                )

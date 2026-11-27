@@ -1,4 +1,4 @@
-"""Paid expense sources, with single-count legacy batches and rental drill-down."""
+"""Posted grouped expenses and stock consumption for operating repairs."""
 from collections import defaultdict
 
 import frappe
@@ -119,7 +119,71 @@ def expense_rows(f, currency):
                 append(batch, row, legacy.journal_entry, line.expense_entry_account)
             else:
                 frappe.throw(_("Expense {0} has no posted journal.").format(batch.name))
+    result.extend(
+        dict(row, currency=currency, crane_name=title('Crane', row['crane'], 'crane_name'))
+        for row in maintenance_stock_rows(f)
+    )
     return result
+
+
+def maintenance_stock_rows(f):
+    # These filters describe paid expense rows and do not apply to stock consumption.
+    if f.source in ('Grouped Expense', 'Expense Entry') or any(
+        f.get(field) for field in ('expense_type', 'grouped_expense', 'mode_of_payment', 'employee')
+    ):
+        return
+    doctypes = ('Stock Entry', 'Crane Maintenance', 'GL Entry', 'Account')
+    if not all(frappe.has_permission(doctype, 'read') for doctype in doctypes):
+        return
+
+    issue_filters = {
+        'company': f.company, 'docstatus': 1, 'purpose': 'Material Issue',
+        'posting_date': ['between', [f.from_date, f.to_date]], 'crane_maintenance': ['is', 'set'],
+    }
+    issues = {row.name: row for row in frappe.get_list('Stock Entry', filters=issue_filters,
+        fields=['name', 'posting_date', 'crane_maintenance'], limit_page_length=0)}
+    if not issues:
+        return
+
+    links = (('crane', 'crane', 'Crane'), ('timesheet', 'crane_timesheet', 'Crane Timesheet'),
+        ('assignment', 'crane_assignment', 'Rental Contract'))
+    job_filters = dict(company=f.company, cost_treatment='Operating Expense', docstatus=['!=', 2],
+        name=['in', sorted({issue.crane_maintenance for issue in issues.values()})])
+    job_filters.update({field: f[filter_name] for filter_name, field, _doctype in links if f.get(filter_name)})
+    jobs = {
+        job.name: job for job in frappe.get_list('Crane Maintenance', filters=job_filters,
+            fields=['name', 'description', *(field for _filter_name, field, _doctype in links)], limit_page_length=0)
+        if all(not job[field] or frappe.has_permission(doctype, 'read', doc=job[field])
+            for _filter_name, field, doctype in links)
+    }
+    if not jobs:
+        return
+
+    accounts = frappe.get_list('Account', filters=dict(company=f.company, root_type='Expense', is_group=0),
+        pluck='name', limit_page_length=0)
+    if not accounts:
+        return
+
+    ledger_filters = dict(company=f.company, is_cancelled=0, voucher_type='Stock Entry', account=['in', accounts],
+        voucher_no=['in', [name for name, issue in issues.items() if issue.crane_maintenance in jobs]])
+    if f.cost_center:
+        ledger_filters['cost_center'] = f.cost_center
+    ledger = frappe.get_list('GL Entry', filters=ledger_filters,
+        fields=['voucher_no', 'account', 'cost_center', 'sum(debit - credit) as amount'],
+        group_by='voucher_no, account, cost_center', order_by='voucher_no, account, cost_center',
+        limit_page_length=0)
+    for number, line in enumerate(ledger, start=1):
+        amount = flt(line.amount)
+        if not amount:
+            continue
+        issue = issues[line.voucher_no]
+        job = jobs[issue.crane_maintenance]
+        day = str(issue.posting_date)
+        yield dict(posting_date=day, month=day[:7], crane=job.crane, timesheet=job.crane_timesheet,
+            assignment=job.crane_assignment, maintenance=job.name, expense_type_title=_('Maintenance Stock Issue'),
+            description=job.description or _('Crane Maintenance'), cost_center=line.cost_center,
+            amount=amount, account=line.account, source_type='Stock Entry', source=issue.name,
+            row_number=number, indent=0, is_group=0, line_count=1)
 
 
 def group_label(row, group):
@@ -127,9 +191,13 @@ def group_label(row, group):
     value = row.get(field)
     if group == 'Crane' and value:
         return row["crane_name"]
-    if group == 'Expense Type' and value:
-        return f"{row['expense_type_title']} · {value}"
+    if group == 'Expense Type':
+        return f"{row['expense_type_title']} · {value}" if value else row['expense_type_title']
     return value or _('Unassigned')
+
+
+def group_key(row, group):
+    return row.get(GROUPS[group]) or '', group_label(row, group)
 
 
 def group_rows(rows, group, details, currency):
@@ -137,16 +205,15 @@ def group_rows(rows, group, details, currency):
         return rows
     buckets = defaultdict(list)
     for row in rows:
-        buckets[row.get(GROUPS[group]) or ''].append(row)
+        buckets[group_key(row, group)].append(row)
     totals = {key: sum(row['amount'] for row in members) for key, members in buckets.items()}
     keys = sorted(buckets) if group == 'Month' else sorted(buckets, key=lambda key: (-totals[key], key))
     result = []
-    for key in keys:
-        members = buckets[key]
-        label = group_label(members[0], group)
+    for key, label in keys:
+        members = buckets[key, label]
         result.append(dict(crane=key if group == 'Crane' else None,
             crane_name=label if group == 'Crane' else '',
-            description=label if group != 'Crane' else '', amount=totals[key],
+            description=label if group != 'Crane' else '', amount=totals[key, label],
             currency=currency, is_group=1, indent=0))
         if details:
             result.extend(dict(row, indent=1) for row in members)
@@ -156,8 +223,7 @@ def group_rows(rows, group, details, currency):
 def expense_chart(rows, group, currency):
     values = defaultdict(float)
     for row in rows:
-        key = (row.get(GROUPS[group]) or '', group_label(row, group))
-        values[key] += row['amount']
+        values[group_key(row, group)] += row['amount']
     order = sorted(values) if group == 'Month' else sorted(values, key=lambda key: (-values[key], key))
     items = [(key[1], values[key]) for key in order]
     if group != 'Month' and len(items) > 12:

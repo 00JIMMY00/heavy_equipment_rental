@@ -102,7 +102,7 @@ def _create_cycle(company, start_date, *, location=None, daily_rate=5000,
     receipt.insert()
     receipt.submit()
     transfer = frappe.get_doc(dict(doctype="Treasury Transaction", company=company, posting_date=end,
-        mode_of_payment=modes["Cash"], destination_account=accounts["Driver Custody"], amount=sum(amounts[2:]) + 1500,
+        mode_of_payment=modes["Cash"], destination_mode_of_payment=modes["Driver Custody"], amount=sum(amounts[2:]) + 1500,
         description="HER DEMO custody funding; transfer, not an expense")).insert()
     transfer.submit()
     for (title, kind), amount in zip((("Fuel", "Cash"), ("Transport", "Cash"),

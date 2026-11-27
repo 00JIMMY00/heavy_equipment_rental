@@ -1,9 +1,11 @@
-"""Transfer company funds from a payment mode to another cash/bank account."""
+"""Transfer company funds between two payment modes."""
 
 import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt
+
+from heavy_equipment_rental.payment import payment_account
 
 
 class TreasuryTransaction(Document):
@@ -21,15 +23,10 @@ class TreasuryTransaction(Document):
         self.amount = flt(self.amount, self.precision("amount"))
         if self.amount <= 0:
             frappe.throw(_("Amount must be greater than zero."))
-        if not frappe.db.get_value("Mode of Payment", self.mode_of_payment, "enabled"):
-            frappe.throw(_("Select an enabled Mode of Payment."))
-        self.source_account = frappe.db.get_value(
-            "Mode of Payment Account",
-            {"parent": self.mode_of_payment, "parenttype": "Mode of Payment", "company": self.company},
-            "default_account",
-        )
-        if not self.source_account:
-            frappe.throw(_("Set a Default Account for this Company on the Mode of Payment."))
+        if not self.mode_of_payment or not self.destination_mode_of_payment:
+            frappe.throw(_("Select From and To Modes of Payment."))
+        self.source_account = payment_account(self.mode_of_payment, self.company)
+        self.destination_account = payment_account(self.destination_mode_of_payment, self.company)
         for account_name in (self.source_account, self.destination_account):
             account = frappe.db.get_value(
                 "Account", account_name,
@@ -126,6 +123,28 @@ def is_treasury_account(account):
     kind = account.get("her_treasury_kind")
     return ((kind in ("Custody", "Employee Advance") and account.root_type == "Asset")
             or (kind == "Owner Current" and account.root_type == "Liability"))
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def treasury_payment_mode_query(doctype, txt, searchfield, start, page_len, filters):
+    company = (filters or {}).get("company")
+    if not company:
+        return []
+    accounts = frappe.get_list("Account", filters={
+        "company": company, "is_group": 0, "disabled": 0,
+        "account_currency": frappe.get_cached_value("Company", company, "default_currency"),
+    }, fields=["name", "account_type", "root_type", "her_treasury_kind"], page_length=0)
+    eligible_accounts = [account.name for account in accounts if is_treasury_account(account)]
+    if not eligible_accounts:
+        return []
+    return frappe.get_list("Mode of Payment", filters=[
+        ["name", "like", "%" + txt + "%"],
+        ["enabled", "=", 1],
+        ["Mode of Payment Account", "company", "=", company],
+        ["Mode of Payment Account", "default_account", "in", eligible_accounts],
+    ], fields=["name", "accounts.default_account"], order_by="`tabMode of Payment`.`name`",
+        as_list=True, start=start, page_length=page_len, reference_doctype="Treasury Transaction")
 
 
 @frappe.whitelist()

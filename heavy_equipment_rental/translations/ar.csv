@@ -22,6 +22,10 @@ Mode of Payment must use a non-group Asset or Liability account.,يجب أن ت�
 Mode of Payment account cannot be Receivable or Payable.,لا يمكن أن يكون حساب طريقة الدفع حساب ذمم مدينة أو دائنة.
 Select a Mode of Payment before posting the expense.,اختر طريقة الدفع قبل ترحيل المصروف.
 Select an enabled Mode of Payment.,اختر طريقة دفع مفعّلة.
+From Mode of Payment,من وسيلة دفع
+To Mode of Payment,إلى وسيلة دفع
+Select From and To Modes of Payment.,اختر وسيلة الدفع المصدر ووسيلة الدفع الوجهة.
+Additional Details,تفاصيل إضافية
 Set a Default Account for Company {0} on Mode of Payment {1}.,حدد الحساب الافتراضي للشركة {0} في طريقة الدفع {1}.
 "Set a positive cost, Expense Entry Type and Mode of Payment before completing maintenance.",حدد تكلفة موجبة ونوع قيد مصروف وطريقة دفع قبل إكمال الصيانة.
 "Complete maintenance with a positive cost, Expense Entry Type and Mode of Payment first.",أكمل سجل الصيانة بتكلفة موجبة ونوع قيد مصروف وطريقة دفع أولاً.
@@ -197,7 +201,7 @@ Only a Completed or Cancelled Crane Project can be reopened.,يمكن إعادة
 Only an Open Crane Project can be closed.,يمكن إغلاق مشروع معدات مفتوح فقط.
 Only bookings without recorded work can be cancelled.,يمكن إلغاء الحجوزات التي لا تتضمن عملاً مسجلاً فقط.
 Only draft Sales Invoices can be rebuilt.,يمكن إعادة إنشاء فواتير المبيعات المسودة فقط.
-Only planned maintenance without an expense can be deleted.,يمكن حذف الصيانة المخطط لها التي لا تتضمن مصروفاً فقط.
+Draft Maintenance can be deleted while it is Planned and has no expense.,يمكن حذف مسودة الصيانة وهي في حالة مخطط لها وخالية من المصروفات.
 Only submitted Crane Timesheets can be invoiced.,يمكن إصدار فاتورة لتايم شيت المرسلة فقط.
 Only this rental contract,هذا عقد ايجار معدة فقط
 Open,مفتوح
@@ -246,7 +250,7 @@ Row {0} hourly price,سعر الساعة للصف {0}
 "Row {0}, crane {1}, Project {2}, date {3}",الصف {0}، المعدة {1}، المشروع {2}، التاريخ {3}
 Row {0}: a shift with no hourly price must fit one crane rental contract. Split the shift at the rental contract boundary.,الصف {0}: يجب أن تقع الوردية التي لا تملك سعر ساعة ضمن تخصيص معدة واحد. قسّم الوردية عند حد عقد ايجار معدة.
 Row {0}: invalid shift time.,الصف {0}: وقت الوردية غير صالح.
-Row {0}: shift must be longer than zero and at most 24 hours. Mark Ends Next Day for overnight work.,الصف {0}: يجب أن تزيد مدة الوردية عن صفر وألا تتجاوز 24 ساعة. حدد «ينتهي في اليوم التالي» للعمل الليلي.
+Row {0}: start and end times match. Select Ends Next Day for a 24-hour shift.,الصف {0}: وقتا البدء والانتهاء متطابقان. حدد «ينتهي في اليوم التالي» لتسجيل وردية مدتها 24 ساعة.
 "Row {0}: work date, start time and end time are required.",الصف {0}: تاريخ العمل ووقت البدء ووقت الانتهاء مطلوبة.
 Sales Invoice,فاتورة المبيعات
 Sales Invoices,فواتير المبيعات
@@ -304,7 +308,7 @@ Unavailable,غير متاحة
 Unknown Crane Project action.,إجراء مشروع المعدات غير معروف.
 Unknown crane action.,إجراء المعدة غير معروف.
 Use Create Expense to link an Expense Entry.,استخدم «إنشاء مصروف» لربط قيد مصروفات.
-"Use for overnight shifts, such as 22:00 to 02:00. It also allows a 24-hour shift when start and end times match.",استخدمه للورديات الليلية، مثل 22:00 إلى 02:00. كما يسمح بوردية مدتها 24 ساعة عند تطابق وقتي البدء والانتهاء.
+Select when the shift ends the following day. An end time earlier than the start time sets this automatically on save.,حدد هذا الخيار إذا انتهت الوردية في اليوم التالي. يُفعّل الخيار تلقائيًا عند الحفظ إذا كان وقت الانتهاء أسبق من وقت البدء.
 Use the Crane Project Actions to change its status.,استخدم إجراءات مشروع المعدات لتغيير حالته.
 User,المستخدم
 View,عرض
@@ -1201,6 +1205,7 @@ Expense / Group,المصروف / المجموعة
 Share of Total,النسبة من الإجمالي
 Lines,البنود
 Expense Document,مستند المصروف
+Maintenance Stock Issue,صرف قطع غيار للصيانة
 Unassigned,غير محدد
 Invalid grouping.,طريقة التجميع غير صالحة.
 Invalid expense source.,مصدر المصروف غير صالح.

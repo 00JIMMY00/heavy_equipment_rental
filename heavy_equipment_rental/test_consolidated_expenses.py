@@ -3,6 +3,7 @@ from io import BytesIO
 from unittest.mock import patch
 
 import frappe
+from erpnext import get_default_company
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import today, add_days
 from openpyxl import Workbook
@@ -13,7 +14,7 @@ from heavy_equipment_rental.consolidated_expenses_setup import seed_defaults
 
 class TestGroupedExpenses(FrappeTestCase):
     def setUp(self):
-        self.company = frappe.db.get_value('Company', {'is_group': 0}, 'name')
+        self.company = get_default_company()
         self.employee = frappe.get_doc(dict(doctype='Employee', first_name='Batch Test Driver',
             company=self.company, date_of_joining='2020-01-01', date_of_birth='1990-01-01',
             gender='Male', status='Active')).insert().name

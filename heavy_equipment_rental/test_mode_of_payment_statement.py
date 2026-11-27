@@ -22,10 +22,7 @@ class TestModeOfPaymentStatement(FrappeTestCase):
         self.company = self.fixture.company
         self.cash, self.bank = self.fixture.accounts
         self.mode = self.fixture.mode
-        self.bank_mode = frappe.get_doc(dict(
-            doctype='Mode of Payment', mode_of_payment='Statement bank ' + self.fixture.key,
-            type='Bank', accounts=[dict(company=self.company, default_account=self.bank)],
-        )).insert()
+        self.bank_mode = self.fixture.bank_mode
         self.filters = dict(company=self.company, from_date=today(), to_date=today(),
                             mode_of_payment=self.mode.name)
         self.income = frappe.db.get_value('Company', self.company, 'default_income_account')
@@ -76,10 +73,11 @@ class TestModeOfPaymentStatement(FrappeTestCase):
         alias = frappe.copy_doc(self.mode)
         alias.mode_of_payment = 'Balances alias ' + self.fixture.key
         alias.insert()
-        self.bank_mode.delete()  # An eligible bank account can have no payment mode.
         self.journal(1000, add_days(today(), -1))
         self.fixture.transaction(amount=200).insert().submit()
         self.fixture.transaction(amount=75, posting_date=add_days(today(), 1)).insert().submit()
+        self.bank_mode.set('accounts', [])  # An eligible bank account can have no payment mode.
+        self.bank_mode.save()
         self.journal(999, submit=False)
         cancelled = self.journal(125)
         cancelled.cancel()
