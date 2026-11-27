@@ -2,6 +2,7 @@
 
 | Date | Development-site milestone |
 | --- | --- |
+| 2026-11-27 | Migrated cranes-dev3 for HER holiday dates and Timesheet row colors. Verified both color pickers, holiday and zero-hour styling in Chrome, and all six rental workflow tests. |
 | 2026-11-27 | Added operating repair stock issues to Crane Expense Report under the crane selected on Maintenance. Reconciled two existing issues on cranes-dev3 and checked the document links in Chrome. All 22 maintenance posting and expense report tests passed in isolated runs using the site's default company. |
 | 2026-11-27 | Migrated cranes-dev3 for transfers between payment modes. Chrome verified the two selectors, read-only accounts for the selected company and collapsed optional details. All 45 treasury, payment statement, workbook, expense, demo and rental workflow tests passed. |
 | 2026-11-27 | Audited static and dynamic deletion links for 509 records across 20 DocTypes on cranes-dev3. Reproduced repair voucher cycles, verified native deletion in four rolled-back cases, and confirmed that a submitted Maintenance amendment still protects its source. All 257 distinct HER tests passed across isolated runs. |

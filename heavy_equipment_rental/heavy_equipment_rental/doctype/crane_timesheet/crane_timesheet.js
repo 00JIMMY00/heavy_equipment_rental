@@ -1,3 +1,82 @@
+function shift_clock_display(value) {
+    if (!value) return "";
+    const clock = moment(value, ["HH:mm:ss.SSSSSS", "HH:mm:ss", "HH:mm", "H:mm:ss", "H:mm"], "en", true);
+    return clock.isValid() ? clock.format(clock.seconds() ? "h:mm:ss A" : "h:mm A") : "";
+}
+
+function setup_shift_clocks() {
+    for (const field of ["start_time", "end_time"]) {
+        frappe.meta.get_docfield("Timesheet Entry", field).formatter = shift_clock_display;
+    }
+    if (frappe.ui.form.ControlHERShiftTime) return;
+    class ShiftTime extends frappe.ui.form.ControlTime {
+        format_for_input(value) {
+            return shift_clock_display(value);
+        }
+        parse(value) {
+            if (!value) return "";
+            const input = String(value).trim().toUpperCase().replace(/\s*([AP]M)$/, " $1");
+            const clock = moment(input, ["hh:mm:ss A", "h:mm:ss A", "hh:mm A", "h:mm A", "h A", "HH:mm:ss.SSSSSS", "HH:mm:ss", "HH:mm", "H:mm:ss", "H:mm"], "en", true);
+            if (!clock.isValid()) frappe.throw(__("Enter a time such as 2:30 PM or 14:30."));
+            return clock.format("HH:mm:ss");
+        }
+        set_time_options() {
+            super.set_time_options();
+            this.datepicker_options.timeFormat = "hh:ii:ss AA";
+            this.datepicker_options.onSelect = () => {
+                if (this.get_value() !== this.value) this.$input.trigger("change");
+            };
+        }
+    }
+    frappe.ui.form.ControlHERShiftTime = ShiftTime;
+    const make_control = frappe.ui.form.make_control;
+    frappe.ui.form.make_control = function (opts) {
+        if (opts.frm?.doctype === "Crane Timesheet" && opts.df.parent === "Timesheet Entry" &&
+            ["start_time", "end_time"].includes(opts.df.fieldname)) return new ShiftTime(opts);
+        return make_control.call(this, opts);
+    };
+}
+
+function highlight_entry(frm, grid_row) {
+    const settings = frm._row_highlights;
+    if (!settings || !grid_row?.doc || grid_row.grid.df.fieldname !== "timesheet_entries") return;
+    const entry = grid_row.doc;
+    const weekday = moment(entry.work_date, "YYYY-MM-DD", true).locale("en").format("dddd");
+    const holiday = entry.work_date && (settings.holidays.has(entry.work_date) || settings.weekdays.includes(weekday));
+    const zero = entry.work_date && entry.worked_hours != null && entry.worked_hours !== "" &&
+        flt(entry.worked_hours) === 0 && flt(entry.overtime_hours) === 0;
+    const color = holiday ? settings.holiday_color : zero ? settings.zero_day_color : "";
+    grid_row.row.css({
+        backgroundColor: color ? `color-mix(in srgb, ${color} 25%, var(--card-bg))` : "",
+        boxShadow: zero && holiday ? `inset 5px 0 ${settings.zero_day_color}` : "",
+    }).attr("title", [holiday && __("Holiday"), zero && __("Zero hours")].filter(Boolean).join(" · "));
+}
+
+async function load_row_highlights(frm) {
+    const settings = await frappe.xcall(
+        "heavy_equipment_rental.heavy_equipment_rental.doctype.crane_timesheet.crane_timesheet.get_row_highlights"
+    );
+    frm._row_highlights = {...settings, holidays: new Set(settings.holidays)};
+    frm.fields_dict.timesheet_entries.grid.update_docfield_property("worked_hours", "read_only", Number(settings.calculate_worked_hours));
+    for (const row of frm.fields_dict.timesheet_entries.grid.grid_rows || []) highlight_entry(frm, row);
+}
+
+function shift_time_changed(frm, cdt, cdn) {
+    if (!frm._row_highlights?.calculate_worked_hours) return sync_payroll_drivers(frm);
+    const row = locals[cdt][cdn];
+    let hours = 0;
+    if (row.start_time && row.end_time) {
+        hours = moment.duration(row.end_time).asHours() - moment.duration(row.start_time).asHours();
+        if (row.ends_next_day || hours < 0) hours += 24;
+    }
+    return frappe.model.set_value(cdt, cdn, "worked_hours", flt(hours, 6));
+}
+
+function entry_hours_changed(frm, cdt, cdn) {
+    highlight_entry(frm, frm.fields_dict.timesheet_entries.grid.grid_rows_by_docname?.[cdn]);
+    sync_payroll_drivers(frm);
+}
+
 async function fill_default_days(frm, manual = false) {
     const doc = frm.doc;
     if (doc.docstatus !== 0) return;
@@ -299,6 +378,8 @@ frappe.ui.form.on("Crane Timesheet", {
     rental_rate: fill_entry_rental_terms,
     purchase_uom: purchase_price_label,
     setup(frm) {
+        setup_shift_clocks();
+        $(frm.wrapper).on("grid-row-render", (_event, row) => highlight_entry(frm, row));
         const payroll = frm.fields_dict.driver_payroll.grid;
         payroll.df.cannot_add_rows = true;
         payroll.df.cannot_delete_rows = true;
@@ -352,6 +433,10 @@ frappe.ui.form.on("Crane Timesheet", {
         }
     },
     refresh(frm) {
+        for (const field of ["start_time", "end_time"]) {
+            frm.fields_dict.timesheet_entries.grid.update_docfield_property(field, "formatter", shift_clock_display);
+        }
+        load_row_highlights(frm);
         for (const field of ["rental_rate_unit", "purchase_uom"]) {
             const options = frm.doc[field] === "Month" ? "\nHour\nDay\nMonth" : "\nHour\nDay";
             frm.set_df_property(field, "options", options);
@@ -434,12 +519,14 @@ frappe.ui.form.on("Timesheet Entry", {
         sync_payroll_drivers(frm);
         if (row.employee) await load_driver_names(frm);
     },
-    worked_hours: sync_payroll_drivers,
-    overtime_hours: sync_payroll_drivers,
-    end_time: sync_payroll_drivers,
-    ends_next_day: sync_payroll_drivers,
+    worked_hours: entry_hours_changed,
+    overtime_hours: entry_hours_changed,
+    start_time: shift_time_changed,
+    end_time: shift_time_changed,
+    ends_next_day: shift_time_changed,
     timesheet_entries_add(frm) { sync_payroll_drivers(frm); fill_entry_rental_terms(frm); },
     async work_date(frm, cdt, cdn) {
+        highlight_entry(frm, frm.fields_dict.timesheet_entries.grid.grid_rows_by_docname?.[cdn]);
         const date = moment(locals[cdt][cdn].work_date, "YYYY-MM-DD", true);
         await frappe.model.set_value(cdt, cdn, "day_name", date.isValid() ? date.locale("en").format("ddd") : "");
         sync_payroll_drivers(frm);

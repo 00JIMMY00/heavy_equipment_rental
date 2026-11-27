@@ -222,10 +222,12 @@ You can also begin with **Record Work**. With customer, location, period and ter
 1. Select **Record Work**, or use the Assignment's **Create → New Timesheet**.
 2. Confirm the Crane, Assignment and period. One Timesheet covers one crane.
 3. Choose a default Driver if useful; change individual shift Employees when needed.
-4. Enter the clock windows and **actual Worked Hours**, excluding downtime.
+4. Start Time and End Time accept both 2:30 PM and 14:30. The grid displays AM/PM. Enter the clock windows and **actual Worked Hours**, excluding downtime.
 5. Attach the signed hard copy if available, then save and submit.
 
-Example: a shift is 08:00–16:00 but actual operation is 6 hours. Enter Worked Hours = 6. Editing the clock window does not overwrite that entered value. Zero worked hours represents downtime. Overlapping drivers do not cause crane time to be billed twice.
+Under **HER Settings → Day Shift**, enable **Calculate Worked Hours from Shift Times** to recalculate every draft row from its clocks on save. Matching times give zero hours, or 24 with Ends Next Day selected. Overtime is entered separately.
+
+In manual mode, a shift is 08:00–16:00 but actual operation is 6 hours. Enter Worked Hours = 6. Editing the clock window does not overwrite that entered value. Zero worked hours represents downtime. Overlapping drivers do not cause crane time to be billed twice.
 
 Hourly billing uses the agreed hourly rate and distinct crane operating hours. Daily billing counts worked dates once. Driver Payroll uses each driver’s regular plus overtime hours multiplied by their Price / Hour. Entering a fixed Payroll Amount keeps that amount when hours change. Driver-hours totals can differ from distinct crane-hours totals.
 

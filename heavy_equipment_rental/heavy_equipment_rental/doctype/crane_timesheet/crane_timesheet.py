@@ -29,6 +29,20 @@ from heavy_equipment_rental.rental_validation import (
 
 
 @frappe.whitelist()
+def get_row_highlights():
+    if not frappe.has_permission("Crane Timesheet", "read"):
+        frappe.throw(_("You cannot read Crane Timesheets."), frappe.PermissionError)
+    settings = frappe.get_cached_doc("Heavy Equipment Rental Settings")
+    return {
+        "calculate_worked_hours": settings.calculate_worked_hours,
+        "holidays": [row.holiday_date for row in settings.holiday_defaults if row.holiday_date],
+        "weekdays": [row.weekday for row in settings.holiday_defaults if row.weekday],
+        "holiday_color": settings.holiday_color or "#E0A126",
+        "zero_day_color": settings.zero_day_color or "#478BCA",
+    }
+
+
+@frappe.whitelist()
 def default_timesheet_entries(period_start, period_end):
     if not frappe.has_permission("Crane Timesheet", "create"):
         frappe.throw(_("You cannot create Crane Timesheets."), frappe.PermissionError)
@@ -244,12 +258,19 @@ class CraneTimesheet(Document):
         driver_names = {row.name: row.employee_name for row in frappe.get_all(
             "Employee", filters={"name": ["in", list(employees)]},
             fields=["name", "employee_name"])} if employees else {}
+        calculate_hours = frappe.get_cached_doc("Heavy Equipment Rental Settings").calculate_worked_hours
         start_period, end_period = getdate(self.period_start), getdate(self.period_end)
         for row in self.timesheet_entries:
             if not row.work_date:
                 frappe.throw(_("Row {0}: a work date is required.").format(row.idx))
             day = getdate(row.work_date)
             row.day_name = day_name(day)
+            if calculate_hours:
+                row.worked_hours = 0
+                start, end = interval(row, infer_full_day=False)
+                row.worked_hours = (end - start).total_seconds() / 3600
+                if start == end and flt(row.overtime_hours):
+                    frappe.throw(_("Row {0}: enter a shift duration for overtime.").format(row.idx))
             if row.worked_hours is not None and flt(row.worked_hours) == 0 and not flt(row.overtime_hours):
                 days = [day]
             else:

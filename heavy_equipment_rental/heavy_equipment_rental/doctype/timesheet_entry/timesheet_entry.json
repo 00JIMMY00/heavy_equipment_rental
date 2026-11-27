@@ -129,7 +129,7 @@
    "precision": "6",
    "read_only": 0,
    "columns": 1,
-   "description": "Actual operating hours. Enter zero for downtime. Changing shift times does not overwrite this value."
+   "description": "Manual unless Calculate Worked Hours from Shift Times is enabled in HER Settings."
   },
   {
    "fieldname": "amount_col",

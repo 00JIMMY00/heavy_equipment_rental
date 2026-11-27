@@ -814,17 +814,33 @@ class TestCraneTimesheet(FrappeTestCase):
         self.assertEqual(sheet.total_crane_billable_hours, 32)
         self.assertEqual(sheet.driver_payroll[0].quantity, 32)
 
-    def test_equal_shift_times_require_next_day_for_positive_work(self):
+    def test_calculate_worked_hours_from_shift_times(self):
+        settings = frappe.get_single("Heavy Equipment Rental Settings")
+        original = settings.calculate_worked_hours
+        self.addCleanup(frappe.db.set_single_value, settings.doctype, "calculate_worked_hours", original)
+        frappe.db.set_single_value(settings.doctype, "calculate_worked_hours", 1)
         sheet = self.make_sheet(length=2)
         sheet.rented = 0
         row = sheet.timesheet_entries[0]
-        row.update({"end_time": row.start_time, "worked_hours": 24})
-        with self.assertRaisesRegex(frappe.ValidationError, "start and end times match"):
-            sheet.insert()
-
-        row.ends_next_day = 1
+        row.update({"start_time": "00:00", "end_time": "00:00", "worked_hours": 10})
         sheet.insert()
-        self.assertEqual(sheet.total_crane_billable_hours, 24)
+        self.assertEqual(sheet.total_crane_billable_hours, 0)
+        row.ends_next_day = 1
+        sheet.save()
+        self.assertEqual(row.worked_hours, 24)
+        row.update({"start_time": "22:00", "end_time": "02:30", "ends_next_day": 0})
+        sheet.save()
+        self.assertEqual(sheet.total_crane_billable_hours, 4.5)
+
+    def test_midnight_to_midnight_preserves_entered_hours(self):
+        sheet = self.make_sheet()
+        sheet.rented = 0
+        row = sheet.timesheet_entries[0]
+        row.update({"start_time": "00:00:00", "end_time": "00:00:00", "worked_hours": 10})
+        sheet.insert()
+        sheet.reload()
+        self.assertEqual(sheet.timesheet_entries[0].ends_next_day, 1)
+        self.assertEqual(sheet.total_crane_billable_hours, 10)
 
     def test_unchecked_rented_skips_purchase_and_survives_saves(self):
         sheet = self.make_sheet(rate=0)

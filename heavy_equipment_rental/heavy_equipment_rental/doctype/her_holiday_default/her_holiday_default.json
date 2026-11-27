@@ -1,0 +1,35 @@
+{
+ "doctype": "DocType",
+ "name": "HER Holiday Default",
+ "module": "Heavy Equipment Rental",
+ "istable": 1,
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "weekday",
+  "holiday_date",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "weekday",
+   "label": "Recurring Weekday",
+   "fieldtype": "Select",
+   "options": "\nMonday\nTuesday\nWednesday\nThursday\nFriday\nSaturday\nSunday",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "holiday_date",
+   "label": "Holiday Date",
+   "fieldtype": "Date",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "description",
+   "label": "Description",
+   "fieldtype": "Data",
+   "in_list_view": 1
+  }
+ ],
+ "permissions": []
+}

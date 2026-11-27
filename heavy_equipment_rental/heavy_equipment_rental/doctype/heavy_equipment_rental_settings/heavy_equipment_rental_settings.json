@@ -124,6 +124,36 @@
    "fieldtype": "Table",
    "label": "Expense Defaults by Company",
    "options": "HER Expense Defaults"
+  },
+  {
+   "fieldname": "holidays_tab",
+   "fieldtype": "Tab Break",
+   "label": "Holidays"
+  },
+  {
+   "fieldname": "holiday_defaults",
+   "fieldtype": "Table",
+   "label": "Holiday Defaults",
+   "options": "HER Holiday Default"
+  },
+  {
+   "fieldname": "holiday_color",
+   "fieldtype": "Color",
+   "label": "Holiday Row Color",
+   "default": "#E0A126"
+  },
+  {
+   "fieldname": "zero_day_color",
+   "fieldtype": "Color",
+   "label": "Zero-Hour Row Color",
+   "default": "#478BCA"
+  },
+  {
+   "fieldname": "calculate_worked_hours",
+   "fieldtype": "Check",
+   "label": "Calculate Worked Hours from Shift Times",
+   "default": "0",
+   "description": "Recalculate all entries when saving a draft Timesheet. Overtime is entered separately."
   }
  ],
  "field_order": [
@@ -137,9 +167,14 @@
   "shift_section",
   "day_shift_start_time",
   "day_shift_end_time",
+  "calculate_worked_hours",
   "hours_col",
   "day_shift_hours",
   "native_workflow_migrated",
+  "holidays_tab",
+  "holiday_defaults",
+  "holiday_color",
+  "zero_day_color",
   "repairs_tab",
   "repair_defaults",
   "driver_payroll_tab",

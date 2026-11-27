@@ -86,7 +86,7 @@ def allocations(cranes=None, assignment=None, exclude=None, lock=True):
 	)
 
 
-def interval(row):
+def interval(row, infer_full_day=True):
 	if (row.work_date and not flt(row.worked_hours) and not flt(row.get("overtime_hours"))
 		and row.start_time in (None, "") and row.end_time in (None, "")):
 		start = datetime.combine(getdate(row.work_date), datetime.min.time())
@@ -107,13 +107,9 @@ def interval(row):
 	next_day = cint(row.ends_next_day)
 	if next_day not in (0, 1):
 		frappe.throw(_("Row {0}: invalid shift time.").format(row.idx))
-	if next_day or end < start:
+	has_work = flt(row.worked_hours) > 0 or flt(row.get("overtime_hours")) > 0
+	if next_day or end < start or (infer_full_day and end == start and has_work):
 		end += timedelta(days=1)
-	idle = flt(row.worked_hours) == 0 and flt(row.get("overtime_hours")) == 0
-	if end == start and not idle:
-		frappe.throw(
-			_("Row {0}: start and end times match. Select Ends Next Day for a 24-hour shift.").format(row.idx)
-		)
 	return start, end
 
 

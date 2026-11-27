@@ -250,7 +250,6 @@ Row {0} hourly price,سعر الساعة للصف {0}
 "Row {0}, crane {1}, Project {2}, date {3}",الصف {0}، المعدة {1}، المشروع {2}، التاريخ {3}
 Row {0}: a shift with no hourly price must fit one crane rental contract. Split the shift at the rental contract boundary.,الصف {0}: يجب أن تقع الوردية التي لا تملك سعر ساعة ضمن تخصيص معدة واحد. قسّم الوردية عند حد عقد ايجار معدة.
 Row {0}: invalid shift time.,الصف {0}: وقت الوردية غير صالح.
-Row {0}: start and end times match. Select Ends Next Day for a 24-hour shift.,الصف {0}: وقتا البدء والانتهاء متطابقان. حدد «ينتهي في اليوم التالي» لتسجيل وردية مدتها 24 ساعة.
 "Row {0}: work date, start time and end time are required.",الصف {0}: تاريخ العمل ووقت البدء ووقت الانتهاء مطلوبة.
 Sales Invoice,فاتورة المبيعات
 Sales Invoices,فواتير المبيعات
@@ -1460,3 +1459,16 @@ Past booked days without a submitted timesheet entry.,أيام حجز منقضي
 Submitted days with zero work and zero overtime.,أيام معتمدة بلا ساعات عمل أو ساعات إضافية.
 Visible bookings in the next 30 days while this repair is open.,الحجوزات المتاحة خلال الثلاثين يوماً القادمة أثناء استمرار هذا الإصلاح.
 Calendar days from the start of this repair through completion or today.,عدد الأيام من بداية الإصلاح حتى اكتماله أو حتى اليوم.
+Holiday Defaults,الإعدادات الافتراضية للعطلات
+Holiday Row Color,لون صف العطلة
+Zero-Hour Row Color,لون صف الساعات الصفرية
+Zero hours,صفر ساعات
+Holidays,العطلات
+Holiday Date,تاريخ العطلة
+Holiday,عطلة
+Recurring Weekday,يوم أسبوعي متكرر
+Holiday row {0}: choose either a recurring weekday or a date.,صف العطلة {0}: اختر يومًا أسبوعيًا متكررًا أو تاريخًا محددًا.
+Calculate Worked Hours from Shift Times,حساب ساعات العمل من وقت بداية الوردية ونهايتها
+Recalculate all entries when saving a draft Timesheet. Overtime is entered separately.,تُحسب ساعات جميع الصفوف عند حفظ مسودة سجل العمل. تُدخل الساعات الإضافية بشكل منفصل.
+Manual unless Calculate Worked Hours from Shift Times is enabled in HER Settings.,تُدخل الساعات يدويًا ما لم يتم تفعيل حسابها من أوقات الوردية في إعدادات التأجير.
+Row {0}: enter a shift duration for overtime.,الصف {0}: أدخل مدة الوردية لتسجيل الساعات الإضافية.

@@ -5,7 +5,7 @@
 - Contract dates reserve the crane. Reject overlapping bookings. A Timesheet can span consecutive bookings on the same contract when each working shift fits one booking. Future shifts are allowed.
 - New sales and supplier terms use Hour or Day. Bill from submitted shift terms so later edits to contract or master prices preserve approved work. Preserve legacy Month terms and exact dates covered by flat-rate invoice lines. Cancelling a daily charge reopens its dates even if an overtime invoice remains.
 - Concurrent drivers each earn their own hours. Count overlapping crane time once and reject overlapping shifts for the same employee. A zero-work, zero-overtime row records downtime and can omit driver and clock times.
-- A shift can exceed 24 hours when it ends the following day. An end time earlier than the start time rolls into the following day automatically. For matching clock times, select Ends Next Day to record a 24-hour shift.
+- A shift can exceed 24 hours when it ends the following day. An end time earlier than the start time rolls into the following day automatically. Automatic Worked Hours uses the clock duration on draft save. Matching times give zero unless Ends Next Day is selected. In manual mode, matching clock times with positive worked hours or overtime automatically span 24 hours and retain the entered hours.
 
 ## Accounting and corrections
 

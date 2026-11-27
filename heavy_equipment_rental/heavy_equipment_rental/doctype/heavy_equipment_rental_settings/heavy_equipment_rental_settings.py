@@ -11,6 +11,9 @@ from heavy_equipment_rental.driver_payroll import validate_payroll_defaults
 class HeavyEquipmentRentalSettings(Document):
 	def validate(self):
 		from heavy_equipment_rental.maintenance_posting import validate_repair_defaults
+		for row in self.holiday_defaults:
+			if bool(row.weekday) == bool(row.holiday_date):
+				frappe.throw(_("Holiday row {0}: choose either a recurring weekday or a date.").format(row.idx))
 		validate_repair_defaults(self)
 		validate_payroll_defaults(self)
 		from heavy_equipment_rental.consolidated_expenses import validate_defaults
